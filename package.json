@@ -1,0 +1,24 @@
+{
+  "name": "poststation",
+  "version": "1.0.0",
+  "description": "Post Station WordPress Plugin",
+  "author": "Joe Titus",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "packages-update": "wp-scripts packages-update",
+    "check-engines": "wp-scripts check-engines",
+    "check-licenses": "wp-scripts check-licenses",
+    "format": "wp-scripts format",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "lint:md:docs": "wp-scripts lint-md-docs",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "test:e2e": "wp-scripts test-e2e",
+    "test:unit": "wp-scripts test-unit-js"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^26.0.0"
+  }
+}

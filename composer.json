@@ -1,0 +1,38 @@
+{
+  "name": "joetitus/poststation",
+  "description": "A robust WordPress plugin to handle automated post creation via API",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Joe Titus",
+      "email": "your@email.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0",
+    "wp-coding-standards/wpcs": "^2.3",
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+    "phpcompatibility/phpcompatibility-wp": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "PostStation\\": "includes/"
+    }
+  },
+  "scripts": {
+    "phpcs": "phpcs --standard=WordPress",
+    "phpcbf": "phpcbf --standard=WordPress",
+    "test": "phpunit"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}
