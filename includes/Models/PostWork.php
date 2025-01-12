@@ -20,14 +20,18 @@ class PostWork
             author_id bigint(20) unsigned NOT NULL,
             webhook_id bigint(20) unsigned DEFAULT NULL,
             post_type varchar(20) NOT NULL DEFAULT 'post',
+            post_status varchar(20) NOT NULL DEFAULT 'pending',
+            default_author_id bigint(20) unsigned DEFAULT NULL,
             enabled_taxonomies text DEFAULT NULL,
             default_terms text DEFAULT NULL,
-			prompts text DEFAULT NULL,
+			custom_fields text DEFAULT NULL,
+            prompts text DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY author_id (author_id),
-            KEY webhook_id (webhook_id)
+            KEY webhook_id (webhook_id),
+            KEY default_author_id (default_author_id)
             ) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
 
@@ -76,8 +80,11 @@ class PostWork
 			'author_id' => get_current_user_id(),
 			'webhook_id' => null,
 			'post_type' => 'post',
+			'post_status' => 'pending',
+			'default_author_id' => get_current_user_id(),
 			'enabled_taxonomies' => json_encode(['category' => true, 'post_tag' => true]),
-			'default_terms' => json_encode([])
+			'default_terms' => json_encode([]),
+			'custom_fields' => json_encode([])
 		]);
 
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
@@ -118,6 +125,12 @@ class PostWork
 
 		if (isset($data['prompts'])) {
 			$update_data['prompts'] = $data['prompts'];
+			$format[] = '%s';
+		}
+
+		// Add custom fields handling
+		if (isset($data['custom_fields'])) {
+			$update_data['custom_fields'] = $data['custom_fields'];
 			$format[] = '%s';
 		}
 

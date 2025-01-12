@@ -23,17 +23,21 @@ class PostBlock
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			postwork_id bigint(20) unsigned NOT NULL,
 			article_url text NOT NULL,
+			post_title text DEFAULT NULL,
 			taxonomies text DEFAULT NULL,
 			custom_fields text DEFAULT NULL,
+			prompts text DEFAULT NULL,
+			feature_image_id bigint(20) unsigned DEFAULT NULL,
 			status varchar(50) NOT NULL DEFAULT 'pending',
 			post_id bigint(20) unsigned DEFAULT NULL,
 			error_message text DEFAULT NULL,
-			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY (id),
-			KEY postwork_id (postwork_id),
-			KEY status (status),
-			KEY post_id (post_id)
+				created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				PRIMARY KEY (id),
+				KEY postwork_id (postwork_id),
+				KEY status (status),
+				KEY post_id (post_id),
+				KEY feature_image_id (feature_image_id)
             ) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
 
@@ -94,7 +98,11 @@ class PostBlock
 		$data = wp_parse_args($data, [
 			'postwork_id' => 0,
 			'article_url' => '',
+			'post_title' => '',
 			'taxonomies' => '{}',
+			'prompts' => '{}',
+			'custom_fields' => '{}',
+			'feature_image_id' => null,
 			'status' => 'pending'
 		]);
 
@@ -136,5 +144,14 @@ class PostBlock
 			['postwork_id' => $postwork_id],
 			['%d']
 		) !== false;
+	}
+
+	public static function get_prompts(int $id): array
+	{
+		$block = self::get_by_id($id);
+		if (!$block || empty($block['prompts'])) {
+			return [];
+		}
+		return json_decode($block['prompts'], true) ?: [];
 	}
 }

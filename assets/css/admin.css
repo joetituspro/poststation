@@ -618,79 +618,113 @@ body.folded .postwork-actions.sticky {
   color: #3c434a;
 }
 
+/* Post Work Header */
 .postwork-header {
   background: #fff;
   border: 1px solid #e2e4e7;
   border-radius: 4px;
-  padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .postwork-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  padding: 20px;
 }
 
 .postwork-header-section {
+  min-width: 0; /* Prevent overflow in flex items */
+}
+
+.postwork-header-field {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  min-width: 200px;
 }
 
 .postwork-header-label {
-  color: #1e1e1e;
-  font-size: 13px;
+  font-size: 12px;
+  color: #646970;
   font-weight: 500;
-  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .postwork-header-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1e1e1e;
-  cursor: pointer;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 8px 12px;
+  background: #f6f7f7;
+  border: 1px solid #e2e4e7;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .postwork-header-value:hover {
-  background-color: #f0f0f1;
+  background: #f0f0f1;
+  border-color: #c3c4c7;
+}
+
+.postwork-header-value input,
+.postwork-header-value select {
+  width: 100%;
+  margin: -8px -12px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  color: inherit;
+}
+
+.postwork-header-value input:focus,
+.postwork-header-value select:focus {
+  box-shadow: none;
+  outline: none;
 }
 
 .postwork-header-value .dashicons {
-  color: #757575;
+  color: #787c82;
   font-size: 16px;
   width: 16px;
   height: 16px;
 }
 
-.postwork-header-value input {
-  font-size: 15px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  outline: none;
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+  .postwork-header-content {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .postwork-header-value {
+    padding: 10px 12px;
+  }
+
+  .postwork-header-value input,
+  .postwork-header-value select {
+    margin: -10px -12px;
+    padding: 10px 12px;
+  }
 }
 
-.postwork-header-value input:focus {
-  box-shadow: none;
+/* Status badge colors */
+.status-text[data-status="publish"] {
+  color: #00a32a;
 }
-
-.postwork-header-value.editing {
-  background-color: #f0f0f1;
-  padding: 6px 8px;
-  border-radius: 4px;
+.status-text[data-status="draft"] {
+  color: #646970;
+}
+.status-text[data-status="pending"] {
+  color: #e66f00;
+}
+.status-text[data-status="private"] {
+  color: #674399;
 }
 
 /* Side Panel Component */
@@ -774,10 +808,6 @@ body.folded .postwork-actions.sticky {
 .side-panel-overlay.active {
   opacity: 1;
   visibility: visible;
-}
-
-/* Taxonomy Panel Specific */
-  flex: 1;
 }
 
 .taxonomy-setting-row {
@@ -1083,4 +1113,568 @@ body.folded .postwork-actions.sticky {
   color: #666;
   padding: 32px 16px;
   font-style: italic;
+}
+
+/* Block Prompts Accordion */
+.block-prompts-section {
+  border: none;
+  margin: 0;
+}
+
+.block-prompts-header {
+  background: #f6f7f7;
+  border: 1px solid #e2e4e7;
+  border-radius: 4px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.block-prompts-header:hover {
+  background: #f0f0f1;
+}
+
+.block-prompts-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.block-prompts-toggle {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.block-prompts-section.collapsed .block-prompts-toggle {
+  transform: rotate(-90deg);
+}
+
+.block-prompts-content {
+  margin-top: 12px;
+  transition: all 0.3s ease;
+}
+
+.block-prompts-count {
+  color: #787c82;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+/* Keep the container styles */
+.block-prompts-container {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 8px;
+}
+
+/* Scrollbar styling */
+.block-prompts-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.block-prompts-container::-webkit-scrollbar-track {
+  background: #f0f0f1;
+  border-radius: 3px;
+}
+
+.block-prompts-container::-webkit-scrollbar-thumb {
+  background: #c3c4c7;
+  border-radius: 3px;
+}
+
+.block-prompts-container::-webkit-scrollbar-thumb:hover {
+  background: #a7aaad;
+}
+
+/* Style the Add New Prompt button */
+.add-block-prompt {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 12px !important;
+  gap: 8px;
+  display: flex !important;
+  align-items: center;
+}
+
+.add-block-prompt .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+}
+
+/* Custom Fields Panel */
+.custom-field-item {
+  background: #fff;
+  border: 1px solid #e2e4e7;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.custom-field-item:hover {
+  border-color: #2271b1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.custom-field-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.custom-field-key {
+  flex: 1;
+  margin-right: 12px;
+}
+
+.custom-field-key-input {
+  width: 100%;
+}
+
+.custom-field-key .error-message {
+  color: #d63638;
+  font-size: 12px;
+  margin-top: 4px;
+  display: none;
+}
+
+.custom-field-key.has-error .error-message {
+  display: block;
+}
+
+.custom-field-key.has-error input {
+  border-color: #d63638;
+}
+
+.custom-field-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.custom-field-delete {
+  color: #d63638;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.custom-field-delete:hover {
+  background: #fef0f1;
+}
+
+.custom-field-content {
+  padding: 16px;
+}
+
+.custom-field-value {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  border: 1px solid #e2e4e7;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.custom-field-value:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: none;
+}
+
+.add-custom-field-button {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 16px !important;
+  gap: 8px;
+}
+
+.add-custom-field-button .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+}
+
+/* Feature Image Field */
+.feature-image-field {
+  position: relative;
+}
+
+.feature-image-preview {
+  margin-bottom: 12px;
+}
+
+.feature-image-preview img {
+  max-width: 200px;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid #e2e4e7;
+}
+
+.remove-feature-image {
+  margin-top: 8px !important;
+  color: #d63638 !important;
+}
+
+.remove-feature-image:hover {
+  color: #d63638 !important;
+  border-color: #d63638 !important;
+}
+
+.remove-feature-image .dashicons,
+.upload-feature-image .dashicons {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  margin-top: 4px;
+  margin-right: 4px;
+}
+
+.feature-image-upload {
+  margin-top: 8px;
+}
+
+/* Main Header */
+.poststation-main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e4e7;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.poststation-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.poststation-logo .dashicons {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: #2271b1;
+}
+
+.toggle-options {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px !important;
+}
+
+.toggle-options .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.toggle-options.active .dashicons {
+  transform: rotate(90deg);
+}
+
+/* Adjust the animation for the options panel */
+.postwork-header {
+  transition: all 0.3s ease;
+  overflow: hidden;
+  opacity: 0;
+  max-height: 0;
+  margin: 0;
+}
+
+.postwork-header.active {
+  opacity: 1;
+  max-height: 1000px; /* Adjust based on content */
+  margin-bottom: 20px;
+}
+
+/* Post Block Form */
+.postblock-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 20px;
+}
+
+.postblock-column {
+  min-width: 0;
+}
+
+.form-section {
+  background: #fff;
+  border: 1px solid #e2e4e7;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e1e1e;
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e4e7;
+}
+
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-field:last-child {
+  margin-bottom: 0;
+}
+
+.form-field label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #1e1e1e;
+}
+
+.field-input {
+  position: relative;
+}
+
+.field-input input[type="text"],
+.field-input input[type="url"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e4e7;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.field-input input:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: none;
+}
+
+.error-message {
+  color: #d63638;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+  .postblock-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Update existing block prompts section styles */
+.block-prompts-section {
+  border: none;
+  margin: 0;
+}
+
+.block-prompts-header {
+  background: #f6f7f7;
+  border: 1px solid #e2e4e7;
+  border-radius: 4px;
+}
+
+.block-prompts-content {
+  margin-top: 12px;
+}
+
+/* Update feature image styles to match new design */
+.feature-image-field {
+  background: #f6f7f7;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.feature-image-preview {
+  margin: 0 0 12px;
+}
+
+.feature-image-upload .description {
+  margin: 8px 0 0;
+}
+
+/* API Format Modal */
+.api-format-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 999999;
+  padding: 20px;
+}
+
+.api-format-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.api-format-modal-content {
+  background: #fff;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.api-format-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e4e7;
+}
+
+.api-format-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.modal-close {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #787c82;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: #d63638;
+}
+
+.api-format-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.format-description {
+  margin-bottom: 20px;
+}
+
+.format-example {
+  background: #f6f7f7;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.format-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.copy-format {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-format-code {
+  display: block;
+  background: #272822;
+  color: #f8f8f2;
+  padding: 16px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre;
+}
+
+/* Header actions */
+.poststation-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Update header styles */
+.poststation-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.postwork-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.postwork-title-wrapper .separator {
+  color: #787c82;
+}
+
+.postwork-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e1e1e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.postwork-title:hover .dashicons-edit {
+  opacity: 1;
+}
+
+.postwork-title .dashicons-edit {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  color: #787c82;
+}
+
+.postwork-title input[type="text"] {
+  font-size: 16px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #2271b1;
+  margin: -4px 0;
+  width: auto;
+  min-width: 200px;
+}
+
+/* Update post block form field styles */
+.form-field + .form-field {
+  margin-top: 16px;
 }
