@@ -5,7 +5,7 @@ namespace PostStation\Core;
 use PostStation\Admin\Menu;
 use PostStation\Admin\Settings;
 use PostStation\Admin\WebhookManager;
-use PostStation\Admin\PostWorkManager;
+use PostStation\Admin\Works\PostWorkManager;
 use PostStation\Api\RestApi;
 use PostStation\Models\Webhook;
 use PostStation\Models\PostWork;
@@ -26,6 +26,10 @@ class Bootstrap
 			new RestApi();
 		});
 
+		// Initialize Custom API
+		$api_handler = new \PostStation\Api\ApiHandler();
+		$api_handler->init();
+
 		// Initialize Admin
 		if (is_admin()) {
 			$settings = new Settings();
@@ -40,18 +44,31 @@ class Bootstrap
 
 	public function activate(): void
 	{
-		// Create or upgrade tables
-		Webhook::create_table();
-		PostWork::update_tables();
-		PostBlock::update_tables();
+		try {
+			// Create or upgrade tables with error checking
+			if (!Webhook::create_table()) {
+				throw new Exception('Failed to create Webhook table');
+			}
 
-		// Set initial version if not exists
-		if (!get_option('poststation_postblock_db_version')) {
-			update_option('poststation_postblock_db_version', '1.1');
+			if (!PostWork::update_tables()) {
+				throw new Exception('Failed to create/update PostWork tables');
+			}
+
+			if (!PostBlock::update_tables()) {
+				throw new Exception('Failed to create/update PostBlock tables');
+			}
+
+			// Set initial version if not exists
+			if (!get_option('poststation_postblock_db_version')) {
+				update_option('poststation_postblock_db_version', '1.1');
+			}
+
+			// Flush rewrite rules
+			flush_rewrite_rules();
+		} catch (Exception $e) {
+			error_log('PostStation Bootstrap Error: ' . $e->getMessage());
+			throw $e; // Re-throw to be caught by activation hook
 		}
-
-		// Flush rewrite rules
-		flush_rewrite_rules();
 	}
 
 	public function deactivate(): void

@@ -6,9 +6,9 @@ class Menu
 {
 	private Settings $settings;
 	private WebhookManager $webhook_manager;
-	private PostWorkManager $postwork_manager;
+	private Works\PostWorkManager $postwork_manager;
 
-	public function __construct(Settings $settings, WebhookManager $webhook_manager, PostWorkManager $postwork_manager)
+	public function __construct(Settings $settings, WebhookManager $webhook_manager, Works\PostWorkManager $postwork_manager)
 	{
 		$this->settings = $settings;
 		$this->webhook_manager = $webhook_manager;
@@ -22,7 +22,7 @@ class Menu
 		add_menu_page(
 			__('Post Station', 'poststation'),
 			__('Post Station', 'poststation'),
-			'manage_options',
+			'edit_posts',
 			Settings::get_menu_slug(),
 			[$this->settings, 'render_settings_page'],
 			'dashicons-rest-api',
@@ -44,7 +44,7 @@ class Menu
 			Settings::get_menu_slug(),
 			__('Post Works', 'poststation'),
 			__('Post Works', 'poststation'),
-			'manage_options',
+			'edit_posts',
 			'poststation-postworks',
 			[$this->postwork_manager, 'render_page']
 		);

@@ -4,8 +4,8 @@
   class PostWork {
     constructor() {
       this.$ = $; // Store jQuery reference
-      this.STATUS_CHECK_INTERVAL = 10000;
-      this.MAX_RETRIES = 60;
+      this.STATUS_CHECK_INTERVAL = 10000; // 10 seconds
+      this.MAX_RETRIES = 60; // 1 minute
       this.batchTimeout = null;
       this.urlUpdateTimeout = null;
       this.hasUnsavedChanges = false;
@@ -20,7 +20,11 @@
       this.$apiFormatModal = $(".api-format-modal");
       this.$apiFormatCode = $(".api-format-code");
 
+      this.isRunning = false;
+      this.shouldStop = false;
+
       this.init();
+      this.initExportImport();
     }
 
     init() {
@@ -324,6 +328,14 @@
         }
       });
       $(".copy-format").on("click", () => this.copyApiFormat());
+
+      // Add kill button handler
+      $(document).on("click", "#kill-postwork", () => {
+        if (confirm("Are you sure you want to stop the operation?")) {
+          this.shouldStop = true;
+          $("#kill-postwork").prop("disabled", true).text("Stopping...");
+        }
+      });
     }
 
     handleFieldChange() {
@@ -795,45 +807,83 @@
         return;
       }
 
+      // Update button state and add kill button
       $button.prop("disabled", true).text("Running...");
+      const $killButton = $(`
+        <button type="button" class="button button-secondary" id="kill-postwork">
+          <span class="dashicons dashicons-dismiss"></span>
+          Stop
+        </button>
+      `);
+      $button.after($killButton);
+
+      // Reset stop flag
+      this.shouldStop = false;
+      this.isRunning = true;
 
       // Switch to "all" filter to show all blocks
       $("#block-status-filter").val("all").trigger("change");
 
       try {
         for (const block of $blocks) {
+          // Check if operation should be stopped
+          if (this.shouldStop) {
+            throw new Error("Operation stopped by user");
+          }
+
           const $block = $(block);
 
           // Scroll to the block that's about to be processed
           this.scrollToBlock($block);
 
-          const success = await this.processBlock(
-            $block,
-            postworkId,
-            webhookId
-          );
+          try {
+            const success = await this.processBlock(
+              $block,
+              postworkId,
+              webhookId
+            );
+            if (!success) {
+              console.error(`Block ${$block.data("id")} failed to process`);
+              // Continue with next block instead of breaking
+              continue;
+            }
 
-          if (!success) {
-            // If a block fails, stop processing remaining blocks
-            break;
+            // Wait for block to complete or fail before moving to next block
+            await this.waitForBlockCompletion($block.data("id"));
+          } catch (blockError) {
+            console.error(
+              `Error processing block ${$block.data("id")}:`,
+              blockError
+            );
+            // Continue with next block instead of breaking
+            continue;
           }
-
-          // Wait for block to complete or fail before moving to next block
-          await this.waitForBlockCompletion($block.data("id"));
         }
       } catch (error) {
         console.error("Error processing blocks:", error);
-        alert("An error occurred while processing blocks.");
+        if (error.message !== "Operation stopped by user") {
+          alert("An error occurred while processing blocks.");
+        }
       } finally {
+        this.isRunning = false;
         $button.prop("disabled", false).text("Run");
+        $killButton.remove();
       }
     }
 
-    async waitForBlockCompletion(blockId, timeout = 300000) {
-      // 5 minutes timeout
+    async waitForBlockCompletion(blockId, timeout = 100000) {
       return new Promise((resolve, reject) => {
         const startTime = Date.now();
         const checkInterval = setInterval(async () => {
+          // Check if operation was killed
+          if (this.shouldStop) {
+            clearInterval(checkInterval);
+            const $block = $(`.postblock[data-id="${blockId}"]`);
+            this.setBlockError($block, "Operation stopped by user");
+            reject(new Error("Operation stopped by user"));
+            return;
+          }
+
           try {
             const response = await fetch(
               `${poststation.rest_url}poststation/v1/check-status?block_ids=${blockId}`,
@@ -1313,6 +1363,7 @@
         // Block has been sent for processing
         return true;
       } catch (error) {
+        // Keep the block in failed state instead of reverting to pending
         this.setBlockError($block, error.message);
         return false;
       } finally {
@@ -2085,6 +2136,88 @@
           $button.find(".button-text").text(originalText);
         }, 2000);
       });
+    }
+
+    initExportImport() {
+      // Export handler
+      $(document).on("click", ".export-postwork", (e) =>
+        this.handleExportPostWork(e)
+      );
+
+      // Import handlers
+      $("#import-postwork").on("click", () => $("#import-file").click());
+      $("#import-file").on("change", (e) => this.handleImportPostWork(e));
+    }
+
+    async handleExportPostWork(e) {
+      e.preventDefault();
+      const $button = $(e.currentTarget);
+      const postworkId = $button.data("id");
+
+      try {
+        const response = await $.post(poststation.ajax_url, {
+          action: "poststation_export_postwork",
+          nonce: poststation.nonce,
+          id: postworkId,
+          include_blocks: true,
+          exclude_statuses: ["completed", "failed"],
+        });
+
+        if (!response.success) {
+          throw new Error(response.data);
+        }
+
+        // Create and download file
+        const blob = new Blob([JSON.stringify(response.data, null, 2)], {
+          type: "application/json",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const postworkTitle = response.data.postwork.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-");
+
+        a.href = url;
+        a.download = `postwork-${postworkTitle}-${
+          new Date().toISOString().split("T")[0]
+        }.json`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } catch (error) {
+        alert(error.message || "Failed to export post work");
+      }
+    }
+
+    async handleImportPostWork(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const importData = JSON.parse(event.target.result);
+
+          const response = await $.post(poststation.ajax_url, {
+            action: "poststation_import_postwork",
+            nonce: poststation.nonce,
+            import_data: JSON.stringify(importData),
+          });
+
+          if (!response.success) {
+            throw new Error(response.data);
+          }
+
+          // Redirect to the new postwork
+          window.location.href = response.data.redirect_url;
+        } catch (error) {
+          alert(error.message || "Failed to import post work");
+        }
+      };
+
+      reader.readAsText(file);
+      e.target.value = ""; // Reset file input
     }
   }
 

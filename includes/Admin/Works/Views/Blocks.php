@@ -1,0 +1,182 @@
+<div id="postblocks">
+	<?php foreach ($blocks as $block) :
+		$taxonomies = !empty($block['taxonomies']) ? json_decode($block['taxonomies'], true) : [];
+		$block_custom_fields = !empty($block['custom_fields']) ? json_decode($block['custom_fields'], true) : [];
+		$postwork_custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
+		$postwork_prompts = !empty($postwork['prompts']) ? json_decode($postwork['prompts'], true) : [];
+		$prompts = !empty($block['prompts']) ? json_decode($block['prompts'], true) : $postwork_prompts;
+
+	?>
+		<div class="postblock" data-id="<?php echo esc_attr($block['id']); ?>"
+			data-status="<?php echo esc_attr($block['status']); ?>">
+			<div class="postblock-header">
+				<div class="postblock-header-info">
+					<span class="block-id">#<?php echo esc_html($block['id']); ?></span>
+					<span class="block-url" title="<?php echo esc_attr($block['article_url']); ?>">
+						<?php echo esc_html(wp_parse_url($block['article_url'], PHP_URL_HOST) . wp_parse_url($block['article_url'], PHP_URL_PATH)); ?>
+					</span>
+					<span class="block-error-count">
+						<span class="dashicons dashicons-warning"></span>
+						<span class="error-count-text"></span>
+					</span>
+					<?php if (!empty($block['post_id']) && get_post($block['post_id'])) : ?>
+						<a href="<?php echo esc_url(get_edit_post_link($block['post_id'])); ?>" class="block-edit-link"
+							target="_blank" title="<?php esc_attr_e('Edit Post', 'poststation'); ?>">
+							<span class="dashicons dashicons-edit"></span>
+						</a>
+					<?php endif; ?>
+				</div>
+				<div class="postblock-header-actions">
+					<span class="block-status-badge <?php echo esc_attr($block['status']); ?>"
+						title="<?php echo esc_attr($block['error_message'] ?? ''); ?>">
+						<?php echo esc_html($block['status']); ?>
+					</span>
+					<?php if ($block['status'] === 'failed') : ?>
+						<button type="button" class="button-link run-block"
+							title="<?php esc_attr_e('Run this block', 'poststation'); ?>">
+							<span class="dashicons dashicons-controls-play"></span>
+						</button>
+					<?php endif; ?>
+					<button type="button" class="button-link duplicate-postblock"
+						title="<?php esc_attr_e('Duplicate', 'poststation'); ?>">
+						<span class="dashicons dashicons-admin-page"></span>
+					</button>
+					<button type="button" class="button-link delete-postblock"
+						title="<?php esc_attr_e('Delete', 'poststation'); ?>">
+						<span class="dashicons dashicons-trash"></span>
+					</button>
+				</div>
+			</div>
+			<div class="postblock-content" style="display: none;">
+				<div class="postblock-form">
+					<!-- Left Column -->
+					<div class="postblock-column">
+						<div class="form-section">
+							<h3 class="section-title"><?php _e('Basic Information', 'poststation'); ?></h3>
+							<div class="form-field">
+								<label><?php _e('Article URL', 'poststation'); ?></label>
+								<div class="field-input">
+									<input type="url" class="regular-text article-url"
+										value="<?php echo esc_attr($block['article_url']); ?>" required>
+									<div class="error-message"></div>
+								</div>
+							</div>
+
+							<div class="form-field">
+								<label><?php _e('Post Title', 'poststation'); ?></label>
+								<div class="field-input">
+									<input type="text" class="regular-text post-title"
+										value="<?php echo esc_attr($block['post_title'] ?? ''); ?>"
+										placeholder="<?php esc_attr_e('Enter post title', 'poststation'); ?>">
+
+								</div>
+							</div>
+
+							<div class="form-field">
+								<label><?php _e('Featured Image', 'poststation'); ?></label>
+								<div class="field-input feature-image-field">
+									<div class="feature-image-preview"
+										style="display: <?php echo !empty($block['feature_image_id']) ? 'block' : 'none'; ?>">
+										<img src="<?php echo !empty($block['feature_image_id']) ?
+														wp_get_attachment_image_url($block['feature_image_id'], 'thumbnail') : ''; ?>" alt="">
+										<button type="button" class="button remove-feature-image">
+											<span class="dashicons dashicons-no"></span>
+											<?php _e('Remove Image', 'poststation'); ?>
+										</button>
+									</div>
+									<div class="feature-image-upload"
+										style="display: <?php echo empty($block['feature_image_id']) ? 'block' : 'none'; ?>">
+										<input type="hidden" class="feature-image-id" name="feature_image_id"
+											value="<?php echo esc_attr($block['feature_image_id'] ?? ''); ?>">
+										<button type="button" class="button upload-feature-image">
+											<span class="dashicons dashicons-upload"></span>
+											<?php _e('Upload Image', 'poststation'); ?>
+										</button>
+										<p class="description">
+											<?php _e('Upload or select an image to use as the featured image.', 'poststation'); ?>
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-section">
+							<h3 class="section-title"><?php _e('Taxonomies', 'poststation'); ?></h3>
+							<?php
+							foreach ($enabled_taxonomies as $tax_name => $enabled) :
+								if (!$enabled) continue;
+								$taxonomy = get_taxonomy($tax_name);
+								if (!$taxonomy) continue;
+								$tax_values = isset($taxonomies[$tax_name]) ? implode(', ', $taxonomies[$tax_name]) : '';
+							?>
+								<div class="form-field">
+									<label><?php echo esc_html($taxonomy->labels->name); ?></label>
+									<div class="field-input">
+										<input type="text" class="regular-text taxonomy-field"
+											data-taxonomy="<?php echo esc_attr($tax_name); ?>"
+											value="<?php echo esc_attr($tax_values); ?>" placeholder="<?php esc_attr_e(sprintf(
+																											'Comma-separated %s',
+																											strtolower($taxonomy->labels->name)
+																										), 'poststation'); ?>">
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					</div>
+
+					<!-- Right Column -->
+					<div class="postblock-column">
+						<div class="form-section">
+							<h3 class="section-title"><?php _e('Custom Fields', 'poststation'); ?></h3>
+							<?php
+							foreach ($postwork_custom_fields as $meta_key => $default_value) :
+								$value = isset($block_custom_fields[$meta_key]) ? $block_custom_fields[$meta_key] : $default_value;
+							?>
+								<div class="form-field">
+									<label><?php echo esc_html($meta_key); ?></label>
+									<div class="field-input">
+										<input type="text" class="regular-text custom-field-value-input"
+											data-meta-key="<?php echo esc_attr($meta_key); ?>"
+											value="<?php echo esc_attr($value); ?>"
+											placeholder="<?php esc_attr_e('Custom field value', 'poststation'); ?>">
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</div>
+
+						<div class="form-section">
+							<h3 class="section-title"><?php _e('AI Prompts', 'poststation'); ?></h3>
+							<div class="block-prompts-section collapsed">
+								<div class="block-prompts-header">
+									<div class="block-prompts-title">
+										<span class="dashicons dashicons-arrow-down block-prompts-toggle"></span>
+										<?php _e('AI Prompts', 'poststation'); ?>
+										<span class="block-prompts-count">(<?php echo count($prompts); ?>)</span>
+									</div>
+								</div>
+								<div class="block-prompts-content" style="display: none;">
+									<div class="block-prompts-container">
+										<?php foreach ($prompts as $key => $prompt) : ?>
+											<div class="block-prompt-item" data-key="<?php echo esc_attr($key); ?>">
+												<div class="prompt-header">
+													<span class="prompt-title"><?php echo esc_html($prompt['title']); ?></span>
+												</div>
+												<div class="prompt-content">
+													<textarea class="prompt-textarea"
+														placeholder="<?php esc_attr_e('Enter your prompt content here...', 'poststation'); ?>"><?php echo esc_textarea($prompt['content']); ?></textarea>
+												</div>
+											</div>
+										<?php endforeach; ?>
+									</div>
+									<p class="description">
+										<?php _e('Block-specific prompts will override global prompts.', 'poststation'); ?>
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	<?php endforeach; ?>
+</div>

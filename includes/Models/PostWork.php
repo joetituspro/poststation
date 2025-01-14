@@ -113,6 +113,16 @@ class PostWork
 			$format[] = '%s';
 		}
 
+		if (isset($data['post_status'])) {
+			$update_data['post_status'] = $data['post_status'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['default_author_id'])) {
+			$update_data['default_author_id'] = $data['default_author_id'];
+			$format[] = '%d';
+		}
+
 		if (isset($data['enabled_taxonomies'])) {
 			$update_data['enabled_taxonomies'] = $data['enabled_taxonomies'];
 			$format[] = '%s';
@@ -128,7 +138,6 @@ class PostWork
 			$format[] = '%s';
 		}
 
-		// Add custom fields handling
 		if (isset($data['custom_fields'])) {
 			$update_data['custom_fields'] = $data['custom_fields'];
 			$format[] = '%s';

@@ -26,35 +26,6 @@ class RestApi
 			'methods' => 'POST',
 			'callback' => [$this, 'handle_create_request'],
 			'permission_callback' => [$this, 'check_permission'],
-			'args' => [
-				'block_id' => [
-					'required' => true,
-					'type' => 'integer',
-				],
-				'title' => [
-					'required' => true,
-					'type' => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'content' => [
-					'required' => false,
-					'type' => 'string',
-					'sanitize_callback' => 'wp_kses_post',
-				],
-				'thumbnail_url' => [
-					'required' => false,
-					'type' => 'string',
-					'sanitize_callback' => 'esc_url_raw',
-				],
-				'taxonomies' => [
-					'required' => false,
-					'type' => 'object',
-				],
-				'custom_fields' => [
-					'required' => false,
-					'type' => 'object',
-				],
-			],
 		]);
 
 		// Add new endpoint for checking block status

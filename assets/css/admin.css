@@ -1427,6 +1427,26 @@ body.folded .postwork-actions.sticky {
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 24px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.form-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-section::-webkit-scrollbar-track {
+  background: #f0f0f1;
+  border-radius: 3px;
+}
+
+.form-section::-webkit-scrollbar-thumb {
+  background: #c3c4c7;
+  border-radius: 3px;
+}
+
+.form-section::-webkit-scrollbar-thumb:hover {
+  background: #a7aaad;
 }
 
 .form-section:last-child {
@@ -1464,7 +1484,7 @@ body.folded .postwork-actions.sticky {
 .field-input input[type="text"],
 .field-input input[type="url"] {
   width: 100%;
-  padding: 8px 12px;
+  padding: 2px 12px;
   border: 1px solid #e2e4e7;
   border-radius: 4px;
   transition: all 0.2s ease;
@@ -1677,4 +1697,45 @@ body.folded .postwork-actions.sticky {
 /* Update post block form field styles */
 .form-field + .form-field {
   margin-top: 16px;
+}
+
+/* Status count styling */
+.status-count {
+  display: inline-block;
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.status-count.pending {
+  background: #f0f6fc;
+  color: #1d2327;
+}
+
+.status-count.completed {
+  background: #edfaef;
+  color: #0a4b14;
+}
+
+.status-count.failed {
+  background: #fcf0f1;
+  color: #4b0a0a;
+}
+
+/* Blocks count styling */
+.blocks-count {
+  display: inline-block;
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-align: center;
+  background: #f0f6fc;
+  color: #1d2327;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
 }

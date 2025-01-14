@@ -31,10 +31,7 @@ class ZipCreator {
 
     this.excludePatterns = [
       // Source files that are compiled
-      ...excludeFolder("assets/backend/raw"),
-      ...excludeFolder("assets/backend/scss"),
-      ...excludeFolder("assets/frontend/raw"),
-      ...excludeFolder("includes/modules/traffic-collector/assets/raw"),
+      //   ...excludeFolder("assets/backend/raw"),
       // Add any additional default patterns
       ...excludePatterns,
     ];
