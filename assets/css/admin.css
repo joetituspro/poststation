@@ -70,6 +70,7 @@ body.folded .postwork-actions.sticky {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
   margin-bottom: 15px;
   position: relative;
+  border-radius: 5px;
 }
 
 .postblock.loading::before {
@@ -106,7 +107,7 @@ body.folded .postwork-actions.sticky {
 
 .postblock-header {
   border-bottom: 1px solid #ccd0d4;
-  padding: 8px 12px;
+  padding: 12px 12px;
   background: #f8f9f9;
   cursor: pointer;
   display: flex;
@@ -165,23 +166,6 @@ body.folded .postwork-actions.sticky {
   width: 20px;
   height: 20px;
   font-size: 20px;
-}
-
-.postblock-content {
-  padding: 12px;
-}
-
-.postblock-content .form-table {
-  margin-top: 0;
-}
-
-.postblock-content .form-table th {
-  padding: 10px 10px 10px 0;
-  width: 120px;
-}
-
-.postblock-content .form-table td {
-  padding: 10px 10px;
 }
 
 /* Buttons */
@@ -1318,20 +1302,15 @@ body.folded .postwork-actions.sticky {
 }
 
 .feature-image-preview img {
-  max-width: 200px;
+  max-width: 80px;
   height: auto;
   border-radius: 4px;
   border: 1px solid #e2e4e7;
 }
 
 .remove-feature-image {
-  margin-top: 8px !important;
+  cursor: pointer;
   color: #d63638 !important;
-}
-
-.remove-feature-image:hover {
-  color: #d63638 !important;
-  border-color: #d63638 !important;
 }
 
 .remove-feature-image .dashicons,
@@ -1523,21 +1502,6 @@ body.folded .postwork-actions.sticky {
 
 .block-prompts-content {
   margin-top: 12px;
-}
-
-/* Update feature image styles to match new design */
-.feature-image-field {
-  background: #f6f7f7;
-  border-radius: 4px;
-  padding: 16px;
-}
-
-.feature-image-preview {
-  margin: 0 0 12px;
-}
-
-.feature-image-upload .description {
-  margin: 8px 0 0;
 }
 
 /* API Format Modal */
@@ -1738,4 +1702,53 @@ body.folded .postwork-actions.sticky {
   font-size: 12px;
   line-height: 1.4;
   font-weight: 600;
+}
+
+/* Required field indicator */
+.required {
+  color: #d63638;
+  margin-left: 3px;
+}
+
+/* Form field styling */
+.form-field {
+  margin-bottom: 15px;
+}
+
+.field-input {
+  position: relative;
+}
+
+/* Error message styling */
+.error-message {
+  color: #d63638;
+  font-size: 12px;
+  margin-top: 5px;
+  display: none;
+  padding-left: 2px;
+}
+
+.error-message.active {
+  display: block;
+}
+
+/* Error state styling */
+.field-input.has-error input {
+  border-color: #d63638;
+}
+
+/* Block error count styling */
+.block-error-count {
+  display: none;
+  align-items: center;
+  color: #d63638;
+  margin-left: 10px;
+}
+
+.block-error-count.active {
+  display: inline-flex;
+}
+
+.block-error-count .dashicons {
+  margin-right: 5px;
 }

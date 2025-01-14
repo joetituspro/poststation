@@ -61,7 +61,7 @@ class Create
 
 			// Handle custom fields
 			if (!empty($data['custom_fields'])) {
-				$this->handle_custom_fields($post_id, $data['custom_fields']);
+				$this->handle_custom_fields($post_id, $data['custom_fields'], $block, $postwork);
 			}
 
 			// Update block status to completed
@@ -208,11 +208,36 @@ class Create
 	 * @param array $custom_fields Custom fields data
 	 * @return void
 	 */
-	private function handle_custom_fields(int $post_id, array $custom_fields): void
+	private function handle_custom_fields(int $post_id, array $api_custom_fields, array $block, array $postwork): void
 	{
+		// Get custom fields from API request or block
+		$api_custom_fields = $api_custom_fields ?? [];
+		$block_custom_fields = !empty($block['custom_fields']) ? json_decode($block['custom_fields'], true) : [];
+		$postwork_custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
+
+		// Merge custom fields, preferring API values over block values
+		$custom_fields = array_merge($postwork_custom_fields, $block_custom_fields, $api_custom_fields);
+
 		foreach ($custom_fields as $meta_key => $meta_value) {
-			if (!empty($meta_key) && !empty($meta_value)) {
-				update_post_meta($post_id, $meta_key, $meta_value);
+			if (!empty($meta_key)) {
+				// Allow developers to validate and prepare individual field value
+				$prepared_value = apply_filters('poststation_prepare_custom_field_value', $meta_value, $meta_key, [
+					'post_id' => $post_id,
+					'block' => $block,
+					'postwork' => $postwork
+				]);
+
+				// Skip if filter returns null (allows developers to exclude fields)
+				if ($prepared_value === null) {
+					continue;
+				}
+
+				// If filter returns WP_Error, throw exception
+				if (is_wp_error($prepared_value)) {
+					throw new Exception($prepared_value->get_error_message());
+				}
+
+				update_post_meta($post_id, $meta_key, $prepared_value);
 			}
 		}
 	}

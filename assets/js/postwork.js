@@ -31,6 +31,13 @@
       this.initEventListeners();
       this.initStickyControls();
       this.initSelect2();
+
+      // Validate blocks and update state based on validation results
+      const validationErrors = this.validateBlocks();
+      if (validationErrors.length > 0) {
+        this.hasUnsavedChanges = true;
+      }
+
       this.updatePostWorkState();
       this.updateStatusCounts();
 
@@ -485,23 +492,23 @@
 
         // Validate Article URL
         const $urlInput = $block.find(".article-url");
-        const $urlCell = $urlInput.closest("td");
-        const $urlError = $urlCell.find(".error-message");
+        const $fieldInput = $urlInput.closest(".field-input");
+        const $errorMessage = $fieldInput.find(".error-message");
 
         if (!$urlInput.val()) {
           blockErrors.push({
             field: "article_url",
             message: "Article URL is required",
           });
-          $urlCell.addClass("has-error");
-          $urlError.addClass("active").text("Article URL is required");
+          $fieldInput.addClass("has-error");
+          $errorMessage.addClass("active").text("Article URL is required");
         } else if (!this.isValidUrl($urlInput.val())) {
           blockErrors.push({
             field: "article_url",
             message: "Please enter a valid URL",
           });
-          $urlCell.addClass("has-error");
-          $urlError.addClass("active").text("Please enter a valid URL");
+          $fieldInput.addClass("has-error");
+          $errorMessage.addClass("active").text("Please enter a valid URL");
         }
 
         // If block has errors, update the error count display
@@ -1121,17 +1128,22 @@
                         <div class="form-section">
                             <h3 class="section-title">Basic Information</h3>
                             <div class="form-field">
-                                <label>Article URL</label>
+                                <label>Article URL <span class="required">*</span></label>
                                 <div class="field-input">
-                                    <input type="url" class="regular-text article-url" required>
-                                    <div class="error-message"></div>
+                                    <input type="url" 
+                                           class="regular-text article-url" 
+                                           required>
+                                    <span class="error-message"></span>
                                 </div>
                             </div>
 
                             <div class="form-field">
                                 <label>Post Title</label>
                                 <div class="field-input">
-                                    <input type="text" class="regular-text post-title" placeholder="Enter post title">
+                                    <input type="text" 
+                                           class="regular-text post-title" 
+                                           placeholder="Enter post title">
+                                    <span class="error-message"></span>
                                 </div>
                             </div>
 
@@ -1186,6 +1198,10 @@
                                     <div class="block-prompts-container">
                                         ${promptsHtml}
                                     </div>
+                                    <button type="button" class="button add-block-prompt">
+                                        <span class="dashicons dashicons-plus-alt2"></span>
+                                        Add New Prompt
+                                    </button>
                                     <p class="description">Block-specific prompts will override global prompts.</p>
                                 </div>
                             </div>
@@ -1683,11 +1699,20 @@
                   <table class="form-table">
                       <tr>
                           <th scope="row">
-                              <label>Article URL</label>
+                              <label>Article URL <span class="required">*</span></label>
                           </th>
                           <td>
                               <input type="url" class="regular-text article-url" required>
-                              <div class="error-message"></div>
+                              <span class="error-message"></span>
+                          </td>
+                      </tr>
+                      <tr>
+                          <th scope="row">
+                              <label>Post Title</label>
+                          </th>
+                          <td>
+                              <input type="text" class="regular-text post-title" placeholder="Enter post title">
+                              <span class="error-message"></span>
                           </td>
                       </tr>
                       <tr>
