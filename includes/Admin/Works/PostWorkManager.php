@@ -97,22 +97,22 @@ class PostWorkManager
 		$table->prepare_items();
 ?>
 
-<div class="wrap">
-	<h1 class="wp-heading-inline"><?php _e('Post Works', 'poststation'); ?></h1>
-	<button class="page-title-action" id="add-new-postwork">
-		<?php _e('Add New', 'poststation'); ?>
-	</button>
-	<button class="page-title-action" id="import-postwork">
-		<?php _e('Import', 'poststation'); ?>
-	</button>
-	<input type="file" id="import-file" accept=".json" style="display: none;">
+		<div class="wrap">
+			<h1 class="wp-heading-inline"><?php _e('Post Works', 'poststation'); ?></h1>
+			<button class="page-title-action" id="add-new-postwork">
+				<?php _e('Add New', 'poststation'); ?>
+			</button>
+			<button class="page-title-action" id="import-postwork">
+				<?php _e('Import', 'poststation'); ?>
+			</button>
+			<input type="file" id="import-file" accept=".json" style="display: none;">
 
-	<form method="post">
-		<?php
+			<form method="post">
+				<?php
 				$table->display();
 				?>
-	</form>
-</div>
+			</form>
+		</div>
 <?php
 	}
 

@@ -49,10 +49,10 @@
 							<span class="dashicons dashicons-arrow-down-alt2"></span>
 							<select id="post-type" style="display: none;">
 								<?php foreach ($post_types as $type) : ?>
-								<option value="<?php echo esc_attr($type->name); ?>"
-									<?php selected($type->name, $postwork['post_type']); ?>>
-									<?php echo esc_html($type->labels->singular_name); ?>
-								</option>
+									<option value="<?php echo esc_attr($type->name); ?>"
+										<?php selected($type->name, $postwork['post_type']); ?>>
+										<?php echo esc_html($type->labels->singular_name); ?>
+									</option>
 								<?php endforeach; ?>
 							</select>
 						</div>
@@ -73,10 +73,10 @@
 							<span class="dashicons dashicons-arrow-down-alt2"></span>
 							<select id="post-status" style="display: none;">
 								<?php foreach (get_post_statuses() as $status => $label) : ?>
-								<option value="<?php echo esc_attr($status); ?>"
-									<?php selected($status, $postwork['post_status'] ?? 'pending'); ?>>
-									<?php echo esc_html($label); ?>
-								</option>
+									<option value="<?php echo esc_attr($status); ?>"
+										<?php selected($status, $postwork['post_status'] ?? 'pending'); ?>>
+										<?php echo esc_html($label); ?>
+									</option>
 								<?php endforeach; ?>
 							</select>
 						</div>
@@ -101,10 +101,10 @@
 								$users = get_users(['role__in' => ['administrator', 'editor', 'author']]);
 								foreach ($users as $user) :
 								?>
-								<option value="<?php echo esc_attr($user->ID); ?>"
-									<?php selected($user->ID, $postwork['default_author_id'] ?? get_current_user_id()); ?>>
-									<?php echo esc_html($user->display_name); ?>
-								</option>
+									<option value="<?php echo esc_attr($user->ID); ?>"
+										<?php selected($user->ID, $postwork['default_author_id'] ?? get_current_user_id()); ?>>
+										<?php echo esc_html($user->display_name); ?>
+									</option>
 								<?php endforeach; ?>
 							</select>
 						</div>
@@ -133,10 +133,10 @@
 							<select id="webhook-id" style="display: none;">
 								<option value=""><?php _e('Select a webhook', 'poststation'); ?></option>
 								<?php foreach ($webhooks as $webhook) : ?>
-								<option value="<?php echo esc_attr($webhook['id']); ?>"
-									<?php selected($webhook['id'], $postwork['webhook_id']); ?>>
-									<?php echo esc_html($webhook['name']); ?>
-								</option>
+									<option value="<?php echo esc_attr($webhook['id']); ?>"
+										<?php selected($webhook['id'], $postwork['webhook_id']); ?>>
+										<?php echo esc_html($webhook['name']); ?>
+									</option>
 								<?php endforeach; ?>
 							</select>
 						</div>
@@ -196,20 +196,20 @@
 					$is_enabled = isset($enabled_taxonomies[$tax->name]) ? $enabled_taxonomies[$tax->name] : false;
 					$tax_default_terms = isset($default_terms[$tax->name]) ? $default_terms[$tax->name] : [];
 				?>
-				<div class="taxonomy-setting-row" data-taxonomy="<?php echo esc_attr($tax->name); ?>">
-					<label class="taxonomy-checkbox-wrapper">
-						<input type="checkbox" class="taxonomy-checkbox" name="enabled_taxonomies[]"
-							value="<?php echo esc_attr($tax->name); ?>" <?php checked($is_enabled); ?>
-							<?php if (in_array($tax->name, ['category', 'post_tag'])) echo 'checked disabled'; ?>>
-						<?php echo esc_html($tax->labels->name); ?>
-					</label>
-					<div class="taxonomy-defaults <?php echo $is_enabled ? 'active' : ''; ?>">
-						<div class="taxonomy-defaults-label">
-							<?php printf(__('Default %s', 'poststation'), $tax->labels->name); ?></div>
-						<select class="default-terms-select" multiple="multiple"
-							data-taxonomy="<?php echo esc_attr($tax->name); ?>"
-							data-placeholder="<?php printf(__('Select default %s', 'poststation'), strtolower($tax->labels->name)); ?>">
-							<?php
+					<div class="taxonomy-setting-row" data-taxonomy="<?php echo esc_attr($tax->name); ?>">
+						<label class="taxonomy-checkbox-wrapper">
+							<input type="checkbox" class="taxonomy-checkbox" name="enabled_taxonomies[]"
+								value="<?php echo esc_attr($tax->name); ?>" <?php checked($is_enabled); ?>
+								<?php if (in_array($tax->name, ['category', 'post_tag'])) echo 'checked disabled'; ?>>
+							<?php echo esc_html($tax->labels->name); ?>
+						</label>
+						<div class="taxonomy-defaults <?php echo $is_enabled ? 'active' : ''; ?>">
+							<div class="taxonomy-defaults-label">
+								<?php printf(__('Default %s', 'poststation'), $tax->labels->name); ?></div>
+							<select class="default-terms-select" multiple="multiple"
+								data-taxonomy="<?php echo esc_attr($tax->name); ?>"
+								data-placeholder="<?php printf(__('Select default %s', 'poststation'), strtolower($tax->labels->name)); ?>">
+								<?php
 								$terms = get_terms([
 									'taxonomy' => $tax->name,
 									'hide_empty' => false,
@@ -217,13 +217,13 @@
 								foreach ($terms as $term) :
 									$selected = in_array($term->slug, $tax_default_terms);
 								?>
-							<option value="<?php echo esc_attr($term->slug); ?>" <?php selected($selected); ?>>
-								<?php echo esc_html($term->name); ?>
-							</option>
-							<?php endforeach; ?>
-						</select>
+									<option value="<?php echo esc_attr($term->slug); ?>" <?php selected($selected); ?>>
+										<?php echo esc_html($term->name); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</div>
 					</div>
-				</div>
 				<?php endforeach; ?>
 			</div>
 		</div>
@@ -258,24 +258,24 @@
 				$prompts = !empty($postwork['prompts']) ? json_decode($postwork['prompts'], true) : $default_prompts;
 				foreach ($prompts as $key => $prompt) :
 				?>
-				<div class="prompt-item" data-key="<?php echo esc_attr($key); ?>">
-					<div class="prompt-header">
-						<input type="text" class="regular-text prompt-title-input"
-							value="<?php echo esc_attr($prompt['title']); ?>"
-							placeholder="<?php esc_attr_e('Prompt Title', 'poststation'); ?>"
-							<?php echo in_array($key, ['post_title', 'post_content', 'thumbnail']) ? 'readonly' : ''; ?>>
-						<div class="prompt-actions">
-							<?php if (!in_array($key, ['post_title', 'post_content', 'thumbnail'])) : ?>
-							<span class="prompt-delete dashicons dashicons-trash"
-								title="<?php esc_attr_e('Delete Prompt', 'poststation'); ?>"></span>
-							<?php endif; ?>
+					<div class="prompt-item" data-key="<?php echo esc_attr($key); ?>">
+						<div class="prompt-header">
+							<input type="text" class="regular-text prompt-title-input"
+								value="<?php echo esc_attr($prompt['title']); ?>"
+								placeholder="<?php esc_attr_e('Prompt Title', 'poststation'); ?>"
+								<?php echo in_array($key, ['post_title', 'post_content', 'thumbnail']) ? 'readonly' : ''; ?>>
+							<div class="prompt-actions">
+								<?php if (!in_array($key, ['post_title', 'post_content', 'thumbnail'])) : ?>
+									<span class="prompt-delete dashicons dashicons-trash"
+										title="<?php esc_attr_e('Delete Prompt', 'poststation'); ?>"></span>
+								<?php endif; ?>
+							</div>
+						</div>
+						<div class="prompt-content">
+							<textarea class="prompt-textarea"
+								placeholder="<?php esc_attr_e('Enter your prompt content here...', 'poststation'); ?>"><?php echo esc_textarea($prompt['content']); ?></textarea>
 						</div>
 					</div>
-					<div class="prompt-content">
-						<textarea class="prompt-textarea"
-							placeholder="<?php esc_attr_e('Enter your prompt content here...', 'poststation'); ?>"><?php echo esc_textarea($prompt['content']); ?></textarea>
-					</div>
-				</div>
 				<?php endforeach; ?>
 			</div>
 		</div>
@@ -300,24 +300,24 @@
 					$custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
 					foreach ($custom_fields as $key => $value) :
 					?>
-					<div class="custom-field-item" data-key="<?php echo esc_attr($key); ?>">
-						<div class="custom-field-header">
-							<div class="custom-field-key">
-								<input type="text" class="regular-text custom-field-key-input"
-									value="<?php echo esc_attr($key); ?>"
-									placeholder="<?php esc_attr_e('Meta Key', 'poststation'); ?>">
-								<div class="error-message"></div>
+						<div class="custom-field-item" data-key="<?php echo esc_attr($key); ?>">
+							<div class="custom-field-header">
+								<div class="custom-field-key">
+									<input type="text" class="regular-text custom-field-key-input"
+										value="<?php echo esc_attr($key); ?>"
+										placeholder="<?php esc_attr_e('Meta Key', 'poststation'); ?>">
+									<div class="error-message"></div>
+								</div>
+								<div class="custom-field-actions">
+									<span class="custom-field-delete dashicons dashicons-trash"
+										title="<?php esc_attr_e('Delete Field', 'poststation'); ?>"></span>
+								</div>
 							</div>
-							<div class="custom-field-actions">
-								<span class="custom-field-delete dashicons dashicons-trash"
-									title="<?php esc_attr_e('Delete Field', 'poststation'); ?>"></span>
+							<div class="custom-field-content">
+								<textarea class="custom-field-value"
+									placeholder="<?php esc_attr_e('Default Value', 'poststation'); ?>"><?php echo esc_textarea($value); ?></textarea>
 							</div>
 						</div>
-						<div class="custom-field-content">
-							<textarea class="custom-field-value"
-								placeholder="<?php esc_attr_e('Default Value', 'poststation'); ?>"><?php echo esc_textarea($value); ?></textarea>
-						</div>
-					</div>
 					<?php endforeach; ?>
 				</div>
 			</div>
