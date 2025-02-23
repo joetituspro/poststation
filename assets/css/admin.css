@@ -1752,3 +1752,134 @@ body.folded .postwork-actions.sticky {
 .block-error-count .dashicons {
   margin-right: 5px;
 }
+
+/* Custom field styling */
+.custom-field-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.custom-field-content textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #8c8f94;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.custom-field-content textarea:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: 2px solid transparent;
+}
+
+.custom-field-content .field-label {
+  font-size: 13px;
+  color: #1d2327;
+  margin-bottom: 2px;
+}
+
+/* Block custom field styling */
+.form-field .field-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field .field-input input,
+.form-field .field-input textarea {
+  width: 100%;
+}
+
+.form-field .field-input textarea.custom-field-prompt-input {
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #8c8f94;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.form-field .field-input textarea.custom-field-prompt-input:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: 2px solid transparent;
+}
+
+.form-field .field-input .prompt-label {
+  font-size: 13px;
+  color: #646970;
+  margin-top: 4px;
+}
+
+/* Field options styling */
+.field-options {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e4e7;
+}
+
+.field-type {
+  flex: 1;
+}
+
+.field-type select {
+  width: 100%;
+  height: 30px;
+  padding: 2px 24px 2px 8px;
+  border: 1px solid #8c8f94;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.field-type select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: 2px solid transparent;
+}
+
+.field-required {
+  display: flex;
+  align-items: center;
+  padding-top: 21px;
+}
+
+.field-required label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #1d2327;
+  cursor: pointer;
+}
+
+.field-required input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Block field options styling */
+.form-field .field-options {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.form-field .field-type select {
+  max-width: 200px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+  .field-options {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .field-required {
+    padding-top: 0;
+  }
+}

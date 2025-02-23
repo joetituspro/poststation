@@ -1839,8 +1839,30 @@
                   </div>
               </div>
               <div class="custom-field-content">
+                  <div class="field-label">Default Value</div>
                   <textarea class="custom-field-value" 
-                            placeholder="Default Value"></textarea>
+                            placeholder="Enter the default value for this field"></textarea>
+                  <div class="field-label">AI Prompt</div>
+                  <textarea class="custom-field-prompt" 
+                            placeholder="Enter the AI prompt for generating this field's content"></textarea>
+                  <div class="field-options">
+                      <div class="field-type">
+                          <div class="field-label">Data Type</div>
+                          <select class="custom-field-type">
+                              <option value="string">String</option>
+                              <option value="number">Number</option>
+                              <option value="boolean">Boolean</option>
+                              <option value="array">Array</option>
+                              <option value="object">Object</option>
+                          </select>
+                      </div>
+                      <div class="field-required">
+                          <label>
+                              <input type="checkbox" class="custom-field-required">
+                              Required Field
+                          </label>
+                      </div>
+                  </div>
               </div>
           </div>
       `);
@@ -1931,13 +1953,21 @@
 
     getAllCustomFields() {
       const customFields = {};
-      $(".custom-field-item").each((_, item) => {
+      $(".custom-fields-container .custom-field-item").each((_, item) => {
         const $item = $(item);
         const key = $item.find(".custom-field-key-input").val().trim();
         const value = $item.find(".custom-field-value").val().trim();
+        const prompt = $item.find(".custom-field-prompt").val().trim();
+        const type = $item.find(".custom-field-type").val();
+        const required = $item.find(".custom-field-required").prop("checked");
 
-        if (key && !$item.find(".custom-field-key").hasClass("has-error")) {
-          customFields[key] = value;
+        if (key) {
+          customFields[key] = {
+            value: value,
+            prompt: prompt,
+            type: type,
+            required: required,
+          };
         }
       });
       return customFields;
@@ -1948,25 +1978,48 @@
 
       $(".postblock").each((_, block) => {
         const $block = $(block);
-        const $customFieldsSection = $block.find(".form-section").eq(2); // Custom Fields section
+        const $customFieldsSection = $block.find(".form-section").eq(2);
 
         // Store existing values
         const existingValues = {};
+        const existingPrompts = {};
+        const existingTypes = {};
+        const existingRequired = {};
+
         $block.find(".custom-field-value-input").each((_, input) => {
           const $input = $(input);
-          existingValues[$input.data("meta-key")] = $input.val();
+          const key = $input.data("meta-key");
+          existingValues[key] = $input.val();
+          existingPrompts[key] = $input
+            .siblings(".custom-field-prompt-input")
+            .val();
+          existingTypes[key] = $input
+            .siblings(".custom-field-type-input")
+            .val();
+          existingRequired[key] = $input
+            .siblings(".custom-field-required-input")
+            .prop("checked");
         });
 
         // Remove existing custom fields
         $customFieldsSection.find(".form-field").remove();
 
         // Add updated custom fields
-        Object.entries(customFields).forEach(([key, defaultValue]) => {
-          // Use existing value if available, otherwise use default
+        Object.entries(customFields).forEach(([key, field]) => {
           const value =
             existingValues[key] !== undefined
               ? existingValues[key]
-              : defaultValue;
+              : field.value;
+          const prompt =
+            existingPrompts[key] !== undefined
+              ? existingPrompts[key]
+              : field.prompt;
+          const type =
+            existingTypes[key] !== undefined ? existingTypes[key] : field.type;
+          const required =
+            existingRequired[key] !== undefined
+              ? existingRequired[key]
+              : field.required;
 
           const newField = `
                 <div class="form-field">
@@ -1977,6 +2030,41 @@
                                data-meta-key="${key}"
                                value="${value}"
                                placeholder="Custom field value">
+                        <div class="prompt-label">AI Prompt</div>
+                        <textarea class="custom-field-prompt-input" 
+                                data-meta-key="${key}"
+                                placeholder="Enter the AI prompt for generating this field's content">${prompt}</textarea>
+                        <div class="field-options">
+                            <div class="field-type">
+                                <div class="field-label">Data Type</div>
+                                <select class="custom-field-type-input" data-meta-key="${key}">
+                                    <option value="string" ${
+                                      type === "string" ? "selected" : ""
+                                    }>String</option>
+                                    <option value="number" ${
+                                      type === "number" ? "selected" : ""
+                                    }>Number</option>
+                                    <option value="boolean" ${
+                                      type === "boolean" ? "selected" : ""
+                                    }>Boolean</option>
+                                    <option value="array" ${
+                                      type === "array" ? "selected" : ""
+                                    }>Array</option>
+                                    <option value="object" ${
+                                      type === "object" ? "selected" : ""
+                                    }>Object</option>
+                                </select>
+                            </div>
+                            <div class="field-required">
+                                <label>
+                                    <input type="checkbox" 
+                                           class="custom-field-required-input" 
+                                           data-meta-key="${key}"
+                                           ${required ? "checked" : ""}>
+                                    Required Field
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;

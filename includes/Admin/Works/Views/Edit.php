@@ -155,16 +155,6 @@
 
 				<div class="postwork-header-section">
 					<div class="postwork-header-field">
-						<div class="postwork-header-label"><?php _e('AI Prompts', 'poststation'); ?></div>
-						<div class="postwork-header-value" id="prompts-trigger">
-							<span class="prompts-text"><?php _e('Configure', 'poststation'); ?></span>
-							<span class="dashicons dashicons-edit"></span>
-						</div>
-					</div>
-				</div>
-
-				<div class="postwork-header-section">
-					<div class="postwork-header-field">
 						<div class="postwork-header-label"><?php _e('Custom Fields', 'poststation'); ?></div>
 						<div class="postwork-header-value" id="custom-fields-trigger">
 							<span class="custom-fields-text"><?php _e('Configure', 'poststation'); ?></span>
@@ -228,58 +218,6 @@
 			</div>
 		</div>
 
-		<!-- Prompts Panel -->
-		<div class="side-panel prompts-panel">
-			<div class="side-panel-header">
-				<div class="side-panel-title"><?php _e('AI Prompts', 'poststation'); ?></div>
-				<div class="side-panel-close">
-					<span class="dashicons dashicons-no-alt"></span>
-				</div>
-			</div>
-			<div class="side-panel-actions">
-				<button type="button" class="button add-prompt-button">
-					<span class="dashicons dashicons-plus-alt2"></span>
-					<?php _e('Add New Prompt', 'poststation'); ?>
-				</button>
-			</div>
-			<div class="side-panel-content">
-				<?php
-				$default_prompts = [
-					'post_title' => [
-						'title' => 'Post Title',
-						'content' => 'Generate a clear and engaging title for this article.'
-					],
-					'post_content' => [
-						'title' => 'Post Content',
-						'content' => 'Generate comprehensive and well-structured content for this article.'
-					]
-				];
-
-				$prompts = !empty($postwork['prompts']) ? json_decode($postwork['prompts'], true) : $default_prompts;
-				foreach ($prompts as $key => $prompt) :
-				?>
-					<div class="prompt-item" data-key="<?php echo esc_attr($key); ?>">
-						<div class="prompt-header">
-							<input type="text" class="regular-text prompt-title-input"
-								value="<?php echo esc_attr($prompt['title']); ?>"
-								placeholder="<?php esc_attr_e('Prompt Title', 'poststation'); ?>"
-								<?php echo in_array($key, ['post_title', 'post_content', 'thumbnail']) ? 'readonly' : ''; ?>>
-							<div class="prompt-actions">
-								<?php if (!in_array($key, ['post_title', 'post_content', 'thumbnail'])) : ?>
-									<span class="prompt-delete dashicons dashicons-trash"
-										title="<?php esc_attr_e('Delete Prompt', 'poststation'); ?>"></span>
-								<?php endif; ?>
-							</div>
-						</div>
-						<div class="prompt-content">
-							<textarea class="prompt-textarea"
-								placeholder="<?php esc_attr_e('Enter your prompt content here...', 'poststation'); ?>"><?php echo esc_textarea($prompt['content']); ?></textarea>
-						</div>
-					</div>
-				<?php endforeach; ?>
-			</div>
-		</div>
-
 		<!-- Custom Fields Panel -->
 		<div class="side-panel custom-fields-panel">
 			<div class="side-panel-header">
@@ -298,7 +236,11 @@
 				<div class="custom-fields-container">
 					<?php
 					$custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
-					foreach ($custom_fields as $key => $value) :
+					foreach ($custom_fields as $key => $field) :
+						$value = is_array($field) ? ($field['value'] ?? '') : $field;
+						$prompt = is_array($field) ? ($field['prompt'] ?? '') : '';
+						$type = is_array($field) ? ($field['type'] ?? 'string') : 'string';
+						$required = is_array($field) ? ($field['required'] ?? false) : false;
 					?>
 						<div class="custom-field-item" data-key="<?php echo esc_attr($key); ?>">
 							<div class="custom-field-header">
@@ -314,8 +256,36 @@
 								</div>
 							</div>
 							<div class="custom-field-content">
+								<div class="field-label"><?php _e('Default Value', 'poststation'); ?></div>
 								<textarea class="custom-field-value"
-									placeholder="<?php esc_attr_e('Default Value', 'poststation'); ?>"><?php echo esc_textarea($value); ?></textarea>
+									placeholder="<?php esc_attr_e('Enter the default value for this field', 'poststation'); ?>"><?php echo esc_textarea($value); ?></textarea>
+								<div class="field-label"><?php _e('AI Prompt', 'poststation'); ?></div>
+								<textarea class="custom-field-prompt"
+									placeholder="<?php esc_attr_e('Enter the AI prompt for generating this field\'s content', 'poststation'); ?>"><?php echo esc_textarea($prompt); ?></textarea>
+								<div class="field-options">
+									<div class="field-type">
+										<div class="field-label"><?php _e('Data Type', 'poststation'); ?></div>
+										<select class="custom-field-type">
+											<option value="string" <?php selected($type, 'string'); ?>>
+												<?php _e('String', 'poststation'); ?></option>
+											<option value="number" <?php selected($type, 'number'); ?>>
+												<?php _e('Number', 'poststation'); ?></option>
+											<option value="boolean" <?php selected($type, 'boolean'); ?>>
+												<?php _e('Boolean', 'poststation'); ?></option>
+											<option value="array" <?php selected($type, 'array'); ?>>
+												<?php _e('Array', 'poststation'); ?></option>
+											<option value="object" <?php selected($type, 'object'); ?>>
+												<?php _e('Object', 'poststation'); ?></option>
+										</select>
+									</div>
+									<div class="field-required">
+										<label>
+											<input type="checkbox" class="custom-field-required"
+												<?php checked($required); ?>>
+											<?php _e('Required Field', 'poststation'); ?>
+										</label>
+									</div>
+								</div>
 							</div>
 						</div>
 					<?php endforeach; ?>

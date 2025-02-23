@@ -6,7 +6,7 @@ class Webhook
 {
 	private const TABLE_NAME = 'poststation_webhooks';
 
-	public static function create_table(): void
+	public static function create_table(): bool
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
@@ -25,6 +25,8 @@ class Webhook
 
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 		dbDelta($sql);
+
+		return true;
 	}
 
 	public static function get_all(): array

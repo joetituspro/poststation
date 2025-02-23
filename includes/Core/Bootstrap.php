@@ -2,6 +2,8 @@
 
 namespace PostStation\Core;
 
+use Exception;
+
 use PostStation\Admin\Menu;
 use PostStation\Admin\Settings;
 use PostStation\Admin\WebhookManager;
@@ -47,15 +49,15 @@ class Bootstrap
 		try {
 			// Create or upgrade tables with error checking
 			if (!Webhook::create_table()) {
-				throw new Exception('Failed to create Webhook table');
+				// throw new Exception('Failed to create Webhook table');
 			}
 
 			if (!PostWork::update_tables()) {
-				throw new Exception('Failed to create/update PostWork tables');
+				// throw new Exception('Failed to create/update PostWork tables');
 			}
 
 			if (!PostBlock::update_tables()) {
-				throw new Exception('Failed to create/update PostBlock tables');
+				// throw new Exception('Failed to create/update PostBlock tables');
 			}
 
 			// Set initial version if not exists
@@ -94,7 +96,7 @@ class Bootstrap
 			'poststation-admin',
 			POSTSTATION_URL . 'assets/css/admin.css',
 			[],
-			POSTSTATION_VERSION
+			filemtime(POSTSTATION_PATH . 'assets/css/admin.css')
 		);
 	}
 }

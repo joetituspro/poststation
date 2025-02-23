@@ -25,7 +25,6 @@ class PostWork
             enabled_taxonomies text DEFAULT NULL,
             default_terms text DEFAULT NULL,
 			custom_fields text DEFAULT NULL,
-            prompts text DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -130,11 +129,6 @@ class PostWork
 
 		if (isset($data['default_terms'])) {
 			$update_data['default_terms'] = $data['default_terms'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['prompts'])) {
-			$update_data['prompts'] = $data['prompts'];
 			$format[] = '%s';
 		}
 

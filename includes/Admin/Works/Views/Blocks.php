@@ -129,8 +129,14 @@
 						<div class="form-section">
 							<h3 class="section-title"><?php _e('Post Fields', 'poststation'); ?></h3>
 							<?php
-							foreach ($postwork_custom_fields as $meta_key => $default_value) :
-								$value = isset($block_custom_fields[$meta_key]) ? $block_custom_fields[$meta_key] : $default_value;
+							foreach ($postwork_custom_fields as $meta_key => $field) :
+								$field = is_array($field) ? $field : ['value' => $field];
+								$value = isset($block_custom_fields[$meta_key]) ?
+									(is_array($block_custom_fields[$meta_key]) ? $block_custom_fields[$meta_key]['value'] : $block_custom_fields[$meta_key])
+									: $field['value'];
+								$prompt = isset($block_custom_fields[$meta_key]['prompt']) ? $block_custom_fields[$meta_key]['prompt'] : ($field['prompt'] ?? '');
+								$type = isset($block_custom_fields[$meta_key]['type']) ? $block_custom_fields[$meta_key]['type'] : ($field['type'] ?? 'string');
+								$required = isset($block_custom_fields[$meta_key]['required']) ? $block_custom_fields[$meta_key]['required'] : ($field['required'] ?? false);
 							?>
 								<div class="form-field">
 									<label><?php echo esc_html($meta_key); ?></label>
@@ -139,41 +145,41 @@
 											data-meta-key="<?php echo esc_attr($meta_key); ?>"
 											value="<?php echo esc_attr($value); ?>"
 											placeholder="<?php esc_attr_e('Custom field value', 'poststation'); ?>">
+										<div class="prompt-label"><?php _e('AI Prompt', 'poststation'); ?></div>
+										<textarea class="custom-field-prompt-input"
+											data-meta-key="<?php echo esc_attr($meta_key); ?>"
+											placeholder="<?php esc_attr_e('Enter the AI prompt for generating this field\'s content', 'poststation'); ?>"><?php echo esc_textarea($prompt); ?></textarea>
+										<div class="field-options">
+											<div class="field-type">
+												<div class="field-label"><?php _e('Data Type', 'poststation'); ?></div>
+												<select class="custom-field-type-input"
+													data-meta-key="<?php echo esc_attr($meta_key); ?>">
+													<option value="string" <?php selected($type, 'string'); ?>>
+														<?php _e('String', 'poststation'); ?></option>
+													<option value="number" <?php selected($type, 'number'); ?>>
+														<?php _e('Number', 'poststation'); ?></option>
+													<option value="boolean" <?php selected($type, 'boolean'); ?>>
+														<?php _e('Boolean', 'poststation'); ?></option>
+													<option value="array" <?php selected($type, 'array'); ?>>
+														<?php _e('Array', 'poststation'); ?></option>
+													<option value="object" <?php selected($type, 'object'); ?>>
+														<?php _e('Object', 'poststation'); ?></option>
+												</select>
+											</div>
+											<div class="field-required">
+												<label>
+													<input type="checkbox" class="custom-field-required-input"
+														data-meta-key="<?php echo esc_attr($meta_key); ?>"
+														<?php checked($required); ?>>
+													<?php _e('Required Field', 'poststation'); ?>
+												</label>
+											</div>
+										</div>
 									</div>
 								</div>
 							<?php endforeach; ?>
 						</div>
 
-						<div class="form-section">
-							<h3 class="section-title"><?php _e('AI Prompts', 'poststation'); ?></h3>
-							<div class="block-prompts-section collapsed">
-								<div class="block-prompts-header">
-									<div class="block-prompts-title">
-										<span class="dashicons dashicons-arrow-down block-prompts-toggle"></span>
-										<?php _e('AI Prompts', 'poststation'); ?>
-										<span class="block-prompts-count">(<?php echo count($prompts); ?>)</span>
-									</div>
-								</div>
-								<div class="block-prompts-content" style="display: none;">
-									<div class="block-prompts-container">
-										<?php foreach ($prompts as $key => $prompt) : ?>
-											<div class="block-prompt-item" data-key="<?php echo esc_attr($key); ?>">
-												<div class="prompt-header">
-													<span class="prompt-title"><?php echo esc_html($prompt['title']); ?></span>
-												</div>
-												<div class="prompt-content">
-													<textarea class="prompt-textarea"
-														placeholder="<?php esc_attr_e('Enter your prompt content here...', 'poststation'); ?>"><?php echo esc_textarea($prompt['content']); ?></textarea>
-												</div>
-											</div>
-										<?php endforeach; ?>
-									</div>
-									<p class="description">
-										<?php _e('Block-specific prompts will override global prompts.', 'poststation'); ?>
-									</p>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>

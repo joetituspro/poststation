@@ -38,7 +38,7 @@ class PostWorkManager
 
 		wp_enqueue_style('poststation-admin');
 
-		wp_enqueue_script('poststation-postwork', POSTSTATION_URL . 'assets/js/postwork.js', ['jquery'], POSTSTATION_VERSION, true);
+		wp_enqueue_script('poststation-postwork', POSTSTATION_URL . 'assets/js/postwork.js', ['jquery'], filemtime(POSTSTATION_PATH . 'assets/js/postwork.js'), true);
 
 		// Add media scripts
 		wp_enqueue_media();
@@ -173,7 +173,6 @@ class PostWorkManager
 		$default_author_id = (int)$_POST['default_author_id'];
 		$enabled_taxonomies = json_decode(stripslashes($_POST['enabled_taxonomies'] ?? '{}'), true);
 		$default_terms = json_decode(stripslashes($_POST['default_terms'] ?? '{}'), true);
-		$prompts = json_decode(stripslashes($_POST['prompts'] ?? '{}'), true);
 		$custom_fields = json_decode(stripslashes($_POST['custom_fields'] ?? '{}'), true);
 
 		if (empty($title)) {
@@ -230,7 +229,6 @@ class PostWorkManager
 			'default_author_id' => $default_author_id ?: get_current_user_id(),
 			'enabled_taxonomies' => wp_json_encode($valid_taxonomies),
 			'default_terms' => wp_json_encode($valid_terms),
-			'prompts' => wp_json_encode($prompts),
 			'custom_fields' => wp_json_encode($custom_fields)
 		]);
 
@@ -309,7 +307,6 @@ class PostWorkManager
 					'post_title' => $block['post_title'],
 					'taxonomies' => json_decode($block['taxonomies'], true),
 					'custom_fields' => $custom_fields,
-					'prompts' => $prompts,
 					'callback_url' => rest_url('poststation/v1/create'),
 				]),
 				'timeout' => 30,
@@ -359,7 +356,6 @@ class PostWorkManager
 			'article_url' => '',
 			'post_title' => '',
 			'taxonomies' => '{}',
-			'prompts' => '{}',
 			'custom_fields' => '{}',
 			'feature_image_id' => null,
 			'status' => 'pending'
@@ -393,7 +389,6 @@ class PostWorkManager
 			$article_url = esc_url_raw($block['article_url'] ?? '');
 			$post_title = sanitize_text_field($block['post_title'] ?? '');
 			$taxonomies = json_decode($block['taxonomies'] ?? '{}', true);
-			$prompts = json_decode($block['prompts'] ?? '{}', true);
 			$custom_fields = json_decode($block['custom_fields'] ?? '{}', true);
 			$feature_image_id = !empty($block['feature_image_id']) ? (int)$block['feature_image_id'] : null;
 
@@ -426,7 +421,6 @@ class PostWorkManager
 				'article_url' => $article_url,
 				'post_title' => $post_title,
 				'taxonomies' => wp_json_encode($valid_taxonomies),
-				'prompts' => wp_json_encode($prompts),
 				'custom_fields' => wp_json_encode($custom_fields),
 				'feature_image_id' => $feature_image_id
 			]);
