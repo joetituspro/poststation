@@ -38,7 +38,24 @@ class PostWorkManager
 
 		wp_enqueue_style('poststation-admin');
 
-		wp_enqueue_script('poststation-postwork', POSTSTATION_URL . 'assets/js/postwork.js', ['jquery'], filemtime(POSTSTATION_PATH . 'assets/js/postwork.js'), true);
+		// Add Select2 CSS from CDN
+		wp_enqueue_style(
+			'select2',
+			'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
+			[],
+			'4.1.0-rc.0'
+		);
+
+		// Add Select2 JS from CDN
+		wp_enqueue_script(
+			'select2',
+			'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
+			['jquery'],
+			'4.1.0-rc.0',
+			true
+		);
+
+		wp_enqueue_script('poststation-postwork', POSTSTATION_URL . 'assets/js/postwork.js', ['jquery', 'select2'], filemtime(POSTSTATION_PATH . 'assets/js/postwork.js'), true);
 
 		// Add media scripts
 		wp_enqueue_media();
@@ -175,8 +192,6 @@ class PostWorkManager
 		$default_terms = json_decode(stripslashes($_POST['default_terms'] ?? '{}'), true);
 		$post_fields = json_decode(stripslashes($_POST['post_fields'] ?? '{}'), true);
 
-		error_log('Post Fields' . print_r($post_fields, true));
-
 		if (empty($title)) {
 			wp_send_json_error(__('Title is required.', 'poststation'));
 		}
@@ -291,11 +306,6 @@ class PostWorkManager
 		}
 
 		try {
-			// Get block prompts or fall back to postwork prompts
-			$block_prompts = !empty($block['prompts']) ? json_decode($block['prompts'], true) : [];
-			$postwork_prompts = !empty($postwork['prompts']) ? json_decode($postwork['prompts'], true) : [];
-			$prompts = !empty($block_prompts) ? $block_prompts : $postwork_prompts;
-
 			$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
 			$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 			$post_fields = !empty($block_post_fields) ? $block_post_fields : $postwork_post_fields;
@@ -479,6 +489,7 @@ class PostWorkManager
 		unset($postwork['author_id']);
 		unset($postwork['created_at']);
 		unset($postwork['updated_at']);
+		unset($postwork['webhook_id']);
 
 		$export_data = [
 			'postwork' => $postwork,

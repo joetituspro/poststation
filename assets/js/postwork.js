@@ -991,17 +991,16 @@
             <div class="form-field">
                 <label>${key}</label>
                 <div class="field-input">
-                    <input type="text" 
-                           class="regular-text post-field-value-input" 
-                           data-key="${key}"
-                           value="${value}"
-                           placeholder="Custom field value">
-                    <div class="prompt-label">AI Prompt</div>
+                    <div class="field-label">Default Value</div>
+                    <textarea class="post-field-value-input" 
+                        data-key="${key}"
+                        placeholder="Default value">${value}</textarea>
+                    <div class="field-label">AI Prompt</div>
                     <textarea class="post-field-prompt-input" 
-                            data-key="${key}"
-                            placeholder="Enter the AI prompt for generating this field's content">${
-                              field.prompt || ""
-                            }</textarea>
+                        data-key="${key}"
+                        placeholder="Enter the AI prompt for generating this field's content">${
+                          field.prompt || ""
+                        }</textarea>
                     <div class="field-options">
                         <div class="field-type">
                             <div class="field-label">Data Type</div>
@@ -1167,13 +1166,31 @@
         }
       });
 
-      // Collect post fields data
+      // Collect post fields data with all attributes
       const postFields = {};
-      $block.find(".post-field-value-input").each((_, field) => {
-        const $field = $(field);
-        const metaKey = $field.data("key");
-        const value = $field.val().trim();
-        postFields[metaKey] = value;
+      $block.find(".form-field").each((_, formField) => {
+        const $formField = $(formField);
+        const $valueInput = $formField.find(".post-field-value-input");
+
+        if ($valueInput.length) {
+          const metaKey = $valueInput.data("key");
+          const value = $valueInput.val().trim();
+          const prompt = $formField
+            .find(".post-field-prompt-input")
+            .val()
+            .trim();
+          const type = $formField.find(".post-field-type-input").val();
+          const required = $formField
+            .find(".post-field-required-input")
+            .prop("checked");
+
+          postFields[metaKey] = {
+            value: value,
+            prompt: prompt,
+            type: type,
+            required: required,
+          };
+        }
       });
 
       const featureImageId = $block.find(".feature-image-id").val();
@@ -1603,15 +1620,13 @@
                 <div class="form-field">
                     <label>${key}</label>
                     <div class="field-input">
-                        <input type="text" 
-                               class="regular-text post-field-value-input" 
-                               data-key="${key}"
-                               value="${value}"
-                               placeholder="Custom field value">
+                        <textarea class="regular-text post-field-value-input" 
+                            data-key="${key}"
+                            placeholder="Custom field value">${value}</textarea>
                         <div class="prompt-label">AI Prompt</div>
                         <textarea class="post-field-prompt-input" 
-                                data-key="${key}"
-                                placeholder="Enter the AI prompt for generating this field's content">${prompt}</textarea>
+                            data-key="${key}"
+                            placeholder="Enter the AI prompt for generating this field's content">${prompt}</textarea>
                         <div class="field-options">
                             <div class="field-type">
                                 <div class="field-label">Data Type</div>

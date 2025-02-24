@@ -116,7 +116,7 @@
 
 				<!-- Right Column -->
 				<div class="postblock-column">
-					<div class="form-section">
+					<div class="form-section post-fields-section">
 						<h3 class="section-title"><?php _e('Post Fields', 'poststation'); ?></h3>
 						<?php
 							foreach ($postwork_post_fields as $meta_key => $field) :
@@ -131,11 +131,10 @@
 						<div class="form-field">
 							<label><?php echo esc_html($meta_key); ?></label>
 							<div class="field-input">
-								<input type="text" class="regular-text post-field-value-input"
-									data-key="<?php echo esc_attr($meta_key); ?>"
-									value="<?php echo esc_attr($value); ?>"
-									placeholder="<?php esc_attr_e('Custom field value', 'poststation'); ?>">
-								<div class="prompt-label"><?php _e('AI Prompt', 'poststation'); ?></div>
+								<div class="field-label"><?php _e('Default Value', 'poststation'); ?></div>
+								<textarea class="post-field-value-input" data-key="<?php echo esc_attr($meta_key); ?>"
+									placeholder="<?php esc_attr_e('Default value', 'poststation'); ?>"><?php echo esc_textarea($value); ?></textarea>
+								<div class="field-label"><?php _e('AI Prompt', 'poststation'); ?></div>
 								<textarea class="post-field-prompt-input" data-key="<?php echo esc_attr($meta_key); ?>"
 									placeholder="<?php esc_attr_e('Enter the AI prompt for generating this field\'s content', 'poststation'); ?>"><?php echo esc_textarea($prompt); ?></textarea>
 								<div class="field-options">
