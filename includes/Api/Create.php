@@ -52,7 +52,7 @@ class Create
 				$this->handle_taxonomies($post_id, $data['taxonomies'], $postwork);
 			}
 
-			// Handle thumbnail - first check API request, then fall back to block's feature image
+			// Handle thumbnail
 			if (!empty($data['thumbnail_url'])) {
 				$this->handle_thumbnail($post_id, $data['thumbnail_url']);
 			} elseif (!empty($block['feature_image_id'])) {
@@ -60,8 +60,8 @@ class Create
 			}
 
 			// Handle custom fields
-			if (!empty($data['custom_fields'])) {
-				$this->handle_custom_fields($post_id, $data['custom_fields'], $block, $postwork);
+			if (!empty($data['post_fields'])) {
+				$this->handle_post_fields($post_id, $data['post_fields'], $block, $postwork);
 			}
 
 			// Update block status to completed
@@ -74,7 +74,8 @@ class Create
 			return [
 				'success' => true,
 				'post_id' => $post_id,
-				'message' => 'Post created successfully'
+				'post_url' => get_permalink($post_id),
+				'edit_url' => get_edit_post_link($post_id, 'url'),
 			];
 		} catch (Exception $e) {
 			// Update block status to failed
@@ -97,15 +98,30 @@ class Create
 	private function prepare_post_data(array $data, array $block, array $postwork): array
 	{
 		$post_data = [
-			'post_title' => $data['title'] ?? '',
 			'post_type' => $postwork['post_type'],
 			'post_status' => $postwork['post_status'] ?? 'pending',
 			'post_author' => $postwork['default_author_id'] ?? get_current_user_id(),
 		];
 
-		// Add content only if provided
-		if (!empty($data['content'])) {
-			$post_data['post_content'] = $data['content'];
+		// Get post fields
+		$api_post_fields = $data['post_fields'] ?? [];
+		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
+		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
+
+		// Merge post fields, preferring API values
+		$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
+
+		// Set title and content from post fields if available
+		if (!empty($post_fields['title'])) {
+			$post_data['post_title'] = is_array($post_fields['title'])
+				? $post_fields['title']['value']
+				: $post_fields['title'];
+		}
+
+		if (!empty($post_fields['content'])) {
+			$post_data['post_content'] = is_array($post_fields['content'])
+				? $post_fields['content']['value']
+				: $post_fields['content'];
 		}
 
 		return $post_data;
@@ -205,20 +221,25 @@ class Create
 	 * Handle custom fields for the post
 	 *
 	 * @param int $post_id Post ID
-	 * @param array $custom_fields Custom fields data
+	 * @param array $post_fields Custom fields data
 	 * @return void
 	 */
-	private function handle_custom_fields(int $post_id, array $api_custom_fields, array $block, array $postwork): void
+	private function handle_post_fields(int $post_id, array $api_post_fields, array $block, array $postwork): void
 	{
 		// Get custom fields from API request or block
-		$api_custom_fields = $api_custom_fields ?? [];
-		$block_custom_fields = !empty($block['custom_fields']) ? json_decode($block['custom_fields'], true) : [];
-		$postwork_custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
+		$api_post_fields = $api_post_fields ?? [];
+		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
+		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 
 		// Merge custom fields, preferring API values over block values
-		$custom_fields = array_merge($postwork_custom_fields, $block_custom_fields, $api_custom_fields);
+		$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
 
-		foreach ($custom_fields as $meta_key => $meta_value) {
+		foreach ($post_fields as $meta_key => $meta_value) {
+			// Skip title and content as they're handled in prepare_post_data
+			if (in_array($meta_key, ['post_title', 'post_content'])) {
+				continue;
+			}
+
 			if (!empty($meta_key)) {
 				// Allow developers to validate and prepare individual field value
 				$prepared_value = apply_filters('poststation_prepare_custom_field_value', $meta_value, $meta_key, [

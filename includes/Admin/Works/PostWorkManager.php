@@ -97,22 +97,22 @@ class PostWorkManager
 		$table->prepare_items();
 ?>
 
-		<div class="wrap">
-			<h1 class="wp-heading-inline"><?php _e('Post Works', 'poststation'); ?></h1>
-			<button class="page-title-action" id="add-new-postwork">
-				<?php _e('Add New', 'poststation'); ?>
-			</button>
-			<button class="page-title-action" id="import-postwork">
-				<?php _e('Import', 'poststation'); ?>
-			</button>
-			<input type="file" id="import-file" accept=".json" style="display: none;">
+<div class="wrap">
+	<h1 class="wp-heading-inline"><?php _e('Post Works', 'poststation'); ?></h1>
+	<button class="page-title-action" id="add-new-postwork">
+		<?php _e('Add New', 'poststation'); ?>
+	</button>
+	<button class="page-title-action" id="import-postwork">
+		<?php _e('Import', 'poststation'); ?>
+	</button>
+	<input type="file" id="import-file" accept=".json" style="display: none;">
 
-			<form method="post">
-				<?php
+	<form method="post">
+		<?php
 				$table->display();
 				?>
-			</form>
-		</div>
+	</form>
+</div>
 <?php
 	}
 
@@ -173,7 +173,7 @@ class PostWorkManager
 		$default_author_id = (int)$_POST['default_author_id'];
 		$enabled_taxonomies = json_decode(stripslashes($_POST['enabled_taxonomies'] ?? '{}'), true);
 		$default_terms = json_decode(stripslashes($_POST['default_terms'] ?? '{}'), true);
-		$custom_fields = json_decode(stripslashes($_POST['custom_fields'] ?? '{}'), true);
+		$post_fields = json_decode(stripslashes($_POST['post_fields'] ?? '{}'), true);
 
 		if (empty($title)) {
 			wp_send_json_error(__('Title is required.', 'poststation'));
@@ -229,7 +229,7 @@ class PostWorkManager
 			'default_author_id' => $default_author_id ?: get_current_user_id(),
 			'enabled_taxonomies' => wp_json_encode($valid_taxonomies),
 			'default_terms' => wp_json_encode($valid_terms),
-			'custom_fields' => wp_json_encode($custom_fields)
+			'post_fields' => wp_json_encode($post_fields)
 		]);
 
 		if (!$success) {
@@ -294,9 +294,9 @@ class PostWorkManager
 			$postwork_prompts = !empty($postwork['prompts']) ? json_decode($postwork['prompts'], true) : [];
 			$prompts = !empty($block_prompts) ? $block_prompts : $postwork_prompts;
 
-			$block_custom_fields = !empty($block['custom_fields']) ? json_decode($block['custom_fields'], true) : [];
-			$postwork_custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
-			$custom_fields = !empty($block_custom_fields) ? $block_custom_fields : $postwork_custom_fields;
+			$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
+			$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
+			$post_fields = !empty($block_post_fields) ? $block_post_fields : $postwork_post_fields;
 
 			// Send data to webhook
 			$response = wp_remote_post($webhook['url'], [
@@ -304,9 +304,8 @@ class PostWorkManager
 				'body' => wp_json_encode([
 					'block_id' => $block['id'],
 					'article_url' => $block['article_url'],
-					'post_title' => $block['post_title'],
 					'taxonomies' => json_decode($block['taxonomies'], true),
-					'custom_fields' => $custom_fields,
+					'post_fields' => $post_fields,
 					'callback_url' => rest_url('poststation/v1/create'),
 				]),
 				'timeout' => 30,
@@ -354,9 +353,8 @@ class PostWorkManager
 		$block_id = PostBlock::create([
 			'postwork_id' => $postwork_id,
 			'article_url' => '',
-			'post_title' => '',
 			'taxonomies' => '{}',
-			'custom_fields' => '{}',
+			'post_fields' => '{}',
 			'feature_image_id' => null,
 			'status' => 'pending'
 		]);
@@ -387,9 +385,8 @@ class PostWorkManager
 		foreach ($blocks as $block) {
 			$block_id = (int)$block['id'];
 			$article_url = esc_url_raw($block['article_url'] ?? '');
-			$post_title = sanitize_text_field($block['post_title'] ?? '');
 			$taxonomies = json_decode($block['taxonomies'] ?? '{}', true);
-			$custom_fields = json_decode($block['custom_fields'] ?? '{}', true);
+			$post_fields = json_decode($block['post_fields'] ?? '{}', true);
 			$feature_image_id = !empty($block['feature_image_id']) ? (int)$block['feature_image_id'] : null;
 
 			if (empty($article_url)) {
@@ -419,9 +416,8 @@ class PostWorkManager
 
 			$result = PostBlock::update($block_id, [
 				'article_url' => $article_url,
-				'post_title' => $post_title,
+				'post_fields' => wp_json_encode($post_fields),
 				'taxonomies' => wp_json_encode($valid_taxonomies),
-				'custom_fields' => wp_json_encode($custom_fields),
 				'feature_image_id' => $feature_image_id
 			]);
 

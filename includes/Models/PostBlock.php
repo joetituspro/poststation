@@ -23,9 +23,8 @@ class PostBlock
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			postwork_id bigint(20) unsigned NOT NULL,
 			article_url text NOT NULL,
-			post_title text DEFAULT NULL,
 			taxonomies text DEFAULT NULL,
-			custom_fields text DEFAULT NULL,
+			post_fields text DEFAULT NULL,
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
 			status varchar(50) NOT NULL DEFAULT 'pending',
 			post_id bigint(20) unsigned DEFAULT NULL,
@@ -97,9 +96,8 @@ class PostBlock
 		$data = wp_parse_args($data, [
 			'postwork_id' => 0,
 			'article_url' => '',
-			'post_title' => '',
 			'taxonomies' => '{}',
-			'custom_fields' => '{}',
+			'post_fields' => '{}',
 			'feature_image_id' => null,
 			'status' => 'pending'
 		]);

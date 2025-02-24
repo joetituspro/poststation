@@ -166,88 +166,8 @@
       $("#taxonomy-trigger").on("click", () =>
         this.openSidePanel("taxonomy-panel")
       );
-      $("#prompts-trigger").on("click", () =>
-        this.openSidePanel("prompts-panel")
-      );
-      $(".add-prompt-button").on("click", () => this.addNewPrompt());
 
-      // Prompt actions
-      const self = this;
-      $(".prompts-panel .side-panel-content").on(
-        "click",
-        ".prompt-delete",
-        function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          self.deletePrompt(e);
-        }
-      );
-
-      $(document).on("input", ".prompt-title-input, .prompt-textarea", () =>
-        this.handleFieldChange()
-      );
-      $(document).on("input", ".prompt-title-input:not([readonly])", (e) =>
-        this.handlePromptTitleChange(e)
-      );
-
-      // Initialize click handlers for existing prompt delete buttons
-      $(".prompt-delete").each(function () {
-        $(this).on("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          self.deletePrompt(e);
-        });
-      });
-
-      // Block prompts
-      $(document).on("click", ".add-block-prompt", (e) =>
-        this.addBlockPrompt(e)
-      );
-
-      $(document).on("click", ".block-prompt-item .prompt-delete", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.deleteBlockPrompt(e);
-      });
-
-      $(document).on(
-        "input",
-        ".block-prompt-item .prompt-title-input, .block-prompt-item .prompt-textarea",
-        () => {
-          this.handleFieldChange();
-        }
-      );
-
-      // Block prompts accordion
-      $(document).on("click", ".block-prompts-header", (e) => {
-        const $section = $(e.currentTarget).closest(".block-prompts-section");
-        const $content = $section.find(".block-prompts-content");
-
-        $section.toggleClass("collapsed");
-
-        if ($section.hasClass("collapsed")) {
-          $content.slideUp(300);
-        } else {
-          $content.slideDown(300);
-        }
-
-        // Update prompt count
-        const promptCount = $section.find(".block-prompt-item").length;
-        $section.find(".block-prompts-count").text(`(${promptCount})`);
-      });
-
-      // Update prompt count when adding/removing prompts
-      $(document).on(
-        "prompt:added prompt:removed",
-        ".block-prompts-section",
-        (e) => {
-          const $section = $(e.currentTarget);
-          const promptCount = $section.find(".block-prompt-item").length;
-          $section.find(".block-prompts-count").text(`(${promptCount})`);
-        }
-      );
-
-      // Custom Fields Panel
+      // Post Fields Panel
       $("#custom-fields-trigger").on("click", () =>
         this.openSidePanel("custom-fields-panel")
       );
@@ -433,7 +353,6 @@
         const postType = $("#post-type").val();
         const enabledTaxonomies = this.getEnabledTaxonomies();
         const defaultTerms = this.getAllDefaultTerms();
-        const prompts = this.getAllPrompts();
         const customFields = this.getAllCustomFields();
         const postStatus = $("#post-status").val();
         const defaultAuthorId = $("#default-author-id").val();
@@ -449,8 +368,7 @@
           default_author_id: defaultAuthorId,
           enabled_taxonomies: JSON.stringify(enabledTaxonomies),
           default_terms: JSON.stringify(defaultTerms),
-          prompts: JSON.stringify(prompts),
-          custom_fields: JSON.stringify(customFields),
+          post_fields: JSON.stringify(customFields),
         });
 
         if (!response.success) {
@@ -465,8 +383,7 @@
           post_type: postType,
           enabled_taxonomies: enabledTaxonomies,
           default_terms: defaultTerms,
-          prompts: prompts,
-          custom_fields: customFields,
+          post_fields: customFields,
         };
       } catch (error) {
         console.error("Error saving post work:", error);
@@ -1065,27 +982,11 @@
         `;
       });
 
-      // Get global prompts for the new block
-      const prompts = this.getAllPrompts();
-      let promptsHtml = "";
-      Object.entries(prompts).forEach(([key, prompt]) => {
-        promptsHtml += `
-            <div class="block-prompt-item" data-key="${key}">
-                <div class="prompt-header">
-                    <span class="prompt-title">${prompt.title}</span>
-                </div>
-                <div class="prompt-content">
-                    <textarea class="prompt-textarea" 
-                        placeholder="Enter your prompt content here...">${prompt.content}</textarea>
-                </div>
-            </div>
-        `;
-      });
-
       // Get custom fields
       const customFields = this.getAllCustomFields();
       let customFieldsHtml = "";
-      Object.entries(customFields).forEach(([key, value]) => {
+      Object.entries(customFields).forEach(([key, field]) => {
+        const value = typeof field === "object" ? field.value : field;
         customFieldsHtml += `
             <div class="form-field">
                 <label>${key}</label>
@@ -1095,6 +996,43 @@
                            data-meta-key="${key}"
                            value="${value}"
                            placeholder="Custom field value">
+                    <div class="prompt-label">AI Prompt</div>
+                    <textarea class="custom-field-prompt-input" 
+                            data-meta-key="${key}"
+                            placeholder="Enter the AI prompt for generating this field's content">${
+                              field.prompt || ""
+                            }</textarea>
+                    <div class="field-options">
+                        <div class="field-type">
+                            <div class="field-label">Data Type</div>
+                            <select class="custom-field-type-input" data-meta-key="${key}">
+                                <option value="string" ${
+                                  field.type === "string" ? "selected" : ""
+                                }>String</option>
+                                <option value="number" ${
+                                  field.type === "number" ? "selected" : ""
+                                }>Number</option>
+                                <option value="boolean" ${
+                                  field.type === "boolean" ? "selected" : ""
+                                }>Boolean</option>
+                                <option value="array" ${
+                                  field.type === "array" ? "selected" : ""
+                                }>Array</option>
+                                <option value="object" ${
+                                  field.type === "object" ? "selected" : ""
+                                }>Object</option>
+                            </select>
+                        </div>
+                        <div class="field-required">
+                            <label>
+                                <input type="checkbox" 
+                                       class="custom-field-required-input" 
+                                       data-meta-key="${key}"
+                                       ${field.required ? "checked" : ""}>
+                                Required Field
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -1136,17 +1074,6 @@
                                     <span class="error-message"></span>
                                 </div>
                             </div>
-
-                            <div class="form-field">
-                                <label>Post Title</label>
-                                <div class="field-input">
-                                    <input type="text" 
-                                           class="regular-text post-title" 
-                                           placeholder="Enter post title">
-                                    <span class="error-message"></span>
-                                </div>
-                            </div>
-
                             <div class="form-field">
                                 <label>Featured Image</label>
                                 <div class="field-input feature-image-field">
@@ -1178,33 +1105,8 @@
                     <!-- Right Column -->
                     <div class="postblock-column">
                         <div class="form-section">
-                            <h3 class="section-title">Custom Fields</h3>
+                            <h3 class="section-title">Post Fields</h3>
                             ${customFieldsHtml}
-                        </div>
-
-                        <div class="form-section">
-                            <h3 class="section-title">AI Prompts</h3>
-                            <div class="block-prompts-section collapsed">
-                                <div class="block-prompts-header">
-                                    <div class="block-prompts-title">
-                                        <span class="dashicons dashicons-arrow-down block-prompts-toggle"></span>
-                                        AI Prompts
-                                        <span class="block-prompts-count">(${
-                                          Object.keys(prompts).length
-                                        })</span>
-                                    </div>
-                                </div>
-                                <div class="block-prompts-content" style="display: none;">
-                                    <div class="block-prompts-container">
-                                        ${promptsHtml}
-                                    </div>
-                                    <button type="button" class="button add-block-prompt">
-                                        <span class="dashicons dashicons-plus-alt2"></span>
-                                        Add New Prompt
-                                    </button>
-                                    <p class="description">Block-specific prompts will override global prompts.</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1250,35 +1152,19 @@
         return null;
       }
 
-      const postTitle = $block.find(".post-title").val();
-
       // Collect taxonomy data
       const taxonomies = {};
       $block.find(".taxonomy-field").each((_, field) => {
         const $field = $(field);
-        const taxName = $field.data("taxonomy");
-        const values = $field
+        const taxonomy = $field.data("taxonomy");
+        const terms = $field
           .val()
           .split(",")
-          .map((v) => v.trim())
+          .map((term) => term.trim())
           .filter(Boolean);
-        if (values.length > 0) {
-          taxonomies[taxName] = values;
+        if (terms.length > 0) {
+          taxonomies[taxonomy] = terms;
         }
-      });
-
-      // Collect prompts data
-      const prompts = {};
-      $block.find(".block-prompt-item").each((_, item) => {
-        const $item = $(item);
-        const key = $item.data("key");
-        const title = $item.find(".prompt-title").text().trim();
-        const content = $item.find(".prompt-textarea").val().trim();
-
-        prompts[key] = {
-          title: title,
-          content: content,
-        };
       });
 
       // Collect custom fields data
@@ -1294,10 +1180,8 @@
 
       return {
         article_url: articleUrl,
-        post_title: postTitle,
         taxonomies: JSON.stringify(taxonomies),
-        prompts: JSON.stringify(prompts),
-        custom_fields: JSON.stringify(customFields),
+        post_fields: JSON.stringify(customFields),
         feature_image_id: featureImageId,
       };
     }
@@ -1517,307 +1401,6 @@
     closeSidePanel(panelClass) {
       $(`.side-panel.${panelClass}, .side-panel-overlay`).removeClass("active");
       $("body").css("overflow", "");
-    }
-
-    addNewPrompt() {
-      const $promptsContent = $(".prompts-panel .side-panel-content");
-      const $lastPrompt = $promptsContent.find(".prompt-item").last();
-
-      // Generate a unique key based on the title
-      const timestamp = new Date().getTime();
-      const defaultKey = `custom_prompt_${timestamp}`;
-
-      const $newPrompt = $(`
-          <div class="prompt-item" data-key="${defaultKey}">
-              <div class="prompt-header">
-                  <input type="text" class="regular-text prompt-title-input" 
-                         placeholder="${wp.i18n.__(
-                           "Prompt Title",
-                           "poststation"
-                         )}">
-                  <div class="prompt-actions">
-                      <span class="prompt-delete dashicons dashicons-trash" 
-                            title="${wp.i18n.__(
-                              "Delete Prompt",
-                              "poststation"
-                            )}"></span>
-                  </div>
-              </div>
-              <div class="prompt-content">
-                  <textarea class="prompt-textarea" 
-                            placeholder="${wp.i18n.__(
-                              "Enter your prompt content here...",
-                              "poststation"
-                            )}"></textarea>
-              </div>
-          </div>
-      `);
-
-      // Add after the last prompt
-      if ($lastPrompt.length) {
-        $lastPrompt.after($newPrompt);
-      } else {
-        $promptsContent.append($newPrompt);
-      }
-
-      // Add click handler directly to the new delete button
-      $newPrompt.find(".prompt-delete").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.deletePrompt(e);
-      });
-
-      $newPrompt.find(".prompt-title-input").focus();
-      this.handleFieldChange();
-    }
-
-    deletePrompt(e) {
-      const $prompt = $(e.currentTarget).closest(".prompt-item");
-      const key = $prompt.data("key");
-
-      // Don't allow deletion of default prompts
-      if (["post_title", "post_content", "thumbnail"].includes(key)) {
-        return;
-      }
-
-      // Add confirmation
-      if (!confirm("Are you sure you want to delete this prompt?")) {
-        return;
-      }
-
-      $prompt.fadeOut(300, () => {
-        $prompt.remove();
-        this.handleFieldChange();
-      });
-    }
-
-    getAllPrompts() {
-      const prompts = {};
-      $(".prompts-panel .prompt-item").each((_, item) => {
-        const $item = $(item);
-        const key = $item.data("key");
-        const title = $item.find(".prompt-title-input").val().trim();
-        const content = $item.find(".prompt-textarea").val().trim();
-
-        if (title && content) {
-          prompts[key] = {
-            title: title,
-            content: content,
-          };
-        }
-      });
-
-      // Update all blocks with the new prompts
-      this.updateBlocksPrompts(prompts);
-
-      return prompts;
-    }
-
-    // Add this method to handle title input changes
-    handlePromptTitleChange(e) {
-      const $input = $(e.currentTarget);
-      const $prompt = $input.closest(".prompt-item");
-      const oldKey = $prompt.data("key");
-
-      // Don't allow changing default prompt titles
-      if (["post_title", "post_content", "thumbnail"].includes(oldKey)) {
-        return;
-      }
-
-      const newKey = $input
-        .val()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_");
-      if (newKey) {
-        $prompt.attr("data-key", newKey);
-      }
-      this.handleFieldChange();
-    }
-
-    createBlockPrompts() {
-      // Get global prompts as default
-      const globalPrompts = this.getAllPrompts();
-      const promptCount = Object.keys(globalPrompts).length;
-
-      return `
-          <tr>
-              <th scope="row">
-                  <label>Prompts</label>
-              </th>
-              <td>
-                  <div class="block-prompts-section">
-                      <div class="block-prompts-header">
-                          <div class="block-prompts-title">
-                              <span class="dashicons dashicons-arrow-down block-prompts-toggle"></span>
-                              AI Prompts
-                              <span class="block-prompts-count">(${promptCount})</span>
-                          </div>
-                      </div>
-                      <div class="block-prompts-content">
-                          <div class="block-prompts-container">
-                              ${this.renderBlockPrompts(globalPrompts)}
-                          </div>
-                          <button type="button" class="button add-block-prompt">
-                              <span class="dashicons dashicons-plus-alt2"></span>
-                              Add New Prompt
-                          </button>
-                          <p class="description">Block-specific prompts will override global prompts.</p>
-                      </div>
-                  </div>
-              </td>
-          </tr>
-      `;
-    }
-
-    renderBlockPrompts(prompts) {
-      return Object.entries(prompts)
-        .map(
-          ([key, prompt]) => `
-          <div class="block-prompt-item" data-key="${key}">
-              <div class="prompt-header">
-                  <span class="prompt-title">${prompt.title}</span>
-              </div>
-              <div class="prompt-content">
-                  <textarea class="prompt-textarea" 
-                            placeholder="Enter your prompt content here...">${prompt.content}</textarea>
-              </div>
-          </div>
-      `
-        )
-        .join("");
-    }
-
-    // Update the createNewBlock method
-    createNewBlock() {
-      const taxonomyFields = this.getTaxonomyFields();
-      const promptFields = this.createBlockPrompts();
-
-      return $(`
-          <div class="postblock" data-status="pending">
-              <!-- ... existing header code ... -->
-              <div class="postblock-content" style="display: none;">
-                  <table class="form-table">
-                      <tr>
-                          <th scope="row">
-                              <label>Article URL <span class="required">*</span></label>
-                          </th>
-                          <td>
-                              <input type="url" class="regular-text article-url" required>
-                              <span class="error-message"></span>
-                          </td>
-                      </tr>
-                      <tr>
-                          <th scope="row">
-                              <label>Post Title</label>
-                          </th>
-                          <td>
-                              <input type="text" class="regular-text post-title" placeholder="Enter post title">
-                              <span class="error-message"></span>
-                          </td>
-                      </tr>
-                      <tr>
-                          <th scope="row">
-                              <label>Featured Image</label>
-                          </th>
-                          <td class="feature-image-field">
-                              <div class="feature-image-preview" style="display: none;">
-                                  <img src="" alt="">
-                                  <button type="button" class="button remove-feature-image">
-                                      <span class="dashicons dashicons-no"></span>
-                                      Remove Image
-                                  </button>
-                              </div>
-                              <div class="feature-image-upload">
-                                  <input type="hidden" class="feature-image-id" name="feature_image_id" value="">
-                                  <button type="button" class="button upload-feature-image">
-                                      <span class="dashicons dashicons-upload"></span>
-                                      Upload Image
-                                  </button>
-                                  <p class="description">Upload or select an image to use as the featured image.</p>
-                              </div>
-                          </td>
-                      </tr>
-                      ${taxonomyFields}
-                      ${promptFields}
-                  </table>
-              </div>
-          </div>
-      `);
-    }
-
-    addBlockPrompt(e) {
-      const $button = $(e.currentTarget);
-      const $container = $button.siblings(".block-prompts-container");
-      const key = "custom_" + Date.now();
-
-      const $newPrompt = $(`
-          <div class="block-prompt-item" data-key="${key}">
-              <div class="prompt-header">
-                  <input type="text" class="regular-text prompt-title-input" 
-                         placeholder="Prompt Title">
-                  <div class="prompt-actions">
-                      <span class="prompt-delete dashicons dashicons-trash" 
-                            title="Delete Prompt"></span>
-                  </div>
-              </div>
-              <div class="prompt-content">
-                  <textarea class="prompt-textarea" 
-                            placeholder="Enter your prompt content here..."></textarea>
-              </div>
-          </div>
-      `);
-
-      $container.append($newPrompt);
-
-      // Scroll to the new prompt
-      $container.animate(
-        {
-          scrollTop: $container[0].scrollHeight,
-        },
-        300
-      );
-
-      // Focus on the title input
-      $newPrompt.find(".prompt-title-input").focus();
-
-      this.handleFieldChange();
-
-      // Trigger prompt added event for counter update
-      $newPrompt.closest(".block-prompts-section").trigger("prompt:added");
-    }
-
-    deleteBlockPrompt(e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const $prompt = $(e.currentTarget).closest(".block-prompt-item");
-      const $section = $prompt.closest(".block-prompts-section");
-      const key = $prompt.data("key");
-
-      // Don't allow deletion of core prompts
-      if (["post_title", "post_content"].includes(key)) {
-        return;
-      }
-
-      if (!confirm("Are you sure you want to delete this prompt?")) {
-        return;
-      }
-
-      // Use fadeOut with a callback to ensure the element is properly removed
-      $prompt.fadeOut(
-        300,
-        function () {
-          $(this).remove();
-
-          // Update the prompt count
-          const promptCount = $section.find(".block-prompt-item").length;
-          $section.find(".block-prompts-count").text(`(${promptCount})`);
-
-          // Trigger state changes
-          $section.trigger("prompt:removed");
-          this.handleFieldChange();
-        }.bind(this)
-      ); // Bind 'this' to access the class methods
     }
 
     addNewCustomField() {
@@ -2165,36 +1748,6 @@
       });
     }
 
-    updateBlocksPrompts(prompts) {
-      $(".postblock").each((_, block) => {
-        const $block = $(block);
-        const $promptsContainer = $block.find(".block-prompts-container");
-
-        // Clear existing prompts
-        $promptsContainer.empty();
-
-        // Add updated prompts
-        Object.entries(prompts).forEach(([key, prompt]) => {
-          const promptHtml = `
-                <div class="block-prompt-item" data-key="${key}">
-                    <div class="prompt-header">
-                        <span class="prompt-title">${prompt.title}</span>
-                    </div>
-                    <div class="prompt-content">
-                        <textarea class="prompt-textarea" 
-                            placeholder="Enter your prompt content here...">${prompt.content}</textarea>
-                    </div>
-                </div>
-            `;
-          $promptsContainer.append(promptHtml);
-        });
-
-        // Update prompt count
-        const promptCount = Object.keys(prompts).length;
-        $block.find(".block-prompts-count").text(`(${promptCount})`);
-      });
-    }
-
     showApiFormat() {
       // Generate the format based on current configuration
       const format = this.generateApiFormat();
@@ -2220,7 +1773,8 @@
         content: "<p>Optional post content goes here...</p>", // Optional
         thumbnail_url: "https://example.com/image.jpg", // Optional
         taxonomies: {}, // Optional
-        custom_fields: {}, // Optional
+        post_fields: {}, // Optional
+        thumbnail_url: "https://example.com/image.jpg", // Optional
       };
 
       // Add example taxonomy terms for enabled taxonomies
@@ -2230,9 +1784,11 @@
         }
       });
 
-      // Add example custom fields
+      // Add example custom fields excluding title and content
       Object.keys(customFields).forEach((key) => {
-        format.custom_fields[key] = "Example value for " + key;
+        if (key !== "title" && key !== "content") {
+          format.post_fields[key] = "Example value for " + key;
+        }
       });
 
       return format;

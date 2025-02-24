@@ -24,7 +24,7 @@ class PostWork
             default_author_id bigint(20) unsigned DEFAULT NULL,
             enabled_taxonomies text DEFAULT NULL,
             default_terms text DEFAULT NULL,
-			custom_fields text DEFAULT NULL,
+			post_fields text DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -74,6 +74,21 @@ class PostWork
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
 
+		$default_post_fields = [
+			'title' => [
+				'value' => '',
+				'prompt' => 'Generate a clear and engaging title for this article',
+				'type' => 'string',
+				'required' => true
+			],
+			'content' => [
+				'value' => '',
+				'prompt' => 'Generate comprehensive content for this article',
+				'type' => 'string',
+				'required' => true
+			]
+		];
+
 		$data = wp_parse_args($data, [
 			'title' => '',
 			'author_id' => get_current_user_id(),
@@ -83,7 +98,7 @@ class PostWork
 			'default_author_id' => get_current_user_id(),
 			'enabled_taxonomies' => json_encode(['category' => true, 'post_tag' => true]),
 			'default_terms' => json_encode([]),
-			'custom_fields' => json_encode([])
+			'post_fields' => json_encode($default_post_fields)
 		]);
 
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
@@ -132,8 +147,8 @@ class PostWork
 			$format[] = '%s';
 		}
 
-		if (isset($data['custom_fields'])) {
-			$update_data['custom_fields'] = $data['custom_fields'];
+		if (isset($data['post_fields'])) {
+			$update_data['post_fields'] = $data['post_fields'];
 			$format[] = '%s';
 		}
 

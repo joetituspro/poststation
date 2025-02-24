@@ -19,7 +19,7 @@ class ApiHandler
 		'content',
 		'thumbnail_url',
 		'taxonomies',
-		'custom_fields'
+		'post_fields'
 	];
 
 	/**

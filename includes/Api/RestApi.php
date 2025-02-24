@@ -106,7 +106,7 @@ class RestApi
 			$this->handle_thumbnail($post_id, $request, $block);
 
 			// Handle custom fields
-			$this->handle_custom_fields($post_id, $request, $block, $postwork);
+			$this->handle_post_fields($post_id, $request, $block, $postwork);
 
 			// Update block status to completed
 			PostBlock::update($block_id, [
@@ -228,17 +228,17 @@ class RestApi
 		}
 	}
 
-	private function handle_custom_fields(int $post_id, WP_REST_Request $request, array $block, array $postwork): void
+	private function handle_post_fields(int $post_id, WP_REST_Request $request, array $block, array $postwork): void
 	{
 		// Get custom fields from API request or block
-		$api_custom_fields = $request->get_param('custom_fields') ?? [];
-		$block_custom_fields = !empty($block['custom_fields']) ? json_decode($block['custom_fields'], true) : [];
-		$postwork_custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
+		$api_post_fields = $request->get_param('post_fields') ?? [];
+		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
+		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 
 		// Merge custom fields, preferring API values over block values
-		$custom_fields = array_merge($postwork_custom_fields, $block_custom_fields, $api_custom_fields);
+		$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
 
-		foreach ($custom_fields as $meta_key => $meta_value) {
+		foreach ($post_fields as $meta_key => $meta_value) {
 			if (!empty($meta_key) && !empty($meta_value)) {
 				update_post_meta($post_id, $meta_key, $meta_value);
 			}

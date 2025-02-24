@@ -1194,7 +1194,7 @@ body.folded .postwork-actions.sticky {
   margin-top: 3px;
 }
 
-/* Custom Fields Panel */
+/* Post Fields Panel */
 .custom-field-item {
   background: #fff;
   border: 1px solid #e2e4e7;
@@ -1406,7 +1406,7 @@ body.folded .postwork-actions.sticky {
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 24px;
-  max-height: 350px;
+  max-height: 450px;
   overflow-y: auto;
 }
 

@@ -155,7 +155,7 @@
 
 				<div class="postwork-header-section">
 					<div class="postwork-header-field">
-						<div class="postwork-header-label"><?php _e('Custom Fields', 'poststation'); ?></div>
+						<div class="postwork-header-label"><?php _e('Post Fields', 'poststation'); ?></div>
 						<div class="postwork-header-value" id="custom-fields-trigger">
 							<span class="custom-fields-text"><?php _e('Configure', 'poststation'); ?></span>
 							<span class="dashicons dashicons-edit"></span>
@@ -218,10 +218,10 @@
 			</div>
 		</div>
 
-		<!-- Custom Fields Panel -->
+		<!-- Post Fields Panel -->
 		<div class="side-panel custom-fields-panel">
 			<div class="side-panel-header">
-				<div class="side-panel-title"><?php _e('Custom Fields', 'poststation'); ?></div>
+				<div class="side-panel-title"><?php _e('Post Fields', 'poststation'); ?></div>
 				<div class="side-panel-close">
 					<span class="dashicons dashicons-no-alt"></span>
 				</div>
@@ -229,14 +229,14 @@
 			<div class="side-panel-actions">
 				<button type="button" class="button add-custom-field-button">
 					<span class="dashicons dashicons-plus-alt2"></span>
-					<?php _e('Add Custom Field', 'poststation'); ?>
+					<?php _e('Add Post Field', 'poststation'); ?>
 				</button>
 			</div>
 			<div class="side-panel-content">
 				<div class="custom-fields-container">
 					<?php
-					$custom_fields = !empty($postwork['custom_fields']) ? json_decode($postwork['custom_fields'], true) : [];
-					foreach ($custom_fields as $key => $field) :
+					$post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
+					foreach ($post_fields as $key => $field) :
 						$value = is_array($field) ? ($field['value'] ?? '') : $field;
 						$prompt = is_array($field) ? ($field['prompt'] ?? '') : '';
 						$type = is_array($field) ? ($field['type'] ?? 'string') : 'string';
