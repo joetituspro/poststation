@@ -59,7 +59,7 @@ class Create
 				set_post_thumbnail($post_id, $block['feature_image_id']);
 			}
 
-			// Handle custom fields
+			// Handle post fields
 			if (!empty($data['post_fields'])) {
 				$this->handle_post_fields($post_id, $data['post_fields'], $block, $postwork);
 			}
@@ -218,7 +218,7 @@ class Create
 	}
 
 	/**
-	 * Handle custom fields for the post
+	 * Handle post fields for the post
 	 *
 	 * @param int $post_id Post ID
 	 * @param array $post_fields Custom fields data
@@ -226,12 +226,12 @@ class Create
 	 */
 	private function handle_post_fields(int $post_id, array $api_post_fields, array $block, array $postwork): void
 	{
-		// Get custom fields from API request or block
+		// Get post fields from API request or block
 		$api_post_fields = $api_post_fields ?? [];
 		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
 		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 
-		// Merge custom fields, preferring API values over block values
+		// Merge post fields, preferring API values over block values
 		$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
 
 		foreach ($post_fields as $meta_key => $meta_value) {

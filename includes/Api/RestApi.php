@@ -105,7 +105,7 @@ class RestApi
 			// Handle thumbnail
 			$this->handle_thumbnail($post_id, $request, $block);
 
-			// Handle custom fields
+			// Handle post fields
 			$this->handle_post_fields($post_id, $request, $block, $postwork);
 
 			// Update block status to completed
@@ -230,12 +230,12 @@ class RestApi
 
 	private function handle_post_fields(int $post_id, WP_REST_Request $request, array $block, array $postwork): void
 	{
-		// Get custom fields from API request or block
+		// Get post fields from API request or block
 		$api_post_fields = $request->get_param('post_fields') ?? [];
 		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
 		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 
-		// Merge custom fields, preferring API values over block values
+		// Merge post fields, preferring API values over block values
 		$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
 
 		foreach ($post_fields as $meta_key => $meta_value) {

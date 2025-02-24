@@ -156,8 +156,8 @@
 				<div class="postwork-header-section">
 					<div class="postwork-header-field">
 						<div class="postwork-header-label"><?php _e('Post Fields', 'poststation'); ?></div>
-						<div class="postwork-header-value" id="custom-fields-trigger">
-							<span class="custom-fields-text"><?php _e('Configure', 'poststation'); ?></span>
+						<div class="postwork-header-value" id="post-fields-trigger">
+							<span class="post-fields-text"><?php _e('Configure', 'poststation'); ?></span>
 							<span class="dashicons dashicons-edit"></span>
 						</div>
 					</div>
@@ -219,7 +219,7 @@
 		</div>
 
 		<!-- Post Fields Panel -->
-		<div class="side-panel custom-fields-panel">
+		<div class="side-panel post-fields-panel">
 			<div class="side-panel-header">
 				<div class="side-panel-title"><?php _e('Post Fields', 'poststation'); ?></div>
 				<div class="side-panel-close">
@@ -227,13 +227,13 @@
 				</div>
 			</div>
 			<div class="side-panel-actions">
-				<button type="button" class="button add-custom-field-button">
+				<button type="button" class="button add-post-field-button">
 					<span class="dashicons dashicons-plus-alt2"></span>
 					<?php _e('Add Post Field', 'poststation'); ?>
 				</button>
 			</div>
 			<div class="side-panel-content">
-				<div class="custom-fields-container">
+				<div class="post-fields-container">
 					<?php
 					$post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 					foreach ($post_fields as $key => $field) :
@@ -242,30 +242,30 @@
 						$type = is_array($field) ? ($field['type'] ?? 'string') : 'string';
 						$required = is_array($field) ? ($field['required'] ?? false) : false;
 					?>
-						<div class="custom-field-item" data-key="<?php echo esc_attr($key); ?>">
-							<div class="custom-field-header">
-								<div class="custom-field-key">
-									<input type="text" class="regular-text custom-field-key-input"
+						<div class="post-field-item" data-key="<?php echo esc_attr($key); ?>">
+							<div class="post-field-header">
+								<div class="post-field-key">
+									<input type="text" class="regular-text post-field-key-input"
 										value="<?php echo esc_attr($key); ?>"
 										placeholder="<?php esc_attr_e('Meta Key', 'poststation'); ?>">
 									<div class="error-message"></div>
 								</div>
-								<div class="custom-field-actions">
-									<span class="custom-field-delete dashicons dashicons-trash"
+								<div class="post-field-actions">
+									<span class="post-field-delete dashicons dashicons-trash"
 										title="<?php esc_attr_e('Delete Field', 'poststation'); ?>"></span>
 								</div>
 							</div>
-							<div class="custom-field-content">
+							<div class="post-field-content">
 								<div class="field-label"><?php _e('Default Value', 'poststation'); ?></div>
-								<textarea class="custom-field-value"
+								<textarea class="post-field-value"
 									placeholder="<?php esc_attr_e('Enter the default value for this field', 'poststation'); ?>"><?php echo esc_textarea($value); ?></textarea>
 								<div class="field-label"><?php _e('AI Prompt', 'poststation'); ?></div>
-								<textarea class="custom-field-prompt"
+								<textarea class="post-field-prompt"
 									placeholder="<?php esc_attr_e('Enter the AI prompt for generating this field\'s content', 'poststation'); ?>"><?php echo esc_textarea($prompt); ?></textarea>
 								<div class="field-options">
 									<div class="field-type">
 										<div class="field-label"><?php _e('Data Type', 'poststation'); ?></div>
-										<select class="custom-field-type">
+										<select class="post-field-type">
 											<option value="string" <?php selected($type, 'string'); ?>>
 												<?php _e('String', 'poststation'); ?></option>
 											<option value="number" <?php selected($type, 'number'); ?>>
@@ -280,7 +280,7 @@
 									</div>
 									<div class="field-required">
 										<label>
-											<input type="checkbox" class="custom-field-required"
+											<input type="checkbox" class="post-field-required"
 												<?php checked($required); ?>>
 											<?php _e('Required Field', 'poststation'); ?>
 										</label>

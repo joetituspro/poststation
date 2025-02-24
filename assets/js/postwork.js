@@ -168,31 +168,31 @@
       );
 
       // Post Fields Panel
-      $("#custom-fields-trigger").on("click", () =>
-        this.openSidePanel("custom-fields-panel")
+      $("#post-fields-trigger").on("click", () =>
+        this.openSidePanel("post-fields-panel")
       );
-      $(".add-custom-field-button").on("click", () => this.addNewCustomField());
+      $(".add-post-field-button").on("click", () => this.addNewPostField());
 
       // Custom field actions
-      $(".custom-fields-container").on("click", ".custom-field-delete", (e) =>
-        this.deleteCustomField(e)
+      $(".post-fields-container").on("click", ".post-field-delete", (e) =>
+        this.deletePostField(e)
       );
 
-      $(document).on("input", ".custom-field-key-input", (e) => {
-        const isValid = this.validateCustomFieldKey(e);
+      $(document).on("input", ".post-field-key-input", (e) => {
+        const isValid = this.validatePostFieldKey(e);
         if (isValid) {
-          this.updateBlocksCustomFields();
+          this.updateBlocksPostFields();
         }
         this.handleFieldChange();
       });
 
-      $(document).on("input", ".custom-field-value", () => {
-        this.updateBlocksCustomFields();
+      $(document).on("input", ".post-field-value", () => {
+        this.updateBlocksPostFields();
         this.handleFieldChange();
       });
 
-      // Block custom field value changes
-      $(document).on("input", ".custom-field-value-input", () => {
+      // Block post field value changes
+      $(document).on("input", ".post-field-value-input", () => {
         this.handleFieldChange();
       });
 
@@ -353,7 +353,7 @@
         const postType = $("#post-type").val();
         const enabledTaxonomies = this.getEnabledTaxonomies();
         const defaultTerms = this.getAllDefaultTerms();
-        const customFields = this.getAllCustomFields();
+        const postFields = this.getAllPostFields();
         const postStatus = $("#post-status").val();
         const defaultAuthorId = $("#default-author-id").val();
 
@@ -368,7 +368,7 @@
           default_author_id: defaultAuthorId,
           enabled_taxonomies: JSON.stringify(enabledTaxonomies),
           default_terms: JSON.stringify(defaultTerms),
-          post_fields: JSON.stringify(customFields),
+          post_fields: JSON.stringify(postFields),
         });
 
         if (!response.success) {
@@ -383,7 +383,7 @@
           post_type: postType,
           enabled_taxonomies: enabledTaxonomies,
           default_terms: defaultTerms,
-          post_fields: customFields,
+          post_fields: postFields,
         };
       } catch (error) {
         console.error("Error saving post work:", error);
@@ -982,30 +982,30 @@
         `;
       });
 
-      // Get custom fields
-      const customFields = this.getAllCustomFields();
-      let customFieldsHtml = "";
-      Object.entries(customFields).forEach(([key, field]) => {
+      // Get post fields
+      const postFields = this.getAllPostFields();
+      let postFieldsHtml = "";
+      Object.entries(postFields).forEach(([key, field]) => {
         const value = typeof field === "object" ? field.value : field;
-        customFieldsHtml += `
+        postFieldsHtml += `
             <div class="form-field">
                 <label>${key}</label>
                 <div class="field-input">
                     <input type="text" 
-                           class="regular-text custom-field-value-input" 
-                           data-meta-key="${key}"
+                           class="regular-text post-field-value-input" 
+                           data-key="${key}"
                            value="${value}"
                            placeholder="Custom field value">
                     <div class="prompt-label">AI Prompt</div>
-                    <textarea class="custom-field-prompt-input" 
-                            data-meta-key="${key}"
+                    <textarea class="post-field-prompt-input" 
+                            data-key="${key}"
                             placeholder="Enter the AI prompt for generating this field's content">${
                               field.prompt || ""
                             }</textarea>
                     <div class="field-options">
                         <div class="field-type">
                             <div class="field-label">Data Type</div>
-                            <select class="custom-field-type-input" data-meta-key="${key}">
+                            <select class="post-field-type-input" data-key="${key}">
                                 <option value="string" ${
                                   field.type === "string" ? "selected" : ""
                                 }>String</option>
@@ -1026,8 +1026,8 @@
                         <div class="field-required">
                             <label>
                                 <input type="checkbox" 
-                                       class="custom-field-required-input" 
-                                       data-meta-key="${key}"
+                                       class="post-field-required-input" 
+                                       data-key="${key}"
                                        ${field.required ? "checked" : ""}>
                                 Required Field
                             </label>
@@ -1096,7 +1096,7 @@
                             </div>
                         </div>
 
-                        <div class="form-section">
+                        <div class="form-section taxonomies-section">
                             <h3 class="section-title">Taxonomies</h3>
                             ${taxonomyFields}
                         </div>
@@ -1104,9 +1104,9 @@
 
                     <!-- Right Column -->
                     <div class="postblock-column">
-                        <div class="form-section">
+                        <div class="form-section post-fields-section">
                             <h3 class="section-title">Post Fields</h3>
-                            ${customFieldsHtml}
+                            ${postFieldsHtml}
                         </div>
                     </div>
                 </div>
@@ -1167,13 +1167,13 @@
         }
       });
 
-      // Collect custom fields data
-      const customFields = {};
-      $block.find(".custom-field-value-input").each((_, field) => {
+      // Collect post fields data
+      const postFields = {};
+      $block.find(".post-field-value-input").each((_, field) => {
         const $field = $(field);
-        const metaKey = $field.data("meta-key");
+        const metaKey = $field.data("key");
         const value = $field.val().trim();
-        customFields[metaKey] = value;
+        postFields[metaKey] = value;
       });
 
       const featureImageId = $block.find(".feature-image-id").val();
@@ -1181,7 +1181,7 @@
       return {
         article_url: articleUrl,
         taxonomies: JSON.stringify(taxonomies),
-        post_fields: JSON.stringify(customFields),
+        post_fields: JSON.stringify(postFields),
         feature_image_id: featureImageId,
       };
     }
@@ -1403,35 +1403,35 @@
       $("body").css("overflow", "");
     }
 
-    addNewCustomField() {
-      const $container = $(".custom-fields-container");
+    addNewPostField() {
+      const $container = $(".post-fields-container");
       const timestamp = new Date().getTime();
 
       const $newField = $(`
-          <div class="custom-field-item">
-              <div class="custom-field-header">
-                  <div class="custom-field-key">
+          <div class="post-field-item">
+              <div class="post-field-header">
+                  <div class="post-field-key">
                       <input type="text" 
-                             class="regular-text custom-field-key-input" 
+                             class="regular-text post-field-key-input" 
                              placeholder="Meta Key">
                       <div class="error-message"></div>
                   </div>
-                  <div class="custom-field-actions">
-                      <span class="custom-field-delete dashicons dashicons-trash" 
+                  <div class="post-field-actions">
+                      <span class="post-field-delete dashicons dashicons-trash" 
                             title="Delete Field"></span>
                   </div>
               </div>
-              <div class="custom-field-content">
+              <div class="post-field-content">
                   <div class="field-label">Default Value</div>
-                  <textarea class="custom-field-value" 
+                  <textarea class="post-field-value" 
                             placeholder="Enter the default value for this field"></textarea>
                   <div class="field-label">AI Prompt</div>
-                  <textarea class="custom-field-prompt" 
+                  <textarea class="post-field-prompt" 
                             placeholder="Enter the AI prompt for generating this field's content"></textarea>
                   <div class="field-options">
                       <div class="field-type">
                           <div class="field-label">Data Type</div>
-                          <select class="custom-field-type">
+                          <select class="post-field-type">
                               <option value="string">String</option>
                               <option value="number">Number</option>
                               <option value="boolean">Boolean</option>
@@ -1441,7 +1441,7 @@
                       </div>
                       <div class="field-required">
                           <label>
-                              <input type="checkbox" class="custom-field-required">
+                              <input type="checkbox" class="post-field-required">
                               Required Field
                           </label>
                       </div>
@@ -1451,49 +1451,46 @@
       `);
 
       $container.append($newField);
-      $newField.find(".custom-field-key-input").focus();
+      $newField.find(".post-field-key-input").focus();
       this.handleFieldChange();
 
-      // Update blocks when a new custom field is added
-      this.updateBlocksCustomFields();
+      // Update blocks when a new post field is added
+      this.updateBlocksPostFields();
     }
 
-    deleteCustomField(e) {
+    deletePostField(e) {
       e.preventDefault();
       e.stopPropagation();
 
-      const $field = $(e.currentTarget).closest(".custom-field-item");
-      const metaKey = $field.find(".custom-field-key-input").val().trim();
+      const $field = $(e.currentTarget).closest(".post-field-item");
+      const metaKey = $field.find(".post-field-key-input").val().trim();
 
       if (
         !confirm(
-          `Are you sure you want to delete the custom field "${metaKey}"? This will remove it from all blocks.`
+          `Are you sure you want to delete the post field "${metaKey}"? This will remove it from all blocks.`
         )
       ) {
         return;
       }
 
       // Remove the field from all blocks
-      $(`.custom-field-value-input[data-meta-key="${metaKey}"]`)
-        .closest("tr")
+      $(`.post-field-value-input[data-key="${metaKey}"]`)
+        .closest(".form-field")
         .fadeOut(300, function () {
           $(this).remove();
         });
 
-      // Remove the field from the custom fields panel
-      $field.fadeOut(
-        300,
-        function () {
-          $(this).remove();
-          this.handleFieldChange();
-          this.updateBlocksCustomFields();
-        }.bind(this)
-      ); // Bind 'this' to access the class methods
+      // Remove the field from the post fields panel
+      $field.fadeOut(300, () => {
+        $field.remove(); // Actually remove the element from DOM
+        this.handleFieldChange();
+        this.updateBlocksPostFields();
+      });
     }
 
-    validateCustomFieldKey(e) {
+    validatePostFieldKey(e) {
       const $input = $(e.currentTarget);
-      const $keyWrapper = $input.closest(".custom-field-key");
+      const $keyWrapper = $input.closest(".post-field-key");
       const $errorMessage = $keyWrapper.find(".error-message");
       const value = $input.val().trim();
 
@@ -1519,7 +1516,7 @@
 
       // Check for uniqueness
       const isDuplicate =
-        $(".custom-field-key-input")
+        $(".post-field-key-input")
           .not($input)
           .filter(function () {
             return $(this).val().trim() === value;
@@ -1534,18 +1531,18 @@
       return true;
     }
 
-    getAllCustomFields() {
-      const customFields = {};
-      $(".custom-fields-container .custom-field-item").each((_, item) => {
+    getAllPostFields() {
+      const postFields = {};
+      $(".post-fields-container .post-field-item").each((_, item) => {
         const $item = $(item);
-        const key = $item.find(".custom-field-key-input").val().trim();
-        const value = $item.find(".custom-field-value").val().trim();
-        const prompt = $item.find(".custom-field-prompt").val().trim();
-        const type = $item.find(".custom-field-type").val();
-        const required = $item.find(".custom-field-required").prop("checked");
+        const key = $item.find(".post-field-key-input").val().trim();
+        const value = $item.find(".post-field-value").val().trim();
+        const prompt = $item.find(".post-field-prompt").val().trim();
+        const type = $item.find(".post-field-type").val();
+        const required = $item.find(".post-field-required").prop("checked");
 
         if (key) {
-          customFields[key] = {
+          postFields[key] = {
             value: value,
             prompt: prompt,
             type: type,
@@ -1553,15 +1550,15 @@
           };
         }
       });
-      return customFields;
+      return postFields;
     }
 
-    updateBlocksCustomFields() {
-      const customFields = this.getAllCustomFields();
+    updateBlocksPostFields() {
+      const postFields = this.getAllPostFields();
 
       $(".postblock").each((_, block) => {
         const $block = $(block);
-        const $customFieldsSection = $block.find(".form-section").eq(2);
+        const $postFieldsSection = $block.find(".form-section").eq(2);
 
         // Store existing values
         const existingValues = {};
@@ -1569,26 +1566,24 @@
         const existingTypes = {};
         const existingRequired = {};
 
-        $block.find(".custom-field-value-input").each((_, input) => {
+        $block.find(".post-field-value-input").each((_, input) => {
           const $input = $(input);
-          const key = $input.data("meta-key");
+          const key = $input.data("key");
           existingValues[key] = $input.val();
           existingPrompts[key] = $input
-            .siblings(".custom-field-prompt-input")
+            .siblings(".post-field-prompt-input")
             .val();
-          existingTypes[key] = $input
-            .siblings(".custom-field-type-input")
-            .val();
+          existingTypes[key] = $input.siblings(".post-field-type-input").val();
           existingRequired[key] = $input
-            .siblings(".custom-field-required-input")
+            .siblings(".post-field-required-input")
             .prop("checked");
         });
 
-        // Remove existing custom fields
-        $customFieldsSection.find(".form-field").remove();
+        // Remove existing post fields
+        $postFieldsSection.find(".form-field").remove();
 
-        // Add updated custom fields
-        Object.entries(customFields).forEach(([key, field]) => {
+        // Add updated post fields
+        Object.entries(postFields).forEach(([key, field]) => {
           const value =
             existingValues[key] !== undefined
               ? existingValues[key]
@@ -1609,18 +1604,18 @@
                     <label>${key}</label>
                     <div class="field-input">
                         <input type="text" 
-                               class="regular-text custom-field-value-input" 
-                               data-meta-key="${key}"
+                               class="regular-text post-field-value-input" 
+                               data-key="${key}"
                                value="${value}"
                                placeholder="Custom field value">
                         <div class="prompt-label">AI Prompt</div>
-                        <textarea class="custom-field-prompt-input" 
-                                data-meta-key="${key}"
+                        <textarea class="post-field-prompt-input" 
+                                data-key="${key}"
                                 placeholder="Enter the AI prompt for generating this field's content">${prompt}</textarea>
                         <div class="field-options">
                             <div class="field-type">
                                 <div class="field-label">Data Type</div>
-                                <select class="custom-field-type-input" data-meta-key="${key}">
+                                <select class="post-field-type-input" data-key="${key}">
                                     <option value="string" ${
                                       type === "string" ? "selected" : ""
                                     }>String</option>
@@ -1641,8 +1636,8 @@
                             <div class="field-required">
                                 <label>
                                     <input type="checkbox" 
-                                           class="custom-field-required-input" 
-                                           data-meta-key="${key}"
+                                           class="post-field-required-input" 
+                                           data-key="${key}"
                                            ${required ? "checked" : ""}>
                                     Required Field
                                 </label>
@@ -1651,7 +1646,7 @@
                     </div>
                 </div>
             `;
-          $customFieldsSection.append(newField);
+          $postFieldsSection.append(newField);
         });
       });
     }
@@ -1764,7 +1759,7 @@
     generateApiFormat() {
       const postType = $("#post-type").val();
       const enabledTaxonomies = this.getEnabledTaxonomies();
-      const customFields = this.getAllCustomFields();
+      const postFields = this.getAllPostFields();
 
       // Create example format
       const format = {
@@ -1784,8 +1779,8 @@
         }
       });
 
-      // Add example custom fields excluding title and content
-      Object.keys(customFields).forEach((key) => {
+      // Add example post fields excluding title and content
+      Object.keys(postFields).forEach((key) => {
         if (key !== "title" && key !== "content") {
           format.post_fields[key] = "Example value for " + key;
         }

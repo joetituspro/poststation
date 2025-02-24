@@ -1195,7 +1195,7 @@ body.folded .postwork-actions.sticky {
 }
 
 /* Post Fields Panel */
-.custom-field-item {
+.post-field-item {
   background: #fff;
   border: 1px solid #e2e4e7;
   border-radius: 8px;
@@ -1203,12 +1203,12 @@ body.folded .postwork-actions.sticky {
   transition: all 0.2s ease;
 }
 
-.custom-field-item:hover {
+.post-field-item:hover {
   border-color: #2271b1;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-.custom-field-header {
+.post-field-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1216,36 +1216,36 @@ body.folded .postwork-actions.sticky {
   border-bottom: 1px solid #f0f0f1;
 }
 
-.custom-field-key {
+.post-field-key {
   flex: 1;
   margin-right: 12px;
 }
 
-.custom-field-key-input {
+.post-field-key-input {
   width: 100%;
 }
 
-.custom-field-key .error-message {
+.post-field-key .error-message {
   color: #d63638;
   font-size: 12px;
   margin-top: 4px;
   display: none;
 }
 
-.custom-field-key.has-error .error-message {
+.post-field-key.has-error .error-message {
   display: block;
 }
 
-.custom-field-key.has-error input {
+.post-field-key.has-error input {
   border-color: #d63638;
 }
 
-.custom-field-actions {
+.post-field-actions {
   display: flex;
   gap: 8px;
 }
 
-.custom-field-delete {
+.post-field-delete {
   color: #d63638;
   cursor: pointer;
   padding: 4px;
@@ -1253,15 +1253,15 @@ body.folded .postwork-actions.sticky {
   transition: all 0.2s ease;
 }
 
-.custom-field-delete:hover {
+.post-field-delete:hover {
   background: #fef0f1;
 }
 
-.custom-field-content {
+.post-field-content {
   padding: 16px;
 }
 
-.custom-field-value {
+.post-field-value {
   width: 100%;
   min-height: 80px;
   resize: vertical;
@@ -1272,20 +1272,20 @@ body.folded .postwork-actions.sticky {
   transition: all 0.2s ease;
 }
 
-.custom-field-value:focus {
+.post-field-value:focus {
   border-color: #2271b1;
   box-shadow: 0 0 0 1px #2271b1;
   outline: none;
 }
 
-.add-custom-field-button {
+.add-post-field-button {
   width: 100%;
   justify-content: center;
   margin-bottom: 16px !important;
   gap: 8px;
 }
 
-.add-custom-field-button .dashicons {
+.add-post-field-button .dashicons {
   font-size: 16px;
   width: 16px;
   height: 16px;
@@ -1453,6 +1453,16 @@ body.folded .postwork-actions.sticky {
   display: block;
   font-weight: 500;
   margin-bottom: 8px;
+  color: #1e1e1e;
+}
+
+.postblock .form-field label {
+  display: block;
+  background: #f0f0f1;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
   color: #1e1e1e;
 }
 
@@ -1754,14 +1764,14 @@ body.folded .postwork-actions.sticky {
 }
 
 /* Custom field styling */
-.custom-field-content {
+.post-field-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
 }
 
-.custom-field-content textarea {
+.post-field-content textarea {
   width: 100%;
   min-height: 60px;
   padding: 8px;
@@ -1770,19 +1780,19 @@ body.folded .postwork-actions.sticky {
   resize: vertical;
 }
 
-.custom-field-content textarea:focus {
+.post-field-content textarea:focus {
   border-color: #2271b1;
   box-shadow: 0 0 0 1px #2271b1;
   outline: 2px solid transparent;
 }
 
-.custom-field-content .field-label {
+.post-field-content .field-label {
   font-size: 13px;
   color: #1d2327;
   margin-bottom: 2px;
 }
 
-/* Block custom field styling */
+/* Block post field styling */
 .form-field .field-input {
   display: flex;
   flex-direction: column;
@@ -1794,7 +1804,7 @@ body.folded .postwork-actions.sticky {
   width: 100%;
 }
 
-.form-field .field-input textarea.custom-field-prompt-input {
+.form-field .field-input textarea.post-field-prompt-input {
   min-height: 60px;
   padding: 8px;
   border: 1px solid #8c8f94;
@@ -1802,7 +1812,7 @@ body.folded .postwork-actions.sticky {
   resize: vertical;
 }
 
-.form-field .field-input textarea.custom-field-prompt-input:focus {
+.form-field .field-input textarea.post-field-prompt-input:focus {
   border-color: #2271b1;
   box-shadow: 0 0 0 1px #2271b1;
   outline: 2px solid transparent;

@@ -175,6 +175,8 @@ class PostWorkManager
 		$default_terms = json_decode(stripslashes($_POST['default_terms'] ?? '{}'), true);
 		$post_fields = json_decode(stripslashes($_POST['post_fields'] ?? '{}'), true);
 
+		error_log('Post Fields' . print_r($post_fields, true));
+
 		if (empty($title)) {
 			wp_send_json_error(__('Title is required.', 'poststation'));
 		}

@@ -131,19 +131,18 @@
 						<div class="form-field">
 							<label><?php echo esc_html($meta_key); ?></label>
 							<div class="field-input">
-								<input type="text" class="regular-text custom-field-value-input"
-									data-meta-key="<?php echo esc_attr($meta_key); ?>"
+								<input type="text" class="regular-text post-field-value-input"
+									data-key="<?php echo esc_attr($meta_key); ?>"
 									value="<?php echo esc_attr($value); ?>"
 									placeholder="<?php esc_attr_e('Custom field value', 'poststation'); ?>">
 								<div class="prompt-label"><?php _e('AI Prompt', 'poststation'); ?></div>
-								<textarea class="custom-field-prompt-input"
-									data-meta-key="<?php echo esc_attr($meta_key); ?>"
+								<textarea class="post-field-prompt-input" data-key="<?php echo esc_attr($meta_key); ?>"
 									placeholder="<?php esc_attr_e('Enter the AI prompt for generating this field\'s content', 'poststation'); ?>"><?php echo esc_textarea($prompt); ?></textarea>
 								<div class="field-options">
 									<div class="field-type">
 										<div class="field-label"><?php _e('Data Type', 'poststation'); ?></div>
-										<select class="custom-field-type-input"
-											data-meta-key="<?php echo esc_attr($meta_key); ?>">
+										<select class="post-field-type-input"
+											data-key="<?php echo esc_attr($meta_key); ?>">
 											<option value="string" <?php selected($type, 'string'); ?>>
 												<?php _e('String', 'poststation'); ?></option>
 											<option value="number" <?php selected($type, 'number'); ?>>
@@ -158,8 +157,8 @@
 									</div>
 									<div class="field-required">
 										<label>
-											<input type="checkbox" class="custom-field-required-input"
-												data-meta-key="<?php echo esc_attr($meta_key); ?>"
+											<input type="checkbox" class="post-field-required-input"
+												data-key="<?php echo esc_attr($meta_key); ?>"
 												<?php checked($required); ?>>
 											<?php _e('Required Field', 'poststation'); ?>
 										</label>
