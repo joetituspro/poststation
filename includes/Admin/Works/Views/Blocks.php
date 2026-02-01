@@ -12,8 +12,17 @@
 		<div class="postblock-header">
 			<div class="postblock-header-info">
 				<span class="block-id">#<?php echo esc_html($block['id']); ?></span>
-				<span class="block-url" title="<?php echo esc_attr($block['article_url']); ?>">
-					<?php echo esc_html(wp_parse_url($block['article_url'], PHP_URL_HOST) . wp_parse_url($block['article_url'], PHP_URL_PATH)); ?>
+				<span class="block-url"
+					title="<?php echo esc_attr(($block['article_url'] ?? '') ?: ($block['keyword'] ?? '') ?: ''); ?>">
+					<?php
+						if (!empty($block['article_url'])) {
+							echo esc_html(wp_parse_url($block['article_url'], PHP_URL_HOST) . wp_parse_url($block['article_url'], PHP_URL_PATH));
+						} elseif (!empty($block['keyword'])) {
+							echo esc_html($block['keyword']);
+						} else {
+							_e('Empty block', 'poststation');
+						}
+						?>
 				</span>
 				<span class="block-error-count">
 					<span class="dashicons dashicons-warning"></span>
@@ -24,11 +33,18 @@
 					target="_blank" title="<?php esc_attr_e('Edit Post', 'poststation'); ?>">
 					<span class="dashicons dashicons-edit"></span>
 				</a>
+				<a href="<?php echo esc_url(get_permalink($block['post_id'])); ?>" class="block-preview-link"
+					target="_blank" title="<?php esc_attr_e('Preview Post', 'poststation'); ?>">
+					<span class="dashicons dashicons-visibility"></span>
+				</a>
 				<?php endif; ?>
 			</div>
 			<div class="postblock-header-actions">
 				<span class="block-status-badge <?php echo esc_attr($block['status']); ?>"
 					title="<?php echo esc_attr($block['error_message'] ?? ''); ?>">
+					<?php if ($block['status'] === 'processing') : ?>
+					<span class="dashicons dashicons-update rotating"></span>
+					<?php endif; ?>
 					<?php echo esc_html($block['status']); ?>
 				</span>
 				<?php if ($block['status'] === 'failed') : ?>
@@ -56,12 +72,35 @@
 						<div class="form-field">
 							<label>
 								<?php _e('Article URL', 'poststation'); ?>
-								<span class="required">*</span>
 							</label>
 							<div class="field-input">
 								<input type="url" class="regular-text article-url"
-									value="<?php echo esc_attr($block['article_url']); ?>" required>
+									value="<?php echo esc_attr($block['article_url'] ?? ''); ?>"
+									placeholder="<?php esc_attr_e('Enter article URL (optional)', 'poststation'); ?>">
 								<span class="error-message"></span>
+							</div>
+						</div>
+
+						<div class="form-field">
+							<label>
+								<?php _e('Keyword', 'poststation'); ?>
+							</label>
+							<div class="field-input">
+								<input type="text" class="regular-text keyword"
+									value="<?php echo esc_attr($block['keyword'] ?? ''); ?>"
+									placeholder="<?php esc_attr_e('Enter main keyword (optional)', 'poststation'); ?>">
+							</div>
+						</div>
+
+						<div class="form-field">
+							<label><?php _e('Featured Image Title', 'poststation'); ?></label>
+							<div class="field-input">
+								<input type="text" class="regular-text feature-image-title" name="feature_image_title"
+									value="<?php echo esc_attr($block['feature_image_title'] ?? '{{title}}'); ?>"
+									placeholder="{{title}}">
+								<p class="description">
+									<?php _e('Title used for the generated featured image. Default is {{title}}.', 'poststation'); ?>
+								</p>
 							</div>
 						</div>
 
@@ -86,6 +125,52 @@
 										<?php _e('Upload or select an image to use as the featured image.', 'poststation'); ?>
 									</p>
 								</div>
+							</div>
+						</div>
+
+						<div class="form-field">
+							<label><?php _e('Tone of Voice', 'poststation'); ?></label>
+							<div class="field-input">
+								<select class="regular-text tone-of-voice">
+									<?php
+										$tones = [
+											'seo_optimized' => __('SEO Optimized (Confident, Knowledgeable, Neutral, and Clear)', 'poststation'),
+											'excited' => __('Excited', 'poststation'),
+											'professional' => __('Professional', 'poststation'),
+											'friendly' => __('Friendly', 'poststation'),
+											'formal' => __('Formal', 'poststation'),
+											'casual' => __('Casual', 'poststation'),
+											'humorous' => __('Humorous', 'poststation'),
+											'conversational' => __('Conversational', 'poststation'),
+										];
+										foreach ($tones as $value => $label) : ?>
+									<option value="<?php echo esc_attr($value); ?>"
+										<?php selected($block['tone_of_voice'] ?? 'seo_optimized', $value); ?>>
+										<?php echo esc_html($label); ?>
+									</option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-field">
+							<label><?php _e('Point of View', 'poststation'); ?></label>
+							<div class="field-input">
+								<select class="regular-text point-of-view">
+									<?php
+										$povs = [
+											'first_person_singular' => __('First Person Singular (I, me, my, mine)', 'poststation'),
+											'first_person_plural' => __('First Person Plural (we, us, our, ours)', 'poststation'),
+											'second_person' => __('Second Person (you, your, yours)', 'poststation'),
+											'third_person' => __('Third Person (he, she, it, they)', 'poststation'),
+										];
+										foreach ($povs as $value => $label) : ?>
+									<option value="<?php echo esc_attr($value); ?>"
+										<?php selected($block['point_of_view'] ?? 'third_person', $value); ?>>
+										<?php echo esc_html($label); ?>
+									</option>
+									<?php endforeach; ?>
+								</select>
 							</div>
 						</div>
 					</div>
@@ -132,8 +217,15 @@
 							<label><?php echo esc_html($meta_key); ?></label>
 							<div class="field-input">
 								<div class="field-label"><?php _e('Default Value', 'poststation'); ?></div>
+								<?php if ($meta_key === 'slug') : ?>
+								<input type="text" class="regular-text post-field-value-input"
+									data-key="<?php echo esc_attr($meta_key); ?>"
+									value="<?php echo esc_attr($value); ?>"
+									placeholder="<?php esc_attr_e('Default value', 'poststation'); ?>">
+								<?php else : ?>
 								<textarea class="post-field-value-input" data-key="<?php echo esc_attr($meta_key); ?>"
 									placeholder="<?php esc_attr_e('Default value', 'poststation'); ?>"><?php echo esc_textarea($value); ?></textarea>
+								<?php endif; ?>
 								<div class="field-label"><?php _e('AI Prompt', 'poststation'); ?></div>
 								<textarea class="post-field-prompt-input" data-key="<?php echo esc_attr($meta_key); ?>"
 									placeholder="<?php esc_attr_e('Enter the AI prompt for generating this field\'s content', 'poststation'); ?>"><?php echo esc_textarea($prompt); ?></textarea>

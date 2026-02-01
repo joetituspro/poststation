@@ -73,22 +73,21 @@ class RestApi
 		try {
 			// Get and validate block
 			$block_id = $request->get_param('block_id');
-			$block = PostBlock::get_by_id($block_id);
-			if (!$block) {
-				throw new Exception(__('Block not found', 'poststation'));
-			}
+			$block = $block_id ? PostBlock::get_by_id($block_id) : null;
 
 			// Get post work
-			$postwork = PostWork::get_by_id($block['postwork_id']);
-			if (!$postwork) {
-				throw new Exception(__('Post work not found', 'poststation'));
+			$postwork = null;
+			if ($block) {
+				$postwork = PostWork::get_by_id($block['postwork_id']);
 			}
 
 			// Update block status to processing
-			PostBlock::update($block_id, ['status' => 'processing']);
+			if ($block_id && $block) {
+				PostBlock::update($block_id, ['status' => 'processing']);
+			}
 
 			// Prepare post data
-			$post_data = $this->prepare_post_data($request, $block, $postwork);
+			$post_data = $this->prepare_post_data($request, $block ?: [], $postwork ?: []);
 
 			// Insert post
 			$post_id = wp_insert_post($post_data, true);
@@ -97,23 +96,25 @@ class RestApi
 			}
 
 			// Store metadata
-			$this->store_post_metadata($post_id, $block);
+			$this->store_post_metadata($post_id, $block ?: [], $request);
 
 			// Handle taxonomies
-			$this->handle_taxonomies($post_id, $request, $block, $postwork);
+			$this->handle_taxonomies($post_id, $request, $block ?: [], $postwork ?: []);
 
 			// Handle thumbnail
-			$this->handle_thumbnail($post_id, $request, $block);
+			$this->handle_thumbnail($post_id, $request, $block ?: []);
 
 			// Handle post fields
-			$this->handle_post_fields($post_id, $request, $block, $postwork);
+			$this->handle_post_fields($post_id, $request, $block ?: [], $postwork ?: []);
 
 			// Update block status to completed
-			PostBlock::update($block_id, [
-				'status' => 'completed',
-				'post_id' => $post_id,
-				'error_message' => null,
-			]);
+			if ($block_id && $block) {
+				PostBlock::update($block_id, [
+					'status' => 'completed',
+					'post_id' => $post_id,
+					'error_message' => null,
+				]);
+			}
 
 			return new WP_REST_Response([
 				'success' => true,
@@ -121,7 +122,7 @@ class RestApi
 				'message' => __('Post created successfully', 'poststation'),
 			], 201);
 		} catch (Exception $e) {
-			if (isset($block_id)) {
+			if ($block_id && $block) {
 				PostBlock::update($block_id, [
 					'status' => 'failed',
 					'error_message' => $e->getMessage(),
@@ -138,180 +139,203 @@ class RestApi
 
 	private function prepare_post_data(WP_REST_Request $request, array $block, array $postwork): array
 	{
+		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
+		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
+		$post_fields = array_merge($postwork_post_fields, $block_post_fields);
+
+		$title = $request->get_param('title') ?: ($post_fields['title']['value'] ?? null);
+		$slug = ($post_fields['slug']['value'] ?? null) ?: $request->get_param('slug') ?: $title;
+
 		$post_data = [
-			'post_title' => $request->get_param('title'),
-			'post_type' => $postwork['post_type'],
+			'post_title' => $title,
+			'post_name' => sanitize_title($slug),
+			'post_type' => $postwork['post_type'] ?? 'post',
 			'post_status' => $postwork['post_status'] ?? 'pending',
 			'post_author' => $postwork['default_author_id'] ?? get_current_user_id(),
 		];
 
 		// Add content only if provided
-		$content = $request->get_param('content');
+		$content = $request->get_param('content') ?: ($post_fields['content']['value'] ?? null);
 		if (!empty($content)) {
+			// Clean content: remove <hr> and <br> tags
+			$content = preg_replace('/<(hr|br)\s*\/?>/i', '', $content);
 			$post_data['post_content'] = $content;
 		}
 
 		return $post_data;
 	}
 
-	private function store_post_metadata(int $post_id, array $block): void
+	private function store_post_metadata(int $post_id, array $block, WP_REST_Request $request): void
 	{
-		update_post_meta($post_id, '_poststation_block_id', $block['id']);
-		update_post_meta($post_id, '_poststation_postwork_id', $block['postwork_id']);
-		update_post_meta($post_id, '_poststation_article_url', $block['article_url']);
+		if (!empty($block['id'])) {
+			update_post_meta($post_id, '_poststation_block_id', $block['id']);
+		}
+		if (!empty($block['postwork_id'])) {
+			update_post_meta($post_id, '_poststation_postwork_id', $block['postwork_id']);
+		}
+		update_post_meta($post_id, '_poststation_article_url', $block['article_url'] ?? '');
+		update_post_meta($post_id, '_poststation_keyword', $block['keyword'] ?? '');
+		update_post_meta($post_id, '_poststation_instructions', $request->get_param('instructions') ?? '');
+		update_post_meta($post_id, '_poststation_tone_of_voice', $block['tone_of_voice'] ?? 'seo_optimized');
+		update_post_meta($post_id, '_poststation_point_of_view', $block['point_of_view'] ?? 'third_person');
 	}
 
-	private function handle_taxonomies(int $post_id, WP_REST_Request $request, array $block, array $postwork): void
-	{
-		// Get enabled taxonomies from postwork
-		$enabled_taxonomies = !empty($postwork['enabled_taxonomies'])
-			? json_decode($postwork['enabled_taxonomies'], true)
-			: [];
+private function handle_taxonomies(int $post_id, WP_REST_Request $request, array $block, array $postwork): void
+{
+// Get enabled taxonomies from postwork
+$enabled_taxonomies = !empty($postwork['enabled_taxonomies'])
+? json_decode($postwork['enabled_taxonomies'], true)
+: [];
 
-		// Get taxonomies from API request or block
-		$api_taxonomies = $request->get_param('taxonomies') ?? [];
-		$block_taxonomies = !empty($block['taxonomies']) ? json_decode($block['taxonomies'], true) : [];
+// Get taxonomies from API request or block
+$api_taxonomies = $request->get_param('taxonomies') ?? [];
+$block_taxonomies = !empty($block['taxonomies']) ? json_decode($block['taxonomies'], true) : [];
 
-		// Merge taxonomies, preferring API values over block values
-		$taxonomies = array_merge($block_taxonomies, $api_taxonomies);
+// Merge taxonomies, preferring API values over block values
+$taxonomies = array_merge($block_taxonomies, $api_taxonomies);
 
-		foreach ($enabled_taxonomies as $taxonomy => $enabled) {
-			if (!$enabled || !taxonomy_exists($taxonomy)) {
-				continue;
-			}
+foreach ($enabled_taxonomies as $taxonomy => $enabled) {
+if (!$enabled || !taxonomy_exists($taxonomy)) {
+continue;
+}
 
-			$terms = $taxonomies[$taxonomy] ?? [];
-			if (empty($terms)) {
-				continue;
-			}
+$terms = $taxonomies[$taxonomy] ?? [];
+if (empty($terms)) {
+continue;
+}
 
-			// Handle hierarchical taxonomies (like categories)
-			if (is_taxonomy_hierarchical($taxonomy)) {
-				$term_ids = [];
-				foreach ($terms as $term_name) {
-					$term = get_term_by('name', $term_name, $taxonomy);
-					if (!$term) {
-						$result = wp_insert_term($term_name, $taxonomy);
-						if (!is_wp_error($result)) {
-							$term_ids[] = $result['term_id'];
-						}
-					} else {
-						$term_ids[] = $term->term_id;
-					}
-				}
-				wp_set_object_terms($post_id, $term_ids, $taxonomy);
-			}
-			// Handle non-hierarchical taxonomies (like tags)
-			else {
-				wp_set_object_terms($post_id, $terms, $taxonomy);
-			}
-		}
-	}
+// Handle hierarchical taxonomies (like categories)
+if (is_taxonomy_hierarchical($taxonomy)) {
+$term_ids = [];
+foreach ($terms as $term_name) {
+$term = get_term_by('name', $term_name, $taxonomy);
+if (!$term) {
+$result = wp_insert_term($term_name, $taxonomy);
+if (!is_wp_error($result)) {
+$term_ids[] = $result['term_id'];
+}
+} else {
+$term_ids[] = $term->term_id;
+}
+}
+wp_set_object_terms($post_id, $term_ids, $taxonomy);
+}
+// Handle non-hierarchical taxonomies (like tags)
+else {
+wp_set_object_terms($post_id, $terms, $taxonomy);
+}
+}
+}
 
-	private function handle_thumbnail(int $post_id, WP_REST_Request $request, array $block): void
-	{
-		// Try to get thumbnail URL from API request
-		$thumbnail_url = $request->get_param('thumbnail_url');
+private function handle_thumbnail(int $post_id, WP_REST_Request $request, array $block): void
+{
+// Try to get thumbnail URL from API request
+$thumbnail_url = $request->get_param('thumbnail_url');
 
-		// If no thumbnail URL provided and block has feature image, use that
-		if (empty($thumbnail_url) && !empty($block['feature_image_id'])) {
-			set_post_thumbnail($post_id, $block['feature_image_id']);
-			return;
-		}
+// If no thumbnail URL provided and block has feature image, use that
+if (empty($thumbnail_url) && !empty($block['feature_image_id'])) {
+set_post_thumbnail($post_id, $block['feature_image_id']);
+return;
+}
 
-		// If thumbnail URL is provided, download and set it
-		if (!empty($thumbnail_url)) {
-			$thumbnail_id = $this->handle_image_upload($thumbnail_url, $post_id);
-			if (!is_wp_error($thumbnail_id)) {
-				set_post_thumbnail($post_id, $thumbnail_id);
-			}
-		}
-	}
+// If thumbnail URL is provided, download and set it
+if (!empty($thumbnail_url)) {
+$thumbnail_id = $this->handle_image_upload($thumbnail_url, $post_id);
+if (!is_wp_error($thumbnail_id)) {
+set_post_thumbnail($post_id, $thumbnail_id);
+}
+}
+}
 
-	private function handle_post_fields(int $post_id, WP_REST_Request $request, array $block, array $postwork): void
-	{
-		// Get post fields from API request or block
-		$api_post_fields = $request->get_param('post_fields') ?? [];
-		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
-		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
+private function handle_post_fields(int $post_id, WP_REST_Request $request, array $block, array $postwork): void
+{
+// Get post fields from API request or block
+$api_post_fields = $request->get_param('post_fields') ?? [];
+$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
+$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 
-		// Merge post fields, preferring API values over block values
-		$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
+// Merge post fields, preferring API values over block values
+$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
 
-		foreach ($post_fields as $meta_key => $meta_value) {
-			if (!empty($meta_key) && !empty($meta_value)) {
-				update_post_meta($post_id, $meta_key, $meta_value);
-			}
-		}
-	}
+foreach ($post_fields as $meta_key => $meta_value) {
+// Skip title, content, and slug as they're handled in prepare_post_data
+if (in_array($meta_key, ['title', 'content', 'slug'])) {
+continue;
+}
+if (!empty($meta_key) && !empty($meta_value)) {
+update_post_meta($post_id, $meta_key, $meta_value);
+}
+}
+}
 
-	private function handle_image_upload(string $image_url, int $post_id): int|WP_Error
-	{
-		require_once(ABSPATH . 'wp-admin/includes/media.php');
-		require_once(ABSPATH . 'wp-admin/includes/file.php');
-		require_once(ABSPATH . 'wp-admin/includes/image.php');
+private function handle_image_upload(string $image_url, int $post_id): int|WP_Error
+{
+require_once(ABSPATH . 'wp-admin/includes/media.php');
+require_once(ABSPATH . 'wp-admin/includes/file.php');
+require_once(ABSPATH . 'wp-admin/includes/image.php');
 
-		$tmp = download_url($image_url);
-		if (is_wp_error($tmp)) {
-			return $tmp;
-		}
+$tmp = download_url($image_url);
+if (is_wp_error($tmp)) {
+return $tmp;
+}
 
-		$file_array = [
-			'name' => basename($image_url),
-			'tmp_name' => $tmp
-		];
+$file_array = [
+'name' => basename($image_url),
+'tmp_name' => $tmp
+];
 
-		$file_type = wp_check_filetype($file_array['name'], null);
-		if (empty($file_type['type']) || strpos($file_type['type'], 'image/') !== 0) {
-			@unlink($tmp);
-			return new WP_Error('invalid_image', __('Invalid image type', 'poststation'));
-		}
+$file_type = wp_check_filetype($file_array['name'], null);
+if (empty($file_type['type']) || strpos($file_type['type'], 'image/') !== 0) {
+@unlink($tmp);
+return new WP_Error('invalid_image', __('Invalid image type', 'poststation'));
+}
 
-		$attachment_id = media_handle_sideload($file_array, $post_id);
-		@unlink($tmp);
+$attachment_id = media_handle_sideload($file_array, $post_id);
+@unlink($tmp);
 
-		return $attachment_id;
-	}
+return $attachment_id;
+}
 
-	public function handle_check_status(WP_REST_Request $request): WP_REST_Response
-	{
-		global $wpdb;
-		$block_ids = array_map('intval', explode(',', $request->get_param('block_ids')));
+public function handle_check_status(WP_REST_Request $request): WP_REST_Response
+{
+global $wpdb;
+$block_ids = array_map('intval', explode(',', $request->get_param('block_ids')));
 
-		if (empty($block_ids)) {
-			return new WP_REST_Response([]);
-		}
+if (empty($block_ids)) {
+return new WP_REST_Response([]);
+}
 
-		// Get all blocks in a single query
-		$table_name = $wpdb->prefix . PostBlock::get_table_name();
-		$ids_string = implode(',', $block_ids);
+// Get all blocks in a single query
+$table_name = $wpdb->prefix . PostBlock::get_table_name();
+$ids_string = implode(',', $block_ids);
 
-		$blocks = $wpdb->get_results(
-			"SELECT id, status, error_message, post_id 
-			 FROM {$table_name} 
-			 WHERE id IN ({$ids_string})",
-			ARRAY_A
-		);
+$blocks = $wpdb->get_results(
+"SELECT id, status, error_message, post_id
+FROM {$table_name}
+WHERE id IN ({$ids_string})",
+ARRAY_A
+);
 
-		// Format response
-		$statuses = array_combine(
-			array_column($blocks, 'id'),
-			array_map(function ($block) {
-				return [
-					'status' => $block['status'],
-					'error_message' => $block['error_message'],
-					'post_id' => $block['post_id'],
-				];
-			}, $blocks)
-		);
+// Format response
+$statuses = array_combine(
+array_column($blocks, 'id'),
+array_map(function ($block) {
+return [
+'status' => $block['status'],
+'error_message' => $block['error_message'],
+'post_id' => $block['post_id'],
+'post_url' => $block['post_id'] ? get_permalink($block['post_id']) : null,
+];
+}, $blocks)
+);
 
-		// Add cache headers
-		$response = new WP_REST_Response($statuses);
-		$response->set_headers([
-			'Cache-Control' => 'no-cache, must-revalidate, max-age=0',
-			'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT'
-		]);
+// Add cache headers
+$response = new WP_REST_Response($statuses);
+$response->set_headers([
+'Cache-Control' => 'no-cache, must-revalidate, max-age=0',
+'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT'
+]);
 
-		return $response;
-	}
+return $response;
+}
 }

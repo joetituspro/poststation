@@ -5,8 +5,8 @@
   "author": "Joe Titus",
   "license": "GPL-2.0-or-later",
   "scripts": {
-    "build": "wp-scripts build",
-    "start": "wp-scripts start",
+    "build": "wp-scripts build --webpack-src-dir=src --output-path=build",
+    "start": "wp-scripts start --webpack-src-dir=src --output-path=build",
     "packages-update": "wp-scripts packages-update",
     "check-engines": "wp-scripts check-engines",
     "check-licenses": "wp-scripts check-licenses",
@@ -24,9 +24,23 @@
     "make-log": "node makeZip.js --changelog-only",
     "zip": "node makeZip.js"
   },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0"
+  },
   "devDependencies": {
+    "@babel/preset-env": "^7.23.0",
+    "@babel/preset-react": "^7.23.0",
+    "@tailwindcss/postcss": "^4.0.0",
     "@wordpress/scripts": "^26.0.0",
     "archiver": "^5.3.1",
-    "npm-run-all": "^4.1.5"
+    "babel-loader": "^9.1.3",
+    "css-loader": "^6.10.0",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.4.35",
+    "postcss-loader": "^8.1.0",
+    "style-loader": "^3.3.4",
+    "tailwindcss": "^4.0.0"
   }
 }

@@ -4,6 +4,7 @@ namespace PostStation\Models;
 
 class PostBlock
 {
+	public const DB_VERSION = '1.8';
 	protected const TABLE_NAME = 'poststation_postblocks';
 
 	public static function get_table_name(): string
@@ -22,16 +23,21 @@ class PostBlock
 		$sql = "CREATE TABLE $table_name (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			postwork_id bigint(20) unsigned NOT NULL,
-			article_url text NOT NULL,
+			article_url text,
+			keyword text,
+			instructions text,
+			tone_of_voice varchar(100) DEFAULT NULL,
+			point_of_view varchar(100) DEFAULT NULL,
 			taxonomies text DEFAULT NULL,
 			post_fields text DEFAULT NULL,
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
+			feature_image_title text DEFAULT NULL,
 			status varchar(50) NOT NULL DEFAULT 'pending',
 			post_id bigint(20) unsigned DEFAULT NULL,
 			error_message text DEFAULT NULL,
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY (id),
+			PRIMARY KEY  (id),
 			KEY postwork_id (postwork_id),
 			KEY status (status),
 			KEY post_id (post_id),
@@ -71,7 +77,7 @@ class PostBlock
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table_name} WHERE postwork_id = %d ORDER BY created_at ASC",
+				"SELECT * FROM {$table_name} WHERE postwork_id = %d ORDER BY FIELD(status, 'processing', 'pending', 'failed', 'completed') ASC, created_at DESC",
 				$postwork_id
 			),
 			ARRAY_A
@@ -96,11 +102,21 @@ class PostBlock
 		$data = wp_parse_args($data, [
 			'postwork_id' => 0,
 			'article_url' => '',
+			'keyword' => '',
+			'tone_of_voice' => 'seo_optimized',
+			'point_of_view' => 'third_person',
 			'taxonomies' => '{}',
 			'post_fields' => '{}',
 			'feature_image_id' => null,
+			'feature_image_title' => '{{title}}',
 			'status' => 'pending'
 		]);
+
+		// Ensure strings are not null
+		$data['article_url'] = $data['article_url'] ?? '';
+		$data['keyword'] = $data['keyword'] ?? '';
+		$data['tone_of_voice'] = $data['tone_of_voice'] ?? 'seo_optimized';
+		$data['point_of_view'] = $data['point_of_view'] ?? 'third_person';
 
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
 	}

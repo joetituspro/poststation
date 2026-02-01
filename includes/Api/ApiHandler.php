@@ -12,14 +12,16 @@ use PostStation\Api\Create;
 class ApiHandler
 {
 	private const OPTION_KEY = 'poststation_api_key';
-	private const REQUIRED_FIELDS = ['block_id'];
+	private const REQUIRED_FIELDS = [];
 	private const ALLOWED_FIELDS = [
 		'block_id',
 		'title',
 		'content',
+		'slug',
 		'thumbnail_url',
 		'taxonomies',
-		'post_fields'
+		'custom_fields',
+		'image_config'
 	];
 
 	/**
@@ -39,6 +41,19 @@ class ApiHandler
 	 */
 	public function register_endpoints(): void
 	{
+		// Add rewrite rules for our endpoints
+		add_rewrite_rule(
+			'ps-api/create/?$',
+			'index.php?pagename=ps-api/create',
+			'top'
+		);
+
+		add_rewrite_rule(
+			'ps-api/check-status/?$',
+			'index.php?pagename=ps-api/check-status',
+			'top'
+		);
+
 		add_action('parse_request', [$this, 'handle_api_request']);
 	}
 
@@ -51,7 +66,7 @@ class ApiHandler
 	public function handle_api_request(\WP $wp): void
 	{
 		// Check if this is our API request
-		if (!isset($wp->query_vars['pagename']) || $wp->query_vars['pagename'] !== 'poststation-api') {
+		if (!isset($wp->query_vars['pagename']) || !str_starts_with($wp->query_vars['pagename'], 'ps-api')) {
 			return;
 		}
 
@@ -67,23 +82,48 @@ class ApiHandler
 			exit();
 		}
 
-		// Only allow POST method for create endpoint
-		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-			$this->send_error('Method not allowed', 405);
-		}
+		// Get the endpoint from the URL
+		$endpoint = str_replace('ps-api/', '', $wp->query_vars['pagename']);
 
 		try {
-			// Validate API key
-			$this->validate_api_key();
+			switch ($endpoint) {
+				case 'create':
+					// Only allow POST method for create endpoint
+					if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+						$this->send_error('Method not allowed', 405);
+					}
 
-			// Parse JSON body
-			$body = $this->get_request_body();
+					// Validate API key
+					$this->validate_api_key();
 
-			// Process the create request
-			$response = $this->process_create_request($body);
+					// Parse JSON body
+					$body = $this->get_request_body();
 
-			// Send success response
-			$this->send_response($response);
+					// Process the create request
+					$response = $this->process_create_request($body);
+
+					// Send success response
+					$this->send_response($response);
+					break;
+
+				case 'check-status':
+					// Only allow GET method for status check
+					if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+						$this->send_error('Method not allowed', 405);
+					}
+
+					$block_ids = $_GET['block_ids'] ?? '';
+					if (empty($block_ids)) {
+						$this->send_error('Missing block_ids parameter', 400);
+					}
+
+					$response = $this->check_block_status($block_ids);
+					$this->send_response($response);
+					break;
+
+				default:
+					$this->send_error('Endpoint not found', 404);
+			}
 		} catch (Exception $e) {
 			$this->send_error($e->getMessage(), $e->getCode() ?: 400);
 		}
@@ -194,5 +234,46 @@ class ApiHandler
 			'success' => false,
 			'error' => $message
 		], $status);
+	}
+
+	/**
+	 * Check status of multiple blocks
+	 *
+	 * @param string $block_ids Comma-separated list of block IDs
+	 * @return array Status information for requested blocks
+	 */
+	private function check_block_status(string $block_ids): array
+	{
+		global $wpdb;
+
+		// Convert comma-separated string to array of integers
+		$block_ids = array_map('intval', explode(',', $block_ids));
+
+		if (empty($block_ids)) {
+			return [];
+		}
+
+		// Get all blocks in a single query
+		$table_name = $wpdb->prefix . PostBlock::get_table_name();
+		$ids_string = implode(',', $block_ids);
+
+		$blocks = $wpdb->get_results(
+			"SELECT id, status, error_message, post_id 
+			 FROM {$table_name} 
+			 WHERE id IN ({$ids_string})",
+			ARRAY_A
+		);
+
+		// Format response
+		return array_combine(
+			array_column($blocks, 'id'),
+			array_map(function ($block) {
+				return [
+					'status' => $block['status'],
+					'error_message' => $block['error_message'],
+					'post_id' => $block['post_id'],
+				];
+			}, $blocks)
+		) ?: [];
 	}
 }

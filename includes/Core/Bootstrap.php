@@ -8,6 +8,8 @@ use PostStation\Admin\Menu;
 use PostStation\Admin\Settings;
 use PostStation\Admin\WebhookManager;
 use PostStation\Admin\Works\PostWorkManager;
+use PostStation\Admin\ReactApp;
+use PostStation\Services\Sitemap;
 use PostStation\Api\RestApi;
 use PostStation\Models\Webhook;
 use PostStation\Models\PostWork;
@@ -18,7 +20,6 @@ class Bootstrap
 	public function __construct()
 	{
 		$this->init_hooks();
-		register_activation_hook(POSTSTATION_FILE, [$this, 'activate']);
 	}
 
 	private function init_hooks(): void
@@ -32,8 +33,18 @@ class Bootstrap
 		$api_handler = new \PostStation\Api\ApiHandler();
 		$api_handler->init();
 
+		// Initialize Sitemap Service
+		$sitemap_service = new Sitemap();
+		$sitemap_service->init();
+
 		// Initialize Admin
 		if (is_admin()) {
+			$this->check_db_version();
+			
+			// Initialize React App (new SPA interface)
+			new ReactApp();
+			
+			// Keep legacy admin pages for backwards compatibility
 			$settings = new Settings();
 			$webhook_manager = new WebhookManager();
 			$postwork_manager = new PostWorkManager();
@@ -44,9 +55,22 @@ class Bootstrap
 		add_action('admin_enqueue_scripts', [$this, 'register_assets']);
 	}
 
+	private function check_db_version(): void
+	{
+		$installed_version = get_option('poststation_postblock_db_version', '0.0.0');
+		if (version_compare($installed_version, PostBlock::DB_VERSION, '<')) {
+			$this->activate();
+		}
+	}
+
 	public function activate(): void
 	{
 		try {
+			// Generate API key if not exists
+			if (!get_option('poststation_api_key')) {
+				update_option('poststation_api_key', wp_generate_password(32, false));
+			}
+
 			// Create or upgrade tables with error checking
 			if (!Webhook::create_table()) {
 				// throw new Exception('Failed to create Webhook table');
@@ -60,10 +84,12 @@ class Bootstrap
 				// throw new Exception('Failed to create/update PostBlock tables');
 			}
 
-			// Set initial version if not exists
-			if (!get_option('poststation_postblock_db_version')) {
-				update_option('poststation_postblock_db_version', '1.1');
-			}
+			// Update version
+			update_option('poststation_postblock_db_version', PostBlock::DB_VERSION);
+
+			// Register rewrite rules before flushing
+			$api_handler = new \PostStation\Api\ApiHandler();
+			$api_handler->register_endpoints();
 
 			// Flush rewrite rules
 			flush_rewrite_rules();

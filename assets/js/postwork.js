@@ -14,6 +14,8 @@
         webhook_id: $("#webhook-id").val(),
         post_type: $("#post-type").val(),
         enabled_taxonomies: this.getEnabledTaxonomies(),
+        instructions: $("#postwork-instructions").val(),
+        image_config: this.getImageConfig(),
       };
 
       // Add new properties
@@ -40,10 +42,14 @@
 
       this.updatePostWorkState();
       this.updateStatusCounts();
+      this.sortBlocks();
 
       // Check initial blocks state and show message if needed
       const $blocks = $(".postblock");
       this.updateNoBlocksMessage($blocks.length === 0);
+
+      // Check for stale processing blocks on page load
+      this.checkStaleProcessingBlocks();
 
       // Trigger initial filter
       $("#block-status-filter").trigger("change");
@@ -80,12 +86,28 @@
       $(".delete-postwork").on("click", (e) => this.handleDeletePostWork(e));
       $("#save-postwork").on("click", () => this.handleSavePostWork());
       $("#add-postblock").on("click", () => this.handleAddPostBlock());
+      $("#clear-completed-blocks").on("click", () =>
+        this.handleClearCompletedBlocks()
+      );
       $("#run-postwork").on("click", () => this.handleRunPostWork());
 
       // Post Work Field Changes
       $("#postwork-title").on("input", () => this.handleFieldChange());
+      $("#postwork-instructions").on("input", () => this.handleFieldChange());
       $("#webhook-id").on("change", () => this.handleFieldChange());
       $("#post-type").on("change", () => this.handleFieldChange());
+      $("#tone-of-voice").on("change", () => {
+        const $select = $("#tone-of-voice");
+        const $text = $select.siblings(".tone-of-voice-text");
+        $text.text($select.find("option:selected").text());
+        this.handleFieldChange();
+      });
+      $("#point-of-view").on("change", () => {
+        const $select = $("#point-of-view");
+        const $text = $select.siblings(".point-of-view-text");
+        $text.text($select.find("option:selected").text());
+        this.handleFieldChange();
+      });
       $(".taxonomy-checkbox").on("change", (e) => this.handleTaxonomyChange(e));
 
       // Block Filter
@@ -110,6 +132,16 @@
         this.handleArticleUrlChange(e);
         this.handleFieldChange();
       });
+      $(document).on("input", ".keyword", (e) => {
+        this.handleKeywordChange(e);
+        this.handleFieldChange();
+      });
+      $(document).on("change", ".tone-of-voice", () =>
+        this.handleFieldChange()
+      );
+      $(document).on("change", ".point-of-view", () =>
+        this.handleFieldChange()
+      );
       $(document).on("input", ".taxonomy-field", () =>
         this.handleFieldChange()
       );
@@ -173,6 +205,12 @@
       );
       $(".add-post-field-button").on("click", () => this.addNewPostField());
 
+      // Image Config Panel
+      $("#image-config-trigger").on("click", () =>
+        this.openSidePanel("image-config-panel")
+      );
+      this.initImageConfigHandlers();
+
       // Custom field actions
       $(".post-fields-container").on("click", ".post-field-delete", (e) =>
         this.deletePostField(e)
@@ -186,13 +224,35 @@
         this.handleFieldChange();
       });
 
-      $(document).on("input", ".post-field-value", () => {
+      $(document).on("input", ".post-field-value", (e) => {
+        const $input = $(e.target);
+        const $item = $input.closest(".post-field-item");
+        const key = $item.find(".post-field-key-input").val();
+
+        if (key === "slug") {
+          const value = $input.val();
+          const slug = value
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^\w-]+/g, "");
+          $input.val(slug);
+        }
+
         this.updateBlocksPostFields();
         this.handleFieldChange();
       });
 
       // Block post field value changes
-      $(document).on("input", ".post-field-value-input", () => {
+      $(document).on("input", ".post-field-value-input", (e) => {
+        const $input = $(e.target);
+        if ($input.data("key") === "slug") {
+          const value = $input.val();
+          const slug = value
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^\w-]+/g, "");
+          $input.val(slug);
+        }
         this.handleFieldChange();
       });
 
@@ -255,6 +315,16 @@
         }
       });
       $(".copy-format").on("click", () => this.copyApiFormat());
+
+      // Import Blocks Modal
+      $("#import-blocks-trigger").on("click", () =>
+        this.showImportBlocksModal()
+      );
+      $(".import-blocks-modal .modal-close").on("click", () =>
+        this.hideImportBlocksModal()
+      );
+      $(".copy-sample-json").on("click", () => this.copyImportSample());
+      $("#process-import-blocks").on("click", () => this.handleImportBlocks());
 
       // Add kill button handler
       $(document).on("click", "#kill-postwork", () => {
@@ -338,6 +408,15 @@
       $button.prop("disabled", true);
       $(".loading-overlay").addClass("active");
 
+      // Collapse post work options if active
+      const $options = $(".postwork-header");
+      if ($options.hasClass("active")) {
+        $(".toggle-options").trigger("click");
+      }
+
+      // Collapse all blocks
+      $(".postblock-content").slideUp();
+
       try {
         // Validate all blocks first
         const validationErrors = this.validateBlocks();
@@ -349,6 +428,7 @@
 
         const postworkId = $("#postwork-id").val();
         const title = $("#postwork-title").val();
+        const instructions = $("#postwork-instructions").val();
         const webhookId = $("#webhook-id").val();
         const postType = $("#post-type").val();
         const enabledTaxonomies = this.getEnabledTaxonomies();
@@ -356,19 +436,27 @@
         const postFields = this.getAllPostFields();
         const postStatus = $("#post-status").val();
         const defaultAuthorId = $("#default-author-id").val();
+        const toneOfVoice = $("#tone-of-voice").val();
+        const pointOfView = $("#point-of-view").val();
+
+        const imageConfig = this.getImageConfig();
 
         const response = await $.post(poststation.ajax_url, {
           action: "poststation_update_postwork",
           nonce: poststation.nonce,
           id: postworkId,
           title: title,
+          instructions: instructions,
           webhook_id: webhookId,
           post_type: postType,
           post_status: postStatus,
           default_author_id: defaultAuthorId,
+          tone_of_voice: toneOfVoice,
+          point_of_view: pointOfView,
           enabled_taxonomies: JSON.stringify(enabledTaxonomies),
           default_terms: JSON.stringify(defaultTerms),
           post_fields: JSON.stringify(postFields),
+          image_config: JSON.stringify(imageConfig),
         });
 
         if (!response.success) {
@@ -379,11 +467,15 @@
         this.updatePostWorkState();
         this.initialState = {
           title: title,
+          instructions: instructions,
           webhook_id: webhookId,
           post_type: postType,
+          tone_of_voice: toneOfVoice,
+          point_of_view: pointOfView,
           enabled_taxonomies: enabledTaxonomies,
           default_terms: defaultTerms,
           post_fields: postFields,
+          image_config: imageConfig,
         };
       } catch (error) {
         console.error("Error saving post work:", error);
@@ -412,14 +504,7 @@
         const $fieldInput = $urlInput.closest(".field-input");
         const $errorMessage = $fieldInput.find(".error-message");
 
-        if (!$urlInput.val()) {
-          blockErrors.push({
-            field: "article_url",
-            message: "Article URL is required",
-          });
-          $fieldInput.addClass("has-error");
-          $errorMessage.addClass("active").text("Article URL is required");
-        } else if (!this.isValidUrl($urlInput.val())) {
+        if ($urlInput.val() && !this.isValidUrl($urlInput.val())) {
           blockErrors.push({
             field: "article_url",
             message: "Please enter a valid URL",
@@ -546,6 +631,7 @@
           const blockId = response.data.id;
           const $block = this.createBlockElement(blockId);
           $("#postblocks").append($block);
+          this.sortBlocks();
 
           // Switch filter to pending
           $("#block-status-filter").val("pending").trigger("change");
@@ -611,6 +697,7 @@
         const $newBlock = $block.clone(true);
         this.updateBlockAfterDuplicate($newBlock, blockId);
         $("#postblocks").append($newBlock);
+        this.sortBlocks();
 
         // Update block data
         const updateResponse = await $.post(poststation.ajax_url, {
@@ -832,9 +919,13 @@
               blockStatus.error_message || ""
             );
 
-            // If completed, add edit link
+            // If completed, add edit and preview links
             if (blockStatus.status === "completed" && blockStatus.post_id) {
-              this.addEditLink($block, blockStatus.post_id);
+              this.addPostLinks(
+                $block,
+                blockStatus.post_id,
+                blockStatus.post_url
+              );
               clearInterval(checkInterval);
               resolve(true);
             } else if (blockStatus.status === "failed") {
@@ -878,8 +969,15 @@
       $badge
         .removeClass("pending processing completed failed")
         .addClass(status)
-        .text(status)
         .attr("title", errorMessage);
+
+      if (status === "processing") {
+        $badge.html(
+          '<span class="dashicons dashicons-update rotating"></span> processing'
+        );
+      } else {
+        $badge.text(status);
+      }
 
       // Show/hide run button based on status
       const $runButton = $block.find(".run-block");
@@ -899,8 +997,38 @@
       // Update counts if status changed
       if (oldStatus !== status) {
         this.updateStatusCounts();
-        $("#block-status-filter").trigger("change");
+        this.sortBlocks();
       }
+    }
+
+    sortBlocks() {
+      const $container = $("#postblocks");
+      const $blocks = $container.children(".postblock").get();
+      const statusOrder = ["processing", "pending", "failed", "completed"];
+
+      $blocks.sort((a, b) => {
+        const statusA = $(a).attr("data-status") || "pending";
+        const statusB = $(b).attr("data-status") || "pending";
+
+        const orderA = statusOrder.indexOf(statusA);
+        const orderB = statusOrder.indexOf(statusB);
+
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+
+        // Secondary sort by ID descending (most recent first)
+        const idA = parseInt($(a).data("id"));
+        const idB = parseInt($(b).data("id"));
+        return idB - idA;
+      });
+
+      $.each($blocks, (index, block) => {
+        $container.append(block);
+      });
+
+      // Re-apply filter to ensure correct visibility
+      $("#block-status-filter").trigger("change");
     }
 
     async updateBlockStatus(blockId, status, errorMessage = null) {
@@ -923,6 +1051,96 @@
       this.updateBlockStatus($block.data("id"), "failed", errorMessage);
     }
 
+    async checkStaleProcessingBlocks() {
+      // Find all blocks with "processing" status
+      const $processingBlocks = $(".postblock[data-status='processing']");
+
+      if ($processingBlocks.length === 0) {
+        return;
+      }
+
+      // First, check for blocks with error messages in their badge title
+      // These are likely failed blocks that weren't properly updated
+      $processingBlocks.each((_, block) => {
+        const $block = $(block);
+        const $badge = $block.find(".block-status-badge");
+        const errorMessage = $badge.attr("title");
+
+        // If block has processing status but has an error message, it's likely failed
+        if (errorMessage && errorMessage.trim() !== "") {
+          // Update to failed status immediately
+          this.updateBlockStatusUI($block, "failed", errorMessage);
+          this.updateBlockStatus($block.data("id"), "failed", errorMessage);
+        }
+      });
+
+      // Get remaining processing block IDs (after filtering out those with errors)
+      const $remainingProcessingBlocks = $(
+        ".postblock[data-status='processing']"
+      );
+      if ($remainingProcessingBlocks.length === 0) {
+        return;
+      }
+
+      const blockIds = $remainingProcessingBlocks
+        .map((_, block) => $(block).data("id"))
+        .get();
+
+      if (blockIds.length === 0) {
+        return;
+      }
+
+      try {
+        // Check actual status from API
+        const response = await fetch(
+          `${
+            poststation.rest_url
+          }poststation/v1/check-status?block_ids=${blockIds.join(",")}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const statuses = await response.json();
+
+        // Update each block's UI if status doesn't match
+        $remainingProcessingBlocks.each((_, block) => {
+          const $block = $(block);
+          const blockId = $block.data("id");
+          const blockStatus = statuses[blockId];
+
+          if (blockStatus && blockStatus.status !== "processing") {
+            // Block is not actually processing, update UI
+            this.updateBlockStatusUI(
+              $block,
+              blockStatus.status,
+              blockStatus.error_message || ""
+            );
+
+            // If completed, add post links
+            if (blockStatus.status === "completed" && blockStatus.post_id) {
+              this.addPostLinks(
+                $block,
+                blockStatus.post_id,
+                blockStatus.post_url
+              );
+            }
+          } else if (!blockStatus) {
+            // If API doesn't return status, assume it's not processing and reset to pending
+            this.updateBlockStatusUI($block, "pending", "");
+            this.updateBlockStatus($block.data("id"), "pending", null);
+          }
+        });
+      } catch (error) {
+        console.error("Error checking stale processing blocks:", error);
+      }
+    }
+
     handleBlockHeaderClick(e) {
       if ($(e.target).closest(".postblock-header-actions").length) return;
       $(e.currentTarget).next(".postblock-content").slideToggle();
@@ -935,16 +1153,44 @@
 
       this.urlUpdateTimeout = setTimeout(() => {
         const url = $input.val();
-        try {
-          const parsedUrl = new URL(url);
-          $block
-            .find(".block-url")
-            .text(parsedUrl.hostname + parsedUrl.pathname)
-            .attr("title", url);
-        } catch (e) {
-          $block.find(".block-url").text("").attr("title", "");
+        const $blockUrl = $block.find(".block-url");
+
+        if (url) {
+          try {
+            const parsedUrl = new URL(url);
+            $blockUrl
+              .text(parsedUrl.hostname + parsedUrl.pathname)
+              .attr("title", url);
+          } catch (e) {
+            $blockUrl.text("").attr("title", "");
+          }
+        } else {
+          // If URL is empty, try to show keyword instead
+          const keyword = $block.find(".keyword").val();
+          if (keyword) {
+            $blockUrl.text(keyword).attr("title", keyword);
+          } else {
+            $blockUrl.text("Empty block").attr("title", "");
+          }
         }
       }, 300);
+    }
+
+    handleKeywordChange(e) {
+      const $input = $(e.currentTarget);
+      const $block = $input.closest(".postblock");
+      const url = $block.find(".article-url").val();
+
+      // Only update header if URL is empty
+      if (!url) {
+        const keyword = $input.val();
+        const $blockUrl = $block.find(".block-url");
+        if (keyword) {
+          $blockUrl.text(keyword).attr("title", keyword);
+        } else {
+          $blockUrl.text("Empty block").attr("title", "");
+        }
+      }
     }
 
     handlePostTypeChange(e) {
@@ -955,10 +1201,55 @@
     // Additional helper methods...
     createBlockElement(blockId) {
       const enabledTaxonomies = this.getEnabledTaxonomies();
+      const currentTone = $("#tone-of-voice").val() || "seo_optimized";
+      const currentPov = $("#point-of-view").val() || "third_person";
       let taxonomyFields = "";
 
       // Get all taxonomies from WordPress data
       const taxonomies = poststation.taxonomies || {};
+
+      const toneOptions = [
+        {
+          value: "seo_optimized",
+          label: "SEO Optimized (Confident, Knowledgeable, Neutral, and Clear)",
+        },
+        { value: "excited", label: "Excited" },
+        { value: "professional", label: "Professional" },
+        { value: "friendly", label: "Friendly" },
+        { value: "formal", label: "Formal" },
+        { value: "casual", label: "Casual" },
+        { value: "humorous", label: "Humorous" },
+        { value: "conversational", label: "Conversational" },
+      ];
+
+      const povOptions = [
+        {
+          value: "first_person_singular",
+          label: "First Person Singular (I, me, my, mine)",
+        },
+        {
+          value: "first_person_plural",
+          label: "First Person Plural (we, us, our, ours)",
+        },
+        { value: "second_person", label: "Second Person (you, your, yours)" },
+        { value: "third_person", label: "Third Person (he, she, it, they)" },
+      ];
+
+      let toneHtml = `<select class="regular-text tone-of-voice">`;
+      toneOptions.forEach((opt) => {
+        toneHtml += `<option value="${opt.value}" ${
+          opt.value === currentTone ? "selected" : ""
+        }>${opt.label}</option>`;
+      });
+      toneHtml += `</select>`;
+
+      let povHtml = `<select class="regular-text point-of-view">`;
+      povOptions.forEach((opt) => {
+        povHtml += `<option value="${opt.value}" ${
+          opt.value === currentPov ? "selected" : ""
+        }>${opt.label}</option>`;
+      });
+      povHtml += `</select>`;
 
       // Create fields for enabled taxonomies
       Object.entries(enabledTaxonomies).forEach(([taxName, enabled]) => {
@@ -987,14 +1278,22 @@
       let postFieldsHtml = "";
       Object.entries(postFields).forEach(([key, field]) => {
         const value = typeof field === "object" ? field.value : field;
+        const inputField =
+          key === "slug"
+            ? `<input type="text" class="regular-text post-field-value-input" 
+                        data-key="${key}"
+                        value="${value}"
+                        placeholder="Default slug">`
+            : `<textarea class="post-field-value-input" 
+                        data-key="${key}"
+                        placeholder="Default value">${value}</textarea>`;
+
         postFieldsHtml += `
             <div class="form-field">
                 <label>${key}</label>
                 <div class="field-input">
                     <div class="field-label">Default Value</div>
-                    <textarea class="post-field-value-input" 
-                        data-key="${key}"
-                        placeholder="Default value">${value}</textarea>
+                    ${inputField}
                     <div class="field-label">AI Prompt</div>
                     <textarea class="post-field-prompt-input" 
                         data-key="${key}"
@@ -1065,12 +1364,32 @@
                         <div class="form-section">
                             <h3 class="section-title">Basic Information</h3>
                             <div class="form-field">
-                                <label>Article URL <span class="required">*</span></label>
+                                <label>Article URL</label>
                                 <div class="field-input">
                                     <input type="url" 
                                            class="regular-text article-url" 
-                                           required>
+                                           placeholder="Enter article URL (optional)">
                                     <span class="error-message"></span>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>Keyword</label>
+                                <div class="field-input">
+                                    <input type="text" 
+                                           class="regular-text keyword" 
+                                           placeholder="Enter main keyword (optional)">
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>Featured Image Title</label>
+                                <div class="field-input">
+                                    <input type="text" class="regular-text feature-image-title" 
+                                        name="feature_image_title"
+                                        value="{{title}}" 
+                                        placeholder="{{title}}">
+                                    <p class="description">
+                                        Title used for the generated featured image. Default is {{title}}.
+                                    </p>
                                 </div>
                             </div>
                             <div class="form-field">
@@ -1091,6 +1410,18 @@
                                         </button>
                                         <p class="description">Upload or select an image to use as the featured image.</p>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>Tone of Voice</label>
+                                <div class="field-input">
+                                    ${toneHtml}
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>Point of View</label>
+                                <div class="field-input">
+                                    ${povHtml}
                                 </div>
                             </div>
                         </div>
@@ -1145,11 +1476,147 @@
       return enabledTaxonomies;
     }
 
+    initImageConfigHandlers() {
+      const $panel = $(".image-config-panel");
+
+      // Toggle image config fields visibility
+      $panel.on("change", "#image-config-enabled", (e) => {
+        const isEnabled = $(e.target).prop("checked");
+        if (isEnabled) {
+          $(".image-config-fields").slideDown();
+        } else {
+          $(".image-config-fields").slideUp();
+        }
+        this.handleFieldChange();
+      });
+
+      // Image config field changes
+      $panel.on(
+        "input change",
+        "#image-template-id, #image-category-text, #image-main-text, #image-category-color, #image-title-color",
+        () => {
+          this.handleFieldChange();
+        }
+      );
+
+      // Background image select
+      $panel.on("click", ".add-bg-image", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $btn = $(e.currentTarget);
+        const $container = $btn.closest(".bg-images-list");
+
+        if (typeof wp === "undefined" || !wp.media) {
+          alert(
+            "WordPress media library is not available. Please refresh the page."
+          );
+          return;
+        }
+
+        const mediaFrame = wp.media({
+          title: "Select Background Images",
+          button: { text: "Add to list" },
+          multiple: true,
+        });
+
+        mediaFrame.on("select", () => {
+          const selection = mediaFrame.state().get("selection");
+
+          selection.each((attachment) => {
+            const data = attachment.toJSON();
+
+            // Re-calculate count for each image in selection to respect vacancy
+            const currentCount = $container.find(".bg-image-item").length;
+            if (currentCount >= 15) {
+              return false; // Break the each loop
+            }
+
+            const html = `
+              <div class="bg-image-item">
+                <div class="bg-image-preview">
+                  <img src="${data.url}" alt="">
+                </div>
+                <div class="bg-image-actions">
+                  <input type="hidden" class="bg-image-url" value="${data.url}">
+                  <button type="button" class="button remove-bg-image-item" title="Remove">
+                    <span class="dashicons dashicons-no"></span>
+                  </button>
+                </div>
+              </div>
+            `;
+
+            $(html).insertBefore($btn);
+          });
+
+          // Check if limit reached to hide button
+          if ($container.find(".bg-image-item").length >= 15) {
+            $btn.css("display", "none");
+          } else {
+            $btn.css("display", "flex");
+          }
+
+          this.handleFieldChange();
+        });
+
+        mediaFrame.open();
+      });
+
+      // Background image remove
+      $panel.on("click", ".remove-bg-image-item", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $removeBtn = $(e.currentTarget);
+        const $item = $removeBtn.closest(".bg-image-item");
+        const $container = $item.closest(".bg-images-list");
+        const $addBtn = $container.find(".add-bg-image");
+
+        $item.remove();
+
+        if ($container.find(".bg-image-item").length < 15) {
+          $addBtn.css("display", "flex");
+        }
+
+        this.handleFieldChange();
+      });
+
+      // Color hex input sync
+      $panel.on("input", ".color-hex-input", function () {
+        const $input = $(this);
+        const value = $input.val();
+        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+          $input.prev("input[type='color']").val(value);
+        }
+      });
+
+      $panel.on("input", "input[type='color']", function () {
+        $(this).next(".color-hex-input").val($(this).val());
+      });
+    }
+
+    getImageConfig() {
+      const bgImageUrls = [];
+      $(".bg-image-url").each((_, input) => {
+        bgImageUrls.push($(input).val());
+      });
+
+      return {
+        enabled: $("#image-config-enabled").prop("checked"),
+        templateId: $("#image-template-id").val(),
+        categoryText: $("#image-category-text").val(),
+        mainText: $("#image-main-text").val(),
+        bgImageUrls: bgImageUrls,
+        categoryColor: $("#image-category-color").val(),
+        titleColor: $("#image-title-color").val(),
+      };
+    }
+
     getBlockData($block) {
       const articleUrl = $block.find(".article-url").val();
-      if (!articleUrl || !this.isValidUrl(articleUrl)) {
-        return null;
-      }
+      const keyword = $block.find(".keyword").val();
+      const toneOfVoice = $block.find(".tone-of-voice").val();
+      const pointOfView = $block.find(".point-of-view").val();
 
       // Collect taxonomy data
       const taxonomies = {};
@@ -1194,12 +1661,17 @@
       });
 
       const featureImageId = $block.find(".feature-image-id").val();
+      const featureImageTitle = $block.find(".feature-image-title").val();
 
       return {
         article_url: articleUrl,
+        keyword: keyword,
+        tone_of_voice: toneOfVoice,
+        point_of_view: pointOfView,
         taxonomies: JSON.stringify(taxonomies),
         post_fields: JSON.stringify(postFields),
         feature_image_id: featureImageId,
+        feature_image_title: featureImageTitle,
       };
     }
 
@@ -1288,13 +1760,14 @@
       }
     }
 
-    addEditLink($block, postId) {
+    addPostLinks($block, postId, postUrl) {
       const $headerInfo = $block.find(".postblock-header-info");
-      const $existingLink = $headerInfo.find(".block-edit-link");
+      const $existingEditLink = $headerInfo.find(".block-edit-link");
+      const $existingPreviewLink = $headerInfo.find(".block-preview-link");
 
-      if ($existingLink.length === 0) {
+      if ($existingEditLink.length === 0) {
         const editUrl = `${poststation.admin_url}post.php?post=${postId}&action=edit`;
-        const $link = $(`
+        const $editLink = $(`
           <a href="${editUrl}" 
              class="block-edit-link" 
              target="_blank" 
@@ -1302,7 +1775,19 @@
             <span class="dashicons dashicons-edit"></span>
           </a>
         `);
-        $headerInfo.append($link);
+        $headerInfo.append($editLink);
+      }
+
+      if ($existingPreviewLink.length === 0 && postUrl) {
+        const $previewLink = $(`
+          <a href="${postUrl}" 
+             class="block-preview-link" 
+             target="_blank" 
+             title="Preview Post">
+            <span class="dashicons dashicons-visibility"></span>
+          </a>
+        `);
+        $headerInfo.append($previewLink);
       }
     }
 
@@ -1371,21 +1856,12 @@
         counts[status]++;
         counts.all++;
       });
+
       // Update the counts in the filter options
       Object.entries(counts).forEach(([status, count]) => {
-        // Find the span within the option that matches the status
         $(`#block-status-filter option[value="${status}"]`)
-          .contents()
-          .filter(function () {
-            return this.nodeType === 3; // Text node
-          })
-          .replaceWith(
-            `${
-              status === "all"
-                ? "All Blocks"
-                : status.charAt(0).toUpperCase() + status.slice(1)
-            } (${count})`
-          );
+          .find(".status-count")
+          .text(count);
       });
     }
 
@@ -1616,13 +2092,21 @@
               ? existingRequired[key]
               : field.required;
 
+          const inputField =
+            key === "slug"
+              ? `<input type="text" class="regular-text post-field-value-input" 
+                            data-key="${key}"
+                            value="${value}"
+                            placeholder="Default slug">`
+              : `<textarea class="regular-text post-field-value-input" 
+                            data-key="${key}"
+                            placeholder="Custom field value">${value}</textarea>`;
+
           const newField = `
                 <div class="form-field">
                     <label>${key}</label>
                     <div class="field-input">
-                        <textarea class="regular-text post-field-value-input" 
-                            data-key="${key}"
-                            placeholder="Custom field value">${value}</textarea>
+                        ${inputField}
                         <div class="prompt-label">AI Prompt</div>
                         <textarea class="post-field-prompt-input" 
                             data-key="${key}"
@@ -1781,9 +2265,8 @@
         block_id: 123, // Required
         title: "Example Post Title", // Required (AI-generated if not provided in block)
         content: "<p>Optional post content goes here...</p>", // Optional
-        thumbnail_url: "https://example.com/image.jpg", // Optional
-        taxonomies: {}, // Optional
         post_fields: {}, // Optional
+        taxonomies: {}, // Optional
         thumbnail_url: "https://example.com/image.jpg", // Optional
       };
 
@@ -1817,6 +2300,102 @@
       });
     }
 
+    showImportBlocksModal() {
+      const $modal = $("#import-blocks-modal");
+      const $code = $("#import-sample-code");
+
+      // Generate sample JSON
+      const sample = this.generateImportSample();
+      $code.text(JSON.stringify(sample, null, 2));
+
+      $modal.addClass("active");
+      $("body").css("overflow", "hidden");
+    }
+
+    hideImportBlocksModal() {
+      const $modal = $("#import-blocks-modal");
+      $modal.removeClass("active");
+      $("body").css("overflow", "");
+      $("#import-blocks-json").val("");
+    }
+
+    generateImportSample() {
+      const sampleBlock = {
+        article_url: "https://example.com/source-article",
+        topic: "SEO Keyword",
+        slug: "custom-slug-format",
+        feature_image_title: "Generated Image Title",
+      };
+
+      return [sampleBlock];
+    }
+
+    copyImportSample() {
+      const code = $("#import-sample-code").text();
+      navigator.clipboard.writeText(code).then(() => {
+        const $button = $(".copy-sample-json");
+        const originalHtml = $button.html();
+
+        $button.text("Copied!");
+        setTimeout(() => {
+          $button.html(originalHtml);
+        }, 2000);
+      });
+    }
+
+    async handleImportBlocks() {
+      const $jsonInput = $("#import-blocks-json");
+      const jsonStr = $jsonInput.val().trim();
+
+      if (!jsonStr) {
+        alert("Please paste some JSON first.");
+        return;
+      }
+
+      let blocks;
+      try {
+        blocks = JSON.parse(jsonStr);
+        if (!Array.isArray(blocks)) {
+          throw new Error("JSON must be an array of block objects.");
+        }
+      } catch (e) {
+        alert("Invalid JSON format: " + e.message);
+        return;
+      }
+
+      const $button = $("#process-import-blocks");
+      const originalHtml = $button.html();
+
+      $button
+        .prop("disabled", true)
+        .html(
+          '<span class="dashicons dashicons-update spin"></span> Importing...'
+        );
+
+      try {
+        // First save all current blocks to ensure state is consistent
+        await this.handleSavePostWork();
+
+        const response = await $.post(poststation.ajax_url, {
+          action: "poststation_import_blocks",
+          nonce: poststation.nonce,
+          postwork_id: $("#postwork-id").val(),
+          blocks_json: JSON.stringify(blocks),
+        });
+
+        if (response.success) {
+          alert(response.data.message);
+          window.location.reload();
+        } else {
+          throw new Error(response.data);
+        }
+      } catch (error) {
+        console.error("Import failed:", error);
+        alert("Import failed: " + error.message);
+        $button.prop("disabled", false).html(originalHtml);
+      }
+    }
+
     initExportImport() {
       // Export handler
       $(document).on("click", ".export-postwork", (e) =>
@@ -1826,6 +2405,49 @@
       // Import handlers
       $("#import-postwork").on("click", () => $("#import-file").click());
       $("#import-file").on("change", (e) => this.handleImportPostWork(e));
+    }
+
+    async handleClearCompletedBlocks() {
+      if (
+        !confirm(
+          "Are you sure you want to delete all completed blocks? This action cannot be undone."
+        )
+      ) {
+        return;
+      }
+
+      const $button = $("#clear-completed-blocks");
+      const originalHtml = $button.html();
+
+      $button
+        .prop("disabled", true)
+        .html('<span class="dashicons dashicons-update spin"></span> Clearing...');
+
+      try {
+        const response = await $.post(poststation.ajax_url, {
+          action: "poststation_clear_completed_blocks",
+          nonce: poststation.nonce,
+          postwork_id: $("#postwork-id").val(),
+        });
+
+        if (response.success) {
+          // Remove completed blocks from UI
+          $(".postblock[data-status='completed']").fadeOut(400, function () {
+            $(this).remove();
+            // Update counts and no blocks message
+            const $blocks = $(".postblock");
+            postwork.updateStatusCounts();
+            postwork.updateNoBlocksMessage($blocks.length === 0);
+          });
+        } else {
+          throw new Error(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to clear completed blocks:", error);
+        alert("Failed to clear completed blocks: " + error.message);
+      } finally {
+        $button.prop("disabled", false).html(originalHtml);
+      }
     }
 
     async handleExportPostWork(e) {

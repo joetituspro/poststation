@@ -25,6 +25,11 @@ class PostWork
             enabled_taxonomies text DEFAULT NULL,
             default_terms text DEFAULT NULL,
 			post_fields text DEFAULT NULL,
+			image_config text DEFAULT NULL,
+			content_fields text DEFAULT NULL,
+			tone_of_voice varchar(100) DEFAULT NULL,
+			point_of_view varchar(100) DEFAULT NULL,
+			instructions text DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -75,6 +80,12 @@ class PostWork
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
 
 		$default_post_fields = [
+			'slug' => [
+				'value' => '',
+				'prompt' => '',
+				'type' => 'string',
+				'required' => false
+			],
 			'title' => [
 				'value' => '',
 				'prompt' => 'Generate a clear and engaging title for this article',
@@ -89,6 +100,45 @@ class PostWork
 			]
 		];
 
+		// Default content fields structure
+		$default_content_fields = [
+			'title' => [
+				'enabled' => true,
+				'mode' => 'generate_from_topic',
+				'prompt' => '',
+			],
+			'body' => [
+				'enabled' => true,
+				'mode' => 'single_prompt',
+				'prompt' => '',
+			],
+			'categories' => [
+				'enabled' => false,
+				'mode' => 'manual',
+				'prompt' => '',
+				'selected' => [],
+			],
+			'tags' => [
+				'enabled' => false,
+				'mode' => 'generate',
+				'prompt' => '',
+				'selected' => [],
+			],
+			'custom_taxonomies' => [],
+			'custom_fields' => [],
+			'image' => [
+				'enabled' => false,
+				'mode' => 'generate_from_title',
+				'prompt' => '',
+				'template_id' => '',
+				'category_text' => '',
+				'main_text' => '',
+				'category_color' => '#000000',
+				'title_color' => '#000000',
+				'background_images' => [],
+			],
+		];
+
 		$data = wp_parse_args($data, [
 			'title' => '',
 			'author_id' => get_current_user_id(),
@@ -96,9 +146,14 @@ class PostWork
 			'post_type' => 'post',
 			'post_status' => 'pending',
 			'default_author_id' => get_current_user_id(),
-			'enabled_taxonomies' => json_encode(['category' => true, 'post_tag' => true]),
+			'enabled_taxonomies' => json_encode([]),
 			'default_terms' => json_encode([]),
-			'post_fields' => json_encode($default_post_fields)
+			'post_fields' => json_encode($default_post_fields),
+			'image_config' => json_encode([]),
+			'content_fields' => json_encode($default_content_fields),
+			'tone_of_voice' => 'seo_optimized',
+			'point_of_view' => 'third_person',
+			'instructions' => ''
 		]);
 
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
@@ -149,6 +204,31 @@ class PostWork
 
 		if (isset($data['post_fields'])) {
 			$update_data['post_fields'] = $data['post_fields'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['image_config'])) {
+			$update_data['image_config'] = $data['image_config'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['content_fields'])) {
+			$update_data['content_fields'] = $data['content_fields'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['tone_of_voice'])) {
+			$update_data['tone_of_voice'] = $data['tone_of_voice'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['point_of_view'])) {
+			$update_data['point_of_view'] = $data['point_of_view'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['instructions'])) {
+			$update_data['instructions'] = $data['instructions'];
 			$format[] = '%s';
 		}
 

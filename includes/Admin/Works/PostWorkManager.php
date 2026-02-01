@@ -5,6 +5,7 @@ namespace PostStation\Admin\Works;
 use PostStation\Models\PostWork;
 use PostStation\Models\PostBlock;
 use PostStation\Models\Webhook;
+use PostStation\Services\Sitemap;
 use Exception;
 use PostStation\Admin\Works\PostWorksTable;
 
@@ -27,6 +28,8 @@ class PostWorkManager
 		add_action('wp_ajax_poststation_run_postwork', [$this, 'handle_run_postwork']);
 		add_action('wp_ajax_poststation_export_postwork', [$this, 'handle_export_postwork']);
 		add_action('wp_ajax_poststation_import_postwork', [$this, 'handle_import_postwork']);
+		add_action('wp_ajax_poststation_import_blocks', [$this, 'handle_import_blocks']);
+		add_action('wp_ajax_poststation_clear_completed_blocks', [$this, 'handle_clear_completed_blocks']);
 	}
 
 	public function enqueue_scripts(): void
@@ -135,6 +138,10 @@ class PostWorkManager
 
 	private function render_edit_page(int $postwork_id): void
 	{
+		// Ensure tables are up to date
+		\PostStation\Models\PostWork::update_tables();
+		\PostStation\Models\PostBlock::update_tables();
+
 		$postwork = PostWork::get_by_id($postwork_id);
 		if (!$postwork) {
 			wp_die(__('Post work not found.', 'poststation'));
@@ -154,7 +161,7 @@ class PostWorkManager
 			wp_send_json_error(__('Permission denied.', 'poststation'));
 		}
 
-		$title = sanitize_text_field($_POST['title'] ?? '');
+		$title = sanitize_text_field(wp_unslash($_POST['title'] ?? ''));
 		if (empty($title)) {
 			wp_send_json_error(__('Title is required.', 'poststation'));
 		}
@@ -183,14 +190,19 @@ class PostWorkManager
 		}
 
 		$postwork_id = (int)$_POST['id'];
-		$title = sanitize_text_field($_POST['title'] ?? '');
+		$title = sanitize_text_field(wp_unslash($_POST['title'] ?? ''));
 		$webhook_id = (int)$_POST['webhook_id'];
 		$post_type = sanitize_text_field($_POST['post_type'] ?? 'post');
 		$post_status = sanitize_text_field($_POST['post_status'] ?? 'pending');
 		$default_author_id = (int)$_POST['default_author_id'];
-		$enabled_taxonomies = json_decode(stripslashes($_POST['enabled_taxonomies'] ?? '{}'), true);
-		$default_terms = json_decode(stripslashes($_POST['default_terms'] ?? '{}'), true);
-		$post_fields = json_decode(stripslashes($_POST['post_fields'] ?? '{}'), true);
+		$tone_of_voice = sanitize_text_field($_POST['tone_of_voice'] ?? 'seo_optimized');
+		$point_of_view = sanitize_text_field($_POST['point_of_view'] ?? 'third_person');
+		$instructions = sanitize_textarea_field(wp_unslash($_POST['instructions'] ?? ''));
+		$enabled_taxonomies = json_decode(wp_unslash($_POST['enabled_taxonomies'] ?? '{}'), true);
+		$default_terms = json_decode(wp_unslash($_POST['default_terms'] ?? '{}'), true);
+		$post_fields = json_decode(wp_unslash($_POST['post_fields'] ?? '{}'), true);
+		$image_config = json_decode(wp_unslash($_POST['image_config'] ?? '{}'), true);
+		$content_fields = wp_unslash($_POST['content_fields'] ?? '{}');
 
 		if (empty($title)) {
 			wp_send_json_error(__('Title is required.', 'poststation'));
@@ -201,10 +213,6 @@ class PostWorkManager
 		if (!in_array($post_type, $post_types)) {
 			wp_send_json_error(__('Invalid post type.', 'poststation'));
 		}
-
-		// Ensure category and post_tag are always enabled
-		$enabled_taxonomies['category'] = true;
-		$enabled_taxonomies['post_tag'] = true;
 
 		// Validate taxonomies and their terms
 		$valid_taxonomies = [];
@@ -244,9 +252,14 @@ class PostWorkManager
 			'post_type' => $post_type,
 			'post_status' => $post_status,
 			'default_author_id' => $default_author_id ?: get_current_user_id(),
+			'tone_of_voice' => $tone_of_voice,
+			'point_of_view' => $point_of_view,
+			'instructions' => $instructions,
 			'enabled_taxonomies' => wp_json_encode($valid_taxonomies),
 			'default_terms' => wp_json_encode($valid_terms),
-			'post_fields' => wp_json_encode($post_fields)
+			'post_fields' => wp_json_encode($post_fields),
+			'image_config' => wp_json_encode($image_config),
+			'content_fields' => $content_fields
 		]);
 
 		if (!$success) {
@@ -310,16 +323,49 @@ class PostWorkManager
 			$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
 			$post_fields = !empty($block_post_fields) ? $block_post_fields : $postwork_post_fields;
 
+			// Process placeholders in instructions
+			$processed_instructions = $this->process_placeholders($postwork['instructions'] ?? '', $block, $postwork);
+
+			// Process placeholders in each post field prompt and value
+			$processed_post_fields = [];
+			foreach ($post_fields as $key => $field) {
+				if (is_array($field)) {
+					$processed_post_fields[$key] = [
+						'value' => $this->process_placeholders($field['value'] ?? '', $block, $postwork),
+						'prompt' => $this->process_placeholders($field['prompt'] ?? '', $block, $postwork),
+						'type' => $field['type'] ?? 'string',
+						'required' => $field['required'] ?? false
+					];
+				} else {
+					$processed_post_fields[$key] = $this->process_placeholders($field, $block, $postwork);
+				}
+			}
+
+			// Get image config from postwork
+			$image_config = !empty($postwork['image_config']) ? json_decode($postwork['image_config'], true) : [];
+
+			$body = [
+				'block_id' => $block['id'],
+				'article_url' => $block['article_url'] ?? '',
+				'keyword' => $block['keyword'] ?? '',
+				'instructions' => $processed_instructions,
+				'tone_of_voice' => $block['tone_of_voice'] ?? 'seo_optimized',
+				'point_of_view' => $block['point_of_view'] ?? 'third_person',
+				'taxonomies' => json_decode($block['taxonomies'] ?? '{}', true),
+				'post_fields' => $processed_post_fields,
+				'feature_image_title' => $block['feature_image_title'] ?? '{{title}}',
+				'sitemap' => (new Sitemap())->get_sitemap_json($postwork['post_type']),
+				'image_config' => $image_config,
+				'callback_url' => get_site_url() . '/ps-api/create',
+				'api_key' => get_option('poststation_api_key'),
+			];
+			// Update block status to processing in DB
+			PostBlock::update($block_id, ['status' => 'processing']);
+
 			// Send data to webhook
 			$response = wp_remote_post($webhook['url'], [
 				'headers' => ['Content-Type' => 'application/json'],
-				'body' => wp_json_encode([
-					'block_id' => $block['id'],
-					'article_url' => $block['article_url'],
-					'taxonomies' => json_decode($block['taxonomies'], true),
-					'post_fields' => $post_fields,
-					'callback_url' => rest_url('poststation/v1/create'),
-				]),
+				'body' => wp_json_encode($body),
 				'timeout' => 30,
 				'sslverify' => false,
 			]);
@@ -362,9 +408,17 @@ class PostWorkManager
 			wp_send_json_error(__('Invalid post work ID.', 'poststation'));
 		}
 
+		$postwork = PostWork::get_by_id($postwork_id);
+		if (!$postwork) {
+			wp_send_json_error(__('Post work not found.', 'poststation'));
+		}
+
 		$block_id = PostBlock::create([
 			'postwork_id' => $postwork_id,
 			'article_url' => '',
+			'keyword' => '',
+			'tone_of_voice' => $postwork['tone_of_voice'] ?? 'seo_optimized',
+			'point_of_view' => $postwork['point_of_view'] ?? 'third_person',
 			'taxonomies' => '{}',
 			'post_fields' => '{}',
 			'feature_image_id' => null,
@@ -396,16 +450,14 @@ class PostWorkManager
 
 		foreach ($blocks as $block) {
 			$block_id = (int)$block['id'];
-			$article_url = esc_url_raw($block['article_url'] ?? '');
+			$article_url = !empty($block['article_url']) ? esc_url_raw($block['article_url']) : null;
+			$keyword = !empty($block['keyword']) ? sanitize_text_field($block['keyword']) : null;
+			$tone_of_voice = !empty($block['tone_of_voice']) ? sanitize_text_field($block['tone_of_voice']) : 'seo_optimized';
+			$point_of_view = !empty($block['point_of_view']) ? sanitize_text_field($block['point_of_view']) : 'third_person';
 			$taxonomies = json_decode($block['taxonomies'] ?? '{}', true);
 			$post_fields = json_decode($block['post_fields'] ?? '{}', true);
 			$feature_image_id = !empty($block['feature_image_id']) ? (int)$block['feature_image_id'] : null;
-
-			if (empty($article_url)) {
-				$errors[] = sprintf(__('Article URL is required for block #%d.', 'poststation'), $block_id);
-				$success = false;
-				continue;
-			}
+			$feature_image_title = !empty($block['feature_image_title']) ? sanitize_text_field($block['feature_image_title']) : '{{title}}';
 
 			// Validate and sanitize taxonomies
 			$valid_taxonomies = [];
@@ -428,9 +480,13 @@ class PostWorkManager
 
 			$result = PostBlock::update($block_id, [
 				'article_url' => $article_url,
+				'keyword' => $keyword,
+				'tone_of_voice' => $tone_of_voice,
+				'point_of_view' => $point_of_view,
 				'post_fields' => wp_json_encode($post_fields),
 				'taxonomies' => wp_json_encode($valid_taxonomies),
-				'feature_image_id' => $feature_image_id
+				'feature_image_id' => $feature_image_id,
+				'feature_image_title' => $feature_image_title
 			]);
 
 			if (!$result) {
@@ -447,6 +503,31 @@ class PostWorkManager
 		}
 
 		wp_send_json_success();
+	}
+
+	private function process_placeholders(string $text, array $block, array $postwork): string
+	{
+		if (empty($text)) {
+			return $text;
+		}
+
+		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
+		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
+
+		$placeholders = [
+			'{{article_url}}' => $block['article_url'] ?? '',
+			'{{keyword}}' => $block['keyword'] ?? '',
+			'{{image_title}}' => str_replace('{{title}}', $block['keyword'] ?: 'Post', $block['feature_image_title'] ?? '{{title}}'),
+			'{{sitemap}}' => wp_json_encode((new Sitemap())->get_sitemap_json($postwork['post_type'])),
+		];
+
+		// Handle post fields
+		foreach ($postwork_post_fields as $key => $field) {
+			$value = $block_post_fields[$key]['value'] ?? $field['value'] ?? '';
+			$placeholders["{{{$key}}}"] = $value;
+		}
+
+		return str_replace(array_keys($placeholders), array_values($placeholders), $text);
 	}
 
 	public function handle_delete_postblock(): void
@@ -557,5 +638,110 @@ class PostWorkManager
 				'id' => $postwork_id,
 			], admin_url('admin.php')),
 		]);
+	}
+
+	public function handle_import_blocks(): void
+	{
+		check_ajax_referer(self::NONCE_ACTION, 'nonce');
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(__('Permission denied.', 'poststation'));
+		}
+
+		$postwork_id = (int)($_POST['postwork_id'] ?? 0);
+		if (!$postwork_id) {
+			wp_send_json_error(__('Invalid post work ID.', 'poststation'));
+		}
+
+		$blocks_json = stripslashes($_POST['blocks_json'] ?? '[]');
+		$blocks = json_decode($blocks_json, true);
+
+		if (!is_array($blocks)) {
+			wp_send_json_error(__('Invalid blocks JSON format.', 'poststation'));
+		}
+
+		if (empty($blocks)) {
+			wp_send_json_error(__('No blocks to import.', 'poststation'));
+		}
+
+		$postwork = PostWork::get_by_id($postwork_id);
+		if (!$postwork) {
+			wp_send_json_error(__('Post work not found.', 'poststation'));
+		}
+
+		$created_count = 0;
+		foreach ($blocks as $block_data) {
+			$keyword = sanitize_text_field($block_data['topic'] ?? $block_data['keyword'] ?? '');
+			$article_url = esc_url_raw($block_data['article_url'] ?? '');
+			$feature_image_title = sanitize_text_field($block_data['feature_image_title'] ?? '{{title}}');
+			$slug = sanitize_text_field($block_data['slug'] ?? '');
+
+			$data = [
+				'postwork_id' => $postwork_id,
+				'article_url' => $article_url,
+				'keyword' => $keyword,
+				'feature_image_title' => $feature_image_title,
+				'tone_of_voice' => sanitize_text_field($block_data['tone_of_voice'] ?? $postwork['tone_of_voice'] ?? 'seo_optimized'),
+				'point_of_view' => sanitize_text_field($block_data['point_of_view'] ?? $postwork['point_of_view'] ?? 'third_person'),
+				'status' => 'pending'
+			];
+
+			// Handle post fields (especially slug)
+			$post_fields = [];
+			if (isset($block_data['post_fields']) && is_array($block_data['post_fields'])) {
+				$post_fields = $block_data['post_fields'];
+			}
+
+			// If slug is provided at the top level, add it to post_fields
+			if (!empty($slug)) {
+				$post_fields['slug'] = [
+					'value' => $slug,
+					'prompt' => '',
+					'type' => 'string',
+					'required' => false
+				];
+			}
+
+			if (!empty($post_fields)) {
+				$data['post_fields'] = wp_json_encode($post_fields);
+			}
+
+			// Handle taxonomies
+			if (isset($block_data['taxonomies']) && is_array($block_data['taxonomies'])) {
+				$data['taxonomies'] = wp_json_encode($block_data['taxonomies']);
+			}
+
+			$block_id = PostBlock::create($data);
+			if ($block_id) {
+				$created_count++;
+			}
+		}
+
+		wp_send_json_success([
+			'message' => sprintf(__('%d blocks imported successfully.', 'poststation'), $created_count),
+			'count' => $created_count
+		]);
+	}
+
+	public function handle_clear_completed_blocks(): void
+	{
+		check_ajax_referer(self::NONCE_ACTION, 'nonce');
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(__('Permission denied.', 'poststation'));
+		}
+
+		$postwork_id = (int)($_POST['postwork_id'] ?? 0);
+		if (!$postwork_id) {
+			wp_send_json_error(__('Invalid post work ID.', 'poststation'));
+		}
+
+		$success = PostBlock::delete_completed_by_postwork($postwork_id);
+
+		if ($success) {
+			wp_send_json_success(__('Completed blocks cleared successfully.', 'poststation'));
+		} else {
+			wp_send_json_error(__('Failed to clear completed blocks.', 'poststation'));
+		}
 	}
 }
