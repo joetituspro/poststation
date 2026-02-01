@@ -176,8 +176,6 @@ class RestApi
 		update_post_meta($post_id, '_poststation_article_url', $block['article_url'] ?? '');
 		update_post_meta($post_id, '_poststation_keyword', $block['keyword'] ?? '');
 		update_post_meta($post_id, '_poststation_instructions', $request->get_param('instructions') ?? '');
-		update_post_meta($post_id, '_poststation_tone_of_voice', $block['tone_of_voice'] ?? 'seo_optimized');
-		update_post_meta($post_id, '_poststation_point_of_view', $block['point_of_view'] ?? 'third_person');
 	}
 
 private function handle_taxonomies(int $post_id, WP_REST_Request $request, array $block, array $postwork): void

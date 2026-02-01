@@ -76,7 +76,7 @@ export const postworks = {
 	create: (title = 'New Post Work') => ajax('poststation_create_postwork', { title }),
 	update: (id, data) => ajax('poststation_update_postwork', { id, ...data }),
 	delete: (id) => ajax('poststation_delete_postwork', { id }),
-	run: (id) => ajax('poststation_run_postwork', { id }),
+	run: (id, blockId, webhookId) => ajax('poststation_run_postwork', { id, block_id: blockId, webhook_id: webhookId }),
 	export: (id) => ajax('poststation_export_postwork', { id }),
 	import: (file) => {
 		const formData = new FormData();

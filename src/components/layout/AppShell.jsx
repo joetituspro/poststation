@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
 const navItems = [
@@ -33,11 +34,28 @@ function SettingsIcon({ className }) {
 
 export default function AppShell({ children }) {
 	const location = useLocation();
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+	useEffect(() => {
+		setIsSidebarOpen(false);
+	}, [location.pathname]);
 
 	return (
 		<div className="min-h-screen bg-gray-50 flex">
+			{isSidebarOpen && (
+				<button
+					type="button"
+					onClick={() => setIsSidebarOpen(false)}
+					className="fixed inset-0 bg-black/30 z-99970 lg:hidden poststation-mobile-overlay"
+					aria-label="Close navigation"
+				/>
+			)}
 			{/* Sidebar */}
-			<aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+			<aside
+				className={`fixed inset-y-0 left-0 z-99980 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 ease-out poststation-mobile-sidebar ${
+					isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+				} lg:static lg:translate-x-0`}
+			>
 				{/* Logo */}
 				<div className="h-16 flex items-center px-6 border-b border-gray-200">
 					<h1 className="text-xl font-semibold text-gray-900">Post Station</h1>
@@ -49,6 +67,7 @@ export default function AppShell({ children }) {
 						<NavLink
 							key={item.to}
 							to={item.to}
+							onClick={() => setIsSidebarOpen(false)}
 							className={({ isActive }) =>
 								`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
 									isActive
@@ -70,8 +89,21 @@ export default function AppShell({ children }) {
 			</aside>
 
 			{/* Main content */}
-			<main className="flex-1 overflow-auto">
-				<div className="p-8">
+			<main className="flex-1 min-w-0">
+				<div className="p-4 sm:p-8">
+					<div className="flex items-center gap-3 mb-4 lg:hidden">
+						<button
+							type="button"
+							onClick={() => setIsSidebarOpen(true)}
+							className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+							aria-label="Open navigation"
+						>
+							<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+							</svg>
+						</button>
+						<span className="text-lg font-semibold text-gray-900">Post Station</span>
+					</div>
 					{children}
 				</div>
 			</main>

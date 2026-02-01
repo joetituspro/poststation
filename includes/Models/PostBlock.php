@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostBlock
 {
-	public const DB_VERSION = '1.8';
+	public const DB_VERSION = '2.0';
 	protected const TABLE_NAME = 'poststation_postblocks';
 
 	public static function get_table_name(): string
@@ -26,8 +26,6 @@ class PostBlock
 			article_url text,
 			keyword text,
 			instructions text,
-			tone_of_voice varchar(100) DEFAULT NULL,
-			point_of_view varchar(100) DEFAULT NULL,
 			taxonomies text DEFAULT NULL,
 			post_fields text DEFAULT NULL,
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
@@ -44,6 +42,7 @@ class PostBlock
 			KEY feature_image_id (feature_image_id)
 		) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
+		self::drop_legacy_columns($table_name);
 
 		return $tables_created_or_updated;
 	}
@@ -58,6 +57,20 @@ class PostBlock
 			return false;
 		}
 		return true;
+	}
+
+	private static function drop_legacy_columns(string $table_name): void
+	{
+		global $wpdb;
+		$columns = ['tone_of_voice', 'point_of_view'];
+		foreach ($columns as $column) {
+			$exists = $wpdb->get_var(
+				$wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column)
+			);
+			if ($exists) {
+				$wpdb->query("ALTER TABLE {$table_name} DROP COLUMN {$column}");
+			}
+		}
 	}
 
 	/**
@@ -103,8 +116,6 @@ class PostBlock
 			'postwork_id' => 0,
 			'article_url' => '',
 			'keyword' => '',
-			'tone_of_voice' => 'seo_optimized',
-			'point_of_view' => 'third_person',
 			'taxonomies' => '{}',
 			'post_fields' => '{}',
 			'feature_image_id' => null,
@@ -115,9 +126,6 @@ class PostBlock
 		// Ensure strings are not null
 		$data['article_url'] = $data['article_url'] ?? '';
 		$data['keyword'] = $data['keyword'] ?? '';
-		$data['tone_of_voice'] = $data['tone_of_voice'] ?? 'seo_optimized';
-		$data['point_of_view'] = $data['point_of_view'] ?? 'third_person';
-
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
 	}
 

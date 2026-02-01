@@ -5,6 +5,7 @@ import {
 	Card,
 	CardBody,
 	PageLoader,
+	useToast,
 } from '../components/common';
 import PostWorkForm from '../components/postworks/PostWorkForm';
 import ContentFieldsEditor from '../components/postworks/ContentFieldsEditor';
@@ -94,6 +95,7 @@ export default function PostWorkEditPage() {
 	const [isRunning, setIsRunning] = useState(false);
 	const [isDirty, setIsDirty] = useState(false);
 	const stopRunRef = useRef(false);
+	const { showToast } = useToast();
 
 	// Fetch postwork data
 	const fetchPostWork = useCallback(() => postworks.getById(id), [id]);
@@ -121,7 +123,7 @@ export default function PostWorkEditPage() {
 		(file) => blocks.import(id, file)
 	);
 	const { mutate: runPostWork } = useMutation(
-		() => postworks.run(id)
+		(blockId, webhookId) => postworks.run(id, blockId, webhookId)
 	);
 	const { mutate: exportPostWork } = useMutation(
 		() => postworks.export(id)
@@ -223,8 +225,10 @@ export default function PostWorkEditPage() {
 		try {
 			await importBlocks(file);
 			refetch();
+			showToast('Blocks imported.', 'success');
 		} catch (err) {
 			console.error('Failed to import blocks:', err);
+			showToast(err?.message || 'Failed to import blocks.', 'error');
 		}
 	};
 
@@ -233,8 +237,10 @@ export default function PostWorkEditPage() {
 		try {
 			await clearCompletedBlocks();
 			setBlocksList((prev) => prev.filter((b) => b.status !== 'completed'));
+			showToast('Completed blocks cleared.', 'success');
 		} catch (err) {
 			console.error('Failed to clear completed:', err);
+			showToast(err?.message || 'Failed to clear completed blocks.', 'error');
 		}
 	};
 
@@ -253,15 +259,18 @@ export default function PostWorkEditPage() {
 			await updateBlocks(blocksList);
 
 			setIsDirty(false);
-			refetch();
+			showToast('Changes saved.', 'success');
 		} catch (err) {
 			console.error('Failed to save:', err);
+			showToast(err?.message || 'Failed to save.', 'error');
 		}
 	};
 
 	// Run postwork
 	const handleRun = async () => {
-		await handleSave();
+		if (isDirty) {
+			await handleSave();
+		}
 
 		setIsRunning(true);
 		stopRunRef.current = false;
@@ -277,7 +286,7 @@ export default function PostWorkEditPage() {
 				);
 
 				try {
-					await runPostWork();
+					await runPostWork(block.id, postWork.webhook_id ?? 0);
 
 					let attempts = 0;
 					while (attempts < 60 && !stopRunRef.current) {
@@ -307,11 +316,16 @@ export default function PostWorkEditPage() {
 								: b
 						)
 					);
+					showToast(err?.message || 'Block failed.', 'error');
 				}
 			}
 		} finally {
 			setIsRunning(false);
-			refetch();
+			if (stopRunRef.current) {
+				showToast('Run stopped.', 'info');
+			} else {
+				showToast('Run complete.', 'success');
+			}
 		}
 	};
 
@@ -329,8 +343,10 @@ export default function PostWorkEditPage() {
 			a.download = `postwork-${id}.json`;
 			a.click();
 			URL.revokeObjectURL(url);
+			showToast('Export downloaded.', 'success');
 		} catch (err) {
 			console.error('Failed to export:', err);
+			showToast(err?.message || 'Failed to export.', 'error');
 		}
 	};
 
@@ -345,27 +361,26 @@ export default function PostWorkEditPage() {
 		<div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
 			<div className="flex-1 min-w-0">
 				{/* Sticky header - below WP admin bar */}
-				<div className="poststation-sticky-header -mx-8 px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+				<div className="poststation-sticky-header sticky top-8 px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 					<EditablePostWorkTitle
 						value={postWork.title}
 						onChange={handleTitleChange}
 					/>
 					<div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
-						<Button variant="secondary" onClick={handleExport} className="w-full sm:w-auto">
+						<Button variant="secondary" onClick={handleExport}>
 							Export
 						</Button>
-						<Button variant="secondary" onClick={handleSave} loading={saving} disabled={!isDirty} className="w-full sm:w-auto">
+						<Button variant="secondary" onClick={handleSave} loading={saving} disabled={!isDirty}>
 							{isDirty ? 'Save Changes' : 'Saved'}
 						</Button>
 						{isRunning ? (
-							<Button variant="danger" onClick={handleStop} className="w-full sm:w-auto">
+							<Button variant="danger" onClick={handleStop}>
 								Stop
 							</Button>
 						) : (
 							<Button
 								onClick={handleRun}
 								disabled={blocksList.filter((b) => b.status === 'pending' || b.status === 'failed').length === 0}
-								className="w-full sm:w-auto"
 							>
 								Run
 							</Button>
@@ -401,8 +416,8 @@ export default function PostWorkEditPage() {
 								users={users}
 							/>
 							{/* Content Fields inside same section */}
-							<div className="pt-4 border-t border-gray-200">
-								<h4 className="text-base font-medium text-gray-900 mb-1">Content Fields</h4>
+							<div className="border-t border-gray-200">
+								<h4 className="text-lg font-medium text-gray-900 mb-1">Content Fields</h4>
 								<p className="text-sm text-gray-500 mb-4">Configure what content to generate for each post</p>
 								<ContentFieldsEditor
 									postWork={postWork}

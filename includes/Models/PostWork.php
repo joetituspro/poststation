@@ -27,8 +27,6 @@ class PostWork
 			post_fields text DEFAULT NULL,
 			image_config text DEFAULT NULL,
 			content_fields text DEFAULT NULL,
-			tone_of_voice varchar(100) DEFAULT NULL,
-			point_of_view varchar(100) DEFAULT NULL,
 			instructions text DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -38,8 +36,23 @@ class PostWork
             KEY default_author_id (default_author_id)
             ) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
+		self::drop_legacy_columns($table_name);
 
 		return $tables_created_or_updated;
+	}
+
+	private static function drop_legacy_columns(string $table_name): void
+	{
+		global $wpdb;
+		$columns = ['tone_of_voice', 'point_of_view'];
+		foreach ($columns as $column) {
+			$exists = $wpdb->get_var(
+				$wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column)
+			);
+			if ($exists) {
+				$wpdb->query("ALTER TABLE {$table_name} DROP COLUMN {$column}");
+			}
+		}
 	}
 
 	private static function check_and_create_table($table_name, $sql)
@@ -151,8 +164,6 @@ class PostWork
 			'post_fields' => json_encode($default_post_fields),
 			'image_config' => json_encode([]),
 			'content_fields' => json_encode($default_content_fields),
-			'tone_of_voice' => 'seo_optimized',
-			'point_of_view' => 'third_person',
 			'instructions' => ''
 		]);
 
@@ -214,16 +225,6 @@ class PostWork
 
 		if (isset($data['content_fields'])) {
 			$update_data['content_fields'] = $data['content_fields'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['tone_of_voice'])) {
-			$update_data['tone_of_voice'] = $data['tone_of_voice'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['point_of_view'])) {
-			$update_data['point_of_view'] = $data['point_of_view'];
 			$format[] = '%s';
 		}
 

@@ -18,7 +18,7 @@ export default function CategoryFieldConfig({ config, onChange, taxonomies: taxo
 
 	const categoryOptions = categoryTerms.map(term => ({
 		value: term.slug || term.term_id?.toString(),
-		label: term.name,
+		label: (term.name || '').replace(/&amp;/g, '&'),
 	}));
 
 	return (

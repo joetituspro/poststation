@@ -16,7 +16,7 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 		.filter(([key]) => !['category', 'post_tag'].includes(key))
 		.map(([key, tax]) => ({
 			value: key,
-			label: tax.label || key,
+			label: (tax.label || key).replace(/&amp;/g, '&'),
 		}));
 
 	const handleChange = (field, value) => {
@@ -30,7 +30,7 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 
 	const termOptions = selectedTaxTerms.map(term => ({
 		value: term.slug || term.term_id?.toString(),
-		label: term.name,
+		label: (term.name || '').replace(/&amp;/g, '&'),
 	}));
 
 	return (

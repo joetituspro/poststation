@@ -18,7 +18,7 @@ export default function TagFieldConfig({ config, onChange, taxonomies: taxonomie
 
 	const tagOptions = tagTerms.map(term => ({
 		value: term.slug || term.term_id?.toString(),
-		label: term.name,
+		label: (term.name || '').replace(/&amp;/g, '&'),
 	}));
 
 	return (

@@ -2,6 +2,7 @@ export { default as Button } from './Button';
 export { default as Input, Textarea } from './Input';
 export { default as Select, MultiSelect } from './Select';
 export { default as Modal, ConfirmModal } from './Modal';
+export { ToastProvider, useToast } from './Toast';
 export { default as Table, TableHead, TableBody, TableRow, TableHeader, TableCell, EmptyState } from './Table';
 export { default as StatusBadge, CountsBadge } from './StatusBadge';
 

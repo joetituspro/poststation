@@ -195,8 +195,6 @@ class PostWorkManager
 		$post_type = sanitize_text_field($_POST['post_type'] ?? 'post');
 		$post_status = sanitize_text_field($_POST['post_status'] ?? 'pending');
 		$default_author_id = (int)$_POST['default_author_id'];
-		$tone_of_voice = sanitize_text_field($_POST['tone_of_voice'] ?? 'seo_optimized');
-		$point_of_view = sanitize_text_field($_POST['point_of_view'] ?? 'third_person');
 		$instructions = sanitize_textarea_field(wp_unslash($_POST['instructions'] ?? ''));
 		$enabled_taxonomies = json_decode(wp_unslash($_POST['enabled_taxonomies'] ?? '{}'), true);
 		$default_terms = json_decode(wp_unslash($_POST['default_terms'] ?? '{}'), true);
@@ -252,8 +250,6 @@ class PostWorkManager
 			'post_type' => $post_type,
 			'post_status' => $post_status,
 			'default_author_id' => $default_author_id ?: get_current_user_id(),
-			'tone_of_voice' => $tone_of_voice,
-			'point_of_view' => $point_of_view,
 			'instructions' => $instructions,
 			'enabled_taxonomies' => wp_json_encode($valid_taxonomies),
 			'default_terms' => wp_json_encode($valid_terms),
@@ -298,9 +294,9 @@ class PostWorkManager
 			wp_send_json_error(__('Permission denied.', 'poststation'));
 		}
 
-		$postwork_id = (int)$_POST['id'];
-		$block_id = (int)$_POST['block_id'];
-		$webhook_id = (int)$_POST['webhook_id'];
+		$postwork_id = (int)($_POST['id'] ?? 0);
+		$block_id = (int)($_POST['block_id'] ?? 0);
+		$webhook_id = (int)($_POST['webhook_id'] ?? 0);
 
 		// Validate inputs
 		$postwork = PostWork::get_by_id($postwork_id);
@@ -349,8 +345,6 @@ class PostWorkManager
 				'article_url' => $block['article_url'] ?? '',
 				'keyword' => $block['keyword'] ?? '',
 				'instructions' => $processed_instructions,
-				'tone_of_voice' => $block['tone_of_voice'] ?? 'seo_optimized',
-				'point_of_view' => $block['point_of_view'] ?? 'third_person',
 				'taxonomies' => json_decode($block['taxonomies'] ?? '{}', true),
 				'post_fields' => $processed_post_fields,
 				'feature_image_title' => $block['feature_image_title'] ?? '{{title}}',
@@ -417,8 +411,6 @@ class PostWorkManager
 			'postwork_id' => $postwork_id,
 			'article_url' => '',
 			'keyword' => '',
-			'tone_of_voice' => $postwork['tone_of_voice'] ?? 'seo_optimized',
-			'point_of_view' => $postwork['point_of_view'] ?? 'third_person',
 			'taxonomies' => '{}',
 			'post_fields' => '{}',
 			'feature_image_id' => null,
@@ -452,8 +444,6 @@ class PostWorkManager
 			$block_id = (int)$block['id'];
 			$article_url = !empty($block['article_url']) ? esc_url_raw($block['article_url']) : null;
 			$keyword = !empty($block['keyword']) ? sanitize_text_field($block['keyword']) : null;
-			$tone_of_voice = !empty($block['tone_of_voice']) ? sanitize_text_field($block['tone_of_voice']) : 'seo_optimized';
-			$point_of_view = !empty($block['point_of_view']) ? sanitize_text_field($block['point_of_view']) : 'third_person';
 			$taxonomies = json_decode($block['taxonomies'] ?? '{}', true);
 			$post_fields = json_decode($block['post_fields'] ?? '{}', true);
 			$feature_image_id = !empty($block['feature_image_id']) ? (int)$block['feature_image_id'] : null;
@@ -481,8 +471,6 @@ class PostWorkManager
 			$result = PostBlock::update($block_id, [
 				'article_url' => $article_url,
 				'keyword' => $keyword,
-				'tone_of_voice' => $tone_of_voice,
-				'point_of_view' => $point_of_view,
 				'post_fields' => wp_json_encode($post_fields),
 				'taxonomies' => wp_json_encode($valid_taxonomies),
 				'feature_image_id' => $feature_image_id,
@@ -681,8 +669,6 @@ class PostWorkManager
 				'article_url' => $article_url,
 				'keyword' => $keyword,
 				'feature_image_title' => $feature_image_title,
-				'tone_of_voice' => sanitize_text_field($block_data['tone_of_voice'] ?? $postwork['tone_of_voice'] ?? 'seo_optimized'),
-				'point_of_view' => sanitize_text_field($block_data['point_of_view'] ?? $postwork['point_of_view'] ?? 'third_person'),
 				'status' => 'pending'
 			];
 

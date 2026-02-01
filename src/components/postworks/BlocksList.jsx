@@ -204,16 +204,17 @@ function BlockItem({
 			{/* Expanded form */}
 			{isExpanded && (
 				<div className="px-4 py-4 bg-gray-50 border-t border-gray-200">
+					{block.error_message && (
+						<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+							<p className="text-sm text-red-700">{block.error_message}</p>
+						</div>
+					)}
 					<BlockForm
 						block={block}
 						postWork={postWork}
 						onChange={onUpdate}
 					/>
-					{block.error_message && (
-						<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-							<p className="text-sm text-red-700">{block.error_message}</p>
-						</div>
-					)}
+					
 				</div>
 			)}
 		</div>
