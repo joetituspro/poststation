@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostBlock
 {
-	public const DB_VERSION = '2.0';
+	public const DB_VERSION = '2.2';
 	protected const TABLE_NAME = 'poststation_postblocks';
 
 	public static function get_table_name(): string
@@ -30,7 +30,9 @@ class PostBlock
 			post_fields text DEFAULT NULL,
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
 			feature_image_title text DEFAULT NULL,
+			run_started_at datetime DEFAULT NULL,
 			status varchar(50) NOT NULL DEFAULT 'pending',
+			progress text DEFAULT NULL,
 			post_id bigint(20) unsigned DEFAULT NULL,
 			error_message text DEFAULT NULL,
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

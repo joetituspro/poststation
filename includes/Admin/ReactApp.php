@@ -25,6 +25,22 @@ class ReactApp
 		add_action('wp_ajax_poststation_delete_webhook', [$this, 'ajax_delete_webhook']);
 		add_action('wp_ajax_poststation_get_settings', [$this, 'ajax_get_settings']);
 		add_action('wp_ajax_poststation_save_api_key', [$this, 'ajax_save_api_key']);
+
+		// PostWork AJAX handlers
+		add_action('wp_ajax_poststation_create_postwork', [$this, 'ajax_create_postwork']);
+		add_action('wp_ajax_poststation_update_postwork', [$this, 'ajax_update_postwork']);
+		add_action('wp_ajax_poststation_delete_postwork', [$this, 'ajax_delete_postwork']);
+		add_action('wp_ajax_poststation_run_postwork', [$this, 'ajax_run_postwork']);
+		add_action('wp_ajax_poststation_stop_postwork_run', [$this, 'ajax_stop_postwork_run']);
+		add_action('wp_ajax_poststation_export_postwork', [$this, 'ajax_export_postwork']);
+		add_action('wp_ajax_poststation_import_postwork', [$this, 'ajax_import_postwork']);
+
+		// PostBlock AJAX handlers
+		add_action('wp_ajax_poststation_create_postblock', [$this, 'ajax_create_postblock']);
+		add_action('wp_ajax_poststation_update_blocks', [$this, 'ajax_update_blocks']);
+		add_action('wp_ajax_poststation_delete_postblock', [$this, 'ajax_delete_postblock']);
+		add_action('wp_ajax_poststation_clear_completed_blocks', [$this, 'ajax_clear_completed_blocks']);
+		add_action('wp_ajax_poststation_import_blocks', [$this, 'ajax_import_blocks']);
 	}
 
 	/**
@@ -398,5 +414,370 @@ class ReactApp
 		}
 
 		wp_send_json_error(['message' => 'Failed to delete webhook']);
+	}
+
+	/**
+	 * AJAX: Create postwork
+	 */
+	public function ajax_create_postwork(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$title = sanitize_text_field(wp_unslash($_POST['title'] ?? ''));
+		if (empty($title)) {
+			wp_send_json_error(['message' => 'Title is required']);
+		}
+
+		$postwork_id = PostWork::create(['title' => $title]);
+		if (!$postwork_id) {
+			wp_send_json_error(['message' => 'Failed to create post work']);
+		}
+
+		wp_send_json_success(['id' => $postwork_id]);
+	}
+
+	/**
+	 * AJAX: Update postwork
+	 */
+	public function ajax_update_postwork(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)$_POST['id'];
+		$title = sanitize_text_field(wp_unslash($_POST['title'] ?? ''));
+		$webhook_id = (int)$_POST['webhook_id'];
+		$post_type = sanitize_text_field($_POST['post_type'] ?? 'post');
+		$post_status = sanitize_text_field($_POST['post_status'] ?? 'pending');
+		$default_author_id = (int)$_POST['default_author_id'];
+		$instructions = sanitize_textarea_field(wp_unslash($_POST['instructions'] ?? ''));
+		$enabled_taxonomies = json_decode(wp_unslash($_POST['enabled_taxonomies'] ?? '{}'), true);
+		$post_fields = json_decode(wp_unslash($_POST['post_fields'] ?? '{}'), true);
+		$image_config = json_decode(wp_unslash($_POST['image_config'] ?? '{}'), true);
+		$content_fields = wp_unslash($_POST['content_fields'] ?? '{}');
+
+		if (empty($title)) {
+			wp_send_json_error(['message' => 'Title is required']);
+		}
+
+		$success = PostWork::update($postwork_id, [
+			'title' => $title,
+			'webhook_id' => $webhook_id ?: null,
+			'post_type' => $post_type,
+			'post_status' => $post_status,
+			'default_author_id' => $default_author_id ?: get_current_user_id(),
+			'instructions' => $instructions,
+			'enabled_taxonomies' => wp_json_encode($enabled_taxonomies),
+			'post_fields' => wp_json_encode($post_fields),
+			'image_config' => wp_json_encode($image_config),
+			'content_fields' => $content_fields
+		]);
+
+		if (!$success) {
+			wp_send_json_error(['message' => 'Failed to update post work']);
+		}
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: Delete postwork
+	 */
+	public function ajax_delete_postwork(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)$_POST['id'];
+
+		// Delete associated blocks first
+		PostBlock::delete_by_postwork($postwork_id);
+
+		$success = PostWork::delete($postwork_id);
+		if (!$success) {
+			wp_send_json_error(['message' => 'Failed to delete post work']);
+		}
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: Run single block
+	 */
+	public function ajax_run_postwork(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)($_POST['id'] ?? 0);
+		$block_id = (int)($_POST['block_id'] ?? 0);
+		$webhook_id = (int)($_POST['webhook_id'] ?? 0);
+
+		$result = \PostStation\Services\BlockRunner::dispatch_block($postwork_id, $block_id, $webhook_id);
+		if (!$result['success']) {
+			wp_send_json_error(['message' => $result['message'] ?? 'Failed to run block']);
+		}
+
+		$runner = new \PostStation\Services\BackgroundRunner();
+		$runner->schedule_status_check($postwork_id, $block_id, $webhook_id, 0);
+
+		wp_send_json_success([
+			'message' => 'Block sent to webhook for processing',
+			'block_id' => $block_id,
+		]);
+	}
+
+	/**
+	 * AJAX: Stop postwork run
+	 */
+	public function ajax_stop_postwork_run(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)($_POST['id'] ?? 0);
+		$runner = new \PostStation\Services\BackgroundRunner();
+		$runner->cancel_run($postwork_id);
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: Export postwork
+	 */
+	public function ajax_export_postwork(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)$_POST['id'];
+		$postwork = PostWork::get_by_id($postwork_id);
+		if (!$postwork) {
+			wp_send_json_error(['message' => 'PostWork not found']);
+		}
+
+		$blocks = PostBlock::get_by_postwork($postwork_id);
+		
+		// Clean up data for export
+		unset($postwork['id'], $postwork['created_at'], $postwork['updated_at']);
+		foreach ($blocks as &$block) {
+			unset($block['id'], $block['postwork_id'], $block['post_id'], $block['created_at'], $block['updated_at']);
+		}
+
+		wp_send_json_success([
+			'postwork' => $postwork,
+			'blocks' => $blocks
+		]);
+	}
+
+	/**
+	 * AJAX: Import postwork
+	 */
+	public function ajax_import_postwork(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$file = $_FILES['file'] ?? null;
+		if (!$file || !file_exists($file['tmp_name'])) {
+			wp_send_json_error(['message' => 'No file uploaded']);
+		}
+
+		$content = file_get_contents($file['tmp_name']);
+		$data = json_decode($content, true);
+
+		if (!$data || !isset($data['postwork'])) {
+			wp_send_json_error(['message' => 'Invalid file format']);
+		}
+
+		$postwork_id = PostWork::create($data['postwork']);
+		if (!$postwork_id) {
+			wp_send_json_error(['message' => 'Failed to create postwork']);
+		}
+
+		if (!empty($data['blocks'])) {
+			foreach ($data['blocks'] as $block_data) {
+				$block_data['postwork_id'] = $postwork_id;
+				$block_data['status'] = 'pending';
+				PostBlock::create($block_data);
+			}
+		}
+
+		wp_send_json_success(['id' => $postwork_id]);
+	}
+
+	/**
+	 * AJAX: Create postblock
+	 */
+	public function ajax_create_postblock(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)$_POST['postwork_id'];
+		$block_id = PostBlock::create([
+			'postwork_id' => $postwork_id,
+			'status' => 'pending'
+		]);
+
+		if (!$block_id) {
+			wp_send_json_error(['message' => 'Failed to create block']);
+		}
+
+		wp_send_json_success(['id' => $block_id, 'block' => PostBlock::get_by_id($block_id)]);
+	}
+
+	/**
+	 * AJAX: Update multiple blocks
+	 */
+	public function ajax_update_blocks(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$blocks = json_decode(stripslashes($_POST['blocks']), true);
+		if (!is_array($blocks)) {
+			wp_send_json_error(['message' => 'Invalid blocks data']);
+		}
+
+		foreach ($blocks as $block) {
+			$id = (int)$block['id'];
+			unset($block['id']);
+			
+			// Sanitize and format data
+			if (isset($block['taxonomies']) && is_array($block['taxonomies'])) {
+				$block['taxonomies'] = wp_json_encode($block['taxonomies']);
+			}
+			if (isset($block['post_fields']) && is_array($block['post_fields'])) {
+				$block['post_fields'] = wp_json_encode($block['post_fields']);
+			}
+
+			PostBlock::update($id, $block);
+		}
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: Delete postblock
+	 */
+	public function ajax_delete_postblock(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$id = (int)$_POST['id'];
+		if (PostBlock::delete($id)) {
+			wp_send_json_success();
+		}
+
+		wp_send_json_error(['message' => 'Failed to delete block']);
+	}
+
+	/**
+	 * AJAX: Clear completed blocks
+	 */
+	public function ajax_clear_completed_blocks(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)$_POST['postwork_id'];
+		global $wpdb;
+		$table_name = $wpdb->prefix . PostBlock::get_table_name();
+		$wpdb->delete($table_name, ['postwork_id' => $postwork_id, 'status' => 'completed']);
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: Import blocks
+	 */
+	public function ajax_import_blocks(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$postwork_id = (int)$_POST['postwork_id'];
+		$file = $_FILES['file'] ?? null;
+		if (!$file || !file_exists($file['tmp_name'])) {
+			wp_send_json_error(['message' => 'No file uploaded']);
+		}
+
+		$content = file_get_contents($file['tmp_name']);
+		$blocks = json_decode($content, true);
+
+		if (!is_array($blocks)) {
+			wp_send_json_error(['message' => 'Invalid file format']);
+		}
+
+		foreach ($blocks as $block_data) {
+			$block_data['postwork_id'] = $postwork_id;
+			$block_data['status'] = 'pending';
+			PostBlock::create($block_data);
+		}
+
+		wp_send_json_success();
 	}
 }

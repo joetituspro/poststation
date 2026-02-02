@@ -69,6 +69,31 @@ export async function rest(endpoint, options = {}) {
 	return response.json();
 }
 
+const getPsApiBaseUrl = () => {
+	const config = getConfig();
+	const restUrl = config.rest_url || '';
+	const baseUrl = restUrl ? restUrl.replace(/wp-json\/?$/, '') : '/';
+	return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+};
+
+export async function psApi(endpoint, options = {}) {
+	const url = `${getPsApiBaseUrl()}ps-api/${endpoint}`;
+	const response = await fetch(url, {
+		...options,
+		headers: {
+			'Content-Type': 'application/json',
+			...options.headers,
+		},
+		credentials: 'same-origin',
+	});
+
+	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}`);
+	}
+
+	return response.json();
+}
+
 // PostWork API
 export const postworks = {
 	getAll: () => ajax('poststation_get_postworks'),
@@ -77,6 +102,7 @@ export const postworks = {
 	update: (id, data) => ajax('poststation_update_postwork', { id, ...data }),
 	delete: (id) => ajax('poststation_delete_postwork', { id }),
 	run: (id, blockId, webhookId) => ajax('poststation_run_postwork', { id, block_id: blockId, webhook_id: webhookId }),
+	stopRun: (id) => ajax('poststation_stop_postwork_run', { id }),
 	export: (id) => ajax('poststation_export_postwork', { id }),
 	import: (file) => {
 		const formData = new FormData();
@@ -131,8 +157,8 @@ export const settings = {
 	saveApiKey: (apiKey) => ajax('poststation_save_api_key', { api_key: apiKey }),
 };
 
-// Check block status via REST
-export const checkStatus = (blockId) => rest(`poststation/v1/check-status?block_id=${blockId}`);
+export const getPendingProcessingBlocks = (postworkId) =>
+	psApi(`blocks?postwork_id=${postworkId}&status=all`);
 
 // Get config values
 export const getPostTypes = () => getConfig().post_types || {};

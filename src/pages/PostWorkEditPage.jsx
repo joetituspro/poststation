@@ -11,7 +11,7 @@ import PostWorkForm from '../components/postworks/PostWorkForm';
 import ContentFieldsEditor from '../components/postworks/ContentFieldsEditor';
 import BlocksList from '../components/postworks/BlocksList';
 import InfoSidebar from '../components/layout/InfoSidebar';
-import { postworks, blocks, webhooks, checkStatus, getTaxonomies } from '../api/client';
+import { postworks, blocks, webhooks, getTaxonomies, getPendingProcessingBlocks } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 // Editable title: shows text, pen icon on hover, click to edit inline
@@ -94,9 +94,17 @@ export default function PostWorkEditPage() {
 	const [showSettings, setShowSettings] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [isDirty, setIsDirty] = useState(false);
+	const [retryingBlockId, setRetryingBlockId] = useState(null);
+	const [retryFailedLoading, setRetryFailedLoading] = useState(false);
+	const [savingAll, setSavingAll] = useState(false);
+	const [runLoading, setRunLoading] = useState(false);
+	const [stopLoading, setStopLoading] = useState(false);
+	const [clearCompletedLoading, setClearCompletedLoading] = useState(false);
+	const [importLoading, setImportLoading] = useState(false);
 	const stopRunRef = useRef(false);
 	const { showToast } = useToast();
 
+	const getBlockIdKey = useCallback((value) => String(value ?? ''), []);
 	// Fetch postwork data
 	const fetchPostWork = useCallback(() => postworks.getById(id), [id]);
 	const { data, loading, error, refetch } = useQuery(fetchPostWork, [id]);
@@ -125,6 +133,9 @@ export default function PostWorkEditPage() {
 	const { mutate: runPostWork } = useMutation(
 		(blockId, webhookId) => postworks.run(id, blockId, webhookId)
 	);
+	const { mutate: stopPostWorkRun } = useMutation(
+		() => postworks.stopRun(id)
+	);
 	const { mutate: exportPostWork } = useMutation(
 		() => postworks.export(id)
 	);
@@ -136,6 +147,76 @@ export default function PostWorkEditPage() {
 			setBlocksList(data.blocks || []);
 		}
 	}, [data]);
+
+	useEffect(() => {
+		const hasProcessing = blocksList.some((block) => block.status === 'processing');
+		if (hasProcessing !== isRunning) {
+			setIsRunning(hasProcessing);
+		}
+	}, [blocksList, isRunning]);
+
+	const applyPendingProcessingUpdates = useCallback((pendingProcessing) => {
+		if (!Array.isArray(pendingProcessing) || pendingProcessing.length === 0) return;
+		const updatesById = new Map(pendingProcessing.map((item) => [getBlockIdKey(item.id), item]));
+		setBlocksList((prev) =>
+			prev.map((block) => {
+				const match = updatesById.get(getBlockIdKey(block.id));
+				if (!match) return block;
+
+				// Don't overwrite local 'processing' status with 'pending' or 'failed' 
+				// if the server is just slow to catch up
+				if (block.status === 'processing' && match.status !== 'processing') {
+					// Only allow transition to completed or failed if it's actually finished
+					if (match.status !== 'completed' && match.status !== 'failed') {
+						return block;
+					}
+				}
+
+				const newStatus =
+					match.status === 'processing' && match.error_message
+						? 'failed'
+						: match.status;
+
+				if (
+					block.status === newStatus &&
+					block.progress === match.progress &&
+					block.post_id === match.post_id &&
+					block.error_message === match.error_message
+				) {
+					return block;
+				}
+				return {
+					...block,
+					status: newStatus,
+					progress: match.progress,
+					post_id: match.post_id,
+					error_message: match.error_message,
+				};
+			})
+		);
+	}, [getBlockIdKey]);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		const refreshPendingProcessing = async () => {
+			try {
+				const pendingProcessing = await getPendingProcessingBlocks(id);
+				if (cancelled) return;
+				applyPendingProcessingUpdates(pendingProcessing);
+			} catch {
+				// ignore polling errors
+			}
+		};
+
+		refreshPendingProcessing();
+		const interval = setInterval(refreshPendingProcessing, 5000);
+
+		return () => {
+			cancelled = true;
+			clearInterval(interval);
+		};
+	}, [id, applyPendingProcessingUpdates]);
 
 	// Handle postwork changes
 	const handlePostWorkChange = (newPostWork) => {
@@ -214,14 +295,71 @@ export default function PostWorkEditPage() {
 		}
 	};
 
-	// Run single block (for retry)
-	const handleRunBlock = async (blockId) => {
-		handleBlockUpdate(blockId, { status: 'pending' });
-		setIsDirty(true);
+	// Reset single block to pending (for retry)
+	const handleRetryBlock = async (blockId) => {
+		if (!postWork?.webhook_id) {
+			showToast('Select a webhook before retrying.', 'error');
+			return;
+		}
+
+		if (retryingBlockId) return;
+		setRetryingBlockId(getBlockIdKey(blockId));
+
+		const nextBlocks = blocksList.map((block) =>
+			getBlockIdKey(block.id) === getBlockIdKey(blockId)
+				? { ...block, status: 'pending', error_message: null, progress: null }
+				: block
+		);
+
+		try {
+			await updateBlocks(nextBlocks);
+			setBlocksList(nextBlocks);
+			showToast('Block set to pending.', 'info');
+		} catch (err) {
+			refetch();
+			showToast(err?.message || 'Failed to reset block.', 'error');
+		} finally {
+			setRetryingBlockId(null);
+		}
+	};
+
+	const handleRetryFailedBlocks = async () => {
+		if (!postWork?.webhook_id) {
+			showToast('Select a webhook before retrying.', 'error');
+			return;
+		}
+
+		const hasFailed = blocksList.some((block) => block.status === 'failed');
+		if (!hasFailed) {
+			showToast('No failed blocks to retry.', 'info');
+			return;
+		}
+
+		if (retryFailedLoading) return;
+		setRetryFailedLoading(true);
+
+		const nextBlocks = blocksList.map((block) =>
+			block.status === 'failed'
+				? { ...block, status: 'pending', error_message: null, progress: null }
+				: block
+		);
+
+		try {
+			await updateBlocks(nextBlocks);
+			setBlocksList(nextBlocks);
+			showToast('Failed blocks set to pending.', 'info');
+		} catch (err) {
+			refetch();
+			showToast(err?.message || 'Failed to reset blocks.', 'error');
+		} finally {
+			setRetryFailedLoading(false);
+		}
 	};
 
 	// Import blocks
 	const handleImportBlocks = async (file) => {
+		if (importLoading) return;
+		setImportLoading(true);
 		try {
 			await importBlocks(file);
 			refetch();
@@ -229,11 +367,15 @@ export default function PostWorkEditPage() {
 		} catch (err) {
 			console.error('Failed to import blocks:', err);
 			showToast(err?.message || 'Failed to import blocks.', 'error');
+		} finally {
+			setImportLoading(false);
 		}
 	};
 
 	// Clear completed blocks
 	const handleClearCompleted = async () => {
+		if (clearCompletedLoading) return;
+		setClearCompletedLoading(true);
 		try {
 			await clearCompletedBlocks();
 			setBlocksList((prev) => prev.filter((b) => b.status !== 'completed'));
@@ -241,11 +383,15 @@ export default function PostWorkEditPage() {
 		} catch (err) {
 			console.error('Failed to clear completed:', err);
 			showToast(err?.message || 'Failed to clear completed blocks.', 'error');
+		} finally {
+			setClearCompletedLoading(false);
 		}
 	};
 
 	// Save everything
 	const handleSave = async () => {
+		if (savingAll) return;
+		setSavingAll(true);
 		try {
 			await updatePostWork({
 				title: postWork.title,
@@ -263,6 +409,8 @@ export default function PostWorkEditPage() {
 		} catch (err) {
 			console.error('Failed to save:', err);
 			showToast(err?.message || 'Failed to save.', 'error');
+		} finally {
+			setSavingAll(false);
 		}
 	};
 
@@ -272,65 +420,60 @@ export default function PostWorkEditPage() {
 			await handleSave();
 		}
 
+		if (!postWork?.webhook_id) {
+			showToast('Select a webhook before running.', 'error');
+			return;
+		}
+
+		const nextBlock = blocksList.find((block) => block.status === 'pending');
+
+		if (!nextBlock) {
+			showToast('No pending blocks to run.', 'info');
+			return;
+		}
+
+		if (runLoading) return;
+		setRunLoading(true);
 		setIsRunning(true);
 		stopRunRef.current = false;
 
 		try {
-			const toRun = blocksList.filter((b) => b.status === 'pending' || b.status === 'failed');
+			await runPostWork(nextBlock.id, postWork.webhook_id ?? 0);
+			setBlocksList((prev) =>
+				prev.map((block) =>
+					getBlockIdKey(block.id) === getBlockIdKey(nextBlock.id)
+						? { ...block, status: 'processing', error_message: null, progress: null }
+						: block
+				)
+			);
 
-			for (const block of toRun) {
-				if (stopRunRef.current) break;
+			const pendingProcessing = await getPendingProcessingBlocks(id);
+			applyPendingProcessingUpdates(pendingProcessing);
 
-				setBlocksList((prev) =>
-					prev.map((b) => (b.id === block.id ? { ...b, status: 'processing' } : b))
-				);
-
-				try {
-					await runPostWork(block.id, postWork.webhook_id ?? 0);
-
-					let attempts = 0;
-					while (attempts < 60 && !stopRunRef.current) {
-						await new Promise((resolve) => setTimeout(resolve, 2000));
-						try {
-							const status = await checkStatus(block.id);
-							if (status.status === 'completed' || status.status === 'failed') {
-								setBlocksList((prev) =>
-									prev.map((b) =>
-										b.id === block.id
-											? { ...b, status: status.status, post_id: status.post_id, error_message: status.error_message }
-											: b
-									)
-								);
-								break;
-							}
-						} catch {
-							// continue
-						}
-						attempts++;
-					}
-				} catch (err) {
-					setBlocksList((prev) =>
-						prev.map((b) =>
-							b.id === block.id
-								? { ...b, status: 'failed', error_message: err.message }
-								: b
-						)
-					);
-					showToast(err?.message || 'Block failed.', 'error');
-				}
-			}
-		} finally {
+			showToast('Run started in background.', 'info');
+		} catch (err) {
 			setIsRunning(false);
-			if (stopRunRef.current) {
-				showToast('Run stopped.', 'info');
-			} else {
-				showToast('Run complete.', 'success');
-			}
+			showToast(err?.message || 'Failed to start run.', 'error');
+		} finally {
+			setRunLoading(false);
 		}
 	};
 
-	const handleStop = () => {
+	const handleStop = async () => {
 		stopRunRef.current = true;
+		if (stopLoading) return;
+		setStopLoading(true);
+		try {
+			await stopPostWorkRun();
+			setBlocksList((prev) =>
+				prev.map((b) => (b.status === 'processing' ? { ...b, status: 'cancelled' } : b))
+			);
+			showToast('Run stopped.', 'info');
+		} catch (err) {
+			showToast(err?.message || 'Failed to stop run.', 'error');
+		} finally {
+			setStopLoading(false);
+		}
 	};
 
 	const handleExport = async () => {
@@ -370,17 +513,26 @@ export default function PostWorkEditPage() {
 						<Button variant="secondary" onClick={handleExport}>
 							Export
 						</Button>
-						<Button variant="secondary" onClick={handleSave} loading={saving} disabled={!isDirty}>
+						<Button
+							variant="secondary"
+							onClick={handleSave}
+							loading={savingAll}
+							disabled={!isDirty || savingAll}
+						>
 							{isDirty ? 'Save Changes' : 'Saved'}
 						</Button>
 						{isRunning ? (
-							<Button variant="danger" onClick={handleStop}>
+							<Button variant="danger" onClick={handleStop} loading={stopLoading}>
 								Stop
 							</Button>
 						) : (
 							<Button
 								onClick={handleRun}
-								disabled={blocksList.filter((b) => b.status === 'pending' || b.status === 'failed').length === 0}
+								loading={runLoading}
+								disabled={
+									runLoading ||
+									blocksList.filter((b) => b.status === 'pending').length === 0
+								}
 							>
 								Run
 							</Button>
@@ -439,10 +591,15 @@ export default function PostWorkEditPage() {
 							onUpdateBlock={handleBlockUpdate}
 							onDeleteBlock={handleDeleteBlock}
 							onDuplicateBlock={handleDuplicateBlock}
-							onRunBlock={handleRunBlock}
+							onRunBlock={handleRetryBlock}
+							retryingBlockId={retryingBlockId}
+							onRetryFailedBlocks={handleRetryFailedBlocks}
+							retryFailedLoading={retryFailedLoading}
 							onImportBlocks={handleImportBlocks}
 							onClearCompleted={handleClearCompleted}
 							loading={creatingBlock}
+							importLoading={importLoading}
+							clearCompletedLoading={clearCompletedLoading}
 						/>
 					</CardBody>
 				</Card>

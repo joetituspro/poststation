@@ -21,7 +21,10 @@ class ApiHandler
 		'thumbnail_url',
 		'taxonomies',
 		'custom_fields',
-		'image_config'
+		'image_config',
+		'status',
+		'progress',
+		'error_message'
 	];
 
 	/**
@@ -49,8 +52,14 @@ class ApiHandler
 		);
 
 		add_rewrite_rule(
-			'ps-api/check-status/?$',
-			'index.php?pagename=ps-api/check-status',
+			'ps-api/progress/?$',
+			'index.php?pagename=ps-api/progress',
+			'top'
+		);
+
+		add_rewrite_rule(
+			'ps-api/blocks/?$',
+			'index.php?pagename=ps-api/blocks',
 			'top'
 		);
 
@@ -106,18 +115,38 @@ class ApiHandler
 					$this->send_response($response);
 					break;
 
-				case 'check-status':
-					// Only allow GET method for status check
+				case 'progress':
+					// Only allow POST method for progress endpoint
+					if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+						$this->send_error('Method not allowed', 405);
+					}
+
+					// Validate API key
+					$this->validate_api_key();
+
+					// Parse JSON body
+					$body = $this->get_request_body();
+
+					// Process the progress update
+					$response = $this->update_block_progress($body);
+
+					// Send success response
+					$this->send_response($response);
+					break;
+
+				case 'blocks':
+					// Only allow GET method for blocks endpoint
 					if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 						$this->send_error('Method not allowed', 405);
 					}
 
-					$block_ids = $_GET['block_ids'] ?? '';
-					if (empty($block_ids)) {
-						$this->send_error('Missing block_ids parameter', 400);
+					$postwork_id = (int)($_GET['postwork_id'] ?? 0);
+					if (!$postwork_id) {
+						$this->send_error('Missing postwork_id parameter', 400);
 					}
 
-					$response = $this->check_block_status($block_ids);
+					$status_filter = trim((string)($_GET['status'] ?? ''));
+					$response = $this->get_blocks_by_status($postwork_id, $status_filter);
 					$this->send_response($response);
 					break;
 
@@ -141,7 +170,7 @@ class ApiHandler
 
 		if (in_array('*', $allowed_origins) || in_array($origin, $allowed_origins)) {
 			header('Access-Control-Allow-Origin: ' . $origin);
-			header('Access-Control-Allow-Methods: POST, OPTIONS');
+			header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 			header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
 			header('Access-Control-Max-Age: 86400'); // 24 hours cache
 		}
@@ -237,43 +266,98 @@ class ApiHandler
 	}
 
 	/**
-	 * Check status of multiple blocks
+	 * Get pending and processing blocks for a post work.
 	 *
-	 * @param string $block_ids Comma-separated list of block IDs
-	 * @return array Status information for requested blocks
+	 * @param int $postwork_id
+	 * @return array
 	 */
-	private function check_block_status(string $block_ids): array
+	private function get_blocks_by_status(int $postwork_id, string $status_filter): array
 	{
-		global $wpdb;
+		$allowed_statuses = ['pending', 'processing', 'completed', 'failed', 'cancelled'];
+		if ($status_filter === 'all' || $status_filter === '') {
+			$statuses = $allowed_statuses;
+		} elseif ($status_filter !== '') {
+			$statuses = array_values(array_intersect(
+				$allowed_statuses,
+				array_map('trim', explode(',', $status_filter))
+			));
+			if (empty($statuses)) {
+				$statuses = ['pending', 'processing'];
+			}
+		} else {
+			$statuses = ['pending', 'processing'];
+		}
 
-		// Convert comma-separated string to array of integers
-		$block_ids = array_map('intval', explode(',', $block_ids));
-
-		if (empty($block_ids)) {
+		$blocks = PostBlock::get_by_postwork($postwork_id);
+		if (empty($blocks)) {
 			return [];
 		}
 
-		// Get all blocks in a single query
-		$table_name = $wpdb->prefix . PostBlock::get_table_name();
-		$ids_string = implode(',', $block_ids);
+		$response = [];
+		foreach ($blocks as $block) {
+			if (!in_array($block['status'], $statuses, true)) {
+				continue;
+			}
 
-		$blocks = $wpdb->get_results(
-			"SELECT id, status, error_message, post_id 
-			 FROM {$table_name} 
-			 WHERE id IN ({$ids_string})",
-			ARRAY_A
-		);
+			$response[] = [
+				'id' => (int)$block['id'],
+				'status' => $block['status'],
+				'progress' => $block['progress'] ?? null,
+				'post_id' => $block['post_id'] ?? null,
+				'error_message' => $block['error_message'] ?? null,
+			];
+		}
 
-		// Format response
-		return array_combine(
-			array_column($blocks, 'id'),
-			array_map(function ($block) {
-				return [
-					'status' => $block['status'],
-					'error_message' => $block['error_message'],
-					'post_id' => $block['post_id'],
-				];
-			}, $blocks)
-		) ?: [];
+		return $response;
+	}
+
+	/**
+	 * Update progress of a block
+	 *
+	 * @param array $data Request data
+	 * @throws Exception If update fails
+	 * @return array
+	 */
+	private function update_block_progress(array $data): array
+	{
+		$block_id = $data['block_id'] ?? null;
+		$status = $data['status'] ?? null;
+		$progress = $data['progress'] ?? null;
+		$error_message = $data['error_message'] ?? null;
+
+		if (!$block_id) {
+			throw new Exception('Missing block_id', 400);
+		}
+
+		$block = PostBlock::get_by_id($block_id);
+		if (!$block) {
+			throw new Exception('Block not found', 404);
+		}
+
+		$update_data = [];
+		if ($progress !== null) {
+			$update_data['progress'] = $progress;
+		}
+		if ($status !== null) {
+			$allowed_statuses = ['pending', 'processing', 'completed', 'failed', 'cancelled'];
+			if (in_array($status, $allowed_statuses, true)) {
+				$update_data['status'] = $status;
+				if ($status === 'completed') {
+					$update_data['error_message'] = null;
+				}
+				if ($status === 'failed' && $error_message) {
+					$update_data['error_message'] = $error_message;
+				}
+			}
+		}
+
+		if (!empty($update_data)) {
+			PostBlock::update($block_id, $update_data);
+		}
+
+		return [
+			'success' => true,
+			'message' => 'Progress updated successfully'
+		];
 	}
 }

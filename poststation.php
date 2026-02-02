@@ -58,6 +58,30 @@ if (file_exists(POSTSTATION_PATH . 'vendor/autoload.php')) {
 	});
 }
 
+// Load Action Scheduler if not already available
+if (!function_exists('as_enqueue_async_action')) {
+	$action_scheduler_paths = [
+		POSTSTATION_PATH . 'vendor/woocommerce/action-scheduler/action-scheduler.php',
+		POSTSTATION_PATH . 'vendor/action-scheduler/action-scheduler.php',
+		POSTSTATION_PATH . 'lib/action-scheduler/action-scheduler.php',
+	];
+	foreach ($action_scheduler_paths as $path) {
+		if (file_exists($path)) {
+			require_once $path;
+			break;
+		}
+	}
+}
+
+if (is_admin()) {
+	add_action('admin_notices', function () {
+		// Check at display time; Action Scheduler defines as_enqueue_async_action on plugins_loaded
+		if (!function_exists('as_enqueue_async_action')) {
+			echo '<div class="notice notice-error"><p>PostStation requires Action Scheduler. Please run composer install or bundle Action Scheduler.</p></div>';
+		}
+	});
+}
+
 // Add error logging
 if (!defined('WP_DEBUG_LOG')) {
 	define('WP_DEBUG_LOG', true);

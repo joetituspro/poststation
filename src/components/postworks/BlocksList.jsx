@@ -19,9 +19,14 @@ export default function BlocksList({
 	onDeleteBlock,
 	onDuplicateBlock,
 	onRunBlock,
+	retryingBlockId,
+	onRetryFailedBlocks,
+	retryFailedLoading,
 	onImportBlocks,
 	onClearCompleted,
 	loading = false,
+	importLoading = false,
+	clearCompletedLoading = false,
 }) {
 	const [filter, setFilter] = useState('');
 	const [expandedId, setExpandedId] = useState(null);
@@ -73,12 +78,30 @@ export default function BlocksList({
 						variant="ghost"
 						size="sm"
 						onClick={onClearCompleted}
-						disabled={!blocks.some((b) => b.status === 'completed')}
+						loading={clearCompletedLoading}
+						disabled={clearCompletedLoading || !blocks.some((b) => b.status === 'completed')}
 						className="w-full sm:w-auto"
 					>
 						Clear Completed
 					</Button>
-					<Button variant="secondary" size="sm" onClick={() => importRef.current?.click()} className="w-full sm:w-auto">
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={onRetryFailedBlocks}
+						loading={retryFailedLoading}
+						disabled={retryFailedLoading || !blocks.some((b) => b.status === 'failed')}
+						className="w-full sm:w-auto"
+					>
+						Retry Failed
+					</Button>
+					<Button
+						variant="secondary"
+						size="sm"
+						onClick={() => importRef.current?.click()}
+						loading={importLoading}
+						disabled={importLoading}
+						className="w-full sm:w-auto"
+					>
 						Import Blocks
 					</Button>
 					<Button size="sm" onClick={onAddBlock} loading={loading} className="w-full sm:w-auto">
@@ -101,6 +124,7 @@ export default function BlocksList({
 							key={block.id}
 							block={block}
 							postWork={postWork}
+							retryingBlockId={retryingBlockId}
 							isExpanded={expandedId === block.id}
 							onToggle={() => setExpandedId(expandedId === block.id ? null : block.id)}
 							onUpdate={(data) => onUpdateBlock(block.id, data)}
@@ -127,6 +151,7 @@ export default function BlocksList({
 function BlockItem({
 	block,
 	postWork,
+	retryingBlockId,
 	isExpanded,
 	onToggle,
 	onUpdate,
@@ -157,7 +182,14 @@ function BlockItem({
 					</button>
 					<span className="text-sm text-gray-500">#{block.id}</span>
 					<span className="font-medium text-gray-900 truncate max-w-md">{preview}</span>
-					<StatusBadge status={block.status} />
+					<div className="flex items-center gap-2">
+						<StatusBadge status={block.status} />
+						{block.progress !== null && block.progress !== undefined && (
+							<span className="text-[10px] text-gray-500 italic truncate max-w-[150px]">
+								{String(block.progress)}
+							</span>
+						)}
+					</div>
 				</div>
 
 				<div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -182,21 +214,33 @@ function BlockItem({
 						</>
 					)}
 					{block.status === 'failed' && (
-						<Button variant="secondary" size="sm" onClick={onRun}>
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={onRun}
+							loading={String(retryingBlockId) === String(block.id)}
+							disabled={String(retryingBlockId) === String(block.id)}
+						>
 							Retry
 						</Button>
 					)}
 					<button
 						onClick={onDuplicate}
-						className="text-sm text-gray-600 hover:text-gray-900"
+						className="p-1 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100"
+						title="Duplicate"
 					>
-						Duplicate
+						<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+						</svg>
 					</button>
 					<button
 						onClick={onDelete}
-						className="text-sm text-red-600 hover:text-red-900"
+						className="p-1 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50"
+						title="Delete"
 					>
-						Delete
+						<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+						</svg>
 					</button>
 				</div>
 			</div>

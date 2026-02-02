@@ -4,13 +4,9 @@ namespace PostStation\Core;
 
 use Exception;
 
-use PostStation\Admin\Menu;
-use PostStation\Admin\Settings;
-use PostStation\Admin\WebhookManager;
-use PostStation\Admin\Works\PostWorkManager;
 use PostStation\Admin\ReactApp;
 use PostStation\Services\Sitemap;
-use PostStation\Api\RestApi;
+use PostStation\Services\BackgroundRunner;
 use PostStation\Models\Webhook;
 use PostStation\Models\PostWork;
 use PostStation\Models\PostBlock;
@@ -24,11 +20,6 @@ class Bootstrap
 
 	private function init_hooks(): void
 	{
-		// Initialize REST API
-		add_action('rest_api_init', function () {
-			new RestApi();
-		});
-
 		// Initialize Custom API
 		$api_handler = new \PostStation\Api\ApiHandler();
 		$api_handler->init();
@@ -37,18 +28,16 @@ class Bootstrap
 		$sitemap_service = new Sitemap();
 		$sitemap_service->init();
 
+		// Initialize Background Runner
+		$background_runner = new BackgroundRunner();
+		$background_runner->init();
+
 		// Initialize Admin
 		if (is_admin()) {
 			$this->check_db_version();
 			
 			// Initialize React App (new SPA interface)
 			new ReactApp();
-			
-			// Keep legacy admin pages for backwards compatibility
-			$settings = new Settings();
-			$webhook_manager = new WebhookManager();
-			$postwork_manager = new PostWorkManager();
-			new Menu($settings, $webhook_manager, $postwork_manager);
 		}
 
 		// Register assets
@@ -59,7 +48,8 @@ class Bootstrap
 	{
 		$installed_version = get_option('poststation_postblock_db_version', '0.0.0');
 		if (version_compare($installed_version, PostBlock::DB_VERSION, '<')) {
-			$this->activate();
+			// Defer to init so $wp_rewrite is available when registering endpoints
+			add_action('init', [$this, 'activate'], 1);
 		}
 	}
 
