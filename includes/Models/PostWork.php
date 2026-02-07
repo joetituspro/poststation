@@ -19,15 +19,13 @@ class PostWork
             title varchar(255) NOT NULL,
             author_id bigint(20) unsigned NOT NULL,
             webhook_id bigint(20) unsigned DEFAULT NULL,
+            article_type varchar(50) NOT NULL DEFAULT 'blog_post',
+			language varchar(20) NOT NULL DEFAULT 'en',
+			target_country varchar(20) NOT NULL DEFAULT 'international',
             post_type varchar(20) NOT NULL DEFAULT 'post',
             post_status varchar(20) NOT NULL DEFAULT 'pending',
             default_author_id bigint(20) unsigned DEFAULT NULL,
-            enabled_taxonomies text DEFAULT NULL,
-            default_terms text DEFAULT NULL,
-			post_fields text DEFAULT NULL,
-			image_config text DEFAULT NULL,
 			content_fields text DEFAULT NULL,
-			instructions text DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -44,7 +42,7 @@ class PostWork
 	private static function drop_legacy_columns(string $table_name): void
 	{
 		global $wpdb;
-		$columns = ['tone_of_voice', 'point_of_view'];
+		$columns = ['tone_of_voice', 'point_of_view', 'enabled_taxonomies', 'default_terms', 'post_fields', 'image_config', 'instructions'];
 		foreach ($columns as $column) {
 			$exists = $wpdb->get_var(
 				$wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column)
@@ -92,29 +90,27 @@ class PostWork
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
 
-		$default_post_fields = [
-			'slug' => [
-				'value' => '',
-				'prompt' => '',
-				'type' => 'string',
-				'required' => false
-			],
-			'title' => [
-				'value' => '',
-				'prompt' => 'Generate a clear and engaging title for this article',
-				'type' => 'string',
-				'required' => true
-			],
-			'content' => [
-				'value' => '',
-				'prompt' => 'Generate comprehensive content for this article',
-				'type' => 'string',
-				'required' => true
-			]
-		];
+		$default_content_fields = self::get_default_content_fields();
 
-		// Default content fields structure
-		$default_content_fields = [
+		$data = wp_parse_args($data, [
+			'title' => '',
+			'author_id' => get_current_user_id(),
+			'webhook_id' => null,
+			'article_type' => 'blog_post',
+			'language' => 'en',
+			'target_country' => 'international',
+			'post_type' => 'post',
+			'post_status' => 'pending',
+			'default_author_id' => get_current_user_id(),
+			'content_fields' => json_encode($default_content_fields),
+		]);
+
+		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
+	}
+
+	public static function get_default_content_fields(): array
+	{
+		return [
 			'title' => [
 				'enabled' => true,
 				'mode' => 'generate_from_topic',
@@ -124,6 +120,18 @@ class PostWork
 				'enabled' => true,
 				'mode' => 'single_prompt',
 				'prompt' => '',
+				'tone_of_voice' => 'none',
+				'point_of_view' => 'none',
+				'introductory_hook_brief' => '',
+				'key_takeaways' => 'yes',
+				'conclusion' => 'yes',
+				'faq' => 'yes',
+				'internal_linking' => 'yes',
+				'external_linking' => 'yes',
+				'list_numbering_format' => 'none',
+				'use_descending_order' => false,
+				'list_section_prompt' => '',
+				'number_of_list' => '',
 			],
 			'categories' => [
 				'enabled' => false,
@@ -151,23 +159,6 @@ class PostWork
 				'background_images' => [],
 			],
 		];
-
-		$data = wp_parse_args($data, [
-			'title' => '',
-			'author_id' => get_current_user_id(),
-			'webhook_id' => null,
-			'post_type' => 'post',
-			'post_status' => 'pending',
-			'default_author_id' => get_current_user_id(),
-			'enabled_taxonomies' => json_encode([]),
-			'default_terms' => json_encode([]),
-			'post_fields' => json_encode($default_post_fields),
-			'image_config' => json_encode([]),
-			'content_fields' => json_encode($default_content_fields),
-			'instructions' => ''
-		]);
-
-		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
 	}
 
 	public static function update(int $id, array $data): bool
@@ -188,6 +179,21 @@ class PostWork
 			$format[] = '%d';
 		}
 
+		if (isset($data['article_type'])) {
+			$update_data['article_type'] = $data['article_type'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['language'])) {
+			$update_data['language'] = $data['language'];
+			$format[] = '%s';
+		}
+
+		if (isset($data['target_country'])) {
+			$update_data['target_country'] = $data['target_country'];
+			$format[] = '%s';
+		}
+
 		if (isset($data['post_type'])) {
 			$update_data['post_type'] = $data['post_type'];
 			$format[] = '%s';
@@ -203,33 +209,8 @@ class PostWork
 			$format[] = '%d';
 		}
 
-		if (isset($data['enabled_taxonomies'])) {
-			$update_data['enabled_taxonomies'] = $data['enabled_taxonomies'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['default_terms'])) {
-			$update_data['default_terms'] = $data['default_terms'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['post_fields'])) {
-			$update_data['post_fields'] = $data['post_fields'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['image_config'])) {
-			$update_data['image_config'] = $data['image_config'];
-			$format[] = '%s';
-		}
-
 		if (isset($data['content_fields'])) {
 			$update_data['content_fields'] = $data['content_fields'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['instructions'])) {
-			$update_data['instructions'] = $data['instructions'];
 			$format[] = '%s';
 		}
 

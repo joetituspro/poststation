@@ -1,5 +1,8 @@
+import Tooltip from './Tooltip';
+
 export default function Select({
 	label,
+	tooltip,
 	options = [],
 	error,
 	className = '',
@@ -9,8 +12,9 @@ export default function Select({
 	return (
 		<div className={className}>
 			{label && (
-				<label className="block text-sm font-medium text-gray-700 mb-1">
-					{label}
+				<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+					<span>{label}</span>
+					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
 			<select
@@ -41,6 +45,7 @@ export default function Select({
 // Multi-select with tags
 export function MultiSelect({
 	label,
+	tooltip,
 	options = [],
 	value = [],
 	onChange,
@@ -66,8 +71,9 @@ export function MultiSelect({
 	return (
 		<div className={className}>
 			{label && (
-				<label className="block text-sm font-medium text-gray-700 mb-1">
-					{label}
+				<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+					<span>{label}</span>
+					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
 			

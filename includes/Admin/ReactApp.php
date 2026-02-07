@@ -5,6 +5,8 @@ namespace PostStation\Admin;
 use PostStation\Models\PostWork;
 use PostStation\Models\PostBlock;
 use PostStation\Models\Webhook;
+use PostStation\Utils\Languages;
+use PostStation\Utils\Countries;
 
 /**
  * React SPA Admin Interface
@@ -167,6 +169,8 @@ class ReactApp
 			'react_nonce' => wp_create_nonce('poststation_react_action'), // For React-specific operations
 			'post_types' => $post_type_options,
 			'taxonomies' => $taxonomy_data,
+			'languages' => Languages::all(),
+			'countries' => Countries::all(),
 			'users' => $user_data,
 			'current_user_id' => get_current_user_id(),
 		]);
@@ -458,13 +462,12 @@ class ReactApp
 		$postwork_id = (int)$_POST['id'];
 		$title = sanitize_text_field(wp_unslash($_POST['title'] ?? ''));
 		$webhook_id = (int)$_POST['webhook_id'];
+		$article_type = sanitize_text_field($_POST['article_type'] ?? 'blog_post');
+		$language = sanitize_text_field($_POST['language'] ?? 'en');
+		$target_country = sanitize_text_field($_POST['target_country'] ?? 'international');
 		$post_type = sanitize_text_field($_POST['post_type'] ?? 'post');
 		$post_status = sanitize_text_field($_POST['post_status'] ?? 'pending');
 		$default_author_id = (int)$_POST['default_author_id'];
-		$instructions = sanitize_textarea_field(wp_unslash($_POST['instructions'] ?? ''));
-		$enabled_taxonomies = json_decode(wp_unslash($_POST['enabled_taxonomies'] ?? '{}'), true);
-		$post_fields = json_decode(wp_unslash($_POST['post_fields'] ?? '{}'), true);
-		$image_config = json_decode(wp_unslash($_POST['image_config'] ?? '{}'), true);
 		$content_fields = wp_unslash($_POST['content_fields'] ?? '{}');
 
 		if (empty($title)) {
@@ -474,13 +477,12 @@ class ReactApp
 		$success = PostWork::update($postwork_id, [
 			'title' => $title,
 			'webhook_id' => $webhook_id ?: null,
+			'article_type' => $article_type ?: 'blog_post',
+			'language' => $language ?: 'en',
+			'target_country' => $target_country ?: 'international',
 			'post_type' => $post_type,
 			'post_status' => $post_status,
 			'default_author_id' => $default_author_id ?: get_current_user_id(),
-			'instructions' => $instructions,
-			'enabled_taxonomies' => wp_json_encode($enabled_taxonomies),
-			'post_fields' => wp_json_encode($post_fields),
-			'image_config' => wp_json_encode($image_config),
 			'content_fields' => $content_fields
 		]);
 
@@ -656,8 +658,11 @@ class ReactApp
 		}
 
 		$postwork_id = (int)$_POST['postwork_id'];
+		$postwork = PostWork::get_by_id($postwork_id);
+		$article_type = $postwork['article_type'] ?? 'blog_post';
 		$block_id = PostBlock::create([
 			'postwork_id' => $postwork_id,
+			'article_type' => $article_type,
 			'status' => 'pending'
 		]);
 
@@ -690,14 +695,6 @@ class ReactApp
 			$id = (int)$block['id'];
 			unset($block['id']);
 			
-			// Sanitize and format data
-			if (isset($block['taxonomies']) && is_array($block['taxonomies'])) {
-				$block['taxonomies'] = wp_json_encode($block['taxonomies']);
-			}
-			if (isset($block['post_fields']) && is_array($block['post_fields'])) {
-				$block['post_fields'] = wp_json_encode($block['post_fields']);
-			}
-
 			PostBlock::update($id, $block);
 		}
 

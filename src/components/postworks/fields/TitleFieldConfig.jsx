@@ -14,6 +14,7 @@ export default function TitleFieldConfig({ config, onChange }) {
 		<div className="space-y-4">
 			<Select
 				label="Mode"
+				tooltip="Controls how the title is produced for the post."
 				options={MODE_OPTIONS}
 				value={config.mode || 'generate_from_topic'}
 				onChange={(e) => handleChange('mode', e.target.value)}
@@ -21,7 +22,8 @@ export default function TitleFieldConfig({ config, onChange }) {
 
 			{config.mode !== 'use_topic_as_title' && (
 				<Textarea
-					label="Additional Prompt"
+					label="Additional Instruction"
+					tooltip="Extra guidance for the title generation prompt."
 					value={config.prompt || ''}
 					onChange={(e) => handleChange('prompt', e.target.value)}
 					placeholder="Optional: Add specific instructions for title generation..."

@@ -9,6 +9,7 @@ export default function CustomFieldConfig({ config, onChange }) {
 		<div className="space-y-4">
 			<Input
 				label="Meta Key"
+				tooltip="WordPress meta key to store the generated value."
 				value={config.meta_key || ''}
 				onChange={(e) => handleChange('meta_key', e.target.value)}
 				placeholder="e.g., _seo_description, custom_meta_key"
@@ -16,6 +17,7 @@ export default function CustomFieldConfig({ config, onChange }) {
 
 			<Textarea
 				label="Generation Prompt"
+				tooltip="Instructions for generating the custom field value."
 				value={config.prompt || ''}
 				onChange={(e) => handleChange('prompt', e.target.value)}
 				placeholder="Instructions for generating this field's value..."

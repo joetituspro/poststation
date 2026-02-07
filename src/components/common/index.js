@@ -5,6 +5,7 @@ export { default as Modal, ConfirmModal } from './Modal';
 export { ToastProvider, useToast } from './Toast';
 export { default as Table, TableHead, TableBody, TableRow, TableHeader, TableCell, EmptyState } from './Table';
 export { default as StatusBadge, CountsBadge } from './StatusBadge';
+export { default as Tooltip } from './Tooltip';
 
 // Loading spinner
 export function Spinner({ size = 'md', className = '' }) {

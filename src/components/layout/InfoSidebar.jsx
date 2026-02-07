@@ -20,7 +20,7 @@ export default function InfoSidebar() {
 							2
 						</div>
 						<p className="text-sm text-gray-600">
-							Add blocks with topics/keywords to create multiple posts at once.
+							Add blocks with topics to create multiple posts at once.
 						</p>
 					</div>
 					<div className="flex gap-3">

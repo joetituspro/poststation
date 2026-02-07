@@ -1,5 +1,8 @@
+import Tooltip from './Tooltip';
+
 export default function Input({
 	label,
+	tooltip,
 	error,
 	className = '',
 	...props
@@ -7,8 +10,9 @@ export default function Input({
 	return (
 		<div className={className}>
 			{label && (
-				<label className="block text-sm font-medium text-gray-700 mb-1">
-					{label}
+				<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+					<span>{label}</span>
+					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
 			<input
@@ -30,6 +34,7 @@ export default function Input({
 
 export function Textarea({
 	label,
+	tooltip,
 	error,
 	className = '',
 	rows = 3,
@@ -38,8 +43,9 @@ export function Textarea({
 	return (
 		<div className={className}>
 			{label && (
-				<label className="block text-sm font-medium text-gray-700 mb-1">
-					{label}
+				<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+					<span>{label}</span>
+					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
 			<textarea

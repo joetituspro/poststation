@@ -1,4 +1,4 @@
-import { Select, Textarea, MultiSelect } from '../../common';
+import { Select, Textarea, MultiSelect, Input } from '../../common';
 import { getTaxonomies } from '../../../api/client';
 
 const MODE_OPTIONS = [
@@ -37,6 +37,7 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 		<div className="space-y-4">
 			<Select
 				label="Taxonomy"
+				tooltip="Choose a custom taxonomy to manage for this post work."
 				options={customTaxonomies}
 				value={config.taxonomy || ''}
 				onChange={(e) => handleChange('taxonomy', e.target.value)}
@@ -47,6 +48,7 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 				<>
 					<Select
 						label="Mode"
+						tooltip="Manual: pick terms. Generate: create new. Auto-select: choose from existing."
 						options={MODE_OPTIONS}
 						value={config.mode || 'manual'}
 						onChange={(e) => handleChange('mode', e.target.value)}
@@ -55,6 +57,7 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 					{config.mode === 'manual' && (
 						<MultiSelect
 							label={`Select ${taxonomies?.[config.taxonomy]?.label || 'Terms'}`}
+							tooltip="Choose specific terms to assign."
 							options={termOptions}
 							value={config.selected || []}
 							onChange={(selected) => handleChange('selected', selected)}
@@ -63,8 +66,20 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 					)}
 
 					{(config.mode === 'generate' || config.mode === 'auto_select') && (
+						<Input
+							label={config.mode === 'generate' ? "Number of Terms to Generate" : "Number of Terms to Auto-Select"}
+							tooltip="How many terms to return for this post."
+							type="number"
+							min="1"
+							value={config.term_count || 3}
+							onChange={(e) => handleChange('term_count', Math.max(1, parseInt(e.target.value) || 1))}
+						/>
+					)}
+
+					{(config.mode === 'generate' || config.mode === 'auto_select') && (
 						<Textarea
-							label="Additional Prompt"
+							label="Additional Instruction"
+							tooltip="Optional instructions to guide term selection."
 							value={config.prompt || ''}
 							onChange={(e) => handleChange('prompt', e.target.value)}
 							placeholder={

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import Button from './Button';
 
 export default function Modal({
 	isOpen,
@@ -39,7 +40,7 @@ export default function Modal({
 	return (
 		<div
 			ref={overlayRef}
-			className="fixed inset-0 z-50 overflow-y-auto"
+			className="fixed inset-0 z-[999999] overflow-y-auto"
 			onClick={(e) => e.target === overlayRef.current && onClose()}
 		>
 			<div className="min-h-screen px-4 flex items-center justify-center">
@@ -81,31 +82,26 @@ export function ConfirmModal({
 	confirmText = 'Confirm',
 	cancelText = 'Cancel',
 	variant = 'danger',
+	loading = false,
 }) {
-	const buttonVariants = {
-		danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-		primary: 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500',
-	};
-
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
 			<p className="text-gray-600 mb-6">{message}</p>
 			<div className="flex justify-end gap-3">
-				<button
+				<Button
+					variant="secondary"
 					onClick={onClose}
-					className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+					disabled={loading}
 				>
 					{cancelText}
-				</button>
-				<button
-					onClick={() => {
-						onConfirm();
-						onClose();
-					}}
-					className={`px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${buttonVariants[variant]}`}
+				</Button>
+				<Button
+					variant={variant}
+					onClick={onConfirm}
+					loading={loading}
 				>
 					{confirmText}
-				</button>
+				</Button>
 			</div>
 		</Modal>
 	);

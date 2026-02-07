@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostBlock
 {
-	public const DB_VERSION = '2.2';
+	public const DB_VERSION = '2.6';
 	protected const TABLE_NAME = 'poststation_postblocks';
 
 	public static function get_table_name(): string
@@ -24,10 +24,9 @@ class PostBlock
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			postwork_id bigint(20) unsigned NOT NULL,
 			article_url text,
-			keyword text,
-			instructions text,
-			taxonomies text DEFAULT NULL,
-			post_fields text DEFAULT NULL,
+			topic text,
+			keywords text,
+			article_type varchar(50) NOT NULL DEFAULT 'blog_post',
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
 			feature_image_title text DEFAULT NULL,
 			run_started_at datetime DEFAULT NULL,
@@ -64,7 +63,7 @@ class PostBlock
 	private static function drop_legacy_columns(string $table_name): void
 	{
 		global $wpdb;
-		$columns = ['tone_of_voice', 'point_of_view'];
+		$columns = ['tone_of_voice', 'point_of_view', 'keyword', 'instructions', 'taxonomies', 'post_fields'];
 		foreach ($columns as $column) {
 			$exists = $wpdb->get_var(
 				$wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column)
@@ -117,9 +116,9 @@ class PostBlock
 		$data = wp_parse_args($data, [
 			'postwork_id' => 0,
 			'article_url' => '',
-			'keyword' => '',
-			'taxonomies' => '{}',
-			'post_fields' => '{}',
+			'topic' => '',
+			'keywords' => '',
+			'article_type' => 'blog_post',
 			'feature_image_id' => null,
 			'feature_image_title' => '{{title}}',
 			'status' => 'pending'
@@ -127,7 +126,8 @@ class PostBlock
 
 		// Ensure strings are not null
 		$data['article_url'] = $data['article_url'] ?? '';
-		$data['keyword'] = $data['keyword'] ?? '';
+		$data['topic'] = $data['topic'] ?? '';
+		$data['keywords'] = $data['keywords'] ?? '';
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
 	}
 
@@ -135,11 +135,6 @@ class PostBlock
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::get_table_name();
-
-		// If taxonomies is provided as array, convert to JSON
-		if (isset($data['taxonomies']) && is_array($data['taxonomies'])) {
-			$data['taxonomies'] = wp_json_encode($data['taxonomies']);
-		}
 
 		return (bool)$wpdb->update($table_name, $data, ['id' => $id]);
 	}

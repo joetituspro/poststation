@@ -29,9 +29,12 @@ class Create
 			$postwork = PostWork::get_by_id($block['postwork_id']);
 		}
 
-		// Update block status to processing
+		// Update block status to processing and reset timeout
 		if ($block_id && $block) {
-			PostBlock::update($block_id, ['status' => 'processing']);
+			PostBlock::update($block_id, [
+				'status' => 'processing',
+				'run_started_at' => current_time('mysql')
+			]);
 		}
 
 		try {
@@ -98,23 +101,15 @@ class Create
 		}
 
 		// Handle thumbnail
-		$image_config = $data['image_config'] ?? null;
-		if (empty($image_config) && !empty($postwork['image_config'])) {
-			$image_config = json_decode($postwork['image_config'], true);
-		}
-
 		if (!empty($data['thumbnail_url'])) {
 			$this->handle_thumbnail($post_id, $data['thumbnail_url']);
 		} elseif (!empty($block['feature_image_id'])) {
 			set_post_thumbnail($post_id, $block['feature_image_id']);
-		} elseif (!empty($image_config) && !empty($image_config['enabled'])) {
-			// Generate featured image using image-gen service
-			$this->generate_featured_image($post_id, $image_config, $data);
 		}
 
 		// Handle post fields
 		if (!empty($data['custom_fields'])) {
-			$this->handle_custom_fields($post_id, $block, $postwork, $data['custom_fields']);
+			$this->handle_custom_fields($post_id, $data['custom_fields']);
 		}
 
 		return [
@@ -132,18 +127,12 @@ class Create
 	 */
 	private function handle_taxonomies(int $post_id, array $taxonomies, array $postwork): void
 	{
-		// Get enabled taxonomies from postwork
-		$enabled_taxonomies = !empty($postwork['enabled_taxonomies'])
-			? json_decode($postwork['enabled_taxonomies'], true)
-			: [];
-
-		foreach ($enabled_taxonomies as $taxonomy => $enabled) {
-			// Skip if taxonomy is not enabled or doesn't exist
-			if (!$enabled || !taxonomy_exists($taxonomy)) {
+		foreach ($taxonomies as $taxonomy => $terms) {
+			// Skip if taxonomy doesn't exist
+			if (!taxonomy_exists($taxonomy)) {
 				continue;
 			}
 
-			$terms = $taxonomies[$taxonomy] ?? [];
 			if (empty($terms)) {
 				continue;
 			}
@@ -209,16 +198,9 @@ class Create
 	 * @param array $api_post_fields Custom fields data from API
 	 * @return void
 	 */
-	private function handle_custom_fields(int $post_id, array $block, array $postwork, array $api_post_fields = []): void
+	private function handle_custom_fields(int $post_id, array $api_post_fields = []): void
 	{
-		// Get post fields from API request or block
-		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
-		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
-
-		// Merge post fields, preferring API values over block values
-		$post_fields = array_merge($postwork_post_fields, $block_post_fields, $api_post_fields);
-
-		foreach ($post_fields as $meta_key => $meta_value) {
+		foreach ($api_post_fields as $meta_key => $meta_value) {
 			// Skip title, content, and slug as they're handled in prepare_post_data
 			if (in_array($meta_key, ['title', 'content', 'slug'])) {
 				continue;
@@ -470,18 +452,11 @@ class Create
 			'post_author' => $postwork['default_author_id'] ?? get_current_user_id(),
 		];
 
-		// Get post fields
-		$block_post_fields = !empty($block['post_fields']) ? json_decode($block['post_fields'], true) : [];
-		$postwork_post_fields = !empty($postwork['post_fields']) ? json_decode($postwork['post_fields'], true) : [];
+		$title = $data['title'] ?? null;
+		$content = $data['content'] ?? null;
 
-		// Merge post fields, preferring API values
-		$post_fields = array_merge($postwork_post_fields, $block_post_fields);
-
-		$title = !empty($data['title']) ? $data['title'] : ($post_fields['title']['value'] ?? null);
-		$content = !empty($data['content']) ? $data['content'] : ($post_fields['content']['value'] ?? null);
-
-		// Slug priority: 1. Default value, 2. AI response ($data['slug']), 3. Title
-		$slug = ($post_fields['slug']['value'] ?? null) ?: ($data['slug'] ?? null) ?: $title;
+		// Slug priority: 1. AI response ($data['slug']), 2. Title
+		$slug = ($data['slug'] ?? null) ?: $title;
 
 		// Set title and content from post fields if available
 		if (!empty($title)) {

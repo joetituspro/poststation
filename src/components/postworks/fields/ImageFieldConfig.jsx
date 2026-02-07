@@ -1,4 +1,4 @@
-import { Select, Textarea, Input } from '../../common';
+import { Select, Textarea, Input, Tooltip } from '../../common';
 
 const MODE_OPTIONS = [
 	{ value: 'generate_from_title', label: 'Generate from Article Title' },
@@ -37,6 +37,7 @@ export default function ImageFieldConfig({ config, onChange }) {
 		<div className="space-y-4">
 			<Select
 				label="Mode"
+				tooltip="Choose how the featured image is produced."
 				options={MODE_OPTIONS}
 				value={config.mode || 'generate_from_title'}
 				onChange={(e) => handleChange('mode', e.target.value)}
@@ -44,7 +45,8 @@ export default function ImageFieldConfig({ config, onChange }) {
 
 			{config.mode === 'generate_from_title' && (
 				<Textarea
-					label="Additional Prompt"
+					label="Additional Instruction"
+					tooltip="Extra guidance for the image generation."
 					value={config.prompt || ''}
 					onChange={(e) => handleChange('prompt', e.target.value)}
 					placeholder="Instructions for generating the featured image..."
@@ -56,6 +58,7 @@ export default function ImageFieldConfig({ config, onChange }) {
 				<>
 					<Input
 						label="Template ID"
+						tooltip="ID of the design template used by the image generator."
 						value={config.template_id || ''}
 						onChange={(e) => handleChange('template_id', e.target.value)}
 						placeholder="Design template ID"
@@ -63,6 +66,7 @@ export default function ImageFieldConfig({ config, onChange }) {
 
 					<Input
 						label="Category Text"
+						tooltip="Text displayed as the category label on the image."
 						value={config.category_text || ''}
 						onChange={(e) => handleChange('category_text', e.target.value)}
 						placeholder="Category label for the image"
@@ -70,6 +74,7 @@ export default function ImageFieldConfig({ config, onChange }) {
 
 					<Input
 						label="Main Text"
+						tooltip="Main headline text for the image. Supports placeholders like {{title}}."
 						value={config.main_text || ''}
 						onChange={(e) => handleChange('main_text', e.target.value)}
 						placeholder="{{title}} or custom text"
@@ -77,8 +82,9 @@ export default function ImageFieldConfig({ config, onChange }) {
 
 					<div className="grid grid-cols-2 gap-4">
 						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-1">
-								Category Color
+							<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+								<span>Category Color</span>
+								<Tooltip content="Color used for the category label on the image." />
 							</label>
 							<input
 								type="color"
@@ -88,8 +94,9 @@ export default function ImageFieldConfig({ config, onChange }) {
 							/>
 						</div>
 						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-1">
-								Title Color
+							<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+								<span>Title Color</span>
+								<Tooltip content="Color used for the main text on the image." />
 							</label>
 							<input
 								type="color"
@@ -103,8 +110,9 @@ export default function ImageFieldConfig({ config, onChange }) {
 					{/* Background Images */}
 					<div>
 						<div className="flex items-center justify-between mb-2">
-							<label className="block text-sm font-medium text-gray-700">
-								Background Images ({(config.background_images || []).length}/15)
+							<label className="flex items-center text-sm font-medium text-gray-700">
+								<span>Background Images ({(config.background_images || []).length}/15)</span>
+								<Tooltip content="Optional list of background images used by the generator." />
 							</label>
 							<button
 								type="button"

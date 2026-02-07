@@ -1,4 +1,4 @@
-import { Select, Textarea, MultiSelect } from '../../common';
+import { Select, Textarea, MultiSelect, Input } from '../../common';
 import { getTaxonomies } from '../../../api/client';
 
 const MODE_OPTIONS = [
@@ -25,6 +25,7 @@ export default function TagFieldConfig({ config, onChange, taxonomies: taxonomie
 		<div className="space-y-4">
 			<Select
 				label="Mode"
+				tooltip="Manual: pick tags. Generate: create new. Auto-select: choose from existing."
 				options={MODE_OPTIONS}
 				value={config.mode || 'generate'}
 				onChange={(e) => handleChange('mode', e.target.value)}
@@ -33,6 +34,7 @@ export default function TagFieldConfig({ config, onChange, taxonomies: taxonomie
 			{config.mode === 'manual' && (
 				<MultiSelect
 					label="Select Tags"
+					tooltip="Choose specific tags to assign."
 					options={tagOptions}
 					value={config.selected || []}
 					onChange={(selected) => handleChange('selected', selected)}
@@ -41,8 +43,20 @@ export default function TagFieldConfig({ config, onChange, taxonomies: taxonomie
 			)}
 
 			{(config.mode === 'generate' || config.mode === 'auto_select') && (
+				<Input
+					label={config.mode === 'generate' ? "Number of Tags to Generate" : "Number of Tags to Auto-Select"}
+					tooltip="How many tags to return for this post."
+					type="number"
+					min="1"
+					value={config.term_count || 3}
+					onChange={(e) => handleChange('term_count', Math.max(1, parseInt(e.target.value) || 1))}
+				/>
+			)}
+
+			{(config.mode === 'generate' || config.mode === 'auto_select') && (
 				<Textarea
-					label="Additional Prompt"
+					label="Additional Instruction"
+					tooltip="Optional instructions to guide tag selection."
 					value={config.prompt || ''}
 					onChange={(e) => handleChange('prompt', e.target.value)}
 					placeholder={

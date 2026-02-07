@@ -61,6 +61,8 @@ export default function SettingsPage() {
 						<div className="space-y-4">
 							<div className="flex gap-2">
 								<Input
+									label="API Key"
+									tooltip="Used to authenticate requests to the PostStation API."
 									type="text"
 									value={apiKey || data?.api_key || ''}
 									onChange={(e) => setApiKey(e.target.value)}

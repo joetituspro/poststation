@@ -143,8 +143,23 @@ export default function PostWorkEditPage() {
 	// Initialize state from fetched data
 	useEffect(() => {
 		if (data) {
-			setPostWork(data.postwork);
-			setBlocksList(data.blocks || []);
+			const articleType = data.postwork?.article_type || 'blog_post';
+			const language = data.postwork?.language || 'en';
+			const targetCountry = data.postwork?.target_country || 'international';
+			setPostWork({
+				...data.postwork,
+				article_type: articleType,
+				language,
+				target_country: targetCountry,
+			});
+			setBlocksList(
+				(data.blocks || []).map((block) => ({
+					...block,
+					article_type: block.article_type || articleType,
+					topic: block.topic ?? '',
+					keywords: block.keywords ?? '',
+				}))
+			);
 		}
 	}, [data]);
 
@@ -220,6 +235,22 @@ export default function PostWorkEditPage() {
 
 	// Handle postwork changes
 	const handlePostWorkChange = (newPostWork) => {
+		if (newPostWork?.clear_image_overrides) {
+			const updatedBlocks = blocksList.map((block) => ({
+				...block,
+				feature_image_id: null,
+				feature_image_title: '',
+			}));
+			setBlocksList(updatedBlocks);
+			setIsDirty(true);
+			updateBlocks(updatedBlocks).catch(() => {
+				refetch();
+			});
+			const { clear_image_overrides: _, ...rest } = newPostWork;
+			setPostWork(rest);
+			return;
+		}
+
 		setPostWork(newPostWork);
 		setIsDirty(true);
 	};
@@ -241,20 +272,32 @@ export default function PostWorkEditPage() {
 	const handleAddBlock = async () => {
 		try {
 			const result = await createBlock();
+			const applyCurrentDefaults = (block) => ({
+				...block,
+				article_type: postWork?.article_type || 'blog_post',
+				topic: block.topic ?? '',
+				keywords: block.keywords ?? '',
+			});
 			if (result?.block) {
-				setBlocksList((prev) => [result.block, ...prev]);
+				const enrichedBlock = applyCurrentDefaults(result.block);
+				setBlocksList((prev) => [enrichedBlock, ...prev]);
+				await updateBlocks([enrichedBlock]);
 				return;
 			}
 			if (result?.id) {
 				const newBlock = {
 					id: result.id,
 					status: 'pending',
-					keyword: '',
+					topic: '',
+					keywords: '',
+					article_type: postWork?.article_type || 'blog_post',
 					article_url: '',
 					feature_image_id: null,
 					feature_image_title: '',
 				};
-				setBlocksList((prev) => [newBlock, ...prev]);
+				const enrichedBlock = applyCurrentDefaults(newBlock);
+				setBlocksList((prev) => [enrichedBlock, ...prev]);
+				await updateBlocks([enrichedBlock]);
 			}
 		} catch (err) {
 			console.error('Failed to create block:', err);
@@ -280,13 +323,26 @@ export default function PostWorkEditPage() {
 			const result = await createBlock();
 			const { id: _, status: __, post_id: ___, error_message: ____, ...copyData } = original;
 			if (result?.block) {
-				const newBlock = { ...result.block, ...copyData };
+				const newBlock = {
+					...result.block,
+					...copyData,
+					article_type: copyData.article_type || postWork?.article_type || 'blog_post',
+					topic: copyData.topic ?? '',
+					keywords: copyData.keywords ?? '',
+				};
 				setBlocksList((prev) => [newBlock, ...prev]);
 				setIsDirty(true);
 				return;
 			}
 			if (result?.id) {
-				const newBlock = { ...copyData, id: result.id, status: 'pending' };
+				const newBlock = {
+					...copyData,
+					id: result.id,
+					status: 'pending',
+					article_type: copyData.article_type || postWork?.article_type || 'blog_post',
+					topic: copyData.topic ?? '',
+					keywords: copyData.keywords ?? '',
+				};
 				setBlocksList((prev) => [newBlock, ...prev]);
 				setIsDirty(true);
 			}
@@ -399,6 +455,7 @@ export default function PostWorkEditPage() {
 				post_status: postWork.post_status,
 				default_author_id: postWork.default_author_id,
 				webhook_id: postWork.webhook_id,
+				article_type: postWork.article_type,
 				content_fields: postWork.content_fields,
 			});
 
@@ -438,6 +495,7 @@ export default function PostWorkEditPage() {
 		stopRunRef.current = false;
 
 		try {
+			showToast('Run starting...', 'info');
 			await runPostWork(nextBlock.id, postWork.webhook_id ?? 0);
 			setBlocksList((prev) =>
 				prev.map((block) =>
@@ -449,8 +507,6 @@ export default function PostWorkEditPage() {
 
 			const pendingProcessing = await getPendingProcessingBlocks(id);
 			applyPendingProcessingUpdates(pendingProcessing);
-
-			showToast('Run started in background.', 'info');
 		} catch (err) {
 			setIsRunning(false);
 			showToast(err?.message || 'Failed to start run.', 'error');

@@ -164,3 +164,5 @@ export const getPendingProcessingBlocks = (postworkId) =>
 export const getPostTypes = () => getConfig().post_types || {};
 export const getTaxonomies = () => getConfig().taxonomies || {};
 export const getAdminUrl = () => getConfig().admin_url || '';
+export const getLanguages = () => getConfig().languages || {};
+export const getCountries = () => getConfig().countries || {};

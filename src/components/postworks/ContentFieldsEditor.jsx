@@ -78,6 +78,13 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 		});
 	};
 
+	const notifyImageFieldRemoved = () => {
+		onChange({
+			...postWork,
+			clear_image_overrides: true,
+		});
+	};
+
 	const handleAddField = () => {
 		if (!selectedType) return;
 
@@ -136,6 +143,10 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 			newFields[fieldType] = { ...newFields[fieldType], enabled: false };
 		}
 		
+		if (fieldType === 'image') {
+			notifyImageFieldRemoved();
+		}
+
 		updateContentFields(newFields);
 	};
 
@@ -167,6 +178,8 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 			{/* Add Field Controls */}
 			<div className="flex flex-col sm:flex-row gap-2">
 				<Select
+					label="Add Field"
+					tooltip="Choose a content field to configure for this post work."
 					options={availableTypes}
 					value={selectedType}
 					onChange={(e) => setSelectedType(e.target.value)}
@@ -206,6 +219,7 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 						<BodyFieldConfig
 							config={contentFields.body}
 							onChange={(config) => handleFieldChange('body', config)}
+							articleType={postWork?.article_type || 'blog_post'}
 						/>
 					</FieldCard>
 				)}

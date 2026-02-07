@@ -21,7 +21,6 @@ class ApiHandler
 		'thumbnail_url',
 		'taxonomies',
 		'custom_fields',
-		'image_config',
 		'status',
 		'progress',
 		'error_message'
@@ -352,6 +351,11 @@ class ApiHandler
 		}
 
 		if (!empty($update_data)) {
+			// Reset timeout by updating run_started_at if the block is still processing
+			$current_status = $update_data['status'] ?? $block['status'];
+			if ($current_status === 'processing') {
+				$update_data['run_started_at'] = current_time('mysql');
+			}
 			PostBlock::update($block_id, $update_data);
 		}
 

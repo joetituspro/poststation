@@ -83,6 +83,7 @@ export default function WebhookFormPage() {
 						<form onSubmit={handleSubmit} className="space-y-4">
 							<Input
 								label="Name"
+								tooltip="Friendly name used to identify this webhook."
 								value={name}
 								onChange={(e) => setName(e.target.value)}
 								placeholder="e.g., Content Generator"
@@ -91,6 +92,7 @@ export default function WebhookFormPage() {
 
 							<Input
 								label="URL"
+								tooltip="Endpoint that receives the generation payload."
 								type="url"
 								value={url}
 								onChange={(e) => setUrl(e.target.value)}
