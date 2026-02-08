@@ -14,7 +14,7 @@ import {
 	ConfirmModal,
 	CountsBadge,
 } from '../components/common';
-import { postworks, getPostTypes } from '../api/client';
+import { postworks, getPostTypes, getBootstrapPostworks, refreshBootstrap } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function PostWorksPage() {
@@ -22,8 +22,9 @@ export default function PostWorksPage() {
 	const [deleteId, setDeleteId] = useState(null);
 	const importRef = useRef(null);
 
+	const bootstrapPostworks = getBootstrapPostworks();
 	const fetchPostWorks = useCallback(() => postworks.getAll(), []);
-	const { data, loading, error, refetch } = useQuery(fetchPostWorks);
+	const { data, loading, error, refetch } = useQuery(fetchPostWorks, [], { initialData: bootstrapPostworks });
 	const { mutate: createPostWork, loading: creating } = useMutation(postworks.create);
 	const { mutate: deletePostWork, loading: deleting } = useMutation(postworks.delete);
 	const { mutate: importPostWork, loading: importing } = useMutation(postworks.import);
@@ -34,6 +35,7 @@ export default function PostWorksPage() {
 	const handleCreate = async () => {
 		try {
 			const result = await createPostWork();
+			await refreshBootstrap();
 			if (result?.id) {
 				navigate(`/postworks/${result.id}`);
 			}
@@ -45,6 +47,7 @@ export default function PostWorksPage() {
 	const handleDelete = async () => {
 		if (deleteId) {
 			await deletePostWork(deleteId);
+			await refreshBootstrap();
 			refetch();
 		}
 	};
@@ -55,6 +58,7 @@ export default function PostWorksPage() {
 
 		try {
 			const result = await importPostWork(file);
+			await refreshBootstrap();
 			if (result?.id) {
 				navigate(`/postworks/${result.id}`);
 			}

@@ -23,6 +23,7 @@ class ReactApp
 		add_action('wp_ajax_poststation_get_postwork', [$this, 'ajax_get_postwork']);
 		add_action('wp_ajax_poststation_get_webhooks', [$this, 'ajax_get_webhooks']);
 		add_action('wp_ajax_poststation_get_webhook', [$this, 'ajax_get_webhook']);
+		add_action('wp_ajax_poststation_get_bootstrap', [$this, 'ajax_get_bootstrap']);
 		add_action('wp_ajax_poststation_save_webhook', [$this, 'ajax_save_webhook']);
 		add_action('wp_ajax_poststation_delete_webhook', [$this, 'ajax_delete_webhook']);
 		add_action('wp_ajax_poststation_get_settings', [$this, 'ajax_get_settings']);
@@ -118,14 +119,41 @@ class ReactApp
 		// Enqueue WordPress media library
 		wp_enqueue_media();
 
-		// Get post types
+		$post_type_options = $this->get_post_type_options();
+		$taxonomy_data = $this->get_taxonomy_data();
+		$user_data = $this->get_user_data();
+		$bootstrap_data = $this->get_bootstrap_data($post_type_options, $taxonomy_data, $user_data);
+
+		// Pass data to JavaScript
+		wp_localize_script('poststation-react-app', 'poststation', [
+			'ajax_url' => admin_url('admin-ajax.php'),
+			'admin_url' => admin_url(),
+			'rest_url' => rest_url(),
+			'nonce' => wp_create_nonce('poststation_postwork_action'), // Use existing nonce for PostWork operations
+			'react_nonce' => wp_create_nonce('poststation_react_action'), // For React-specific operations
+			'post_types' => $post_type_options,
+			'taxonomies' => $taxonomy_data,
+			'languages' => Languages::all(),
+			'countries' => Countries::all(),
+			'users' => $user_data,
+			'current_user_id' => get_current_user_id(),
+			'bootstrap' => $bootstrap_data,
+		]);
+	}
+
+	private function get_post_type_options(): array
+	{
 		$post_types = get_post_types(['public' => true], 'objects');
 		$post_type_options = [];
 		foreach ($post_types as $post_type) {
 			$post_type_options[$post_type->name] = $post_type->label;
 		}
 
-		// Get taxonomies with terms (categories, tags, custom taxonomies)
+		return $post_type_options;
+	}
+
+	private function get_taxonomy_data(): array
+	{
 		$taxonomy_data = [];
 		$taxonomies = get_taxonomies(['public' => true], 'objects');
 		foreach ($taxonomies as $taxonomy) {
@@ -151,29 +179,68 @@ class ReactApp
 			];
 		}
 
-		// Get users for author dropdown
+		return $taxonomy_data;
+	}
+
+	private function get_user_data(): array
+	{
 		$users = get_users(['role__in' => ['administrator', 'editor', 'author']]);
-		$user_data = array_map(function($user) {
+		return array_map(function($user) {
 			return [
 				'id' => $user->ID,
 				'display_name' => $user->display_name,
 			];
 		}, $users);
+	}
 
-		// Pass data to JavaScript
-		wp_localize_script('poststation-react-app', 'poststation', [
-			'ajax_url' => admin_url('admin-ajax.php'),
-			'admin_url' => admin_url(),
-			'rest_url' => rest_url(),
-			'nonce' => wp_create_nonce('poststation_postwork_action'), // Use existing nonce for PostWork operations
-			'react_nonce' => wp_create_nonce('poststation_react_action'), // For React-specific operations
+	private function get_postworks_with_counts(): array
+	{
+		$postworks = PostWork::get_all();
+
+		foreach ($postworks as &$postwork) {
+			$blocks = PostBlock::get_by_postwork($postwork['id']);
+			$counts = ['pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0];
+			foreach ($blocks as $block) {
+				$status = $block['status'] ?? 'pending';
+				if (isset($counts[$status])) {
+					$counts[$status]++;
+				}
+			}
+			$postwork['block_counts'] = $counts;
+			$postwork['blocks_total'] = count($blocks);
+		}
+
+		return $postworks;
+	}
+
+	private function get_settings_data(): ?array
+	{
+		if (!current_user_can('manage_options')) {
+			return null;
+		}
+
+		return [
+			'api_key' => get_option('poststation_api_key', ''),
+		];
+	}
+
+	private function get_bootstrap_data(?array $post_type_options = null, ?array $taxonomy_data = null, ?array $user_data = null): array
+	{
+		$post_type_options = $post_type_options ?? $this->get_post_type_options();
+		$taxonomy_data = $taxonomy_data ?? $this->get_taxonomy_data();
+		$user_data = $user_data ?? $this->get_user_data();
+
+		return [
+			'settings' => $this->get_settings_data(),
+			'webhooks' => ['webhooks' => Webhook::get_all()],
+			'postworks' => ['postworks' => $this->get_postworks_with_counts()],
 			'post_types' => $post_type_options,
 			'taxonomies' => $taxonomy_data,
 			'languages' => Languages::all(),
 			'countries' => Countries::all(),
 			'users' => $user_data,
 			'current_user_id' => get_current_user_id(),
-		]);
+		];
 	}
 
 	/**
@@ -196,21 +263,7 @@ class ReactApp
 			wp_send_json_error(['message' => 'Invalid nonce']);
 		}
 
-		$postworks = PostWork::get_all();
-		
-		// Add block counts to each postwork
-		foreach ($postworks as &$postwork) {
-			$blocks = PostBlock::get_by_postwork($postwork['id']);
-			$counts = ['pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0];
-			foreach ($blocks as $block) {
-				$status = $block['status'] ?? 'pending';
-				if (isset($counts[$status])) {
-					$counts[$status]++;
-				}
-			}
-			$postwork['block_counts'] = $counts;
-			$postwork['blocks_total'] = count($blocks);
-		}
+		$postworks = $this->get_postworks_with_counts();
 
 		wp_send_json_success(['postworks' => $postworks]);
 	}
@@ -236,40 +289,8 @@ class ReactApp
 
 		$blocks = PostBlock::get_by_postwork($id);
 
-		// Get users for author dropdown
-		$users = get_users(['role__in' => ['administrator', 'editor', 'author']]);
-		$user_data = array_map(function($user) {
-			return [
-				'id' => $user->ID,
-				'display_name' => $user->display_name,
-			];
-		}, $users);
-
-		// Get taxonomies with terms for content field dropdowns
-		$taxonomy_data = [];
-		$taxonomies = get_taxonomies(['public' => true], 'objects');
-		foreach ($taxonomies as $taxonomy) {
-			$terms = get_terms([
-				'taxonomy' => $taxonomy->name,
-				'hide_empty' => false,
-			]);
-			if (is_wp_error($terms)) {
-				$terms = [];
-			}
-			$terms_array = [];
-			foreach ((array) $terms as $term) {
-				$term_obj = is_object($term) ? $term : (object) $term;
-				$terms_array[] = [
-					'term_id' => $term_obj->term_id ?? 0,
-					'name' => $term_obj->name ?? '',
-					'slug' => $term_obj->slug ?? '',
-				];
-			}
-			$taxonomy_data[$taxonomy->name] = [
-				'label' => $taxonomy->labels->name ?? $taxonomy->name,
-				'terms' => $terms_array,
-			];
-		}
+		$user_data = $this->get_user_data();
+		$taxonomy_data = $this->get_taxonomy_data();
 
 		wp_send_json_success([
 			'postwork' => $postwork,
@@ -277,6 +298,20 @@ class ReactApp
 			'users' => $user_data,
 			'taxonomies' => $taxonomy_data,
 		]);
+	}
+
+	/**
+	 * AJAX: Get localized bootstrap data
+	 */
+	public function ajax_get_bootstrap(): void
+	{
+		if (!$this->verify_nonce()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+
+		$bootstrap = $this->get_bootstrap_data();
+
+		wp_send_json_success(['bootstrap' => $bootstrap]);
 	}
 
 	/**

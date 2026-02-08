@@ -13,20 +13,22 @@ import {
 	PageLoader,
 	ConfirmModal,
 } from '../components/common';
-import { webhooks } from '../api/client';
+import { webhooks, getBootstrapWebhooks, refreshBootstrap } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function WebhooksPage() {
 	const navigate = useNavigate();
 	const [deleteId, setDeleteId] = useState(null);
 
+	const bootstrapWebhooks = getBootstrapWebhooks();
 	const fetchWebhooks = useCallback(() => webhooks.getAll(), []);
-	const { data, loading, error, refetch } = useQuery(fetchWebhooks);
+	const { data, loading, error, refetch } = useQuery(fetchWebhooks, [], { initialData: bootstrapWebhooks });
 	const { mutate: deleteWebhook, loading: deleting } = useMutation(webhooks.delete);
 
 	const handleDelete = async () => {
 		if (deleteId) {
 			await deleteWebhook(deleteId);
+			await refreshBootstrap();
 			refetch();
 		}
 	};

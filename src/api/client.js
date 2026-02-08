@@ -5,6 +5,34 @@
 
 const getConfig = () => window.poststation || {};
 
+export const getBootstrap = () => getConfig().bootstrap || {};
+
+export const setBootstrap = (bootstrap = {}) => {
+	if (!window.poststation) {
+		window.poststation = {};
+	}
+
+	window.poststation.bootstrap = bootstrap;
+
+	const mirrorKeys = [
+		'post_types',
+		'taxonomies',
+		'languages',
+		'countries',
+		'users',
+		'current_user_id',
+		'settings',
+		'webhooks',
+		'postworks',
+	];
+
+	mirrorKeys.forEach((key) => {
+		if (bootstrap[key] !== undefined) {
+			window.poststation[key] = bootstrap[key];
+		}
+	});
+};
+
 /**
  * Make an AJAX request to WordPress
  * @param {string} action - The AJAX action name
@@ -94,6 +122,13 @@ export async function psApi(endpoint, options = {}) {
 	return response.json();
 }
 
+export async function refreshBootstrap() {
+	const data = await ajax('poststation_get_bootstrap');
+	const bootstrap = data.bootstrap || data;
+	setBootstrap(bootstrap);
+	return bootstrap;
+}
+
 // PostWork API
 export const postworks = {
 	getAll: () => ajax('poststation_get_postworks'),
@@ -161,8 +196,14 @@ export const getPendingProcessingBlocks = (postworkId) =>
 	psApi(`blocks?postwork_id=${postworkId}&status=all`);
 
 // Get config values
-export const getPostTypes = () => getConfig().post_types || {};
-export const getTaxonomies = () => getConfig().taxonomies || {};
+const getBootstrapValue = (key) => getBootstrap()[key] ?? getConfig()[key];
+
+export const getPostTypes = () => getBootstrapValue('post_types') || {};
+export const getTaxonomies = () => getBootstrapValue('taxonomies') || {};
 export const getAdminUrl = () => getConfig().admin_url || '';
-export const getLanguages = () => getConfig().languages || {};
-export const getCountries = () => getConfig().countries || {};
+export const getLanguages = () => getBootstrapValue('languages') || {};
+export const getCountries = () => getBootstrapValue('countries') || {};
+
+export const getBootstrapSettings = () => getBootstrap().settings || null;
+export const getBootstrapWebhooks = () => getBootstrap().webhooks || null;
+export const getBootstrapPostworks = () => getBootstrap().postworks || null;

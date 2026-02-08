@@ -4,15 +4,21 @@ import { useState, useEffect, useCallback } from 'react';
  * Hook for fetching data with loading and error states
  * @param {Function} fetchFn - Async function that fetches data
  * @param {Array} deps - Dependencies array for re-fetching
+ * @param {Object} options - Optional configuration
+ * @param {any} options.initialData - Preloaded data to show immediately
  * @returns {Object} { data, loading, error, refetch }
  */
-export function useQuery(fetchFn, deps = []) {
-	const [data, setData] = useState(null);
-	const [loading, setLoading] = useState(true);
+export function useQuery(fetchFn, deps = [], options = {}) {
+	const { initialData = null } = options;
+	const [data, setData] = useState(initialData);
+	const [loading, setLoading] = useState(initialData === null);
 	const [error, setError] = useState(null);
 
-	const fetch = useCallback(async () => {
-		setLoading(true);
+	const fetch = useCallback(async (opts = {}) => {
+		const { background = false } = opts;
+		if (!background) {
+			setLoading(true);
+		}
 		setError(null);
 		try {
 			const result = await fetchFn();
@@ -20,13 +26,16 @@ export function useQuery(fetchFn, deps = []) {
 		} catch (err) {
 			setError(err.message || 'An error occurred');
 		} finally {
-			setLoading(false);
+			if (!background) {
+				setLoading(false);
+			}
 		}
 	}, [fetchFn]);
 
 	useEffect(() => {
-		fetch();
-	}, [...deps, fetch]);
+		const shouldBackground = initialData !== null;
+		fetch({ background: shouldBackground });
+	}, [...deps, fetch, initialData]);
 
 	return { data, loading, error, refetch: fetch };
 }

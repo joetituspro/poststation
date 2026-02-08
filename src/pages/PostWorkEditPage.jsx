@@ -11,7 +11,7 @@ import PostWorkForm from '../components/postworks/PostWorkForm';
 import ContentFieldsEditor from '../components/postworks/ContentFieldsEditor';
 import BlocksList from '../components/postworks/BlocksList';
 import InfoSidebar from '../components/layout/InfoSidebar';
-import { postworks, blocks, webhooks, getTaxonomies, getPendingProcessingBlocks } from '../api/client';
+import { postworks, blocks, webhooks, getTaxonomies, getPendingProcessingBlocks, refreshBootstrap, getBootstrapWebhooks } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 // Editable title: shows text, pen icon on hover, click to edit inline
@@ -110,8 +110,9 @@ export default function PostWorkEditPage() {
 	const { data, loading, error, refetch } = useQuery(fetchPostWork, [id]);
 
 	// Fetch webhooks for dropdown
+	const bootstrapWebhooks = getBootstrapWebhooks();
 	const fetchWebhooks = useCallback(() => webhooks.getAll(), []);
-	const { data: webhooksData } = useQuery(fetchWebhooks);
+	const { data: webhooksData } = useQuery(fetchWebhooks, [], { initialData: bootstrapWebhooks });
 
 	// Mutations
 	const { mutate: updatePostWork, loading: saving } = useMutation(
@@ -460,6 +461,7 @@ export default function PostWorkEditPage() {
 			});
 
 			await updateBlocks(blocksList);
+			await refreshBootstrap();
 
 			setIsDirty(false);
 			showToast('Changes saved.', 'success');

@@ -5202,6 +5202,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ajax: () => (/* binding */ ajax),
 /* harmony export */   blocks: () => (/* binding */ blocks),
 /* harmony export */   getAdminUrl: () => (/* binding */ getAdminUrl),
+/* harmony export */   getBootstrap: () => (/* binding */ getBootstrap),
+/* harmony export */   getBootstrapPostworks: () => (/* binding */ getBootstrapPostworks),
+/* harmony export */   getBootstrapSettings: () => (/* binding */ getBootstrapSettings),
+/* harmony export */   getBootstrapWebhooks: () => (/* binding */ getBootstrapWebhooks),
 /* harmony export */   getCountries: () => (/* binding */ getCountries),
 /* harmony export */   getLanguages: () => (/* binding */ getLanguages),
 /* harmony export */   getPendingProcessingBlocks: () => (/* binding */ getPendingProcessingBlocks),
@@ -5209,7 +5213,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getTaxonomies: () => (/* binding */ getTaxonomies),
 /* harmony export */   postworks: () => (/* binding */ postworks),
 /* harmony export */   psApi: () => (/* binding */ psApi),
+/* harmony export */   refreshBootstrap: () => (/* binding */ refreshBootstrap),
 /* harmony export */   rest: () => (/* binding */ rest),
+/* harmony export */   setBootstrap: () => (/* binding */ setBootstrap),
 /* harmony export */   settings: () => (/* binding */ settings),
 /* harmony export */   webhooks: () => (/* binding */ webhooks)
 /* harmony export */ });
@@ -5235,6 +5241,22 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
 
 var getConfig = function getConfig() {
   return window.poststation || {};
+};
+var getBootstrap = function getBootstrap() {
+  return getConfig().bootstrap || {};
+};
+var setBootstrap = function setBootstrap() {
+  var bootstrap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  if (!window.poststation) {
+    window.poststation = {};
+  }
+  window.poststation.bootstrap = bootstrap;
+  var mirrorKeys = ['post_types', 'taxonomies', 'languages', 'countries', 'users', 'current_user_id', 'settings', 'webhooks', 'postworks'];
+  mirrorKeys.forEach(function (key) {
+    if (bootstrap[key] !== undefined) {
+      window.poststation[key] = bootstrap[key];
+    }
+  });
 };
 
 /**
@@ -5358,8 +5380,6 @@ var getPsApiBaseUrl = function getPsApiBaseUrl() {
 function psApi(_x3) {
   return _psApi.apply(this, arguments);
 }
-
-// PostWork API
 function _psApi() {
   _psApi = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(endpoint) {
     var options,
@@ -5394,6 +5414,32 @@ function _psApi() {
     }, _callee3);
   }));
   return _psApi.apply(this, arguments);
+}
+function refreshBootstrap() {
+  return _refreshBootstrap.apply(this, arguments);
+}
+
+// PostWork API
+function _refreshBootstrap() {
+  _refreshBootstrap = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+    var data, bootstrap;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.next = 2;
+          return ajax('poststation_get_bootstrap');
+        case 2:
+          data = _context4.sent;
+          bootstrap = data.bootstrap || data;
+          setBootstrap(bootstrap);
+          return _context4.abrupt("return", bootstrap);
+        case 6:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4);
+  }));
+  return _refreshBootstrap.apply(this, arguments);
 }
 var postworks = {
   getAll: function getAll() {
@@ -5535,20 +5581,33 @@ var getPendingProcessingBlocks = function getPendingProcessingBlocks(postworkId)
 };
 
 // Get config values
+var getBootstrapValue = function getBootstrapValue(key) {
+  var _getBootstrap$key;
+  return (_getBootstrap$key = getBootstrap()[key]) !== null && _getBootstrap$key !== void 0 ? _getBootstrap$key : getConfig()[key];
+};
 var getPostTypes = function getPostTypes() {
-  return getConfig().post_types || {};
+  return getBootstrapValue('post_types') || {};
 };
 var getTaxonomies = function getTaxonomies() {
-  return getConfig().taxonomies || {};
+  return getBootstrapValue('taxonomies') || {};
 };
 var getAdminUrl = function getAdminUrl() {
   return getConfig().admin_url || '';
 };
 var getLanguages = function getLanguages() {
-  return getConfig().languages || {};
+  return getBootstrapValue('languages') || {};
 };
 var getCountries = function getCountries() {
-  return getConfig().countries || {};
+  return getBootstrapValue('countries') || {};
+};
+var getBootstrapSettings = function getBootstrapSettings() {
+  return getBootstrap().settings || null;
+};
+var getBootstrapWebhooks = function getBootstrapWebhooks() {
+  return getBootstrap().webhooks || null;
+};
+var getBootstrapPostworks = function getBootstrapPostworks() {
+  return getBootstrap().postworks || null;
 };
 
 /***/ }),
@@ -9012,15 +9071,20 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  * Hook for fetching data with loading and error states
  * @param {Function} fetchFn - Async function that fetches data
  * @param {Array} deps - Dependencies array for re-fetching
+ * @param {Object} options - Optional configuration
+ * @param {any} options.initialData - Preloaded data to show immediately
  * @returns {Object} { data, loading, error, refetch }
  */
 function useQuery(fetchFn) {
   var deps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+  var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var _options$initialData = options.initialData,
+    initialData = _options$initialData === void 0 ? null : _options$initialData;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(initialData),
     _useState2 = _slicedToArray(_useState, 2),
     data = _useState2[0],
     setData = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(initialData === null),
     _useState4 = _slicedToArray(_useState3, 2),
     loading = _useState4[0],
     setLoading = _useState4[1];
@@ -9029,37 +9093,50 @@ function useQuery(fetchFn) {
     error = _useState6[0],
     setError = _useState6[1];
   var fetch = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-    var result;
+    var opts,
+      _opts$background,
+      background,
+      result,
+      _args = arguments;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
-          setLoading(true);
+          opts = _args.length > 0 && _args[0] !== undefined ? _args[0] : {};
+          _opts$background = opts.background, background = _opts$background === void 0 ? false : _opts$background;
+          if (!background) {
+            setLoading(true);
+          }
           setError(null);
-          _context.prev = 2;
-          _context.next = 5;
+          _context.prev = 4;
+          _context.next = 7;
           return fetchFn();
-        case 5:
+        case 7:
           result = _context.sent;
           setData(result);
-          _context.next = 12;
+          _context.next = 14;
           break;
-        case 9:
-          _context.prev = 9;
-          _context.t0 = _context["catch"](2);
+        case 11:
+          _context.prev = 11;
+          _context.t0 = _context["catch"](4);
           setError(_context.t0.message || 'An error occurred');
-        case 12:
-          _context.prev = 12;
-          setLoading(false);
-          return _context.finish(12);
-        case 15:
+        case 14:
+          _context.prev = 14;
+          if (!background) {
+            setLoading(false);
+          }
+          return _context.finish(14);
+        case 17:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[2, 9, 12, 15]]);
+    }, _callee, null, [[4, 11, 14, 17]]);
   })), [fetchFn]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    fetch();
-  }, [].concat(_toConsumableArray(deps), [fetch]));
+    var shouldBackground = initialData !== null;
+    fetch({
+      background: shouldBackground
+    });
+  }, [].concat(_toConsumableArray(deps), [fetch, initialData]));
   return {
     data: data,
     loading: loading,
@@ -9360,10 +9437,13 @@ function PostWorkEditPage() {
     refetch = _useQuery.refetch;
 
   // Fetch webhooks for dropdown
+  var bootstrapWebhooks = (0,_api_client__WEBPACK_IMPORTED_MODULE_6__.getBootstrapWebhooks)();
   var fetchWebhooks = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
     return _api_client__WEBPACK_IMPORTED_MODULE_6__.webhooks.getAll();
   }, []);
-  var _useQuery2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useQuery)(fetchWebhooks),
+  var _useQuery2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useQuery)(fetchWebhooks, [], {
+      initialData: bootstrapWebhooks
+    }),
     webhooksData = _useQuery2.data;
 
   // Mutations
@@ -9952,24 +10032,27 @@ function PostWorkEditPage() {
             _context9.next = 8;
             return updateBlocks(blocksList);
           case 8:
+            _context9.next = 10;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_6__.refreshBootstrap)();
+          case 10:
             setIsDirty(false);
             showToast('Changes saved.', 'success');
-            _context9.next = 16;
+            _context9.next = 18;
             break;
-          case 12:
-            _context9.prev = 12;
+          case 14:
+            _context9.prev = 14;
             _context9.t0 = _context9["catch"](3);
             console.error('Failed to save:', _context9.t0);
             showToast((_context9.t0 === null || _context9.t0 === void 0 ? void 0 : _context9.t0.message) || 'Failed to save.', 'error');
-          case 16:
-            _context9.prev = 16;
+          case 18:
+            _context9.prev = 18;
             setSavingAll(false);
-            return _context9.finish(16);
-          case 19:
+            return _context9.finish(18);
+          case 21:
           case "end":
             return _context9.stop();
         }
-      }, _callee9, null, [[3, 12, 16, 19]]);
+      }, _callee9, null, [[3, 14, 18, 21]]);
     }));
     return function handleSave() {
       return _ref10.apply(this, arguments);
@@ -10293,10 +10376,13 @@ function PostWorksPage() {
     deleteId = _useState2[0],
     setDeleteId = _useState2[1];
   var importRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var bootstrapPostworks = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapPostworks)();
   var fetchPostWorks = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
     return _api_client__WEBPACK_IMPORTED_MODULE_2__.postworks.getAll();
   }, []);
-  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchPostWorks),
+  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchPostWorks, [], {
+      initialData: bootstrapPostworks
+    }),
     data = _useQuery.data,
     loading = _useQuery.loading,
     error = _useQuery.error,
@@ -10324,20 +10410,23 @@ function PostWorksPage() {
             return createPostWork();
           case 3:
             result = _context.sent;
+            _context.next = 6;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 6:
             if (result !== null && result !== void 0 && result.id) {
               navigate("/postworks/".concat(result.id));
             }
-            _context.next = 10;
+            _context.next = 12;
             break;
-          case 7:
-            _context.prev = 7;
+          case 9:
+            _context.prev = 9;
             _context.t0 = _context["catch"](0);
             console.error('Failed to create PostWork:', _context.t0);
-          case 10:
+          case 12:
           case "end":
             return _context.stop();
         }
-      }, _callee, null, [[0, 7]]);
+      }, _callee, null, [[0, 9]]);
     }));
     return function handleCreate() {
       return _ref.apply(this, arguments);
@@ -10349,14 +10438,17 @@ function PostWorksPage() {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
             if (!deleteId) {
-              _context2.next = 4;
+              _context2.next = 6;
               break;
             }
             _context2.next = 3;
             return deletePostWork(deleteId);
           case 3:
+            _context2.next = 5;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 5:
             refetch();
-          case 4:
+          case 6:
           case "end":
             return _context2.stop();
         }
@@ -10385,23 +10477,26 @@ function PostWorksPage() {
             return importPostWork(file);
           case 6:
             result = _context3.sent;
+            _context3.next = 9;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 9:
             if (result !== null && result !== void 0 && result.id) {
               navigate("/postworks/".concat(result.id));
             }
             refetch();
-            _context3.next = 14;
+            _context3.next = 16;
             break;
-          case 11:
-            _context3.prev = 11;
+          case 13:
+            _context3.prev = 13;
             _context3.t0 = _context3["catch"](3);
             console.error('Failed to import:', _context3.t0);
-          case 14:
+          case 16:
             e.target.value = '';
-          case 15:
+          case 17:
           case "end":
             return _context3.stop();
         }
-      }, _callee3, null, [[3, 11]]);
+      }, _callee3, null, [[3, 13]]);
     }));
     return function handleImport(_x) {
       return _ref3.apply(this, arguments);
@@ -10618,10 +10713,13 @@ function SettingsPage() {
     _useState6 = _slicedToArray(_useState5, 2),
     copied = _useState6[0],
     setCopied = _useState6[1];
+  var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSettings)();
   var fetchSettings = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
     return _api_client__WEBPACK_IMPORTED_MODULE_2__.settings.get();
   }, []);
-  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchSettings),
+  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchSettings, [], {
+      initialData: bootstrapSettings
+    }),
     data = _useQuery.data,
     loading = _useQuery.loading,
     error = _useQuery.error,
@@ -10652,18 +10750,22 @@ function SettingsPage() {
             _context.next = 3;
             return saveApiKey(apiKey);
           case 3:
+            _context.next = 5;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 5:
             refetch();
-            _context.next = 9;
+            _context.next = 12;
             break;
-          case 6:
-            _context.prev = 6;
+          case 8:
+            _context.prev = 8;
             _context.t0 = _context["catch"](0);
             console.error('Failed to save API key:', _context.t0);
-          case 9:
+            refetch();
+          case 12:
           case "end":
             return _context.stop();
         }
-      }, _callee, null, [[0, 6]]);
+      }, _callee, null, [[0, 8]]);
     }));
     return function handleSave() {
       return _ref.apply(this, arguments);
@@ -10937,18 +11039,21 @@ function WebhookFormPage() {
               url: url
             });
           case 6:
+            _context.next = 8;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 8:
             navigate('/webhooks');
-            _context.next = 12;
+            _context.next = 14;
             break;
-          case 9:
-            _context.prev = 9;
+          case 11:
+            _context.prev = 11;
             _context.t0 = _context["catch"](3);
             console.error('Failed to save webhook:', _context.t0);
-          case 12:
+          case 14:
           case "end":
             return _context.stop();
         }
-      }, _callee, null, [[3, 9]]);
+      }, _callee, null, [[3, 11]]);
     }));
     return function handleSubmit(_x) {
       return _ref.apply(this, arguments);
@@ -10969,18 +11074,21 @@ function WebhookFormPage() {
             _context2.next = 5;
             return deleteWebhook(id);
           case 5:
+            _context2.next = 7;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 7:
             navigate('/webhooks');
-            _context2.next = 11;
+            _context2.next = 13;
             break;
-          case 8:
-            _context2.prev = 8;
+          case 10:
+            _context2.prev = 10;
             _context2.t0 = _context2["catch"](2);
             console.error('Failed to delete webhook:', _context2.t0);
-          case 11:
+          case 13:
           case "end":
             return _context2.stop();
         }
-      }, _callee2, null, [[2, 8]]);
+      }, _callee2, null, [[2, 10]]);
     }));
     return function handleDelete() {
       return _ref2.apply(this, arguments);
@@ -11091,10 +11199,13 @@ function WebhooksPage() {
     _useState2 = _slicedToArray(_useState, 2),
     deleteId = _useState2[0],
     setDeleteId = _useState2[1];
+  var bootstrapWebhooks = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapWebhooks)();
   var fetchWebhooks = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
     return _api_client__WEBPACK_IMPORTED_MODULE_2__.webhooks.getAll();
   }, []);
-  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchWebhooks),
+  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchWebhooks, [], {
+      initialData: bootstrapWebhooks
+    }),
     data = _useQuery.data,
     loading = _useQuery.loading,
     error = _useQuery.error,
@@ -11108,14 +11219,17 @@ function WebhooksPage() {
         while (1) switch (_context.prev = _context.next) {
           case 0:
             if (!deleteId) {
-              _context.next = 4;
+              _context.next = 6;
               break;
             }
             _context.next = 3;
             return deleteWebhook(deleteId);
           case 3:
+            _context.next = 5;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 5:
             refetch();
-          case 4:
+          case 6:
           case "end":
             return _context.stop();
         }

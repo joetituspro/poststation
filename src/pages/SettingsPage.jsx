@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Button, Input, Modal, Card, CardHeader, CardBody, PageHeader, PageLoader } from '../components/common';
-import { settings } from '../api/client';
+import { settings, getBootstrapSettings, refreshBootstrap } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function SettingsPage() {
@@ -8,8 +8,9 @@ export default function SettingsPage() {
 	const [apiKey, setApiKey] = useState('');
 	const [copied, setCopied] = useState(false);
 
+	const bootstrapSettings = getBootstrapSettings();
 	const fetchSettings = useCallback(() => settings.get(), []);
-	const { data, loading, error, refetch } = useQuery(fetchSettings);
+	const { data, loading, error, refetch } = useQuery(fetchSettings, [], { initialData: bootstrapSettings });
 	const { mutate: saveApiKey, loading: saving } = useMutation(settings.saveApiKey);
 
 	// Set initial API key when data loads
@@ -28,9 +29,11 @@ export default function SettingsPage() {
 	const handleSave = async () => {
 		try {
 			await saveApiKey(apiKey);
+			await refreshBootstrap();
 			refetch();
 		} catch (err) {
 			console.error('Failed to save API key:', err);
+			refetch();
 		}
 	};
 

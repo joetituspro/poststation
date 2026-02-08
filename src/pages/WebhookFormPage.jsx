@@ -9,7 +9,7 @@ import {
 	PageHeader,
 	PageLoader,
 } from '../components/common';
-import { webhooks } from '../api/client';
+import { webhooks, refreshBootstrap } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function WebhookFormPage() {
@@ -52,6 +52,7 @@ export default function WebhookFormPage() {
 
 		try {
 			await saveWebhook({ id, name, url });
+			await refreshBootstrap();
 			navigate('/webhooks');
 		} catch (err) {
 			console.error('Failed to save webhook:', err);
@@ -62,6 +63,7 @@ export default function WebhookFormPage() {
 		if (!confirm('Are you sure you want to delete this webhook?')) return;
 		try {
 			await deleteWebhook(id);
+			await refreshBootstrap();
 			navigate('/webhooks');
 		} catch (err) {
 			console.error('Failed to delete webhook:', err);
