@@ -11,7 +11,9 @@ export default function SettingsPage() {
 	const bootstrapSettings = getBootstrapSettings();
 	const fetchSettings = useCallback(() => settings.get(), []);
 	const { data, loading, error, refetch } = useQuery(fetchSettings, [], { initialData: bootstrapSettings });
-	const { mutate: saveApiKey, loading: saving } = useMutation(settings.saveApiKey);
+	const { mutate: saveApiKey, loading: saving } = useMutation(settings.saveApiKey, {
+		onSuccess: refreshBootstrap,
+	});
 
 	// Set initial API key when data loads
 	useState(() => {
@@ -29,7 +31,6 @@ export default function SettingsPage() {
 	const handleSave = async () => {
 		try {
 			await saveApiKey(apiKey);
-			await refreshBootstrap();
 			refetch();
 		} catch (err) {
 			console.error('Failed to save API key:', err);

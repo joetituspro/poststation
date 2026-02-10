@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './components/common';
 import AppShell from './components/layout/AppShell';
+import { UnsavedChangesProvider } from './context/UnsavedChangesContext';
 import SettingsPage from './pages/SettingsPage';
 import PostWorksPage from './pages/PostWorksPage';
 import PostWorkEditPage from './pages/PostWorkEditPage';
@@ -10,17 +11,19 @@ import WebhookFormPage from './pages/WebhookFormPage';
 export default function App() {
 	return (
 		<ToastProvider>
-			<AppShell>
-				<Routes>
-				<Route path="/" element={<Navigate to="/postworks" replace />} />
-				<Route path="/settings" element={<SettingsPage />} />
-				<Route path="/postworks" element={<PostWorksPage />} />
-				<Route path="/postworks/:id" element={<PostWorkEditPage />} />
-				<Route path="/webhooks" element={<WebhooksPage />} />
-				<Route path="/webhooks/new" element={<WebhookFormPage />} />
-				<Route path="/webhooks/:id" element={<WebhookFormPage />} />
-				</Routes>
-			</AppShell>
+			<UnsavedChangesProvider>
+				<AppShell>
+					<Routes>
+					<Route path="/" element={<Navigate to="/postworks" replace />} />
+					<Route path="/settings" element={<SettingsPage />} />
+					<Route path="/postworks" element={<PostWorksPage />} />
+					<Route path="/postworks/:id" element={<PostWorkEditPage />} />
+					<Route path="/webhooks" element={<WebhooksPage />} />
+					<Route path="/webhooks/new" element={<WebhookFormPage />} />
+					<Route path="/webhooks/:id" element={<WebhookFormPage />} />
+					</Routes>
+				</AppShell>
+			</UnsavedChangesProvider>
 		</ToastProvider>
 	);
 }

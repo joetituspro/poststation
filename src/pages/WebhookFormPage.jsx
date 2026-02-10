@@ -27,8 +27,12 @@ export default function WebhookFormPage() {
 	}, [id]);
 
 	const { data, loading } = useQuery(fetchWebhook, [id]);
-	const { mutate: saveWebhook, loading: saving } = useMutation(webhooks.save);
-	const { mutate: deleteWebhook, loading: deleting } = useMutation(webhooks.delete);
+	const { mutate: saveWebhook, loading: saving } = useMutation(webhooks.save, {
+		onSuccess: refreshBootstrap,
+	});
+	const { mutate: deleteWebhook, loading: deleting } = useMutation(webhooks.delete, {
+		onSuccess: refreshBootstrap,
+	});
 
 	useEffect(() => {
 		if (data?.webhook) {
@@ -52,7 +56,6 @@ export default function WebhookFormPage() {
 
 		try {
 			await saveWebhook({ id, name, url });
-			await refreshBootstrap();
 			navigate('/webhooks');
 		} catch (err) {
 			console.error('Failed to save webhook:', err);
@@ -63,7 +66,6 @@ export default function WebhookFormPage() {
 		if (!confirm('Are you sure you want to delete this webhook?')) return;
 		try {
 			await deleteWebhook(id);
-			await refreshBootstrap();
 			navigate('/webhooks');
 		} catch (err) {
 			console.error('Failed to delete webhook:', err);

@@ -112,9 +112,40 @@ class Create
 			$this->handle_custom_fields($post_id, $data['custom_fields']);
 		}
 
+		if (!empty($block['id'])) {
+			$this->attach_block_images($post_id, (int) $block['id']);
+		}
+
 		return [
 			'post_id' => $post_id
 		];
+	}
+
+	private function attach_block_images(int $post_id, int $block_id): void
+	{
+		$attachments = get_posts([
+			'post_type' => 'attachment',
+			'post_status' => 'inherit',
+			'posts_per_page' => -1,
+			'fields' => 'ids',
+			'meta_query' => [
+				[
+					'key' => 'poststation_block_id',
+					'value' => $block_id,
+				],
+			],
+		]);
+
+		if (empty($attachments)) {
+			return;
+		}
+
+		foreach ($attachments as $attachment_id) {
+			wp_update_post([
+				'ID' => $attachment_id,
+				'post_parent' => $post_id,
+			]);
+		}
 	}
 
 	/**

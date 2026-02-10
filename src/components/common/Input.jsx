@@ -7,6 +7,8 @@ export default function Input({
 	className = '',
 	...props
 }) {
+	const fieldClassName = `poststation-field ${error ? 'poststation-field-error' : ''}`;
+
 	return (
 		<div className={className}>
 			{label && (
@@ -15,16 +17,7 @@ export default function Input({
 					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
-			<input
-				className={`
-					block w-full rounded-lg border px-3 py-2 text-sm
-					placeholder:text-gray-400
-					focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-					disabled:bg-gray-50 disabled:text-gray-500
-					${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
-				`}
-				{...props}
-			/>
+			<input className={fieldClassName} {...props} />
 			{error && (
 				<p className="mt-1 text-sm text-red-600">{error}</p>
 			)}
@@ -40,6 +33,8 @@ export function Textarea({
 	rows = 3,
 	...props
 }) {
+	const fieldClassName = `poststation-field ${error ? 'poststation-field-error' : ''}`;
+
 	return (
 		<div className={className}>
 			{label && (
@@ -48,17 +43,7 @@ export function Textarea({
 					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
-			<textarea
-				rows={rows}
-				className={`
-					block w-full rounded-lg border px-3 py-2 text-sm
-					placeholder:text-gray-400
-					focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-					disabled:bg-gray-50 disabled:text-gray-500
-					${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
-				`}
-				{...props}
-			/>
+			<textarea rows={rows} className={fieldClassName} {...props} />
 			{error && (
 				<p className="mt-1 text-sm text-red-600">{error}</p>
 			)}

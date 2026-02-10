@@ -23,12 +23,13 @@ export default function WebhooksPage() {
 	const bootstrapWebhooks = getBootstrapWebhooks();
 	const fetchWebhooks = useCallback(() => webhooks.getAll(), []);
 	const { data, loading, error, refetch } = useQuery(fetchWebhooks, [], { initialData: bootstrapWebhooks });
-	const { mutate: deleteWebhook, loading: deleting } = useMutation(webhooks.delete);
+	const { mutate: deleteWebhook, loading: deleting } = useMutation(webhooks.delete, {
+		onSuccess: refreshBootstrap,
+	});
 
 	const handleDelete = async () => {
 		if (deleteId) {
 			await deleteWebhook(deleteId);
-			await refreshBootstrap();
 			refetch();
 		}
 	};

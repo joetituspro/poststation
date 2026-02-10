@@ -48,6 +48,39 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 		{ value: 'colon', label: '1:, 2:, 3:' },
 	];
 
+	const numImagesOptions = [
+		{ value: 'random', label: 'Random Number' },
+		{ value: 'according_to_sections', label: 'According to Sections' },
+		{ value: 'custom', label: 'Custom Number' },
+	];
+
+	const imageSizeOptions = [
+		{ value: '960x768', label: '960×768 (5:4)' },
+		{ value: '1024x640', label: '1024×640 (8:5)' },
+		{ value: '1024x768', label: '1024×768 (4:3)' },
+		{ value: '1152x768', label: '1152×768 (3:2)' },
+		{ value: '1280x704', label: '1280×704 (20:11)' },
+		{ value: '1344x768', label: '1344×768 (16:9)' },
+		{ value: '768x1344', label: '768×1344 (9:16)' },
+		{ value: '1024x1024', label: '1024×1024 (1:1)' },
+	];
+
+	const imageStyleOptions = [
+		{ value: 'none', label: 'None' },
+		{ value: 'photo', label: 'Photo' },
+		{ value: 'cartoon', label: 'Cartoon' },
+		{ value: 'cubism', label: 'Cubism' },
+		{ value: 'expressionism', label: 'Expressionism' },
+		{ value: 'cyberpunk', label: 'Cyberpunk' },
+		{ value: 'fantasy', label: 'Fantasy' },
+		{ value: 'cinematic', label: 'Cinematic' },
+		{ value: 'abstract', label: 'Abstract' },
+		{ value: 'impressionism', label: 'Impressionism' },
+		{ value: 'surrealism', label: 'Surrealism' },
+		{ value: 'anime', label: 'Anime' },
+		{ value: 'comic_book', label: 'Comic Book' },
+	];
+
 	const hookPresets = [
 		{
 			label: 'Question',
@@ -114,7 +147,9 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 				</div>
 
 				<div className="space-y-2">
-					<h4 className="text-sm font-semibold text-gray-700">Intro Hook</h4>
+					<div className="border-b border-gray-200 pb-1">
+						<h4 className="text-sm font-semibold text-gray-700">Intro Hook</h4>
+					</div>
 					<Textarea
 						label="Introductory Hook Brief"
 						tooltip="Short brief for how the intro hook should start."
@@ -138,7 +173,9 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 				</div>
 
 				<div className="space-y-2">
-					<h4 className="text-sm font-semibold text-gray-700">Structure</h4>
+					<div className="border-b border-gray-200 pb-1">
+						<h4 className="text-sm font-semibold text-gray-700">Structure</h4>
+					</div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<Select
 							label="Key Takeaways"
@@ -180,7 +217,9 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 
 				{isListicle && (
 					<div className="space-y-3">
-						<h4 className="text-sm font-semibold text-gray-700">List Config</h4>
+						<div className="border-b border-gray-200 pb-1">
+							<h4 className="text-sm font-semibold text-gray-700">List Config</h4>
+						</div>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 							<Select
 								label="List Numbering Format"
@@ -213,7 +252,7 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 								type="checkbox"
 								checked={Boolean(config.use_descending_order)}
 								onChange={(e) => handleChange('use_descending_order', e.target.checked)}
-								className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+								className="poststation-field-checkbox"
 							/>
 							<span>Use Descending Order</span>
 							<Tooltip content="If enabled, list items will be ordered from highest to lowest." />
@@ -229,6 +268,60 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 						/>
 					</div>
 				)}
+
+				<div className="space-y-2">
+					<div className="border-b border-gray-200 pb-1">
+						<h4 className="text-sm font-semibold text-gray-700">Media</h4>
+					</div>
+					<div className="space-y-4">
+						<Select
+							label="Enable Media"
+							tooltip="Include AI-generated images within the article body."
+							options={yesNoOptions}
+							value={config.enable_media || 'no'}
+							onChange={(e) => handleChange('enable_media', e.target.value)}
+						/>
+
+						{config.enable_media === 'yes' && (
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+								<Select
+									label="Number of Images"
+									tooltip="How many images to include in the body."
+									options={numImagesOptions}
+									value={config.number_of_images || 'random'}
+									onChange={(e) => handleChange('number_of_images', e.target.value)}
+								/>
+
+								{config.number_of_images === 'custom' && (
+									<Input
+										label="Custom Number"
+										tooltip="Specific number of images to generate."
+										type="number"
+										min="1"
+										value={config.custom_number_of_images ?? 3}
+										onChange={(e) => handleChange('custom_number_of_images', parseInt(e.target.value, 10) || 1)}
+									/>
+								)}
+
+								<Select
+									label="Image Size"
+									tooltip="The aspect ratio and resolution for generated images."
+									options={imageSizeOptions}
+									value={config.image_size || '1344x768'}
+									onChange={(e) => handleChange('image_size', e.target.value)}
+								/>
+
+								<Select
+									label="Image Style"
+									tooltip="The visual style for generated images."
+									options={imageStyleOptions}
+									value={config.image_style || 'none'}
+									onChange={(e) => handleChange('image_style', e.target.value)}
+								/>
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);

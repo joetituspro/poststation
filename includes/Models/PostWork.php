@@ -113,8 +113,9 @@ class PostWork
 		return [
 			'title' => [
 				'enabled' => true,
-				'mode' => 'generate_from_topic',
+				'mode' => 'generate',
 				'prompt' => '',
+				'prompt_context' => 'article_and_topic',
 			],
 			'body' => [
 				'enabled' => true,
@@ -132,6 +133,11 @@ class PostWork
 				'use_descending_order' => false,
 				'list_section_prompt' => '',
 				'number_of_list' => '',
+				'enable_media' => 'no',
+				'number_of_images' => 'random',
+				'custom_number_of_images' => 3,
+				'image_size' => '1344x768',
+				'image_style' => 'none',
 			],
 			'categories' => [
 				'enabled' => false,
@@ -149,8 +155,10 @@ class PostWork
 			'custom_fields' => [],
 			'image' => [
 				'enabled' => false,
-				'mode' => 'generate_from_title',
+				'mode' => 'generate_from_article',
 				'prompt' => '',
+				'image_size' => '1344x768',
+				'image_style' => 'none',
 				'template_id' => '',
 				'category_text' => '',
 				'main_text' => '',

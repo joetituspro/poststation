@@ -23,8 +23,9 @@ const FIELD_TYPES = [
 const getDefaultContentFields = () => ({
 	title: {
 		enabled: true,
-		mode: 'generate_from_topic',
+		mode: 'generate',
 		prompt: '',
+		prompt_context: 'article_and_topic',
 	},
 	body: {
 		enabled: true,
@@ -47,8 +48,10 @@ const getDefaultContentFields = () => ({
 	custom_fields: [],
 	image: {
 		enabled: false,
-		mode: 'generate_from_title',
+		mode: 'generate_from_article',
 		prompt: '',
+		image_size: '1344x768',
+		image_style: 'none',
 		template_id: '',
 		category_text: '',
 		main_text: '',
@@ -116,7 +119,7 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 			// Add a new custom field
 			newFields.custom_fields = [
 				...(newFields.custom_fields || []),
-				{ id: Date.now(), meta_key: '', prompt: '' },
+				{ id: Date.now(), meta_key: '', prompt: '', prompt_context: 'article_and_topic' },
 			];
 			updateContentFields(newFields);
 			setExpandedField(`custom_field_${newFields.custom_fields.length - 1}`);

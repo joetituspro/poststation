@@ -8,6 +8,7 @@ use PostStation\Models\Webhook;
 use PostStation\Models\PostBlock;
 use PostStation\Models\PostWork;
 use PostStation\Api\Create;
+use PostStation\Services\ImageOptimizer;
 
 class ApiHandler
 {
@@ -59,6 +60,12 @@ class ApiHandler
 		add_rewrite_rule(
 			'ps-api/blocks/?$',
 			'index.php?pagename=ps-api/blocks',
+			'top'
+		);
+
+		add_rewrite_rule(
+			'ps-api/upload/?$',
+			'index.php?pagename=ps-api/upload',
 			'top'
 		);
 
@@ -149,6 +156,20 @@ class ApiHandler
 					$this->send_response($response);
 					break;
 
+				case 'upload':
+					// Only allow POST method for upload endpoint
+					if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+						$this->send_error('Method not allowed', 405);
+					}
+
+					// Validate API key
+					$this->validate_api_key();
+
+					$body = $this->get_upload_body();
+					$response = $this->handle_image_upload($body);
+					$this->send_response($response);
+					break;
+
 				default:
 					$this->send_error('Endpoint not found', 404);
 			}
@@ -222,6 +243,25 @@ class ApiHandler
 		return array_intersect_key($data, array_flip(self::ALLOWED_FIELDS));
 	}
 
+	private function get_upload_body(): array
+	{
+		$body = file_get_contents('php://input');
+		$data = json_decode($body, true);
+
+		if (json_last_error() !== JSON_ERROR_NONE) {
+			throw new Exception('Invalid JSON payload', 400);
+		}
+
+		$required = ['block_id', 'image_base64'];
+		foreach ($required as $field) {
+			if (!isset($data[$field]) || $data[$field] === '') {
+				throw new Exception("Missing required field: {$field}", 400);
+			}
+		}
+
+		return $data;
+	}
+
 	/**
 	 * Process create request
 	 *
@@ -233,6 +273,46 @@ class ApiHandler
 	{
 		$create = new Create();
 		return $create->process_request($data);
+	}
+
+	private function handle_image_upload(array $data): array
+	{
+		$block_id = (int) $data['block_id'];
+		$block = $block_id ? PostBlock::get_by_id($block_id) : null;
+		if (!$block) {
+			throw new Exception('Block not found', 404);
+		}
+
+		$optimizer = new ImageOptimizer();
+		$result = $optimizer->upload_base64_image([
+			'block_id' => $block_id,
+			'image_base64' => (string) $data['image_base64'],
+			'index' => $data['index'] ?? null,
+			'filename' => $data['filename'] ?? '',
+			'alt_text' => $data['alt_text'] ?? '',
+			'format' => $data['format'] ?? 'webp',
+		]);
+
+		$attachment_id = $result['attachment_id'];
+
+		update_post_meta($attachment_id, 'poststation_block_id', $block_id);
+		if (isset($data['index'])) {
+			update_post_meta($attachment_id, 'poststation_block_index', $data['index']);
+		}
+		if (!empty($data['filename'])) {
+			update_post_meta($attachment_id, 'poststation_original_filename', (string) $data['filename']);
+		}
+		if (!empty($data['alt_text'])) {
+			update_post_meta($attachment_id, 'poststation_alt_text', (string) $data['alt_text']);
+			update_post_meta($attachment_id, '_wp_attachment_image_alt', (string) $data['alt_text']);
+		}
+
+		return [
+			'success' => true,
+			'attachment_id' => $attachment_id,
+			'url' => $result['url'],
+			'format' => $result['format'],
+		];
 	}
 
 	/**

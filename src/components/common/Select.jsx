@@ -9,6 +9,8 @@ export default function Select({
 	placeholder = 'Select...',
 	...props
 }) {
+	const fieldClassName = `poststation-field ${error ? 'poststation-field-error' : ''}`;
+
 	return (
 		<div className={className}>
 			{label && (
@@ -17,15 +19,7 @@ export default function Select({
 					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
-			<select
-				className={`
-					block w-full rounded-lg border px-3 py-2 text-sm
-					focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-					disabled:bg-gray-50 disabled:text-gray-500
-					${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
-				`}
-				{...props}
-			>
+			<select className={fieldClassName} {...props}>
 				{placeholder && (
 					<option value="">{placeholder}</option>
 				)}
@@ -53,6 +47,8 @@ export function MultiSelect({
 	className = '',
 	placeholder = 'Select...',
 }) {
+	const fieldClassName = `poststation-field ${error ? 'poststation-field-error' : ''}`;
+
 	const handleAdd = (e) => {
 		const val = e.target.value;
 		if (val && !value.includes(val)) {
@@ -100,15 +96,7 @@ export function MultiSelect({
 				</div>
 			)}
 
-			<select
-				className={`
-					block w-full rounded-lg border px-3 py-2 text-sm
-					focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-					${error ? 'border-red-300' : 'border-gray-300'}
-				`}
-				onChange={handleAdd}
-				value=""
-			>
+			<select className={fieldClassName} onChange={handleAdd} value="">
 				<option value="">{placeholder}</option>
 				{availableOptions.map((option) => (
 					<option key={option.value} value={option.value}>

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useUnsavedChanges } from '../../context/UnsavedChangesContext';
 
 const navItems = [
 	{ to: '/postworks', label: 'Post Works', icon: PostWorksIcon },
@@ -35,10 +36,66 @@ function SettingsIcon({ className }) {
 export default function AppShell({ children }) {
 	const location = useLocation();
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+	const { isDirty } = useUnsavedChanges();
+	const lastHashRef = useRef(typeof window !== 'undefined' ? window.location.hash : '');
+	const ignoreNextHashChange = useRef(false);
 
 	useEffect(() => {
 		setIsSidebarOpen(false);
 	}, [location.pathname]);
+
+	useEffect(() => {
+		lastHashRef.current = window.location.hash;
+	}, [location.pathname]);
+
+	useEffect(() => {
+		if (!isDirty) return;
+
+		const handleBeforeUnload = (event) => {
+			event.preventDefault();
+			event.returnValue = '';
+			return '';
+		};
+
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => {
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+		};
+	}, [isDirty]);
+
+	useEffect(() => {
+		const handleHashChange = () => {
+			const nextHash = window.location.hash;
+
+			if (ignoreNextHashChange.current) {
+				ignoreNextHashChange.current = false;
+				lastHashRef.current = nextHash;
+				return;
+			}
+
+			if (!isDirty) {
+				lastHashRef.current = nextHash;
+				return;
+			}
+
+			const shouldProceed = window.confirm(
+				'You have unsaved changes. Leave without saving?'
+			);
+
+			if (shouldProceed) {
+				lastHashRef.current = nextHash;
+				return;
+			}
+
+			ignoreNextHashChange.current = true;
+			window.location.hash = lastHashRef.current;
+		};
+
+		window.addEventListener('hashchange', handleHashChange);
+		return () => {
+			window.removeEventListener('hashchange', handleHashChange);
+		};
+	}, [isDirty]);
 
 	return (
 		<div className="min-h-screen bg-gray-50 flex">
@@ -67,7 +124,18 @@ export default function AppShell({ children }) {
 						<NavLink
 							key={item.to}
 							to={item.to}
-							onClick={() => setIsSidebarOpen(false)}
+							onClick={(event) => {
+								if (isDirty) {
+									const shouldProceed = window.confirm(
+										'You have unsaved changes. Leave without saving?'
+									);
+									if (!shouldProceed) {
+										event.preventDefault();
+										return;
+									}
+								}
+								setIsSidebarOpen(false);
+							}}
 							className={({ isActive }) =>
 								`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
 									isActive

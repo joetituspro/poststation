@@ -48,6 +48,34 @@
 	color: inherit;
 }
 
+/* App-scoped form controls to avoid WordPress admin style bleed */
+#poststation-app .poststation-field {
+	@apply block w-full max-w-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-none transition;
+	@apply placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+	@apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;
+}
+
+#poststation-app .poststation-field-error {
+	@apply border-red-300 focus:border-red-500 focus:ring-red-500;
+}
+
+#poststation-app select.poststation-field {
+	@apply pr-8;
+}
+
+#poststation-app textarea.poststation-field {
+	@apply min-h-24 resize-y;
+}
+
+#poststation-app .poststation-field-checkbox {
+	@apply h-4 w-4 rounded border border-gray-300 text-indigo-600;
+	@apply focus:ring-2 focus:ring-indigo-500;
+}
+
+#poststation-app .poststation-field-color {
+	@apply h-10 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1;
+}
+
 #poststation-app a {
 	color: inherit;
 	text-decoration: none;

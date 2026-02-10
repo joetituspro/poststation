@@ -45,7 +45,8 @@ export function useQuery(fetchFn, deps = [], options = {}) {
  * @param {Function} mutationFn - Async function that performs the mutation
  * @returns {Object} { mutate, loading, error }
  */
-export function useMutation(mutationFn) {
+export function useMutation(mutationFn, options = {}) {
+	const { onSuccess } = options;
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 
@@ -54,6 +55,9 @@ export function useMutation(mutationFn) {
 		setError(null);
 		try {
 			const result = await mutationFn(...args);
+			if (onSuccess) {
+				await onSuccess(result, ...args);
+			}
 			return result;
 		} catch (err) {
 			setError(err.message || 'An error occurred');
@@ -61,7 +65,7 @@ export function useMutation(mutationFn) {
 		} finally {
 			setLoading(false);
 		}
-	}, [mutationFn]);
+	}, [mutationFn, onSuccess]);
 
 	return { mutate, loading, error };
 }

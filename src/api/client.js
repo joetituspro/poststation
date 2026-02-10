@@ -71,32 +71,6 @@ export async function ajax(action, data = {}) {
 	return result.data;
 }
 
-/**
- * Make a REST API request
- * @param {string} endpoint - The REST endpoint (relative to rest_url)
- * @param {Object} options - Fetch options
- * @returns {Promise<any>}
- */
-export async function rest(endpoint, options = {}) {
-	const config = getConfig();
-	const url = `${config.rest_url}${endpoint}`;
-	
-	const response = await fetch(url, {
-		...options,
-		headers: {
-			'Content-Type': 'application/json',
-			...options.headers,
-		},
-		credentials: 'same-origin',
-	});
-	
-	if (!response.ok) {
-		throw new Error(`HTTP ${response.status}`);
-	}
-	
-	return response.json();
-}
-
 const getPsApiBaseUrl = () => {
 	const config = getConfig();
 	const restUrl = config.rest_url || '';

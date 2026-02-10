@@ -35,6 +35,18 @@ class BlockRunner
 			
 			// Inject terms for auto_select mode in taxonomies
 			if (!empty($content_fields)) {
+				if (!empty($content_fields['title']['mode']) && $content_fields['title']['mode'] === 'generate_from_topic') {
+					$content_fields['title']['mode'] = 'generate';
+				}
+
+				if (!empty($content_fields['image']['mode']) && $content_fields['image']['mode'] === 'generate_from_title') {
+					$content_fields['image']['mode'] = 'generate_from_article';
+				}
+
+				if (!empty($block['feature_image_id']) && isset($content_fields['image'])) {
+					$content_fields['image']['enabled'] = false;
+				}
+
 				// Helper to get taxonomy info and terms
 				$get_taxonomy_info = function($taxonomy_name) {
 					$tax = get_taxonomy($taxonomy_name);
@@ -87,7 +99,29 @@ class BlockRunner
 							}
 						}
 					}
+					unset($tax_config);
 				}
+
+				$unified_taxonomies = [];
+				if (isset($content_fields['categories'])) {
+					$unified_taxonomies[] = array_merge(
+						['taxonomy' => 'category'],
+						$content_fields['categories']
+					);
+				}
+				if (isset($content_fields['tags'])) {
+					$unified_taxonomies[] = array_merge(
+						['taxonomy' => 'post_tag'],
+						$content_fields['tags']
+					);
+				}
+				if (!empty($content_fields['custom_taxonomies'])) {
+					foreach ($content_fields['custom_taxonomies'] as $tax_config) {
+						$unified_taxonomies[] = $tax_config;
+					}
+				}
+
+				$content_fields['taxonomies'] = $unified_taxonomies;
 			}
 
 			$topic = $block['topic'] ?? '';
@@ -101,7 +135,7 @@ class BlockRunner
 
 			$body = [
 				'block_id' => $block['id'],
-				'article_url' => $block['article_url'] ?? '',
+				'research_url' => $block['research_url'] ?? '',
 				'topic' => $topic,
 				'keywords' => [
 					'primary_key' => $primary_keyword,
@@ -174,7 +208,7 @@ class BlockRunner
 		$article_type = $block['article_type'] ?? $postwork['article_type'] ?? 'blog_post';
 
 		$placeholders = [
-			'{{article_url}}' => $block['article_url'] ?? '',
+			'{{research_url}}' => $block['research_url'] ?? '',
 			'{{topic}}' => $topic,
 			'{{keywords}}' => implode(', ', $keywords),
 			'{{primary_keyword}}' => $primary_keyword,

@@ -13,6 +13,7 @@ import BlocksList from '../components/postworks/BlocksList';
 import InfoSidebar from '../components/layout/InfoSidebar';
 import { postworks, blocks, webhooks, getTaxonomies, getPendingProcessingBlocks, refreshBootstrap, getBootstrapWebhooks } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
+import { useUnsavedChanges } from '../context/UnsavedChangesContext';
 
 // Editable title: shows text, pen icon on hover, click to edit inline
 function EditablePostWorkTitle({ value, onChange }) {
@@ -64,7 +65,7 @@ function EditablePostWorkTitle({ value, onChange }) {
 					onChange={(e) => setEditValue(e.target.value)}
 					onBlur={handleBlur}
 					onKeyDown={handleKeyDown}
-					className="flex-1 min-w-0 text-xl font-semibold text-gray-900 bg-white border border-indigo-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+					className="poststation-field flex-1 min-w-0 px-3 py-1.5 text-xl font-semibold border-indigo-300 focus:border-indigo-500 focus:ring-indigo-500"
 				/>
 			) : (
 				<button
@@ -103,6 +104,7 @@ export default function PostWorkEditPage() {
 	const [importLoading, setImportLoading] = useState(false);
 	const stopRunRef = useRef(false);
 	const { showToast } = useToast();
+	const { setIsDirty: setGlobalDirty } = useUnsavedChanges();
 
 	const getBlockIdKey = useCallback((value) => String(value ?? ''), []);
 	// Fetch postwork data
@@ -170,6 +172,11 @@ export default function PostWorkEditPage() {
 			setIsRunning(hasProcessing);
 		}
 	}, [blocksList, isRunning]);
+
+	useEffect(() => {
+		setGlobalDirty(isDirty);
+		return () => setGlobalDirty(false);
+	}, [isDirty, setGlobalDirty]);
 
 	const applyPendingProcessingUpdates = useCallback((pendingProcessing) => {
 		if (!Array.isArray(pendingProcessing) || pendingProcessing.length === 0) return;
@@ -293,6 +300,7 @@ export default function PostWorkEditPage() {
 					keywords: '',
 					article_type: postWork?.article_type || 'blog_post',
 					article_url: '',
+					research_url: '',
 					feature_image_id: null,
 					feature_image_title: '',
 				};
@@ -600,12 +608,12 @@ export default function PostWorkEditPage() {
 
 				{/* Post Work Settings (includes Content Fields) - Collapsible */}
 				<Card className="mb-5">
-					<div className="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+					<div 
+						className="px-5 py-3 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+						onClick={() => setShowSettings(!showSettings)}
+					>
 						<h3 className="text-lg font-medium text-gray-900">Post Work Settings</h3>
-						<button
-							onClick={() => setShowSettings(!showSettings)}
-							className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
-						>
+						<div className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
 							{showSettings ? 'Hide' : 'Show'}
 							<svg
 								className={`w-4 h-4 transition-transform ${showSettings ? 'rotate-180' : ''}`}
@@ -615,7 +623,7 @@ export default function PostWorkEditPage() {
 							>
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
 							</svg>
-						</button>
+						</div>
 					</div>
 					{showSettings && (
 						<CardBody className="px-5 py-4 space-y-6">

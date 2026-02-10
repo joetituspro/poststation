@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostBlock
 {
-	public const DB_VERSION = '2.6';
+	public const DB_VERSION = '2.7';
 	protected const TABLE_NAME = 'poststation_postblocks';
 
 	public static function get_table_name(): string
@@ -24,6 +24,7 @@ class PostBlock
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			postwork_id bigint(20) unsigned NOT NULL,
 			article_url text,
+			research_url text,
 			topic text,
 			keywords text,
 			article_type varchar(50) NOT NULL DEFAULT 'blog_post',
@@ -116,6 +117,7 @@ class PostBlock
 		$data = wp_parse_args($data, [
 			'postwork_id' => 0,
 			'article_url' => '',
+			'research_url' => '',
 			'topic' => '',
 			'keywords' => '',
 			'article_type' => 'blog_post',
@@ -126,6 +128,7 @@ class PostBlock
 
 		// Ensure strings are not null
 		$data['article_url'] = $data['article_url'] ?? '';
+		$data['research_url'] = $data['research_url'] ?? '';
 		$data['topic'] = $data['topic'] ?? '';
 		$data['keywords'] = $data['keywords'] ?? '';
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;

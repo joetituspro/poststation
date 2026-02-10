@@ -25,9 +25,15 @@ export default function PostWorksPage() {
 	const bootstrapPostworks = getBootstrapPostworks();
 	const fetchPostWorks = useCallback(() => postworks.getAll(), []);
 	const { data, loading, error, refetch } = useQuery(fetchPostWorks, [], { initialData: bootstrapPostworks });
-	const { mutate: createPostWork, loading: creating } = useMutation(postworks.create);
-	const { mutate: deletePostWork, loading: deleting } = useMutation(postworks.delete);
-	const { mutate: importPostWork, loading: importing } = useMutation(postworks.import);
+	const { mutate: createPostWork, loading: creating } = useMutation(postworks.create, {
+		onSuccess: refreshBootstrap,
+	});
+	const { mutate: deletePostWork, loading: deleting } = useMutation(postworks.delete, {
+		onSuccess: refreshBootstrap,
+	});
+	const { mutate: importPostWork, loading: importing } = useMutation(postworks.import, {
+		onSuccess: refreshBootstrap,
+	});
 	const { mutate: exportPostWork } = useMutation(postworks.export);
 
 	const postTypes = getPostTypes();
@@ -35,7 +41,6 @@ export default function PostWorksPage() {
 	const handleCreate = async () => {
 		try {
 			const result = await createPostWork();
-			await refreshBootstrap();
 			if (result?.id) {
 				navigate(`/postworks/${result.id}`);
 			}
@@ -47,7 +52,6 @@ export default function PostWorksPage() {
 	const handleDelete = async () => {
 		if (deleteId) {
 			await deletePostWork(deleteId);
-			await refreshBootstrap();
 			refetch();
 		}
 	};
@@ -58,7 +62,6 @@ export default function PostWorksPage() {
 
 		try {
 			const result = await importPostWork(file);
-			await refreshBootstrap();
 			if (result?.id) {
 				navigate(`/postworks/${result.id}`);
 			}

@@ -21,7 +21,7 @@ export default function BlockForm({ block, postWork, onChange }) {
 			: postWork.content_fields)
 		: {};
 	const imageConfig = contentFields?.image || null;
-	const imageMode = imageConfig?.mode || 'generate_from_title';
+	const imageMode = imageConfig?.mode || 'generate_from_article';
 	const showImageTitleOverride = Boolean(imageConfig?.enabled && imageMode === 'generate_from_dt');
 
 	const handleTopicChange = (value) => {
@@ -61,10 +61,10 @@ export default function BlockForm({ block, postWork, onChange }) {
 					/>
 				) : (
 					<Input
-						label="Article URL"
+						label="Research URL"
 						tooltip="Source URL for rewrite mode. Content is based on this article."
-						value={block.article_url || ''}
-						onChange={(e) => handleChange('article_url', e.target.value)}
+						value={block.research_url || ''}
+						onChange={(e) => handleChange('research_url', e.target.value)}
 						placeholder="https://example.com/article"
 						required
 						disabled={isProcessing}

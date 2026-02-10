@@ -1,8 +1,35 @@
 import { Select, Textarea, Input, Tooltip } from '../../common';
 
 const MODE_OPTIONS = [
-	{ value: 'generate_from_title', label: 'Generate from Article Title' },
+	{ value: 'generate_from_article', label: 'Generate from Article' },
 	{ value: 'generate_from_dt', label: 'Generate from DT (Design Template)' },
+];
+
+const imageSizeOptions = [
+	{ value: '960x768', label: '960×768 (5:4)' },
+	{ value: '1024x640', label: '1024×640 (8:5)' },
+	{ value: '1024x768', label: '1024×768 (4:3)' },
+	{ value: '1152x768', label: '1152×768 (3:2)' },
+	{ value: '1280x704', label: '1280×704 (20:11)' },
+	{ value: '1344x768', label: '1344×768 (16:9)' },
+	{ value: '768x1344', label: '768×1344 (9:16)' },
+	{ value: '1024x1024', label: '1024×1024 (1:1)' },
+];
+
+const imageStyleOptions = [
+	{ value: 'none', label: 'None' },
+	{ value: 'photo', label: 'Photo' },
+	{ value: 'cartoon', label: 'Cartoon' },
+	{ value: 'cubism', label: 'Cubism' },
+	{ value: 'expressionism', label: 'Expressionism' },
+	{ value: 'cyberpunk', label: 'Cyberpunk' },
+	{ value: 'fantasy', label: 'Fantasy' },
+	{ value: 'cinematic', label: 'Cinematic' },
+	{ value: 'abstract', label: 'Abstract' },
+	{ value: 'impressionism', label: 'Impressionism' },
+	{ value: 'surrealism', label: 'Surrealism' },
+	{ value: 'anime', label: 'Anime' },
+	{ value: 'comic_book', label: 'Comic Book' },
 ];
 
 export default function ImageFieldConfig({ config, onChange }) {
@@ -39,19 +66,39 @@ export default function ImageFieldConfig({ config, onChange }) {
 				label="Mode"
 				tooltip="Choose how the featured image is produced."
 				options={MODE_OPTIONS}
-				value={config.mode || 'generate_from_title'}
+				value={config.mode || 'generate_from_article'}
 				onChange={(e) => handleChange('mode', e.target.value)}
 			/>
 
-			{config.mode === 'generate_from_title' && (
-				<Textarea
-					label="Additional Instruction"
-					tooltip="Extra guidance for the image generation."
-					value={config.prompt || ''}
-					onChange={(e) => handleChange('prompt', e.target.value)}
-					placeholder="Instructions for generating the featured image..."
-					rows={3}
-				/>
+			{config.mode === 'generate_from_article' && (
+				<>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						<Select
+							label="Image Size"
+							tooltip="The aspect ratio and resolution for the generated image."
+							options={imageSizeOptions}
+							value={config.image_size || '1344x768'}
+							onChange={(e) => handleChange('image_size', e.target.value)}
+						/>
+
+						<Select
+							label="Image Style"
+							tooltip="The visual style for the generated image."
+							options={imageStyleOptions}
+							value={config.image_style || 'none'}
+							onChange={(e) => handleChange('image_style', e.target.value)}
+						/>
+					</div>
+
+					<Textarea
+						label="Additional Instruction"
+						tooltip="Extra guidance for the image generation."
+						value={config.prompt || ''}
+						onChange={(e) => handleChange('prompt', e.target.value)}
+						placeholder="Instructions for generating the featured image..."
+						rows={3}
+					/>
+				</>
 			)}
 
 			{config.mode === 'generate_from_dt' && (
@@ -90,7 +137,7 @@ export default function ImageFieldConfig({ config, onChange }) {
 								type="color"
 								value={config.category_color || '#000000'}
 								onChange={(e) => handleChange('category_color', e.target.value)}
-								className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+								className="poststation-field-color"
 							/>
 						</div>
 						<div>
@@ -102,7 +149,7 @@ export default function ImageFieldConfig({ config, onChange }) {
 								type="color"
 								value={config.title_color || '#000000'}
 								onChange={(e) => handleChange('title_color', e.target.value)}
-								className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+								className="poststation-field-color"
 							/>
 						</div>
 					</div>
