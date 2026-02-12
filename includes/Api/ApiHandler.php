@@ -5,8 +5,8 @@ namespace PostStation\Api;
 use WP_Error;
 use Exception;
 use PostStation\Models\Webhook;
-use PostStation\Models\PostBlock;
-use PostStation\Models\PostWork;
+use PostStation\Models\PostTask;
+use PostStation\Models\Campaign;
 use PostStation\Api\Create;
 use PostStation\Services\ImageOptimizer;
 
@@ -15,7 +15,7 @@ class ApiHandler
 	private const OPTION_KEY = 'poststation_api_key';
 	private const REQUIRED_FIELDS = [];
 	private const ALLOWED_FIELDS = [
-		'block_id',
+		'task_id',
 		'title',
 		'content',
 		'slug',
@@ -59,8 +59,8 @@ class ApiHandler
 		);
 
 		add_rewrite_rule(
-			'ps-api/blocks/?$',
-			'index.php?pagename=ps-api/blocks',
+			'ps-api/posttasks/?$',
+			'index.php?pagename=ps-api/posttasks',
 			'top'
 		);
 
@@ -135,25 +135,25 @@ class ApiHandler
 					$body = $this->get_request_body();
 
 					// Process the progress update
-					$response = $this->update_block_progress($body);
+					$response = $this->update_task_progress($body);
 
 					// Send success response
 					$this->send_response($response);
 					break;
 
-				case 'blocks':
-					// Only allow GET method for blocks endpoint
+				case 'posttasks':
+					// Only allow GET method for posttasks endpoint
 					if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 						$this->send_error('Method not allowed', 405);
 					}
 
-					$postwork_id = (int)($_GET['postwork_id'] ?? 0);
-					if (!$postwork_id) {
-						$this->send_error('Missing postwork_id parameter', 400);
+					$campaign_id = (int) ($_GET['campaign_id'] ?? 0);
+					if (!$campaign_id) {
+						$this->send_error('Missing campaign_id parameter', 400);
 					}
 
 					$status_filter = trim((string)($_GET['status'] ?? ''));
-					$response = $this->get_blocks_by_status($postwork_id, $status_filter);
+					$response = $this->get_tasks_by_status($campaign_id, $status_filter);
 					$this->send_response($response);
 					break;
 
@@ -253,7 +253,7 @@ class ApiHandler
 			throw new Exception('Invalid JSON payload', 400);
 		}
 
-		$required = ['block_id', 'image_base64'];
+		$required = ['task_id', 'image_base64'];
 		foreach ($required as $field) {
 			if (!isset($data[$field]) || $data[$field] === '') {
 				throw new Exception("Missing required field: {$field}", 400);
@@ -278,16 +278,16 @@ class ApiHandler
 
 	private function handle_image_upload(array $data): array
 	{
-		$block_id = (int) $data['block_id'];
-		$block = $block_id ? PostBlock::get_by_id($block_id) : null;
-		if (!$block) {
-			throw new Exception('Block not found', 404);
+		$task_id = (int) $data['task_id'];
+		$task = $task_id ? PostTask::get_by_id($task_id) : null;
+		if (!$task) {
+			throw new Exception('Post task not found', 404);
 		}
 
 		$optimizer = new ImageOptimizer();
 		$image_identifier = $this->generate_image_identifier();
 		$result = $optimizer->upload_base64_image([
-			'block_id' => $block_id,
+			'task_id' => $task_id,
 			'image_base64' => (string) $data['image_base64'],
 			'index' => $data['index'] ?? null,
 			'filename' => $data['filename'] ?? '',
@@ -298,9 +298,9 @@ class ApiHandler
 
 		$attachment_id = $result['attachment_id'];
 
-		update_post_meta($attachment_id, 'poststation_block_id', $block_id);
+		update_post_meta($attachment_id, 'poststation_posttask_id', $task_id);
 		if (isset($data['index'])) {
-			update_post_meta($attachment_id, 'poststation_block_index', $data['index']);
+			update_post_meta($attachment_id, 'poststation_posttask_index', $data['index']);
 		}
 		if (!empty($data['filename'])) {
 			update_post_meta($attachment_id, 'poststation_original_filename', (string) $data['filename']);
@@ -358,12 +358,12 @@ class ApiHandler
 	}
 
 	/**
-	 * Get pending and processing blocks for a post work.
+	 * Get pending and processing tasks for a campaign.
 	 *
-	 * @param int $postwork_id
+	 * @param int $campaign_id
 	 * @return array
 	 */
-	private function get_blocks_by_status(int $postwork_id, string $status_filter): array
+	private function get_tasks_by_status(int $campaign_id, string $status_filter): array
 	{
 		$allowed_statuses = ['pending', 'processing', 'completed', 'failed', 'cancelled'];
 		if ($status_filter === 'all' || $status_filter === '') {
@@ -380,23 +380,23 @@ class ApiHandler
 			$statuses = ['pending', 'processing'];
 		}
 
-		$blocks = PostBlock::get_by_postwork($postwork_id);
-		if (empty($blocks)) {
+		$tasks = PostTask::get_by_campaign($campaign_id);
+		if (empty($tasks)) {
 			return [];
 		}
 
 		$response = [];
-		foreach ($blocks as $block) {
-			if (!in_array($block['status'], $statuses, true)) {
+		foreach ($tasks as $task) {
+			if (!in_array($task['status'], $statuses, true)) {
 				continue;
 			}
 
 			$response[] = [
-				'id' => (int)$block['id'],
-				'status' => $block['status'],
-				'progress' => $block['progress'] ?? null,
-				'post_id' => $block['post_id'] ?? null,
-				'error_message' => $block['error_message'] ?? null,
+				'id' => (int) $task['id'],
+				'status' => $task['status'],
+				'progress' => $task['progress'] ?? null,
+				'post_id' => $task['post_id'] ?? null,
+				'error_message' => $task['error_message'] ?? null,
 			];
 		}
 
@@ -404,26 +404,26 @@ class ApiHandler
 	}
 
 	/**
-	 * Update progress of a block
+	 * Update progress of a post task
 	 *
 	 * @param array $data Request data
 	 * @throws Exception If update fails
 	 * @return array
 	 */
-	private function update_block_progress(array $data): array
+	private function update_task_progress(array $data): array
 	{
-		$block_id = $data['block_id'] ?? null;
+		$task_id = $data['task_id'] ?? null;
 		$status = $data['status'] ?? null;
 		$progress = $data['progress'] ?? null;
 		$error_message = $data['error_message'] ?? null;
 
-		if (!$block_id) {
-			throw new Exception('Missing block_id', 400);
+		if (!$task_id) {
+			throw new Exception('Missing task_id', 400);
 		}
 
-		$block = PostBlock::get_by_id($block_id);
-		if (!$block) {
-			throw new Exception('Block not found', 404);
+		$task = PostTask::get_by_id($task_id);
+		if (!$task) {
+			throw new Exception('Post task not found', 404);
 		}
 
 		$update_data = [];
@@ -444,12 +444,11 @@ class ApiHandler
 		}
 
 		if (!empty($update_data)) {
-			// Reset timeout by updating run_started_at if the block is still processing
-			$current_status = $update_data['status'] ?? $block['status'];
+			$current_status = $update_data['status'] ?? $task['status'];
 			if ($current_status === 'processing') {
 				$update_data['run_started_at'] = current_time('mysql');
 			}
-			PostBlock::update($block_id, $update_data);
+			PostTask::update($task_id, $update_data);
 		}
 
 		return [

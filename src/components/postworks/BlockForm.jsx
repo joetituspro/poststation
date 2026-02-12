@@ -42,7 +42,7 @@ export default function BlockForm({ block, postWork, onChange }) {
 			<div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-3">
 				<Select
 					label="Article Type"
-					tooltip="Overrides the post work article type for this block only."
+					tooltip="Overrides the campaign article type for this post task only."
 					options={ARTICLE_TYPE_OPTIONS}
 					value={resolvedArticleType}
 					onChange={(e) => handleChange('article_type', e.target.value)}
@@ -55,7 +55,7 @@ export default function BlockForm({ block, postWork, onChange }) {
 						tooltip="Main topic used for generation and placeholders."
 						value={block.topic ?? ''}
 						onChange={(e) => handleTopicChange(e.target.value)}
-						placeholder="Main topic for this post"
+						placeholder="Main topic for this post task"
 						required
 						disabled={isProcessing}
 					/>

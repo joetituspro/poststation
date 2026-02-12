@@ -14,44 +14,44 @@ import {
 	ConfirmModal,
 	CountsBadge,
 } from '../components/common';
-import { postworks, getPostTypes, getBootstrapPostworks, refreshBootstrap } from '../api/client';
+import { campaigns, getPostTypes, getBootstrapCampaigns, refreshBootstrap } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
-export default function PostWorksPage() {
+export default function CampaignsPage() {
 	const navigate = useNavigate();
 	const [deleteId, setDeleteId] = useState(null);
 	const importRef = useRef(null);
 
-	const bootstrapPostworks = getBootstrapPostworks();
-	const fetchPostWorks = useCallback(() => postworks.getAll(), []);
-	const { data, loading, error, refetch } = useQuery(fetchPostWorks, [], { initialData: bootstrapPostworks });
-	const { mutate: createPostWork, loading: creating } = useMutation(postworks.create, {
+	const bootstrapCampaigns = getBootstrapCampaigns();
+	const fetchCampaigns = useCallback(() => campaigns.getAll(), []);
+	const { data, loading, error, refetch } = useQuery(fetchCampaigns, [], { initialData: bootstrapCampaigns });
+	const { mutate: createCampaign, loading: creating } = useMutation(campaigns.create, {
 		onSuccess: refreshBootstrap,
 	});
-	const { mutate: deletePostWork, loading: deleting } = useMutation(postworks.delete, {
+	const { mutate: deleteCampaign, loading: deleting } = useMutation(campaigns.delete, {
 		onSuccess: refreshBootstrap,
 	});
-	const { mutate: importPostWork, loading: importing } = useMutation(postworks.import, {
+	const { mutate: importCampaign, loading: importing } = useMutation(campaigns.import, {
 		onSuccess: refreshBootstrap,
 	});
-	const { mutate: exportPostWork } = useMutation(postworks.export);
+	const { mutate: exportCampaign } = useMutation(campaigns.export);
 
 	const postTypes = getPostTypes();
 
 	const handleCreate = async () => {
 		try {
-			const result = await createPostWork();
+			const result = await createCampaign();
 			if (result?.id) {
-				navigate(`/postworks/${result.id}`);
+				navigate(`/campaigns/${result.id}`);
 			}
 		} catch (err) {
-			console.error('Failed to create PostWork:', err);
+			console.error('Failed to create campaign:', err);
 		}
 	};
 
 	const handleDelete = async () => {
 		if (deleteId) {
-			await deletePostWork(deleteId);
+			await deleteCampaign(deleteId);
 			refetch();
 		}
 	};
@@ -61,9 +61,9 @@ export default function PostWorksPage() {
 		if (!file) return;
 
 		try {
-			const result = await importPostWork(file);
+			const result = await importCampaign(file);
 			if (result?.id) {
-				navigate(`/postworks/${result.id}`);
+				navigate(`/campaigns/${result.id}`);
 			}
 			refetch();
 		} catch (err) {
@@ -74,13 +74,13 @@ export default function PostWorksPage() {
 
 	const handleExport = async (id) => {
 		try {
-			const result = await exportPostWork(id);
+			const result = await exportCampaign(id);
 			// Create download
 			const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `postwork-${id}.json`;
+			a.download = `campaign-${id}.json`;
 			a.click();
 			URL.revokeObjectURL(url);
 		} catch (err) {
@@ -90,12 +90,12 @@ export default function PostWorksPage() {
 
 	if (loading) return <PageLoader />;
 
-	const postWorksList = data?.postworks || [];
+	const campaignsList = data?.campaigns || [];
 
 	return (
 		<div>
 			<PageHeader
-				title="Post Works"
+				title="Campaigns"
 				description="Manage batch post creation workflows"
 				actions={
 					<>
@@ -116,18 +116,18 @@ export default function PostWorksPage() {
 				}
 			/>
 
-			{postWorksList.length === 0 ? (
+			{campaignsList.length === 0 ? (
 				<EmptyState
 					icon={
 						<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-full h-full">
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 						</svg>
 					}
-					title="No Post Works yet"
-					description="Create your first Post Work to start batch post creation"
+					title="No Campaigns yet"
+					description="Create your first Campaign to start batch post creation"
 					action={
 						<Button onClick={handleCreate} loading={creating}>
-							Create Post Work
+							Create Campaign
 						</Button>
 					}
 				/>
@@ -143,46 +143,46 @@ export default function PostWorksPage() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{postWorksList.map((postWork) => (
-							<TableRow key={postWork.id}>
+						{campaignsList.map((campaign) => (
+							<TableRow key={campaign.id}>
 								<TableCell>
 									<button
-										onClick={() => navigate(`/postworks/${postWork.id}`)}
+										onClick={() => navigate(`/campaigns/${campaign.id}`)}
 										className="font-medium text-indigo-600 hover:text-indigo-900"
 									>
-										{postWork.title || `Post Work #${postWork.id}`}
+										{campaign.title || `Campaign #${campaign.id}`}
 									</button>
 								</TableCell>
 								<TableCell>
 									<span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-sm">
-										{postTypes[postWork.post_type] || postWork.post_type}
+										{postTypes[campaign.post_type] || campaign.post_type}
 									</span>
 								</TableCell>
 								<TableCell>
-									<CountsBadge counts={postWork.block_counts} />
-									{!postWork.block_counts && (
-										<span className="text-gray-400 text-sm">No blocks</span>
+									<CountsBadge counts={campaign.task_counts} />
+									{!campaign.task_counts && (
+										<span className="text-gray-400 text-sm">No post tasks</span>
 									)}
 								</TableCell>
 								<TableCell>
-									{new Date(postWork.created_at).toLocaleDateString()}
+									{new Date(campaign.created_at).toLocaleDateString()}
 								</TableCell>
 								<TableCell>
 									<div className="flex items-center gap-2">
 										<button
-											onClick={() => navigate(`/postworks/${postWork.id}`)}
+											onClick={() => navigate(`/campaigns/${campaign.id}`)}
 											className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
 										>
 											Edit
 										</button>
 										<button
-											onClick={() => handleExport(postWork.id)}
+											onClick={() => handleExport(campaign.id)}
 											className="text-gray-600 hover:text-gray-900 text-sm font-medium"
 										>
 											Export
 										</button>
 										<button
-											onClick={() => setDeleteId(postWork.id)}
+											onClick={() => setDeleteId(campaign.id)}
 											className="text-red-600 hover:text-red-900 text-sm font-medium"
 										>
 											Delete
@@ -199,8 +199,8 @@ export default function PostWorksPage() {
 				isOpen={deleteId !== null}
 				onClose={() => setDeleteId(null)}
 				onConfirm={handleDelete}
-				title="Delete Post Work"
-				message="Are you sure you want to delete this Post Work and all its blocks? This action cannot be undone."
+				title="Delete Campaign"
+				message="Are you sure you want to delete this Campaign and all its post tasks? This action cannot be undone."
 				confirmText="Delete"
 			/>
 		</div>

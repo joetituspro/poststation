@@ -272,7 +272,7 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 			<div className="flex flex-col sm:flex-row gap-2">
 				<Select
 					label="Add Field"
-					tooltip="Choose a content field to configure for this post work."
+					tooltip="Choose a content field to configure for this campaign."
 					options={availableTypes}
 					value={selectedType}
 					onChange={(e) => setSelectedType(e.target.value)}

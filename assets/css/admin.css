@@ -64,7 +64,7 @@ body.folded .postwork-actions.sticky {
 }
 
 /* Post Blocks */
-.postblock {
+.posttask {
   background: #fff;
   border: 1px solid #ccd0d4;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
@@ -73,7 +73,7 @@ body.folded .postwork-actions.sticky {
   border-radius: 5px;
 }
 
-.postblock.loading::before {
+.posttask.loading::before {
   content: "";
   position: absolute;
   top: 0;
@@ -84,7 +84,7 @@ body.folded .postwork-actions.sticky {
   z-index: 1;
 }
 
-.postblock.loading::after {
+.posttask.loading::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -96,16 +96,16 @@ body.folded .postwork-actions.sticky {
   border-top-color: transparent;
   border-radius: 50%;
   z-index: 2;
-  animation: postblock-spinner 0.6s linear infinite;
+  animation: posttask-spinner 0.6s linear infinite;
 }
 
-@keyframes postblock-spinner {
+@keyframes posttask-spinner {
   to {
     transform: rotate(360deg);
   }
 }
 
-.postblock-header {
+.posttask-header {
   border-bottom: 1px solid #ccd0d4;
   padding: 12px 12px;
   background: #f8f9f9;
@@ -115,7 +115,7 @@ body.folded .postwork-actions.sticky {
   align-items: center;
 }
 
-.postblock-header-info {
+.posttask-header-info {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -145,24 +145,24 @@ body.folded .postwork-actions.sticky {
   text-transform: uppercase;
 }
 
-.postblock-header-actions {
+.posttask-header-actions {
   display: flex;
   gap: 8px;
   margin-left: 12px;
 }
 
-.postblock-header-actions .button-link {
+.posttask-header-actions .button-link {
   color: #787c82;
   padding: 0;
   margin: 0;
   text-decoration: none;
 }
 
-.postblock-header-actions .button-link:hover {
+.posttask-header-actions .button-link:hover {
   color: #2271b1;
 }
 
-.postblock-header-actions .dashicons {
+.posttask-header-actions .dashicons {
   width: 20px;
   height: 20px;
   font-size: 20px;
@@ -186,21 +186,21 @@ body.folded .postwork-actions.sticky {
 }
 
 /* Status */
-.postblock[data-status="completed"] .postblock-header {
+.posttask[data-status="completed"] .posttask-header {
   background: #edfaef;
 }
 
-.postblock[data-status="failed"] .postblock-header {
+.posttask[data-status="failed"] .posttask-header {
   background: #fbeaea;
 }
 
-.postblock[data-status="processing"] .postblock-header {
+.posttask[data-status="processing"] .posttask-header {
   background: #e5f5fa;
   position: relative;
   overflow: hidden;
 }
 
-.postblock[data-status="processing"] .postblock-header::after {
+.posttask[data-status="processing"] .posttask-header::after {
   content: "";
   position: absolute;
   top: 0;
@@ -220,7 +220,7 @@ body.folded .postwork-actions.sticky {
   }
 }
 
-.postblock[data-status="processing"] {
+.posttask[data-status="processing"] {
   border-color: #2271b1;
   box-shadow: 0 0 8px rgba(34, 113, 177, 0.15);
   animation: processing-pulse 2s ease-in-out infinite;
@@ -240,15 +240,15 @@ body.folded .postwork-actions.sticky {
 
 /* Responsive */
 @media screen and (max-width: 782px) {
-  .postblock-content .form-table th {
+  .posttask-content .form-table th {
     padding-bottom: 0;
   }
 
-  .postblock-content .form-table td {
+  .posttask-content .form-table td {
     padding-left: 0;
   }
 
-  .postblock-header-info {
+  .posttask-header-info {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
@@ -341,7 +341,7 @@ body.folded .postwork-actions.sticky {
 }
 
 .rotating {
-  animation: postblock-spinner 1s linear infinite;
+  animation: posttask-spinner 1s linear infinite;
 }
 
 .block-status-badge.completed {
@@ -364,15 +364,15 @@ body.folded .postwork-actions.sticky {
   }
 }
 
-.postblock-header-actions .run-block {
+.posttask-header-actions .run-block {
   display: none;
 }
 
-.postblock[data-status="failed"] .postblock-header-actions .run-block {
+.posttask[data-status="failed"] .posttask-header-actions .run-block {
   display: inline-flex;
 }
 
-.postblock-header-actions .dashicons {
+.posttask-header-actions .dashicons {
   width: 20px;
   height: 20px;
   font-size: 20px;
@@ -381,11 +381,11 @@ body.folded .postwork-actions.sticky {
   justify-content: center;
 }
 
-.postblock-header-actions .run-block .dashicons {
+.posttask-header-actions .run-block .dashicons {
   color: #00a32a;
 }
 
-.postblock-header-actions .run-block:hover .dashicons {
+.posttask-header-actions .run-block:hover .dashicons {
   color: #008a20;
 }
 
@@ -549,18 +549,18 @@ body.folded .postwork-actions.sticky {
   color: #2271b1;
 }
 
-.postblock .error-message {
+.posttask .error-message {
   color: #d63638;
   font-size: 13px;
   margin-top: 5px;
   display: none;
 }
 
-.postblock .error-message.active {
+.posttask .error-message.active {
   display: block;
 }
 
-.postblock .form-table td.has-error input {
+.posttask .form-table td.has-error input {
   border-color: #d63638;
 }
 
@@ -588,9 +588,9 @@ body.folded .postwork-actions.sticky {
 }
 
 /* Disabled fields for completed blocks */
-.postblock[data-status="completed"] .postblock-content input,
-.postblock[data-status="completed"] .postblock-content select,
-.postblock[data-status="completed"] .postblock-content textarea {
+.posttask[data-status="completed"] .posttask-content input,
+.posttask[data-status="completed"] .posttask-content select,
+.posttask[data-status="completed"] .posttask-content textarea {
   background-color: #f0f0f1;
   pointer-events: none;
   cursor: not-allowed;
@@ -1439,14 +1439,14 @@ body.folded .postwork-actions.sticky {
 }
 
 /* Post Block Form */
-.postblock-form {
+.posttask-form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   padding: 20px;
 }
 
-.postblock-column {
+.posttask-column {
   min-width: 0;
 }
 
@@ -1506,7 +1506,7 @@ body.folded .postwork-actions.sticky {
   color: #1e1e1e;
 }
 
-.postblock .form-field label {
+.posttask .form-field label {
   display: block;
   background: #f0f0f1;
   padding: 10px 12px;
@@ -1550,7 +1550,7 @@ body.folded .postwork-actions.sticky {
 
 /* Responsive adjustments */
 @media screen and (max-width: 1200px) {
-  .postblock-form {
+  .posttask-form {
     grid-template-columns: 1fr;
   }
 }
@@ -2345,3 +2345,4 @@ body.folded .postwork-actions.sticky {
     grid-template-columns: 1fr;
   }
 }
+

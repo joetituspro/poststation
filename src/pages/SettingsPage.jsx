@@ -135,14 +135,14 @@ export default function SettingsPage() {
 							<div className="grid grid-cols-1 gap-3 pt-2 border-t border-gray-100">
 								<ModelSelect
 									label="Default Text Model"
-									tooltip="Used as the default text model for new and unconfigured Post Work fields."
+									tooltip="Used as the default text model for new and unconfigured Campaign fields."
 									value={defaultTextModel}
 									onChange={(e) => setDefaultTextModel(e.target.value)}
 									filter="text"
 								/>
 								<ModelSelect
 									label="Default Image Model"
-									tooltip="Used as the default image model for new and unconfigured Post Work image fields."
+									tooltip="Used as the default image model for new and unconfigured Campaign image fields."
 									value={defaultImageModel}
 									onChange={(e) => setDefaultImageModel(e.target.value)}
 									filter="image"
@@ -168,7 +168,7 @@ export default function SettingsPage() {
 					<CardBody>
 						<p className="text-sm text-gray-600">
 							PostStation is a WordPress plugin that enables automated post creation through webhooks and API endpoints. 
-							Configure Post Works to define post templates, then trigger content generation via webhooks.
+							Configure Campaigns to define post templates, then trigger content generation via webhooks.
 						</p>
 					</CardBody>
 				</Card>
@@ -221,7 +221,7 @@ export default function SettingsPage() {
   "custom_fields": {
     "meta_key": "meta_value"
   },
-  "block_id": 123
+  "task_id": 123
 }`}</code>
 						</pre>
 					</section>
@@ -235,7 +235,7 @@ export default function SettingsPage() {
 							<li><strong>thumbnail_url</strong> - Featured image URL</li>
 							<li><strong>taxonomies</strong> - Object with taxonomy terms</li>
 							<li><strong>custom_fields</strong> - Custom meta fields</li>
-							<li><strong>block_id</strong> - Associated PostBlock ID</li>
+							<li><strong>task_id</strong> - Associated Post Task ID</li>
 						</ul>
 					</section>
 				</div>

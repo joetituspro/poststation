@@ -65,11 +65,11 @@ export default function BlocksList({
 		<div className="space-y-4">
 			{/* Header */}
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-				<h3 className="text-lg font-medium text-gray-900">Post Blocks</h3>
+				<h3 className="text-lg font-medium text-gray-900">Post Tasks</h3>
 				<div className="flex flex-wrap items-center gap-2">
 					<Select
 						label="Status Filter"
-						tooltip="Filter the list by block status."
+						tooltip="Filter the list by post task status."
 						options={STATUS_FILTERS}
 						value={filter}
 						onChange={(e) => setFilter(e.target.value)}
@@ -111,10 +111,10 @@ export default function BlocksList({
 						disabled={importLoading}
 						className="w-full sm:w-auto"
 					>
-						Import Blocks
+						Import Post Tasks
 					</Button>
 					<Button size="sm" onClick={onAddBlock} loading={loading} className="w-full sm:w-auto">
-						Add Block
+						Add Post Task
 					</Button>
 				</div>
 			</div>
@@ -123,7 +123,7 @@ export default function BlocksList({
 			{filteredBlocks.length === 0 ? (
 				<div className="text-center py-8 bg-gray-50 rounded-lg">
 					<p className="text-gray-500">
-						{filter ? 'No blocks match this filter' : 'No blocks yet. Add your first block to get started.'}
+						{filter ? 'No post tasks match this filter' : 'No post tasks yet. Add your first post task to get started.'}
 					</p>
 				</div>
 			) : (
@@ -150,8 +150,8 @@ export default function BlocksList({
 				onClose={() => setDeleteId(null)}
 				onConfirm={handleDelete}
 				loading={isDeleting}
-				title="Delete Block"
-				message="Are you sure you want to delete this block?"
+				title="Delete Post Task"
+				message="Are you sure you want to delete this post task?"
 				confirmText="Delete"
 			/>
 		</div>

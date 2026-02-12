@@ -23,7 +23,7 @@ export const setBootstrap = (bootstrap = {}) => {
 		'current_user_id',
 		'settings',
 		'webhooks',
-		'postworks',
+		'campaigns',
 		'openrouter_models',
 	];
 
@@ -104,19 +104,19 @@ export async function refreshBootstrap() {
 	return bootstrap;
 }
 
-// PostWork API
-export const postworks = {
-	getAll: () => ajax('poststation_get_postworks'),
-	getById: (id) => ajax('poststation_get_postwork', { id }),
-	create: (title = 'New Post Work') => ajax('poststation_create_postwork', { title }),
-	update: (id, data) => ajax('poststation_update_postwork', { id, ...data }),
-	delete: (id) => ajax('poststation_delete_postwork', { id }),
-	run: (id, blockId, webhookId) => ajax('poststation_run_postwork', { id, block_id: blockId, webhook_id: webhookId }),
-	stopRun: (id) => ajax('poststation_stop_postwork_run', { id }),
-	export: (id) => ajax('poststation_export_postwork', { id }),
+// Campaign API
+export const campaigns = {
+	getAll: () => ajax('poststation_get_campaigns'),
+	getById: (id) => ajax('poststation_get_campaign', { id }),
+	create: (title = 'New Campaign') => ajax('poststation_create_campaign', { title }),
+	update: (id, data) => ajax('poststation_update_campaign', { id, ...data }),
+	delete: (id) => ajax('poststation_delete_campaign', { id }),
+	run: (id, taskId, webhookId) => ajax('poststation_run_campaign', { id, task_id: taskId, webhook_id: webhookId }),
+	stopRun: (id) => ajax('poststation_stop_campaign_run', { id }),
+	export: (id) => ajax('poststation_export_campaign', { id }),
 	import: (file) => {
 		const formData = new FormData();
-		formData.append('action', 'poststation_import_postwork');
+		formData.append('action', 'poststation_import_campaign');
 		formData.append('nonce', getConfig().nonce);
 		formData.append('file', file);
 		return fetch(getConfig().ajax_url, {
@@ -130,17 +130,17 @@ export const postworks = {
 	},
 };
 
-// PostBlock API
-export const blocks = {
-	create: (postworkId) => ajax('poststation_create_postblock', { postwork_id: postworkId }),
-	update: (postworkId, blocksData) => ajax('poststation_update_blocks', { postwork_id: postworkId, blocks: blocksData }),
-	delete: (id) => ajax('poststation_delete_postblock', { id }),
-	clearCompleted: (postworkId) => ajax('poststation_clear_completed_blocks', { postwork_id: postworkId }),
-	import: (postworkId, file) => {
+// PostTask API
+export const postTasks = {
+	create: (campaignId) => ajax('poststation_create_posttask', { campaign_id: campaignId }),
+	update: (campaignId, tasksData) => ajax('poststation_update_posttasks', { campaign_id: campaignId, tasks: tasksData }),
+	delete: (id) => ajax('poststation_delete_posttask', { id }),
+	clearCompleted: (campaignId) => ajax('poststation_clear_completed_posttasks', { campaign_id: campaignId }),
+	import: (campaignId, file) => {
 		const formData = new FormData();
-		formData.append('action', 'poststation_import_blocks');
+		formData.append('action', 'poststation_import_posttasks');
 		formData.append('nonce', getConfig().nonce);
-		formData.append('postwork_id', postworkId);
+		formData.append('campaign_id', campaignId);
 		formData.append('file', file);
 		return fetch(getConfig().ajax_url, {
 			method: 'POST',
@@ -173,8 +173,8 @@ export const settings = {
 		}),
 };
 
-export const getPendingProcessingBlocks = (postworkId) =>
-	psApi(`blocks?postwork_id=${postworkId}&status=all`);
+export const getPendingProcessingPostTasks = (campaignId) =>
+	psApi(`posttasks?campaign_id=${campaignId}&status=all`);
 
 // Get config values
 const getBootstrapValue = (key) => getBootstrap()[key] ?? getConfig()[key];
@@ -187,7 +187,7 @@ export const getCountries = () => getBootstrapValue('countries') || {};
 
 export const getBootstrapSettings = () => getBootstrap().settings || null;
 export const getBootstrapWebhooks = () => getBootstrap().webhooks || null;
-export const getBootstrapPostworks = () => getBootstrap().postworks || null;
+export const getBootstrapCampaigns = () => getBootstrap().campaigns || null;
 export const getBootstrapOpenRouterModels = () => getBootstrap().openrouter_models || [];
 
 export const openrouter = {

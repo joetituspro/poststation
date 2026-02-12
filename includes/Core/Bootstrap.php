@@ -8,8 +8,8 @@ use PostStation\Admin\ReactApp;
 use PostStation\Services\Sitemap;
 use PostStation\Services\BackgroundRunner;
 use PostStation\Models\Webhook;
-use PostStation\Models\PostWork;
-use PostStation\Models\PostBlock;
+use PostStation\Models\Campaign;
+use PostStation\Models\PostTask;
 
 class Bootstrap
 {
@@ -46,8 +46,8 @@ class Bootstrap
 
 	private function check_db_version(): void
 	{
-		$installed_version = get_option('poststation_postblock_db_version', '0.0.0');
-		if (version_compare($installed_version, PostBlock::DB_VERSION, '<')) {
+		$installed_version = get_option('poststation_posttask_db_version', get_option('poststation_postblock_db_version', '0.0.0'));
+		if (version_compare($installed_version, PostTask::DB_VERSION, '<')) {
 			// Defer to init so $wp_rewrite is available when registering endpoints
 			add_action('init', [$this, 'activate'], 1);
 		}
@@ -66,16 +66,16 @@ class Bootstrap
 				// throw new Exception('Failed to create Webhook table');
 			}
 
-			if (!PostWork::update_tables()) {
-				// throw new Exception('Failed to create/update PostWork tables');
+			if (!Campaign::update_tables()) {
+				// throw new Exception('Failed to create/update Campaign tables');
 			}
 
-			if (!PostBlock::update_tables()) {
-				// throw new Exception('Failed to create/update PostBlock tables');
+			if (!PostTask::update_tables()) {
+				// throw new Exception('Failed to create/update PostTask tables');
 			}
 
 			// Update version
-			update_option('poststation_postblock_db_version', PostBlock::DB_VERSION);
+			update_option('poststation_posttask_db_version', PostTask::DB_VERSION);
 
 			// Register rewrite rules before flushing
 			$api_handler = new \PostStation\Api\ApiHandler();
@@ -98,11 +98,12 @@ class Bootstrap
 	{
 		// Drop tables
 		Webhook::drop_table();
-		PostWork::drop_table();
-		PostBlock::drop_table();
+		Campaign::drop_table();
+		PostTask::drop_table();
 
 		// Remove options
 		delete_option('poststation_api_key');
+		delete_option('poststation_posttask_db_version');
 		delete_option('poststation_postblock_db_version');
 	}
 

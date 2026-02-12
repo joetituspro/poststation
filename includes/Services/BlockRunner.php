@@ -2,8 +2,8 @@
 
 namespace PostStation\Services;
 
-use PostStation\Models\PostBlock;
-use PostStation\Models\PostWork;
+use PostStation\Models\PostTask;
+use PostStation\Models\Campaign;
 use PostStation\Models\Webhook;
 use PostStation\Utils\Languages;
 use PostStation\Utils\Countries;
@@ -11,16 +11,16 @@ use Exception;
 
 class BlockRunner
 {
-	public static function dispatch_block(int $postwork_id, int $block_id, int $webhook_id): array
+	public static function dispatch_task(int $campaign_id, int $task_id, int $webhook_id): array
 	{
-		$postwork = PostWork::get_by_id($postwork_id);
-		if (!$postwork) {
-			return ['success' => false, 'message' => __('Post work not found.', 'poststation')];
+		$campaign = Campaign::get_by_id($campaign_id);
+		if (!$campaign) {
+			return ['success' => false, 'message' => __('Campaign not found.', 'poststation')];
 		}
 
-		$block = PostBlock::get_by_id($block_id);
-		if (!$block) {
-			return ['success' => false, 'message' => __('Block not found.', 'poststation')];
+		$task = PostTask::get_by_id($task_id);
+		if (!$task) {
+			return ['success' => false, 'message' => __('Post task not found.', 'poststation')];
 		}
 
 		$webhook = Webhook::get_by_id($webhook_id);
@@ -29,8 +29,8 @@ class BlockRunner
 		}
 
 		try {
-			$content_fields = !empty($postwork['content_fields']) ? json_decode($postwork['content_fields'], true) : [];
-			$default_content_fields = PostWork::get_default_content_fields();
+			$content_fields = !empty($campaign['content_fields']) ? json_decode($campaign['content_fields'], true) : [];
+			$default_content_fields = Campaign::get_default_content_fields();
 			$content_fields = array_replace_recursive($default_content_fields, $content_fields);
 			
 			// Inject terms for auto_select mode in taxonomies
@@ -43,7 +43,7 @@ class BlockRunner
 					$content_fields['image']['mode'] = 'generate_from_article';
 				}
 
-				if (!empty($block['feature_image_id']) && isset($content_fields['image'])) {
+				if (!empty($task['feature_image_id']) && isset($content_fields['image'])) {
 					$content_fields['image']['enabled'] = false;
 				}
 
@@ -141,18 +141,18 @@ class BlockRunner
 				);
 			}
 
-			$topic = $block['topic'] ?? '';
-			$keywords_raw = $block['keywords'] ?? '';
+			$topic = $task['topic'] ?? '';
+			$keywords_raw = $task['keywords'] ?? '';
 			$keywords = array_values(array_filter(array_map('trim', explode(',', $keywords_raw))));
 			$keywords = array_slice($keywords, 0, 5);
 			$primary_keyword = $keywords[0] ?? $topic;
-			$article_type = $block['article_type'] ?? $postwork['article_type'] ?? 'blog_post';
-			$language_key = $postwork['language'] ?? 'en';
-			$country_key = $postwork['target_country'] ?? 'international';
+			$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'blog_post';
+			$language_key = $campaign['language'] ?? 'en';
+			$country_key = $campaign['target_country'] ?? 'international';
 
 			$body = [
-				'block_id' => $block['id'],
-				'research_url' => $block['research_url'] ?? '',
+				'task_id' => $task['id'],
+				'research_url' => $task['research_url'] ?? '',
 				'topic' => $topic,
 				'keywords' => [
 					'primary_key' => $primary_keyword,
@@ -168,12 +168,12 @@ class BlockRunner
 					'name' => Countries::get_name($country_key),
 				],
 				'content_fields' => $content_fields,
-				'sitemap' => (new Sitemap())->get_sitemap_json($postwork['post_type']),
+				'sitemap' => (new Sitemap())->get_sitemap_json($campaign['post_type']),
 				'callback_url' => get_site_url() . '/ps-api',
 				'api_key' => get_option('poststation_api_key'),
 			];
 
-			PostBlock::update($block_id, [
+			PostTask::update($task_id, [
 				'status' => 'processing',
 				'run_started_at' => current_time('mysql'),
 				'error_message' => null,
@@ -199,9 +199,9 @@ class BlockRunner
 				));
 			}
 
-			return ['success' => true, 'block' => $block];
+			return ['success' => true, 'task' => $task];
 		} catch (Exception $e) {
-			PostBlock::update($block_id, [
+			PostTask::update($task_id, [
 				'status' => 'failed',
 				'error_message' => $e->getMessage(),
 			]);
@@ -210,27 +210,27 @@ class BlockRunner
 		}
 	}
 
-	private static function process_placeholders(string $text, array $block, array $postwork): string
+	private static function process_placeholders(string $text, array $task, array $campaign): string
 	{
 		if (empty($text)) {
 			return $text;
 		}
 
-		$topic = $block['topic'] ?? '';
-		$keywords_raw = $block['keywords'] ?? '';
+		$topic = $task['topic'] ?? '';
+		$keywords_raw = $task['keywords'] ?? '';
 		$keywords = array_values(array_filter(array_map('trim', explode(',', $keywords_raw))));
 		$keywords = array_slice($keywords, 0, 5);
 		$primary_keyword = $keywords[0] ?? $topic;
-		$article_type = $block['article_type'] ?? $postwork['article_type'] ?? 'blog_post';
+		$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'blog_post';
 
 		$placeholders = [
-			'{{research_url}}' => $block['research_url'] ?? '',
+			'{{research_url}}' => $task['research_url'] ?? '',
 			'{{topic}}' => $topic,
 			'{{keywords}}' => implode(', ', $keywords),
 			'{{primary_keyword}}' => $primary_keyword,
 			'{{article_type}}' => $article_type,
-			'{{image_title}}' => str_replace('{{title}}', $topic ?: 'Post', $block['feature_image_title'] ?? '{{title}}'),
-			'{{sitemap}}' => wp_json_encode((new Sitemap())->get_sitemap_json($postwork['post_type'])),
+			'{{image_title}}' => str_replace('{{title}}', $topic ?: 'Post', $task['feature_image_title'] ?? '{{title}}'),
+			'{{sitemap}}' => wp_json_encode((new Sitemap())->get_sitemap_json($campaign['post_type'])),
 		];
 
 		return str_replace(array_keys($placeholders), array_values($placeholders), $text);

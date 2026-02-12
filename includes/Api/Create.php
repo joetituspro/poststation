@@ -5,8 +5,8 @@ namespace PostStation\Api;
 use WP_Error;
 use Exception;
 use PostStation\Models\Webhook;
-use PostStation\Models\PostBlock;
-use PostStation\Models\PostWork;
+use PostStation\Models\PostTask;
+use PostStation\Models\Campaign;
 
 class Create
 {
@@ -19,19 +19,19 @@ class Create
 	 */
 	public function process_request(array $data): array
 	{
-		// Get and validate block
-		$block_id = $data['block_id'] ?? null;
-		$block = $block_id ? PostBlock::get_by_id($block_id) : null;
+		// Get and validate task
+		$task_id = $data['task_id'] ?? null;
+		$task = $task_id ? PostTask::get_by_id($task_id) : null;
 
-		// Get post work
-		$postwork = null;
-		if ($block) {
-			$postwork = PostWork::get_by_id($block['postwork_id']);
+		// Get campaign
+		$campaign = null;
+		if ($task) {
+			$campaign = Campaign::get_by_id((int) $task['campaign_id']);
 		}
 
-		// Update block status to processing and reset timeout
-		if ($block_id && $block) {
-			PostBlock::update($block_id, [
+		// Update task status to processing and reset timeout
+		if ($task_id && $task) {
+			PostTask::update($task_id, [
 				'status' => 'processing',
 				'run_started_at' => current_time('mysql')
 			]);
@@ -39,18 +39,18 @@ class Create
 
 		try {
 			// Allow developers to handle content publication
-			$result = apply_filters('poststation_handle_content_publication', null, $data, $block ?: [], $postwork ?: []);
+			$result = apply_filters('poststation_handle_content_publication', null, $data, $task ?: [], $campaign ?: []);
 
 			if ($result === null) {
 				// Use default publication handler if no custom handler
-				$result = $this->handle_content_publication($data, $block ?: [], $postwork ?: []);
+				$result = $this->handle_content_publication($data, $task ?: [], $campaign ?: []);
 			} elseif (!is_array($result) || !isset($result['post_id'])) {
 				throw new Exception('Invalid custom publication result. Must return array with post_id');
 			}
 
-			// Update block status to completed
-			if ($block_id && $block) {
-				PostBlock::update($block_id, [
+			// Update task status to completed
+			if ($task_id && $task) {
+				PostTask::update($task_id, [
 					'status' => 'completed',
 					'post_id' => $result['post_id'],
 					'error_message' => null,
@@ -64,9 +64,9 @@ class Create
 				'edit_url' => get_edit_post_link($result['post_id'], 'url'),
 			], $result);
 		} catch (Exception $e) {
-			// Update block status to failed
-			if ($block_id && $block) {
-				PostBlock::update($block_id, [
+			// Update task status to failed
+			if ($task_id && $task) {
+				PostTask::update($task_id, [
 					'status' => 'failed',
 					'error_message' => $e->getMessage(),
 				]);
@@ -79,15 +79,15 @@ class Create
 	 * Handle content publication
 	 *
 	 * @param array $data Request data
-	 * @param array $block Block data
-	 * @param array $postwork Post work data
+	 * @param array $task Post task data
+	 * @param array $campaign Campaign data
 	 * @return array
 	 * @throws Exception If publication fails
 	 */
-	private function handle_content_publication(array $data, array $block, array $postwork): array
+	private function handle_content_publication(array $data, array $task, array $campaign): array
 	{
 		// Prepare post data
-		$post_data = $this->prepare_post_data($data, $block, $postwork);
+		$post_data = $this->prepare_post_data($data, $task, $campaign);
 
 		// Insert post
 		$post_id = wp_insert_post($post_data, true);
@@ -97,7 +97,7 @@ class Create
 
 		// Handle taxonomies
 		if (!empty($data['taxonomies'])) {
-			$this->handle_taxonomies($post_id, $data['taxonomies'], $postwork);
+			$this->handle_taxonomies($post_id, $data['taxonomies'], $campaign);
 		}
 
 		// Handle thumbnail
@@ -105,8 +105,8 @@ class Create
 			$this->handle_thumbnail_by_id($post_id, (int) $data['thumbnail_id']);
 		} elseif (!empty($data['thumbnail_url'])) {
 			$this->handle_thumbnail($post_id, $data['thumbnail_url']);
-		} elseif (!empty($block['feature_image_id'])) {
-			set_post_thumbnail($post_id, $block['feature_image_id']);
+		} elseif (!empty($task['feature_image_id'])) {
+			set_post_thumbnail($post_id, $task['feature_image_id']);
 		}
 
 		// Handle post fields
@@ -114,8 +114,8 @@ class Create
 			$this->handle_custom_fields($post_id, $data['custom_fields']);
 		}
 
-		if (!empty($block['id'])) {
-			$this->attach_block_images($post_id, (int) $block['id']);
+		if (!empty($task['id'])) {
+			$this->attach_task_images($post_id, (int) $task['id']);
 		}
 
 		return [
@@ -123,7 +123,7 @@ class Create
 		];
 	}
 
-	private function attach_block_images(int $post_id, int $block_id): void
+	private function attach_task_images(int $post_id, int $task_id): void
 	{
 		$attachments = get_posts([
 			'post_type' => 'attachment',
@@ -132,8 +132,8 @@ class Create
 			'fields' => 'ids',
 			'meta_query' => [
 				[
-					'key' => 'poststation_block_id',
-					'value' => $block_id,
+					'key' => 'poststation_posttask_id',
+					'value' => $task_id,
 				],
 			],
 		]);
@@ -155,10 +155,10 @@ class Create
 	 *
 	 * @param int $post_id Post ID
 	 * @param array $taxonomies Taxonomy data
-	 * @param array $postwork Post work data
+	 * @param array $campaign Campaign data
 	 * @return void
 	 */
-	private function handle_taxonomies(int $post_id, $taxonomies, array $postwork): void
+	private function handle_taxonomies(int $post_id, $taxonomies, array $campaign): void
 	{
 		if (is_string($taxonomies)) {
 			$decoded = json_decode($taxonomies, true);
@@ -366,8 +366,8 @@ class Create
 	 * Handle post fields for the post
 	 *
 	 * @param int $post_id Post ID
-	 * @param array $block Block data
-	 * @param array $postwork Post work data
+	 * @param array $task Post task data
+	 * @param array $campaign Campaign data
 	 * @param array $api_post_fields Custom fields data from API
 	 * @return void
 	 */
@@ -411,12 +411,11 @@ class Create
 			return;
 		}
 
-		// Get block data to access feature_image_title
-		$block_id = $data['block_id'] ?? 0;
-		$block = $block_id ? PostBlock::get_by_id($block_id) : null;
+		$task_id = $data['task_id'] ?? 0;
+		$task = $task_id ? PostTask::get_by_id((int) $task_id) : null;
 
 		// 1. Get image title (default to {{title}} if not set)
-		$image_title = $block['feature_image_title'] ?? ($data['feature_image_title'] ?? '{{title}}');
+		$image_title = $task['feature_image_title'] ?? ($data['feature_image_title'] ?? '{{title}}');
 		// Replace {{title}} placeholder with actual post title
 		$image_title = str_replace('{{title}}', $post->post_title, $image_title);
 
@@ -442,12 +441,12 @@ class Create
 		}
 
 		if (!empty($bg_image_urls)) {
-			// Get last used image URL from postwork meta
-			$postwork_id = $block['postwork_id'] ?? 0;
+			// Get last used image URL from campaign meta
+			$campaign_id = $task['campaign_id'] ?? 0;
 			$last_bg_url = '';
 
-			if ($postwork_id) {
-				$last_bg_url = get_option('poststation_last_bg_image_' . $postwork_id, '');
+			if ($campaign_id) {
+				$last_bg_url = get_option('poststation_last_bg_image_' . $campaign_id, '');
 			}
 
 			// Filter out the last used URL if there are more than 1 image available
@@ -463,8 +462,8 @@ class Create
 			$bg_image_url = $available_urls[array_rand($available_urls)];
 
 			// Update last used image URL
-			if ($postwork_id) {
-				update_option('poststation_last_bg_image_' . $postwork_id, $bg_image_url);
+			if ($campaign_id) {
+				update_option('poststation_last_bg_image_' . $campaign_id, $bg_image_url);
 			}
 		}
 
@@ -621,16 +620,16 @@ class Create
 	 * Prepare post data for insertion
 	 *
 	 * @param array $data Request data
-	 * @param array $block Block data
-	 * @param array $postwork Post work data
+	 * @param array $task Post task data
+	 * @param array $campaign Campaign data
 	 * @return array
 	 */
-	private function prepare_post_data(array $data, array $block, array $postwork): array
+	private function prepare_post_data(array $data, array $task, array $campaign): array
 	{
 		$post_data = [
-			'post_type' => $postwork['post_type'] ?? 'post',
-			'post_status' => $postwork['post_status'] ?? 'pending',
-			'post_author' => $postwork['default_author_id'] ?? get_current_user_id(),
+			'post_type' => $campaign['post_type'] ?? 'post',
+			'post_status' => $campaign['post_status'] ?? 'pending',
+			'post_author' => $campaign['default_author_id'] ?? get_current_user_id(),
 		];
 
 		$title = $data['title'] ?? null;

@@ -9,7 +9,7 @@ class ImageOptimizer
 {
 	public function upload_base64_image(array $args): array
 	{
-		$block_id = (int) ($args['block_id'] ?? 0);
+		$task_id = (int) ($args['task_id'] ?? 0);
 		$base64 = (string) ($args['image_base64'] ?? '');
 		$index = $args['index'] ?? null;
 		$requested_format = (string) ($args['format'] ?? 'webp');
@@ -17,7 +17,7 @@ class ImageOptimizer
 		$alt_text = (string) ($args['alt_text'] ?? '');
 		$image_identifier = sanitize_file_name((string) ($args['image_identifier'] ?? ''));
 
-		if (!$block_id || $base64 === '') {
+		if (!$task_id || $base64 === '') {
 			throw new Exception('Missing required image upload fields', 400);
 		}
 
@@ -61,7 +61,7 @@ class ImageOptimizer
 		$base_filename = sprintf(
 			'%s-%d-%s-%s',
 			$base_name,
-			$block_id,
+			$task_id,
 			$index_label,
 			$date
 		);

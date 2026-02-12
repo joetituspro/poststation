@@ -14,7 +14,7 @@ const ARTICLE_TYPE_OPTIONS = [
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
 
-export default function PostWorkForm({ postWork, onChange, webhooks = [], users = [] }) {
+export default function CampaignForm({ postWork, onChange, webhooks = [], users = [] }) {
 	const postTypes = getPostTypes();
 	const languages = getLanguages();
 	const countries = getCountries();
@@ -34,7 +34,7 @@ export default function PostWorkForm({ postWork, onChange, webhooks = [], users 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				<Select
 					label="Article Type"
-					tooltip="<strong>Article Type</strong> sets the overall writing style and structure used for this post work."
+					tooltip="<strong>Article Type</strong> sets the overall writing style and structure used for this campaign."
 					options={ARTICLE_TYPE_OPTIONS}
 					value={postWork.article_type || 'blog_post'}
 					onChange={(e) => handleChange('article_type', e.target.value)}
@@ -83,7 +83,7 @@ export default function PostWorkForm({ postWork, onChange, webhooks = [], users 
 
 				<Select
 					label="Webhook"
-					tooltip="Webhook endpoint that receives the generation payload for this post work."
+					tooltip="Webhook endpoint that receives the generation payload for this campaign."
 					options={webhookOptions}
 					value={postWork.webhook_id?.toString() || ''}
 					onChange={(e) => handleChange('webhook_id', e.target.value)}

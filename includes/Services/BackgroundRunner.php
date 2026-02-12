@@ -2,34 +2,34 @@
 
 namespace PostStation\Services;
 
-use PostStation\Models\PostBlock;
+use PostStation\Models\PostTask;
 
 class BackgroundRunner
 {
-	public const ACTION_CHECK_BLOCK_STATUS = 'poststation_check_block_status';
+	public const ACTION_CHECK_TASK_STATUS = 'poststation_check_posttask_status';
 	private const CHECK_INTERVAL = 30;
 	private const TIMEOUT_SECONDS = 65;
 
 	public function init(): void
 	{
-		add_action(self::ACTION_CHECK_BLOCK_STATUS, [$this, 'handle_check_block_status'], 10, 4);
+		add_action(self::ACTION_CHECK_TASK_STATUS, [$this, 'handle_check_task_status'], 10, 4);
 	}
 
-	public function schedule_status_check(int $postwork_id, int $block_id, int $webhook_id, int $attempt = 0): void
+	public function schedule_status_check(int $campaign_id, int $task_id, int $webhook_id, int $attempt = 0): void
 	{
 		if (!function_exists('as_schedule_single_action')) {
 			return;
 		}
 
 		$args = [
-			'postwork_id' => $postwork_id,
-			'block_id' => $block_id,
+			'campaign_id' => $campaign_id,
+			'task_id' => $task_id,
 			'webhook_id' => $webhook_id,
 			'attempt' => $attempt,
 		];
 
 		$already_scheduled = function_exists('as_has_scheduled_action')
-			? as_has_scheduled_action(self::ACTION_CHECK_BLOCK_STATUS, $args, $this->get_group($postwork_id))
+			? as_has_scheduled_action(self::ACTION_CHECK_TASK_STATUS, $args, $this->get_group($campaign_id))
 			: false;
 
 		if ($already_scheduled) {
@@ -38,77 +38,76 @@ class BackgroundRunner
 
 		as_schedule_single_action(
 			time() + self::CHECK_INTERVAL,
-			self::ACTION_CHECK_BLOCK_STATUS,
+			self::ACTION_CHECK_TASK_STATUS,
 			$args,
-			$this->get_group($postwork_id)
+			$this->get_group($campaign_id)
 		);
 	}
 
-	public function handle_check_block_status(int $postwork_id, int $block_id, int $webhook_id, int $attempt = 0): void
+	public function handle_check_task_status(int $campaign_id, int $task_id, int $webhook_id, int $attempt = 0): void
 	{
-		$block = PostBlock::get_by_id($block_id);
-		if (!$block) {
+		$task = PostTask::get_by_id($task_id);
+		if (!$task) {
 			return;
 		}
 
-		if ($block['status'] === 'completed') {
-			$this->start_next_block($postwork_id, $webhook_id);
+		if ($task['status'] === 'completed') {
+			$this->start_next_task($campaign_id, $webhook_id);
 			return;
 		}
 
-		if ($block['status'] === 'failed') {
-			$this->start_next_block($postwork_id, $webhook_id);
+		if ($task['status'] === 'failed') {
+			$this->start_next_task($campaign_id, $webhook_id);
 			return;
 		}
 
-		if ($block['status'] === 'processing' && !empty($block['error_message'])) {
-			PostBlock::update($block_id, [
+		if ($task['status'] === 'processing' && !empty($task['error_message'])) {
+			PostTask::update($task_id, [
 				'status' => 'failed',
-				'error_message' => $block['error_message'],
+				'error_message' => $task['error_message'],
 			]);
-			$this->start_next_block($postwork_id, $webhook_id);
+			$this->start_next_task($campaign_id, $webhook_id);
 			return;
 		}
 
-		if ($block && $this->is_timed_out($block)) {
-			// Update block status to failed
-			PostBlock::update($block_id, [
+		if ($task && $this->is_timed_out($task)) {
+			PostTask::update($task_id, [
 				'status' => 'failed',
 				'error_message' => __('Status check timed out.', 'poststation'),
 			]);
 
-			$this->start_next_block($postwork_id, $webhook_id);
+			$this->start_next_task($campaign_id, $webhook_id);
 			return;
 		}
 
-		if ($block['status'] === 'processing') {
-			$this->schedule_status_check($postwork_id, $block_id, $webhook_id, $attempt + 1);
+		if ($task['status'] === 'processing') {
+			$this->schedule_status_check($campaign_id, $task_id, $webhook_id, $attempt + 1);
 			return;
 		}
 
-		if ($block['status'] === 'pending') {
+		if ($task['status'] === 'pending') {
 			return;
 		}
 
-		$this->start_next_block($postwork_id, $webhook_id);
+		$this->start_next_task($campaign_id, $webhook_id);
 	}
 
-	public function cancel_run(int $postwork_id): bool
+	public function cancel_run(int $campaign_id): bool
 	{
 		if (!function_exists('as_unschedule_all_actions')) {
 			return false;
 		}
 
-		as_unschedule_all_actions(self::ACTION_CHECK_BLOCK_STATUS, [], $this->get_group($postwork_id));
+		as_unschedule_all_actions(self::ACTION_CHECK_TASK_STATUS, [], $this->get_group($campaign_id));
 
-		// Update any processing blocks to pending	 					
+		// Update any processing tasks to pending
 		global $wpdb;
-		$table_name = $wpdb->prefix . PostBlock::get_table_name();
+		$table_name = $wpdb->prefix . PostTask::get_table_name();
 		$wpdb->update(
 			$table_name,
 			['status' => 'pending'],
 			[
-				'postwork_id' => $postwork_id,
+				'campaign_id' => $campaign_id,
 				'status' => 'processing'
 			]
 		);
@@ -116,51 +115,51 @@ class BackgroundRunner
 		return true;
 	}
 
-	private function start_next_block(int $postwork_id, int $webhook_id): void
+	private function start_next_task(int $campaign_id, int $webhook_id): void
 	{
-		if ($this->has_processing_block_only($postwork_id)) {
+		if ($this->has_processing_task_only($campaign_id)) {
 			return;
 		}
 
-		$block = $this->get_next_block($postwork_id);
-		if (!$block) {
+		$task = $this->get_next_task($campaign_id);
+		if (!$task) {
 			if (function_exists('as_unschedule_all_actions')) {
-				as_unschedule_all_actions(self::ACTION_CHECK_BLOCK_STATUS, [], $this->get_group($postwork_id));
+				as_unschedule_all_actions(self::ACTION_CHECK_TASK_STATUS, [], $this->get_group($campaign_id));
 			}
 			return;
 		}
 
-		$result = BlockRunner::dispatch_block($postwork_id, (int)$block['id'], $webhook_id);
+		$result = BlockRunner::dispatch_task($campaign_id, (int) $task['id'], $webhook_id);
 		if (!$result['success']) {
 			return;
 		}
 
-		$this->schedule_status_check($postwork_id, (int)$block['id'], $webhook_id, 0);
+		$this->schedule_status_check($campaign_id, (int) $task['id'], $webhook_id, 0);
 	}
 
-	private function get_next_block(int $postwork_id): ?array
+	private function get_next_task(int $campaign_id): ?array
 	{
-		$blocks = PostBlock::get_by_postwork($postwork_id);
-		foreach ($blocks as $block) {
-			if ($block['status'] === 'pending') {
-				return $block;
+		$tasks = PostTask::get_by_campaign($campaign_id);
+		foreach ($tasks as $task) {
+			if ($task['status'] === 'pending') {
+				return $task;
 			}
 		}
 		return null;
 	}
 
-	private function has_processing_block(int $postwork_id): bool
+	private function has_processing_task(int $campaign_id): bool
 	{
-		$blocks = PostBlock::get_by_postwork($postwork_id);
-		foreach ($blocks as $block) {
-			if ($block['status'] === 'processing') {
+		$tasks = PostTask::get_by_campaign($campaign_id);
+		foreach ($tasks as $task) {
+			if ($task['status'] === 'processing') {
 				return true;
 			}
 		}
 		if (function_exists('as_get_scheduled_actions')) {
-			$group = $this->get_group($postwork_id);
+			$group = $this->get_group($campaign_id);
 			$pending = as_get_scheduled_actions([
-				'hook' => self::ACTION_CHECK_BLOCK_STATUS,
+				'hook' => self::ACTION_CHECK_TASK_STATUS,
 				'group' => $group,
 				'status' => 'pending',
 				'per_page' => 1,
@@ -169,7 +168,7 @@ class BackgroundRunner
 				return true;
 			}
 			$in_progress = as_get_scheduled_actions([
-				'hook' => self::ACTION_CHECK_BLOCK_STATUS,
+				'hook' => self::ACTION_CHECK_TASK_STATUS,
 				'group' => $group,
 				'status' => 'in-progress',
 				'per_page' => 1,
@@ -181,11 +180,11 @@ class BackgroundRunner
 		return false;
 	}
 
-	private function has_processing_block_only(int $postwork_id): bool
+	private function has_processing_task_only(int $campaign_id): bool
 	{
-		$blocks = PostBlock::get_by_postwork($postwork_id);
-		foreach ($blocks as $block) {
-			if ($block['status'] === 'processing') {
+		$tasks = PostTask::get_by_campaign($campaign_id);
+		foreach ($tasks as $task) {
+			if ($task['status'] === 'processing') {
 				return true;
 			}
 		}
@@ -208,8 +207,8 @@ class BackgroundRunner
 		return ($now - $started_ts) > self::TIMEOUT_SECONDS;
 	}
 
-	private function get_group(int $postwork_id): string
+	private function get_group(int $campaign_id): string
 	{
-		return 'poststation_' . $postwork_id;
+		return 'poststation_campaign_' . $campaign_id;
 	}
 }

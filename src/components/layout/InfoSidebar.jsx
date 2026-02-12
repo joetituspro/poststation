@@ -20,7 +20,7 @@ export default function InfoSidebar() {
 							2
 						</div>
 						<p className="text-sm text-gray-600">
-							Add blocks with topics to create multiple posts at once.
+							Add post tasks with topics to create multiple posts at once.
 						</p>
 					</div>
 					<div className="flex gap-3">
@@ -28,7 +28,7 @@ export default function InfoSidebar() {
 							3
 						</div>
 						<p className="text-sm text-gray-600">
-							Click Run to process all pending blocks through your configured webhook.
+							Click Run to process all pending post tasks through your configured webhook.
 						</p>
 					</div>
 				</div>
@@ -45,7 +45,7 @@ export default function InfoSidebar() {
 						<kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-700">Ctrl+S</kbd>
 					</div>
 					<div className="flex justify-between text-sm">
-						<span className="text-gray-600">Add new block</span>
+						<span className="text-gray-600">Add new post task</span>
 						<kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-700">Ctrl+N</kbd>
 					</div>
 				</div>

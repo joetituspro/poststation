@@ -37,7 +37,7 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 		<div className="space-y-4">
 			<Select
 				label="Taxonomy"
-				tooltip="Choose a custom taxonomy to manage for this post work."
+				tooltip="Choose a custom taxonomy to manage for this campaign."
 				options={customTaxonomies}
 				value={config.taxonomy || ''}
 				onChange={(e) => handleChange('taxonomy', e.target.value)}

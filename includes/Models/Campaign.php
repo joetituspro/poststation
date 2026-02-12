@@ -2,17 +2,27 @@
 
 namespace PostStation\Models;
 
-class PostWork
+class Campaign
 {
-	private const TABLE_NAME = 'poststation_postworks';
+	private const TABLE_NAME = 'poststation_campaigns';
+	private const LEGACY_TABLE_NAME = 'poststation_postworks';
+
+	public static function get_table_name(): string
+	{
+		return self::TABLE_NAME;
+	}
 
 	public static function update_tables(): bool
 	{
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
+		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		$legacy_table_name = $wpdb->prefix . self::LEGACY_TABLE_NAME;
 		$tables_created_or_updated = false;
 
-		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		if (self::table_exists($legacy_table_name) && !self::table_exists($table_name)) {
+			$wpdb->query("RENAME TABLE {$legacy_table_name} TO {$table_name}");
+		}
 
 		$sql = "CREATE TABLE $table_name (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -35,8 +45,14 @@ class PostWork
             ) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
 		self::drop_legacy_columns($table_name);
+		return (bool) $tables_created_or_updated;
+	}
 
-		return $tables_created_or_updated;
+	private static function table_exists(string $table_name): bool
+	{
+		global $wpdb;
+		$result = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_name));
+		return is_string($result) && $result === $table_name;
 	}
 
 	private static function drop_legacy_columns(string $table_name): void
@@ -44,54 +60,39 @@ class PostWork
 		global $wpdb;
 		$columns = ['tone_of_voice', 'point_of_view', 'enabled_taxonomies', 'default_terms', 'post_fields', 'image_config', 'instructions'];
 		foreach ($columns as $column) {
-			$exists = $wpdb->get_var(
-				$wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column)
-			);
+			$exists = $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column));
 			if ($exists) {
 				$wpdb->query("ALTER TABLE {$table_name} DROP COLUMN {$column}");
 			}
 		}
 	}
 
-	private static function check_and_create_table($table_name, $sql)
+	private static function check_and_create_table($table_name, $sql): bool
 	{
-		global $wpdb;
-		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		$result = dbDelta($sql);
-		// Check if dbDelta executed without errors
-		if (is_wp_error($result) || empty($result)) {
-			return false;
-		}
-		return true;
+		return !is_wp_error($result) && !empty($result);
 	}
 
 	public static function get_all(): array
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		return $wpdb->get_results(
-			"SELECT * FROM {$table_name} ORDER BY created_at DESC",
-			ARRAY_A
-		);
+		return $wpdb->get_results("SELECT * FROM {$table_name} ORDER BY created_at DESC", ARRAY_A);
 	}
 
 	public static function get_by_id(int $id): ?array
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		return $wpdb->get_row(
-			$wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $id),
-			ARRAY_A
-		);
+		return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $id), ARRAY_A);
 	}
 
 	public static function create(array $data): int|false
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-
 		$default_content_fields = self::get_default_content_fields();
-
 		$data = wp_parse_args($data, [
 			'title' => '',
 			'author_id' => get_current_user_id(),
@@ -104,7 +105,6 @@ class PostWork
 			'default_author_id' => get_current_user_id(),
 			'content_fields' => json_encode($default_content_fields),
 		]);
-
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
 	}
 
@@ -189,67 +189,21 @@ class PostWork
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-
 		$update_data = [];
 		$format = [];
 
-		if (isset($data['title'])) {
-			$update_data['title'] = $data['title'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['webhook_id'])) {
-			$update_data['webhook_id'] = $data['webhook_id'];
-			$format[] = '%d';
-		}
-
-		if (isset($data['article_type'])) {
-			$update_data['article_type'] = $data['article_type'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['language'])) {
-			$update_data['language'] = $data['language'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['target_country'])) {
-			$update_data['target_country'] = $data['target_country'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['post_type'])) {
-			$update_data['post_type'] = $data['post_type'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['post_status'])) {
-			$update_data['post_status'] = $data['post_status'];
-			$format[] = '%s';
-		}
-
-		if (isset($data['default_author_id'])) {
-			$update_data['default_author_id'] = $data['default_author_id'];
-			$format[] = '%d';
-		}
-
-		if (isset($data['content_fields'])) {
-			$update_data['content_fields'] = $data['content_fields'];
-			$format[] = '%s';
+		foreach (['title' => '%s', 'webhook_id' => '%d', 'article_type' => '%s', 'language' => '%s', 'target_country' => '%s', 'post_type' => '%s', 'post_status' => '%s', 'default_author_id' => '%d', 'content_fields' => '%s'] as $key => $type) {
+			if (isset($data[$key])) {
+				$update_data[$key] = $data[$key];
+				$format[] = $type;
+			}
 		}
 
 		if (empty($update_data)) {
 			return false;
 		}
 
-		$result = $wpdb->update(
-			$table_name,
-			$update_data,
-			['id' => $id],
-			$format,
-			['%d']
-		);
-
+		$result = $wpdb->update($table_name, $update_data, ['id' => $id], $format, ['%d']);
 		return $result !== false;
 	}
 
@@ -257,11 +211,13 @@ class PostWork
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		return $wpdb->delete($table_name, ['id' => $id], ['%d']) !== false;
+	}
 
-		return $wpdb->delete(
-			$table_name,
-			['id' => $id],
-			['%d']
-		) !== false;
+	public static function drop_table(): void
+	{
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		$wpdb->query("DROP TABLE IF EXISTS {$table_name}");
 	}
 }

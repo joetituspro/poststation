@@ -93,7 +93,7 @@
 	}
 }
 
-/* Sticky header on Post Work edit - below WP admin bar (z-index 99999) */
+/* Sticky header on Campaign edit - below WP admin bar */
 .poststation-sticky-header {
 	position: sticky;
 	top: 32px;

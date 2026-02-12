@@ -7,16 +7,16 @@ import {
 	PageLoader,
 	useToast,
 } from '../components/common';
-import PostWorkForm from '../components/postworks/PostWorkForm';
+import CampaignForm from '../components/postworks/PostWorkForm';
 import ContentFieldsEditor from '../components/postworks/ContentFieldsEditor';
 import BlocksList from '../components/postworks/BlocksList';
 import InfoSidebar from '../components/layout/InfoSidebar';
-import { postworks, blocks, webhooks, getTaxonomies, getPendingProcessingBlocks, refreshBootstrap, getBootstrapWebhooks } from '../api/client';
+import { campaigns, postTasks, webhooks, getTaxonomies, getPendingProcessingPostTasks, refreshBootstrap, getBootstrapWebhooks } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useUnsavedChanges } from '../context/UnsavedChangesContext';
 
 // Editable title: shows text, pen icon on hover, click to edit inline
-function EditablePostWorkTitle({ value, onChange }) {
+function EditableCampaignTitle({ value, onChange }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editValue, setEditValue] = useState(value || '');
 	const inputRef = useRef(null);
@@ -53,7 +53,7 @@ function EditablePostWorkTitle({ value, onChange }) {
 		}
 	};
 
-	const displayName = value?.trim() || 'Untitled Post Work';
+	const displayName = value?.trim() || 'Untitled Campaign';
 
 	return (
 		<div className="flex items-center min-w-0">
@@ -88,9 +88,9 @@ function EditablePostWorkTitle({ value, onChange }) {
 	);
 }
 
-export default function PostWorkEditPage() {
+export default function CampaignEditPage() {
 	const { id } = useParams();
-	const [postWork, setPostWork] = useState(null);
+	const [campaign, setCampaign] = useState(null);
 	const [blocksList, setBlocksList] = useState([]);
 	const [showSettings, setShowSettings] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
@@ -107,9 +107,8 @@ export default function PostWorkEditPage() {
 	const { setIsDirty: setGlobalDirty } = useUnsavedChanges();
 
 	const getBlockIdKey = useCallback((value) => String(value ?? ''), []);
-	// Fetch postwork data
-	const fetchPostWork = useCallback(() => postworks.getById(id), [id]);
-	const { data, loading, error, refetch } = useQuery(fetchPostWork, [id]);
+	const fetchCampaign = useCallback(() => campaigns.getById(id), [id]);
+	const { data, loading, error, refetch } = useQuery(fetchCampaign, [id]);
 
 	// Fetch webhooks for dropdown
 	const bootstrapWebhooks = getBootstrapWebhooks();
@@ -117,46 +116,46 @@ export default function PostWorkEditPage() {
 	const { data: webhooksData } = useQuery(fetchWebhooks, [], { initialData: bootstrapWebhooks });
 
 	// Mutations
-	const { mutate: updatePostWork, loading: saving } = useMutation(
-		(data) => postworks.update(id, data)
+	const { mutate: updateCampaign, loading: saving } = useMutation(
+		(data) => campaigns.update(id, data)
 	);
 	const { mutate: createBlock, loading: creatingBlock } = useMutation(
-		() => blocks.create(id)
+		() => postTasks.create(id)
 	);
 	const { mutate: updateBlocks } = useMutation(
-		(blocksData) => blocks.update(id, blocksData)
+		(tasksData) => postTasks.update(id, tasksData)
 	);
-	const { mutate: deleteBlock } = useMutation(blocks.delete);
+	const { mutate: deleteBlock } = useMutation(postTasks.delete);
 	const { mutate: clearCompletedBlocks } = useMutation(
-		() => blocks.clearCompleted(id)
+		() => postTasks.clearCompleted(id)
 	);
 	const { mutate: importBlocks } = useMutation(
-		(file) => blocks.import(id, file)
+		(file) => postTasks.import(id, file)
 	);
-	const { mutate: runPostWork } = useMutation(
-		(blockId, webhookId) => postworks.run(id, blockId, webhookId)
+	const { mutate: runCampaign } = useMutation(
+		(taskId, webhookId) => campaigns.run(id, taskId, webhookId)
 	);
-	const { mutate: stopPostWorkRun } = useMutation(
-		() => postworks.stopRun(id)
+	const { mutate: stopCampaignRun } = useMutation(
+		() => campaigns.stopRun(id)
 	);
-	const { mutate: exportPostWork } = useMutation(
-		() => postworks.export(id)
+	const { mutate: exportCampaign } = useMutation(
+		() => campaigns.export(id)
 	);
 
 	// Initialize state from fetched data
 	useEffect(() => {
 		if (data) {
-			const articleType = data.postwork?.article_type || 'blog_post';
-			const language = data.postwork?.language || 'en';
-			const targetCountry = data.postwork?.target_country || 'international';
-			setPostWork({
-				...data.postwork,
+			const articleType = data.campaign?.article_type || 'blog_post';
+			const language = data.campaign?.language || 'en';
+			const targetCountry = data.campaign?.target_country || 'international';
+			setCampaign({
+				...data.campaign,
 				article_type: articleType,
 				language,
 				target_country: targetCountry,
 			});
 			setBlocksList(
-				(data.blocks || []).map((block) => ({
+				(data.tasks || []).map((block) => ({
 					...block,
 					article_type: block.article_type || articleType,
 					topic: block.topic ?? '',
@@ -224,7 +223,7 @@ export default function PostWorkEditPage() {
 
 		const refreshPendingProcessing = async () => {
 			try {
-				const pendingProcessing = await getPendingProcessingBlocks(id);
+				const pendingProcessing = await getPendingProcessingPostTasks(id);
 				if (cancelled) return;
 				applyPendingProcessingUpdates(pendingProcessing);
 			} catch {
@@ -241,9 +240,9 @@ export default function PostWorkEditPage() {
 		};
 	}, [id, applyPendingProcessingUpdates]);
 
-	// Handle postwork changes
-	const handlePostWorkChange = (newPostWork) => {
-		if (newPostWork?.clear_image_overrides) {
+	// Handle campaign changes
+	const handleCampaignChange = (newCampaign) => {
+		if (newCampaign?.clear_image_overrides) {
 			const updatedBlocks = blocksList.map((block) => ({
 				...block,
 				feature_image_id: null,
@@ -254,18 +253,18 @@ export default function PostWorkEditPage() {
 			updateBlocks(updatedBlocks).catch(() => {
 				refetch();
 			});
-			const { clear_image_overrides: _, ...rest } = newPostWork;
-			setPostWork(rest);
+			const { clear_image_overrides: _, ...rest } = newCampaign;
+			setCampaign(rest);
 			return;
 		}
 
-		setPostWork(newPostWork);
+		setCampaign(newCampaign);
 		setIsDirty(true);
 	};
 
 	// Handle title change from header
 	const handleTitleChange = (newTitle) => {
-		handlePostWorkChange({ ...postWork, title: newTitle });
+		handleCampaignChange({ ...campaign, title: newTitle });
 	};
 
 	// Handle block changes
@@ -282,7 +281,7 @@ export default function PostWorkEditPage() {
 			const result = await createBlock();
 			const applyCurrentDefaults = (block) => ({
 				...block,
-				article_type: postWork?.article_type || 'blog_post',
+				article_type: campaign?.article_type || 'blog_post',
 				topic: block.topic ?? '',
 				keywords: block.keywords ?? '',
 			});
@@ -298,7 +297,7 @@ export default function PostWorkEditPage() {
 					status: 'pending',
 					topic: '',
 					keywords: '',
-					article_type: postWork?.article_type || 'blog_post',
+					article_type: campaign?.article_type || 'blog_post',
 					article_url: '',
 					research_url: '',
 					feature_image_id: null,
@@ -335,7 +334,7 @@ export default function PostWorkEditPage() {
 				const newBlock = {
 					...result.block,
 					...copyData,
-					article_type: copyData.article_type || postWork?.article_type || 'blog_post',
+					article_type: copyData.article_type || campaign?.article_type || 'blog_post',
 					topic: copyData.topic ?? '',
 					keywords: copyData.keywords ?? '',
 				};
@@ -348,7 +347,7 @@ export default function PostWorkEditPage() {
 					...copyData,
 					id: result.id,
 					status: 'pending',
-					article_type: copyData.article_type || postWork?.article_type || 'blog_post',
+					article_type: copyData.article_type || campaign?.article_type || 'blog_post',
 					topic: copyData.topic ?? '',
 					keywords: copyData.keywords ?? '',
 				};
@@ -362,7 +361,7 @@ export default function PostWorkEditPage() {
 
 	// Reset single block to pending (for retry)
 	const handleRetryBlock = async (blockId) => {
-		if (!postWork?.webhook_id) {
+		if (!campaign?.webhook_id) {
 			showToast('Select a webhook before retrying.', 'error');
 			return;
 		}
@@ -379,24 +378,24 @@ export default function PostWorkEditPage() {
 		try {
 			await updateBlocks(nextBlocks);
 			setBlocksList(nextBlocks);
-			showToast('Block set to pending.', 'info');
+			showToast('Post task set to pending.', 'info');
 		} catch (err) {
 			refetch();
-			showToast(err?.message || 'Failed to reset block.', 'error');
+			showToast(err?.message || 'Failed to reset post task.', 'error');
 		} finally {
 			setRetryingBlockId(null);
 		}
 	};
 
 	const handleRetryFailedBlocks = async () => {
-		if (!postWork?.webhook_id) {
+		if (!campaign?.webhook_id) {
 			showToast('Select a webhook before retrying.', 'error');
 			return;
 		}
 
 		const hasFailed = blocksList.some((block) => block.status === 'failed');
 		if (!hasFailed) {
-			showToast('No failed blocks to retry.', 'info');
+			showToast('No failed post tasks to retry.', 'info');
 			return;
 		}
 
@@ -412,10 +411,10 @@ export default function PostWorkEditPage() {
 		try {
 			await updateBlocks(nextBlocks);
 			setBlocksList(nextBlocks);
-			showToast('Failed blocks set to pending.', 'info');
+			showToast('Failed post tasks set to pending.', 'info');
 		} catch (err) {
 			refetch();
-			showToast(err?.message || 'Failed to reset blocks.', 'error');
+			showToast(err?.message || 'Failed to reset post tasks.', 'error');
 		} finally {
 			setRetryFailedLoading(false);
 		}
@@ -428,10 +427,10 @@ export default function PostWorkEditPage() {
 		try {
 			await importBlocks(file);
 			refetch();
-			showToast('Blocks imported.', 'success');
+			showToast('Post tasks imported.', 'success');
 		} catch (err) {
-			console.error('Failed to import blocks:', err);
-			showToast(err?.message || 'Failed to import blocks.', 'error');
+			console.error('Failed to import post tasks:', err);
+			showToast(err?.message || 'Failed to import post tasks.', 'error');
 		} finally {
 			setImportLoading(false);
 		}
@@ -444,10 +443,10 @@ export default function PostWorkEditPage() {
 		try {
 			await clearCompletedBlocks();
 			setBlocksList((prev) => prev.filter((b) => b.status !== 'completed'));
-			showToast('Completed blocks cleared.', 'success');
+			showToast('Completed post tasks cleared.', 'success');
 		} catch (err) {
 			console.error('Failed to clear completed:', err);
-			showToast(err?.message || 'Failed to clear completed blocks.', 'error');
+			showToast(err?.message || 'Failed to clear completed post tasks.', 'error');
 		} finally {
 			setClearCompletedLoading(false);
 		}
@@ -458,14 +457,14 @@ export default function PostWorkEditPage() {
 		if (savingAll) return;
 		setSavingAll(true);
 		try {
-			await updatePostWork({
-				title: postWork.title,
-				post_type: postWork.post_type,
-				post_status: postWork.post_status,
-				default_author_id: postWork.default_author_id,
-				webhook_id: postWork.webhook_id,
-				article_type: postWork.article_type,
-				content_fields: postWork.content_fields,
+			await updateCampaign({
+				title: campaign.title,
+				post_type: campaign.post_type,
+				post_status: campaign.post_status,
+				default_author_id: campaign.default_author_id,
+				webhook_id: campaign.webhook_id,
+				article_type: campaign.article_type,
+				content_fields: campaign.content_fields,
 			});
 
 			await updateBlocks(blocksList);
@@ -481,13 +480,12 @@ export default function PostWorkEditPage() {
 		}
 	};
 
-	// Run postwork
 	const handleRun = async () => {
 		if (isDirty) {
 			await handleSave();
 		}
 
-		if (!postWork?.webhook_id) {
+		if (!campaign?.webhook_id) {
 			showToast('Select a webhook before running.', 'error');
 			return;
 		}
@@ -495,7 +493,7 @@ export default function PostWorkEditPage() {
 		const nextBlock = blocksList.find((block) => block.status === 'pending');
 
 		if (!nextBlock) {
-			showToast('No pending blocks to run.', 'info');
+			showToast('No pending post tasks to run.', 'info');
 			return;
 		}
 
@@ -506,7 +504,7 @@ export default function PostWorkEditPage() {
 
 		try {
 			showToast('Run starting...', 'info');
-			await runPostWork(nextBlock.id, postWork.webhook_id ?? 0);
+			await runCampaign(nextBlock.id, campaign.webhook_id ?? 0);
 			setBlocksList((prev) =>
 				prev.map((block) =>
 					getBlockIdKey(block.id) === getBlockIdKey(nextBlock.id)
@@ -515,7 +513,7 @@ export default function PostWorkEditPage() {
 				)
 			);
 
-			const pendingProcessing = await getPendingProcessingBlocks(id);
+			const pendingProcessing = await getPendingProcessingPostTasks(id);
 			applyPendingProcessingUpdates(pendingProcessing);
 		} catch (err) {
 			setIsRunning(false);
@@ -530,7 +528,7 @@ export default function PostWorkEditPage() {
 		if (stopLoading) return;
 		setStopLoading(true);
 		try {
-			await stopPostWorkRun();
+			await stopCampaignRun();
 			setBlocksList((prev) =>
 				prev.map((b) => (b.status === 'processing' ? { ...b, status: 'cancelled' } : b))
 			);
@@ -544,12 +542,12 @@ export default function PostWorkEditPage() {
 
 	const handleExport = async () => {
 		try {
-			const result = await exportPostWork();
+			const result = await exportCampaign();
 			const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `postwork-${id}.json`;
+			a.download = `campaign-${id}.json`;
 			a.click();
 			URL.revokeObjectURL(url);
 			showToast('Export downloaded.', 'success');
@@ -559,7 +557,7 @@ export default function PostWorkEditPage() {
 		}
 	};
 
-	if (loading || !postWork) return <PageLoader />;
+	if (loading || !campaign) return <PageLoader />;
 
 	const webhooksList = webhooksData?.webhooks || [];
 	const users = data?.users || [];
@@ -571,8 +569,8 @@ export default function PostWorkEditPage() {
 			<div className="flex-1 min-w-0">
 				{/* Sticky header - below WP admin bar */}
 				<div className="poststation-sticky-header sticky top-8 px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-					<EditablePostWorkTitle
-						value={postWork.title}
+					<EditableCampaignTitle
+						value={campaign.title}
 						onChange={handleTitleChange}
 					/>
 					<div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
@@ -606,13 +604,13 @@ export default function PostWorkEditPage() {
 					</div>
 				</div>
 
-				{/* Post Work Settings (includes Content Fields) - Collapsible */}
+				{/* Campaign Settings (includes Content Fields) - Collapsible */}
 				<Card className="mb-5">
 					<div 
 						className="px-5 py-3 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
 						onClick={() => setShowSettings(!showSettings)}
 					>
-						<h3 className="text-lg font-medium text-gray-900">Post Work Settings</h3>
+						<h3 className="text-lg font-medium text-gray-900">Campaign Settings</h3>
 						<div className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
 							{showSettings ? 'Hide' : 'Show'}
 							<svg
@@ -627,9 +625,9 @@ export default function PostWorkEditPage() {
 					</div>
 					{showSettings && (
 						<CardBody className="px-5 py-4 space-y-6">
-							<PostWorkForm
-								postWork={postWork}
-								onChange={handlePostWorkChange}
+							<CampaignForm
+								postWork={campaign}
+								onChange={handleCampaignChange}
 								webhooks={webhooksList}
 								users={users}
 							/>
@@ -638,8 +636,8 @@ export default function PostWorkEditPage() {
 								<h4 className="text-lg font-medium text-gray-900 mb-1">Content Fields</h4>
 								<p className="text-sm text-gray-500 mb-4">Configure what content to generate for each post</p>
 								<ContentFieldsEditor
-									postWork={postWork}
-									onChange={handlePostWorkChange}
+									postWork={campaign}
+									onChange={handleCampaignChange}
 									taxonomies={taxonomies}
 								/>
 							</div>
@@ -652,7 +650,7 @@ export default function PostWorkEditPage() {
 					<CardBody>
 						<BlocksList
 							blocks={blocksList}
-							postWork={postWork}
+							postWork={campaign}
 							onAddBlock={handleAddBlock}
 							onUpdateBlock={handleBlockUpdate}
 							onDeleteBlock={handleDeleteBlock}
