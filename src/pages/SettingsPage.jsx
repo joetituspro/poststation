@@ -1,11 +1,14 @@
-import { useState, useCallback } from 'react';
-import { Button, Input, Modal, Card, CardHeader, CardBody, PageHeader, PageLoader } from '../components/common';
+import { useState, useCallback, useEffect } from 'react';
+import { Button, Input, Modal, Card, CardHeader, CardBody, PageHeader, PageLoader, ModelSelect } from '../components/common';
 import { settings, getBootstrapSettings, refreshBootstrap } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function SettingsPage() {
 	const [showApiDocs, setShowApiDocs] = useState(false);
 	const [apiKey, setApiKey] = useState('');
+	const [openRouterApiKey, setOpenRouterApiKey] = useState('');
+	const [defaultTextModel, setDefaultTextModel] = useState('');
+	const [defaultImageModel, setDefaultImageModel] = useState('');
 	const [copied, setCopied] = useState(false);
 
 	const bootstrapSettings = getBootstrapSettings();
@@ -14,12 +17,19 @@ export default function SettingsPage() {
 	const { mutate: saveApiKey, loading: saving } = useMutation(settings.saveApiKey, {
 		onSuccess: refreshBootstrap,
 	});
+	const { mutate: saveOpenRouterApiKey, loading: savingOpenRouter } = useMutation(settings.saveOpenRouterApiKey, {
+		onSuccess: refreshBootstrap,
+	});
+	const { mutate: saveOpenRouterDefaults, loading: savingOpenRouterDefaults } = useMutation(settings.saveOpenRouterDefaults, {
+		onSuccess: refreshBootstrap,
+	});
 
-	// Set initial API key when data loads
-	useState(() => {
+	useEffect(() => {
 		if (data?.api_key) {
 			setApiKey(data.api_key);
 		}
+		setDefaultTextModel(data?.openrouter_default_text_model || '');
+		setDefaultImageModel(data?.openrouter_default_image_model || '');
 	}, [data]);
 
 	const handleCopy = () => {
@@ -34,6 +44,20 @@ export default function SettingsPage() {
 			refetch();
 		} catch (err) {
 			console.error('Failed to save API key:', err);
+			refetch();
+		}
+	};
+
+	const handleSaveOpenRouterSettings = async () => {
+		try {
+			if ((openRouterApiKey || '').trim() !== '') {
+				await saveOpenRouterApiKey(openRouterApiKey);
+				setOpenRouterApiKey('');
+			}
+			await saveOpenRouterDefaults(defaultTextModel, defaultImageModel);
+			refetch();
+		} catch (err) {
+			console.error('Failed to save OpenRouter settings:', err);
 			refetch();
 		}
 	};
@@ -80,6 +104,56 @@ export default function SettingsPage() {
 							<div className="flex justify-end">
 								<Button onClick={handleSave} loading={saving}>
 									Save API Key
+								</Button>
+							</div>
+						</div>
+					</CardBody>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<div>
+							<h3 className="text-lg font-medium text-gray-900">OpenRouter</h3>
+							<p className="text-sm text-gray-500">Store your OpenRouter API key for model discovery</p>
+						</div>
+					</CardHeader>
+					<CardBody>
+						<div className="space-y-4">
+							<Input
+								label="OpenRouter API Key"
+								tooltip="Saved encrypted server-side. The value cannot be viewed after saving."
+								type="password"
+								value={openRouterApiKey}
+								onChange={(e) => setOpenRouterApiKey(e.target.value)}
+								placeholder={data?.openrouter_api_key_set ? 'Saved (hidden). Enter new key to replace or leave empty to clear.' : 'Enter OpenRouter API key'}
+							/>
+							<p className="text-xs text-gray-500">
+								{data?.openrouter_api_key_set
+									? 'An OpenRouter key is currently stored and hidden.'
+									: 'No OpenRouter key stored yet.'}
+							</p>
+							<div className="grid grid-cols-1 gap-3 pt-2 border-t border-gray-100">
+								<ModelSelect
+									label="Default Text Model"
+									tooltip="Used as the default text model for new and unconfigured Post Work fields."
+									value={defaultTextModel}
+									onChange={(e) => setDefaultTextModel(e.target.value)}
+									filter="text"
+								/>
+								<ModelSelect
+									label="Default Image Model"
+									tooltip="Used as the default image model for new and unconfigured Post Work image fields."
+									value={defaultImageModel}
+									onChange={(e) => setDefaultImageModel(e.target.value)}
+									filter="image"
+								/>
+							</div>
+							<div className="flex justify-end gap-2">
+								<Button
+									onClick={handleSaveOpenRouterSettings}
+									loading={savingOpenRouter || savingOpenRouterDefaults}
+								>
+									Save OpenRouter Settings
 								</Button>
 							</div>
 						</div>

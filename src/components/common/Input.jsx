@@ -30,7 +30,7 @@ export function Textarea({
 	tooltip,
 	error,
 	className = '',
-	rows = 3,
+	rows = 2,
 	...props
 }) {
 	const fieldClassName = `poststation-field ${error ? 'poststation-field-error' : ''}`;

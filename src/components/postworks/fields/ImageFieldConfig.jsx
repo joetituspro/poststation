@@ -1,4 +1,4 @@
-import { Select, Textarea, Input, Tooltip } from '../../common';
+import { Select, Textarea, Input, Tooltip, ModelSelect } from '../../common';
 
 const MODE_OPTIONS = [
 	{ value: 'generate_from_article', label: 'Generate from Article' },
@@ -96,7 +96,15 @@ export default function ImageFieldConfig({ config, onChange }) {
 						value={config.prompt || ''}
 						onChange={(e) => handleChange('prompt', e.target.value)}
 						placeholder="Instructions for generating the featured image..."
-						rows={3}
+						rows={2}
+					/>
+
+					<ModelSelect
+						label="Image Model"
+						tooltip="OpenRouter image model used for featured image generation."
+						value={config.model_id || ''}
+						onChange={(e) => handleChange('model_id', e.target.value)}
+						filter="image"
 					/>
 				</>
 			)}

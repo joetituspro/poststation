@@ -24,6 +24,7 @@ export const setBootstrap = (bootstrap = {}) => {
 		'settings',
 		'webhooks',
 		'postworks',
+		'openrouter_models',
 	];
 
 	mirrorKeys.forEach((key) => {
@@ -164,6 +165,12 @@ export const webhooks = {
 export const settings = {
 	get: () => ajax('poststation_get_settings'),
 	saveApiKey: (apiKey) => ajax('poststation_save_api_key', { api_key: apiKey }),
+	saveOpenRouterApiKey: (apiKey) => ajax('poststation_save_openrouter_api_key', { api_key: apiKey }),
+	saveOpenRouterDefaults: (defaultTextModel, defaultImageModel) =>
+		ajax('poststation_save_openrouter_defaults', {
+			default_text_model: defaultTextModel,
+			default_image_model: defaultImageModel,
+		}),
 };
 
 export const getPendingProcessingBlocks = (postworkId) =>
@@ -181,3 +188,9 @@ export const getCountries = () => getBootstrapValue('countries') || {};
 export const getBootstrapSettings = () => getBootstrap().settings || null;
 export const getBootstrapWebhooks = () => getBootstrap().webhooks || null;
 export const getBootstrapPostworks = () => getBootstrap().postworks || null;
+export const getBootstrapOpenRouterModels = () => getBootstrap().openrouter_models || [];
+
+export const openrouter = {
+	getModels: ({ forceRefresh = false } = {}) =>
+		ajax('poststation_get_openrouter_models', { force_refresh: forceRefresh ? '1' : '0' }),
+};

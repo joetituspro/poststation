@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button, Select } from '../common';
-import { getTaxonomies } from '../../api/client';
+import { getTaxonomies, getBootstrapSettings } from '../../api/client';
 import TitleFieldConfig from './fields/TitleFieldConfig';
+import SlugFieldConfig from './fields/SlugFieldConfig';
 import BodyFieldConfig from './fields/BodyFieldConfig';
 import CategoryFieldConfig from './fields/CategoryFieldConfig';
 import TagFieldConfig from './fields/TagFieldConfig';
@@ -11,6 +12,7 @@ import ImageFieldConfig from './fields/ImageFieldConfig';
 
 const FIELD_TYPES = [
 	{ value: 'title', label: 'Title' },
+	{ value: 'slug', label: 'Slug' },
 	{ value: 'body', label: 'Body' },
 	{ value: 'categories', label: 'Categories' },
 	{ value: 'tags', label: 'Tags' },
@@ -20,28 +22,43 @@ const FIELD_TYPES = [
 ];
 
 // Default content fields structure
-const getDefaultContentFields = () => ({
+const getDefaultContentFields = (settings = null) => {
+	const defaultTextModel = settings?.openrouter_default_text_model || '';
+	const defaultImageModel = settings?.openrouter_default_image_model || '';
+	return ({
 	title: {
 		enabled: true,
 		mode: 'generate',
 		prompt: '',
 		prompt_context: 'article_and_topic',
+		model_id: defaultTextModel,
+	},
+	slug: {
+		enabled: false,
+		mode: 'generate_from_title',
+		prompt: '',
+		model_id: defaultTextModel,
 	},
 	body: {
 		enabled: true,
 		mode: 'single_prompt',
 		prompt: '',
+		model_id: defaultTextModel,
+		media_prompt: '',
+		image_model_id: defaultImageModel,
 	},
 	categories: {
 		enabled: false,
 		mode: 'manual',
 		prompt: '',
+		model_id: defaultTextModel,
 		selected: [],
 	},
 	tags: {
 		enabled: false,
 		mode: 'generate',
 		prompt: '',
+		model_id: defaultTextModel,
 		selected: [],
 	},
 	custom_taxonomies: [],
@@ -50,6 +67,7 @@ const getDefaultContentFields = () => ({
 		enabled: false,
 		mode: 'generate_from_article',
 		prompt: '',
+		model_id: defaultImageModel,
 		image_size: '1344x768',
 		image_style: 'none',
 		template_id: '',
@@ -60,19 +78,91 @@ const getDefaultContentFields = () => ({
 		background_images: [],
 	},
 });
+};
+
+const normalizeContentFields = (rawFields, settings = null) => {
+	const defaults = getDefaultContentFields(settings);
+	const fields = rawFields && typeof rawFields === 'object' ? rawFields : {};
+	const defaultTextModel = settings?.openrouter_default_text_model || '';
+	const defaultImageModel = settings?.openrouter_default_image_model || '';
+
+	const modelOrDefault = (value, fallback) => (value && String(value).trim() !== '' ? value : fallback);
+
+	return {
+		...defaults,
+		...fields,
+		title: {
+			...defaults.title,
+			...(fields.title || {}),
+			model_id: modelOrDefault(fields?.title?.model_id, defaultTextModel),
+		},
+		slug: {
+			...defaults.slug,
+			...(fields.slug || {}),
+			model_id: modelOrDefault(fields?.slug?.model_id, defaultTextModel),
+		},
+		body: {
+			...defaults.body,
+			...(fields.body || {}),
+			model_id: modelOrDefault(fields?.body?.model_id, defaultTextModel),
+			image_model_id: modelOrDefault(fields?.body?.image_model_id, defaultImageModel),
+		},
+		categories: {
+			...defaults.categories,
+			...(fields.categories || {}),
+			model_id: modelOrDefault(fields?.categories?.model_id, defaultTextModel),
+		},
+		tags: {
+			...defaults.tags,
+			...(fields.tags || {}),
+			model_id: modelOrDefault(fields?.tags?.model_id, defaultTextModel),
+		},
+		image: {
+			...defaults.image,
+			...(fields.image || {}),
+			model_id: modelOrDefault(fields?.image?.model_id, defaultImageModel),
+		},
+		custom_taxonomies: Array.isArray(fields.custom_taxonomies)
+			? fields.custom_taxonomies.map((item, index) => ({
+				id: `custom_tax_${index}`,
+				taxonomy: '',
+				mode: 'manual',
+				prompt: '',
+				model_id: defaultTextModel,
+				selected: [],
+				...(item || {}),
+				model_id: modelOrDefault(item?.model_id, defaultTextModel),
+			}))
+			: [],
+		custom_fields: Array.isArray(fields.custom_fields)
+			? fields.custom_fields.map((item, index) => ({
+				id: `custom_field_${index}`,
+				meta_key: '',
+				prompt: '',
+				prompt_context: 'article_and_topic',
+				model_id: defaultTextModel,
+				...(item || {}),
+				model_id: modelOrDefault(item?.model_id, defaultTextModel),
+			}))
+			: [],
+	};
+};
 
 export default function ContentFieldsEditor({ postWork, onChange, taxonomies: taxonomiesProp }) {
 	const [selectedType, setSelectedType] = useState('');
 	const [expandedField, setExpandedField] = useState(null);
 	const hasTaxonomies = taxonomiesProp && Object.keys(taxonomiesProp).length > 0;
 	const taxonomies = hasTaxonomies ? taxonomiesProp : (getTaxonomies() ?? {});
+	const bootstrapSettings = getBootstrapSettings();
+	const defaultTextModel = bootstrapSettings?.openrouter_default_text_model || '';
 
 	// Parse content fields or use defaults
-	const contentFields = postWork.content_fields 
-		? (typeof postWork.content_fields === 'string' 
-			? JSON.parse(postWork.content_fields) 
+	const rawContentFields = postWork.content_fields
+		? (typeof postWork.content_fields === 'string'
+			? JSON.parse(postWork.content_fields)
 			: postWork.content_fields)
-		: getDefaultContentFields();
+		: getDefaultContentFields(bootstrapSettings);
+	const contentFields = normalizeContentFields(rawContentFields, bootstrapSettings);
 
 	const updateContentFields = (newFields) => {
 		onChange({
@@ -94,7 +184,7 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 		const newFields = { ...contentFields };
 
 		// Handle different field types
-		if (selectedType === 'title' || selectedType === 'body' || selectedType === 'categories' || selectedType === 'tags' || selectedType === 'image') {
+		if (selectedType === 'title' || selectedType === 'slug' || selectedType === 'body' || selectedType === 'categories' || selectedType === 'tags' || selectedType === 'image') {
 			if (newFields[selectedType]?.enabled) {
 				// Already enabled, just expand it
 				setExpandedField(selectedType);
@@ -111,7 +201,7 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 			// Add a new custom taxonomy
 			newFields.custom_taxonomies = [
 				...(newFields.custom_taxonomies || []),
-				{ id: Date.now(), taxonomy: '', mode: 'manual', prompt: '', selected: [] },
+				{ id: Date.now(), taxonomy: '', mode: 'manual', prompt: '', model_id: defaultTextModel, selected: [] },
 			];
 			updateContentFields(newFields);
 			setExpandedField(`custom_tax_${newFields.custom_taxonomies.length - 1}`);
@@ -119,7 +209,7 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 			// Add a new custom field
 			newFields.custom_fields = [
 				...(newFields.custom_fields || []),
-				{ id: Date.now(), meta_key: '', prompt: '', prompt_context: 'article_and_topic' },
+				{ id: Date.now(), meta_key: '', prompt: '', prompt_context: 'article_and_topic', model_id: defaultTextModel },
 			];
 			updateContentFields(newFields);
 			setExpandedField(`custom_field_${newFields.custom_fields.length - 1}`);
@@ -207,6 +297,21 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 						<TitleFieldConfig
 							config={contentFields.title}
 							onChange={(config) => handleFieldChange('title', config)}
+						/>
+					</FieldCard>
+				)}
+
+				{/* Slug Field */}
+				{contentFields.slug?.enabled && (
+					<FieldCard
+						title="Slug"
+						isExpanded={expandedField === 'slug'}
+						onToggle={() => toggleExpand('slug')}
+						onRemove={() => handleRemoveField('slug')}
+					>
+						<SlugFieldConfig
+							config={contentFields.slug}
+							onChange={(config) => handleFieldChange('slug', config)}
 						/>
 					</FieldCard>
 				)}

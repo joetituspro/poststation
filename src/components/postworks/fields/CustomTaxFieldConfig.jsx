@@ -1,4 +1,4 @@
-import { Select, Textarea, MultiSelect, Input } from '../../common';
+import { Select, Textarea, MultiSelect, Input, ModelSelect } from '../../common';
 import { getTaxonomies } from '../../../api/client';
 
 const MODE_OPTIONS = [
@@ -87,7 +87,17 @@ export default function CustomTaxFieldConfig({ config, onChange, taxonomies: tax
 									? 'Instructions for generating terms...'
 									: 'Instructions for selecting from existing terms...'
 							}
-							rows={3}
+							rows={2}
+						/>
+					)}
+
+					{(config.mode === 'generate' || config.mode === 'auto_select') && (
+						<ModelSelect
+							label="Model"
+							tooltip="OpenRouter model used to generate or auto-select terms."
+							value={config.model_id || ''}
+							onChange={(e) => handleChange('model_id', e.target.value)}
+							filter="text"
 						/>
 					)}
 				</>

@@ -1,4 +1,4 @@
-import { Input, Textarea, Select } from '../../common';
+import { Input, Textarea, Select, ModelSelect } from '../../common';
 
 export default function CustomFieldConfig({ config, onChange }) {
 	const handleChange = (field, value) => {
@@ -29,7 +29,7 @@ export default function CustomFieldConfig({ config, onChange }) {
 				value={config.prompt || ''}
 				onChange={(e) => handleChange('prompt', e.target.value)}
 				placeholder="Instructions for generating this field's value..."
-				rows={3}
+				rows={2}
 			/>
 
 			<Select
@@ -38,6 +38,14 @@ export default function CustomFieldConfig({ config, onChange }) {
 				options={promptContextOptions}
 				value={config.prompt_context || 'article_and_topic'}
 				onChange={(e) => handleChange('prompt_context', e.target.value)}
+			/>
+
+			<ModelSelect
+				label="Model"
+				tooltip="OpenRouter model used to generate this custom field."
+				value={config.model_id || ''}
+				onChange={(e) => handleChange('model_id', e.target.value)}
+				filter="text"
 			/>
 		</div>
 	);

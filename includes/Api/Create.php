@@ -101,7 +101,9 @@ class Create
 		}
 
 		// Handle thumbnail
-		if (!empty($data['thumbnail_url'])) {
+		if (!empty($data['thumbnail_id'])) {
+			$this->handle_thumbnail_by_id($post_id, (int) $data['thumbnail_id']);
+		} elseif (!empty($data['thumbnail_url'])) {
 			$this->handle_thumbnail($post_id, $data['thumbnail_url']);
 		} elseif (!empty($block['feature_image_id'])) {
 			set_post_thumbnail($post_id, $block['feature_image_id']);
@@ -156,22 +158,31 @@ class Create
 	 * @param array $postwork Post work data
 	 * @return void
 	 */
-	private function handle_taxonomies(int $post_id, array $taxonomies, array $postwork): void
+	private function handle_taxonomies(int $post_id, $taxonomies, array $postwork): void
 	{
+		if (is_string($taxonomies)) {
+			$decoded = json_decode($taxonomies, true);
+			$taxonomies = is_array($decoded) ? $decoded : [];
+		}
+		if (!is_array($taxonomies)) {
+			return;
+		}
+
 		foreach ($taxonomies as $taxonomy => $terms) {
 			// Skip if taxonomy doesn't exist
 			if (!taxonomy_exists($taxonomy)) {
 				continue;
 			}
 
-			if (empty($terms)) {
+			$normalized_terms = $this->normalize_taxonomy_terms($terms);
+			if (empty($normalized_terms)) {
 				continue;
 			}
 
 			// Handle hierarchical taxonomies (like categories)
 			if (is_taxonomy_hierarchical($taxonomy)) {
 				$term_ids = [];
-				foreach ($terms as $term_name) {
+				foreach ($normalized_terms as $term_name) {
 					// First try to find by exact name
 					$term = get_term_by('name', $term_name, $taxonomy);
 
@@ -197,10 +208,38 @@ class Create
 			}
 			// Handle non-hierarchical taxonomies (like tags)
 			else {
-				// If no terms were successfully created/found, try the original approach
-				wp_set_object_terms($post_id, $terms, $taxonomy);
+				wp_set_object_terms($post_id, $normalized_terms, $taxonomy);
 			}
 		}
+	}
+
+	/**
+	 * Normalize taxonomy terms to an array of names/slugs.
+	 *
+	 * Accepts comma-separated strings or arrays.
+	 *
+	 * @param mixed $terms
+	 * @return array
+	 */
+	private function normalize_taxonomy_terms($terms): array
+	{
+		if (is_string($terms)) {
+			$terms = explode(',', $terms);
+		}
+
+		if (!is_array($terms)) {
+			return [];
+		}
+
+		$normalized = array_map(
+			static function ($term) {
+				return is_scalar($term) ? trim((string) $term) : '';
+			},
+			$terms
+		);
+		$normalized = array_filter($normalized, static fn($term) => $term !== '');
+
+		return array_values(array_unique($normalized));
 	}
 
 	/**
@@ -213,11 +252,114 @@ class Create
 	 */
 	private function handle_thumbnail(int $post_id, string $thumbnail_url): void
 	{
+		$local_thumbnail_id = $this->resolve_local_thumbnail_id_from_url($thumbnail_url);
+		if ($local_thumbnail_id > 0) {
+			set_post_thumbnail($post_id, $local_thumbnail_id);
+			return;
+		}
+
 		$thumbnail_id = $this->handle_image_upload($thumbnail_url, $post_id);
 		if (is_wp_error($thumbnail_id)) {
 			throw new Exception($thumbnail_id->get_error_message());
 		}
 		set_post_thumbnail($post_id, $thumbnail_id);
+	}
+
+	/**
+	 * Handle thumbnail from an existing attachment id.
+	 *
+	 * @param int $post_id Post ID
+	 * @param int $thumbnail_id Attachment ID
+	 * @return void
+	 * @throws Exception If thumbnail id is invalid
+	 */
+	private function handle_thumbnail_by_id(int $post_id, int $thumbnail_id): void
+	{
+		if ($thumbnail_id <= 0) {
+			throw new Exception('Invalid thumbnail_id');
+		}
+
+		$attachment = get_post($thumbnail_id);
+		if (
+			!$attachment ||
+			$attachment->post_type !== 'attachment' ||
+			!str_starts_with((string) get_post_mime_type($thumbnail_id), 'image/')
+		) {
+			throw new Exception('Invalid thumbnail_id image');
+		}
+
+		set_post_thumbnail($post_id, $thumbnail_id);
+	}
+
+	/**
+	 * Resolve local uploaded image attachment id from thumbnail URL.
+	 *
+	 * @param string $thumbnail_url Thumbnail URL
+	 * @return int Attachment id or 0
+	 */
+	private function resolve_local_thumbnail_id_from_url(string $thumbnail_url): int
+	{
+		if (!$this->is_local_server_url($thumbnail_url)) {
+			return 0;
+		}
+
+		$identifier = $this->extract_image_identifier_from_url($thumbnail_url);
+		if ($identifier === '') {
+			return 0;
+		}
+
+		$attachments = get_posts([
+			'post_type' => 'attachment',
+			'post_status' => 'inherit',
+			'posts_per_page' => 1,
+			'fields' => 'ids',
+			'meta_query' => [
+				[
+					'key' => 'poststation_image_identifier',
+					'value' => $identifier,
+				],
+			],
+		]);
+
+		return !empty($attachments) ? (int) $attachments[0] : 0;
+	}
+
+	/**
+	 * Check whether URL is hosted on this server.
+	 *
+	 * @param string $url URL to check
+	 * @return bool
+	 */
+	private function is_local_server_url(string $url): bool
+	{
+		$url_host = (string) parse_url($url, PHP_URL_HOST);
+		if ($url_host === '') {
+			return false;
+		}
+
+		$site_host = (string) parse_url(site_url(), PHP_URL_HOST);
+		$home_host = (string) parse_url(home_url(), PHP_URL_HOST);
+
+		return in_array($url_host, array_filter([$site_host, $home_host]), true);
+	}
+
+	/**
+	 * Extract image identifier from upload filename.
+	 * Expected format includes: -psid-{identifier}.ext
+	 *
+	 * @param string $url Image URL
+	 * @return string
+	 */
+	private function extract_image_identifier_from_url(string $url): string
+	{
+		$path = (string) parse_url($url, PHP_URL_PATH);
+		$basename = wp_basename($path);
+
+		if (preg_match('/-psid-([a-z0-9]+)(?:-\d+)?\.[a-z0-9]+$/i', $basename, $matches)) {
+			return strtolower($matches[1]);
+		}
+
+		return '';
 	}
 
 	/**
@@ -229,15 +371,23 @@ class Create
 	 * @param array $api_post_fields Custom fields data from API
 	 * @return void
 	 */
-	private function handle_custom_fields(int $post_id, array $api_post_fields = []): void
+	private function handle_custom_fields(int $post_id, $api_post_fields = []): void
 	{
+		if (is_string($api_post_fields)) {
+			$decoded = json_decode($api_post_fields, true);
+			$api_post_fields = is_array($decoded) ? $decoded : [];
+		}
+		if (!is_array($api_post_fields)) {
+			return;
+		}
+
 		foreach ($api_post_fields as $meta_key => $meta_value) {
 			// Skip title, content, and slug as they're handled in prepare_post_data
-			if (in_array($meta_key, ['title', 'content', 'slug'])) {
+			if (in_array($meta_key, ['title', 'content', 'slug'], true)) {
 				continue;
 			}
 
-			if (!empty($meta_key)) {
+			if (is_string($meta_key) && $meta_key !== '') {
 				update_post_meta($post_id, $meta_key, $meta_value);
 			}
 		}

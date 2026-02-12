@@ -20,6 +20,7 @@ class ApiHandler
 		'content',
 		'slug',
 		'thumbnail_url',
+		'thumbnail_id',
 		'taxonomies',
 		'custom_fields',
 		'status',
@@ -284,6 +285,7 @@ class ApiHandler
 		}
 
 		$optimizer = new ImageOptimizer();
+		$image_identifier = $this->generate_image_identifier();
 		$result = $optimizer->upload_base64_image([
 			'block_id' => $block_id,
 			'image_base64' => (string) $data['image_base64'],
@@ -291,6 +293,7 @@ class ApiHandler
 			'filename' => $data['filename'] ?? '',
 			'alt_text' => $data['alt_text'] ?? '',
 			'format' => $data['format'] ?? 'webp',
+			'image_identifier' => $image_identifier,
 		]);
 
 		$attachment_id = $result['attachment_id'];
@@ -306,13 +309,23 @@ class ApiHandler
 			update_post_meta($attachment_id, 'poststation_alt_text', (string) $data['alt_text']);
 			update_post_meta($attachment_id, '_wp_attachment_image_alt', (string) $data['alt_text']);
 		}
+		update_post_meta($attachment_id, 'poststation_image_identifier', $image_identifier);
 
 		return [
 			'success' => true,
 			'attachment_id' => $attachment_id,
 			'url' => $result['url'],
 			'format' => $result['format'],
+			'image_identifier' => $image_identifier,
 		];
+	}
+
+	private function generate_image_identifier(): string
+	{
+		$timestamp = dechex((int) floor(microtime(true) * 1000));
+		$random = wp_generate_password(8, false, false);
+
+		return strtolower($timestamp . $random);
 	}
 
 	/**

@@ -15,6 +15,7 @@ class ImageOptimizer
 		$requested_format = (string) ($args['format'] ?? 'webp');
 		$filename = (string) ($args['filename'] ?? '');
 		$alt_text = (string) ($args['alt_text'] ?? '');
+		$image_identifier = sanitize_file_name((string) ($args['image_identifier'] ?? ''));
 
 		if (!$block_id || $base64 === '') {
 			throw new Exception('Missing required image upload fields', 400);
@@ -64,6 +65,9 @@ class ImageOptimizer
 			$index_label,
 			$date
 		);
+		if ($image_identifier !== '') {
+			$base_filename .= '-psid-' . $image_identifier;
+		}
 
 		$target_filename = wp_unique_filename($upload_dir['path'], $base_filename . '.' . $format);
 		$target_path = trailingslashit($upload_dir['path']) . $target_filename;

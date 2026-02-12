@@ -1,4 +1,4 @@
-import { Select, Textarea, MultiSelect, Input } from '../../common';
+import { Select, Textarea, MultiSelect, Input, ModelSelect } from '../../common';
 import { getTaxonomies } from '../../../api/client';
 
 const MODE_OPTIONS = [
@@ -64,7 +64,17 @@ export default function CategoryFieldConfig({ config, onChange, taxonomies: taxo
 							? 'Instructions for generating categories...'
 							: 'Instructions for selecting from existing categories...'
 					}
-					rows={3}
+					rows={2}
+				/>
+			)}
+
+			{(config.mode === 'generate' || config.mode === 'auto_select') && (
+				<ModelSelect
+					label="Model"
+					tooltip="OpenRouter model used to generate or auto-select categories."
+					value={config.model_id || ''}
+					onChange={(e) => handleChange('model_id', e.target.value)}
+					filter="text"
 				/>
 			)}
 		</div>

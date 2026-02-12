@@ -1,4 +1,4 @@
-import { Select, Textarea, Input, Tooltip } from '../../common';
+import { Select, Textarea, Input, Tooltip, ModelSelect } from '../../common';
 
 const MODE_OPTIONS = [
 	{ value: 'single_prompt', label: 'Single Prompt Article' },
@@ -124,7 +124,7 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 				value={config.prompt || ''}
 				onChange={(e) => handleChange('prompt', e.target.value)}
 				placeholder="Add specific instructions for content generation..."
-				rows={4}
+				rows={2}
 			/>
 
 			<div className="space-y-4">
@@ -264,10 +264,18 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 							value={config.list_section_prompt || ''}
 							onChange={(e) => handleChange('list_section_prompt', e.target.value)}
 							placeholder="Add guidance for each list item section"
-							rows={3}
+							rows={2}
 						/>
 					</div>
 				)}
+
+				<ModelSelect
+					label="Model"
+					tooltip="OpenRouter model used to generate body content."
+					value={config.model_id || ''}
+					onChange={(e) => handleChange('model_id', e.target.value)}
+					filter="text"
+				/>
 
 				<div className="space-y-2">
 					<div className="border-b border-gray-200 pb-1">
@@ -283,40 +291,59 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 						/>
 
 						{config.enable_media === 'yes' && (
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
-								<Select
-									label="Number of Images"
-									tooltip="How many images to include in the body."
-									options={numImagesOptions}
-									value={config.number_of_images || 'random'}
-									onChange={(e) => handleChange('number_of_images', e.target.value)}
-								/>
-
-								{config.number_of_images === 'custom' && (
-									<Input
-										label="Custom Number"
-										tooltip="Specific number of images to generate."
-										type="number"
-										min="1"
-										value={config.custom_number_of_images ?? 3}
-										onChange={(e) => handleChange('custom_number_of_images', parseInt(e.target.value, 10) || 1)}
+							<div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+									<Select
+										label="Number of Images"
+										tooltip="How many images to include in the body."
+										options={numImagesOptions}
+										value={config.number_of_images || 'random'}
+										onChange={(e) => handleChange('number_of_images', e.target.value)}
 									/>
-								)}
 
-								<Select
-									label="Image Size"
-									tooltip="The aspect ratio and resolution for generated images."
-									options={imageSizeOptions}
-									value={config.image_size || '1344x768'}
-									onChange={(e) => handleChange('image_size', e.target.value)}
+									{config.number_of_images === 'custom' && (
+										<Input
+											label="Custom Number"
+											tooltip="Specific number of images to generate."
+											type="number"
+											min="1"
+											value={config.custom_number_of_images ?? 3}
+											onChange={(e) => handleChange('custom_number_of_images', parseInt(e.target.value, 10) || 1)}
+										/>
+									)}
+
+									<Select
+										label="Image Size"
+										tooltip="The aspect ratio and resolution for generated images."
+										options={imageSizeOptions}
+										value={config.image_size || '1344x768'}
+										onChange={(e) => handleChange('image_size', e.target.value)}
+									/>
+
+									<Select
+										label="Image Style"
+										tooltip="The visual style for generated images."
+										options={imageStyleOptions}
+										value={config.image_style || 'none'}
+										onChange={(e) => handleChange('image_style', e.target.value)}
+									/>
+								</div>
+
+								<Textarea
+									label="Additional Instruction"
+									tooltip="Extra guidance for media placement and generation inside the body."
+									value={config.media_prompt || ''}
+									onChange={(e) => handleChange('media_prompt', e.target.value)}
+									placeholder="Optional: where to place images, what scenes to emphasize, etc."
+									rows={2}
 								/>
 
-								<Select
-									label="Image Style"
-									tooltip="The visual style for generated images."
-									options={imageStyleOptions}
-									value={config.image_style || 'none'}
-									onChange={(e) => handleChange('image_style', e.target.value)}
+								<ModelSelect
+									label="Image Model"
+									tooltip="OpenRouter image model used for body media generation."
+									value={config.image_model_id || ''}
+									onChange={(e) => handleChange('image_model_id', e.target.value)}
+									filter="image"
 								/>
 							</div>
 						)}

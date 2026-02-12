@@ -73,6 +73,7 @@ class BlockRunner
 					];
 				};
 
+				/*
 				// Process categories
 				if (isset($content_fields['categories'])) {
 					$info = $get_taxonomy_info('category');
@@ -101,27 +102,43 @@ class BlockRunner
 					}
 					unset($tax_config);
 				}
+				*/
 
 				$unified_taxonomies = [];
 				if (isset($content_fields['categories'])) {
+					$info = $get_taxonomy_info('category');
 					$unified_taxonomies[] = array_merge(
 						['taxonomy' => 'category'],
-						$content_fields['categories']
+						$content_fields['categories'],
+						$info ?: []
 					);
 				}
 				if (isset($content_fields['tags'])) {
+					$info = $get_taxonomy_info('post_tag');
 					$unified_taxonomies[] = array_merge(
 						['taxonomy' => 'post_tag'],
-						$content_fields['tags']
+						$content_fields['tags'],
+						$info ?: []
 					);
 				}
 				if (!empty($content_fields['custom_taxonomies'])) {
 					foreach ($content_fields['custom_taxonomies'] as $tax_config) {
-						$unified_taxonomies[] = $tax_config;
+						$info = !empty($tax_config['taxonomy']) ? $get_taxonomy_info($tax_config['taxonomy']) : null;
+						$unified_taxonomies[] = array_merge(
+							$tax_config,
+							$info ?: []
+						);
 					}
 				}
 
 				$content_fields['taxonomies'] = $unified_taxonomies;
+
+				// Send only unified taxonomies to webhook payload.
+				unset(
+					$content_fields['categories'],
+					$content_fields['tags'],
+					$content_fields['custom_taxonomies']
+				);
 			}
 
 			$topic = $block['topic'] ?? '';
@@ -151,7 +168,6 @@ class BlockRunner
 					'name' => Countries::get_name($country_key),
 				],
 				'content_fields' => $content_fields,
-				'feature_image_title' => $block['feature_image_title'] ?? '{{title}}',
 				'sitemap' => (new Sitemap())->get_sitemap_json($postwork['post_type']),
 				'callback_url' => get_site_url() . '/ps-api',
 				'api_key' => get_option('poststation_api_key'),

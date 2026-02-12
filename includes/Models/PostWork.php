@@ -110,17 +110,30 @@ class PostWork
 
 	public static function get_default_content_fields(): array
 	{
+		$default_text_model = (string) get_option('poststation_openrouter_default_text_model', '');
+		$default_image_model = (string) get_option('poststation_openrouter_default_image_model', '');
+
 		return [
 			'title' => [
 				'enabled' => true,
 				'mode' => 'generate',
 				'prompt' => '',
 				'prompt_context' => 'article_and_topic',
+				'model_id' => $default_text_model,
+			],
+			'slug' => [
+				'enabled' => false,
+				'mode' => 'generate_from_title',
+				'prompt' => '',
+				'model_id' => $default_text_model,
 			],
 			'body' => [
 				'enabled' => true,
 				'mode' => 'single_prompt',
 				'prompt' => '',
+				'model_id' => $default_text_model,
+				'media_prompt' => '',
+				'image_model_id' => $default_image_model,
 				'tone_of_voice' => 'none',
 				'point_of_view' => 'none',
 				'introductory_hook_brief' => '',
@@ -143,12 +156,14 @@ class PostWork
 				'enabled' => false,
 				'mode' => 'manual',
 				'prompt' => '',
+				'model_id' => $default_text_model,
 				'selected' => [],
 			],
 			'tags' => [
 				'enabled' => false,
 				'mode' => 'generate',
 				'prompt' => '',
+				'model_id' => $default_text_model,
 				'selected' => [],
 			],
 			'custom_taxonomies' => [],
@@ -157,6 +172,7 @@ class PostWork
 				'enabled' => false,
 				'mode' => 'generate_from_article',
 				'prompt' => '',
+				'model_id' => $default_image_model,
 				'image_size' => '1344x768',
 				'image_style' => 'none',
 				'template_id' => '',
