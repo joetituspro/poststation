@@ -6,7 +6,7 @@ use PostStation\Admin\BootstrapDataProvider;
 use PostStation\Models\Campaign;
 use PostStation\Models\PostTask;
 use PostStation\Services\BackgroundRunner;
-use PostStation\Services\BlockRunner;
+use PostStation\Services\TaskRunner;
 
 class CampaignAjaxHandler
 {
@@ -196,7 +196,7 @@ class CampaignAjaxHandler
 		$task_id = (int) ($_POST['task_id'] ?? 0);
 		$webhook_id = (int) ($_POST['webhook_id'] ?? 0);
 
-		$result = BlockRunner::dispatch_task($campaign_id, $task_id, $webhook_id);
+		$result = TaskRunner::dispatch_task($campaign_id, $task_id, $webhook_id);
 		if (!$result['success']) {
 			wp_send_json_error(['message' => $result['message'] ?? 'Failed to run task']);
 		}

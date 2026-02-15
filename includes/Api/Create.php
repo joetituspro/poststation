@@ -54,6 +54,7 @@ class Create
 					'status' => 'completed',
 					'post_id' => $result['post_id'],
 					'error_message' => null,
+					'progress' => null,
 				]);
 			}
 

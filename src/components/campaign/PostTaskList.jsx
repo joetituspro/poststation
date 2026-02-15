@@ -238,7 +238,7 @@ function TaskItem({
 								{articleTypeLabel}
 							</span>
 							<StatusBadge status={task.status} />
-							{task.progress !== null && task.progress !== undefined && (
+							{task.progress !== null && task.progress !== undefined && task.status !== 'completed' && (
 								<span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic truncate max-w-[120px]">
 									{String(task.progress)}
 								</span>

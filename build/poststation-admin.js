@@ -6977,7 +6977,7 @@ function TaskItem(_ref3) {
               children: articleTypeLabel
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.StatusBadge, {
               status: task.status
-            }), task.progress !== null && task.progress !== undefined && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            }), task.progress !== null && task.progress !== undefined && task.status !== 'completed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic truncate max-w-[120px]",
               children: String(task.progress)
             })]
@@ -10099,22 +10099,34 @@ function InfoSidebar() {
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
         className: "px-4 py-3 space-y-2",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-          className: "flex justify-between text-sm",
+          className: "flex justify-between items-center text-sm",
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", {
             className: "text-gray-600",
             children: "Save changes"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
-            className: "px-2 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-700",
-            children: "Ctrl+S"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
+            className: "flex gap-1",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
+              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
+              children: "Ctrl+S"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
+              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
+              children: "\u2318S"
+            })]
           })]
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-          className: "flex justify-between text-sm",
+          className: "flex justify-between items-center text-sm",
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", {
             className: "text-gray-600",
             children: "Add new post task"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
-            className: "px-2 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-700",
-            children: "Ctrl+N"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
+            className: "flex gap-1",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
+              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
+              children: "Ctrl+N"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
+              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
+              children: "\u2318N"
+            })]
           })]
         })]
       })]
@@ -10710,6 +10722,34 @@ function CampaignEditPage() {
       return setGlobalDirty(false);
     };
   }, [isDirty, setGlobalDirty]);
+
+  // Keyboard shortcuts
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var handleKeyDown = function handleKeyDown(e) {
+      var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      var modifier = isMac ? e.metaKey : e.ctrlKey;
+
+      // Ctrl+S or Cmd+S: Save changes
+      if (modifier && e.key === 's') {
+        e.preventDefault();
+        if (isDirty && !savingAll) {
+          handleSave();
+        }
+      }
+
+      // Ctrl+N or Cmd+N: Add new post task
+      if (modifier && e.key === 'n') {
+        e.preventDefault();
+        if (!creatingTask) {
+          handleAddTask();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return function () {
+      return window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isDirty, savingAll, creatingTask, handleSave, handleAddTask]);
   var applyPendingProcessingUpdates = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (pendingProcessing) {
     if (!Array.isArray(pendingProcessing) || pendingProcessing.length === 0) return;
     var updatesById = new Map(pendingProcessing.map(function (item) {

@@ -9,7 +9,7 @@ use PostStation\Utils\Languages;
 use PostStation\Utils\Countries;
 use Exception;
 
-class BlockRunner
+class TaskRunner
 {
 	public static function dispatch_task(int $campaign_id, int $task_id, int $webhook_id): array
 	{

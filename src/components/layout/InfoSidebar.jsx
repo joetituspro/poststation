@@ -40,13 +40,19 @@ export default function InfoSidebar() {
 					<h3 className="text-sm font-medium text-gray-900">Shortcuts</h3>
 				</div>
 				<div className="px-4 py-3 space-y-2">
-					<div className="flex justify-between text-sm">
+					<div className="flex justify-between items-center text-sm">
 						<span className="text-gray-600">Save changes</span>
-						<kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-700">Ctrl+S</kbd>
+						<div className="flex gap-1">
+							<kbd className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700">Ctrl+S</kbd>
+							<kbd className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700">⌘S</kbd>
+						</div>
 					</div>
-					<div className="flex justify-between text-sm">
+					<div className="flex justify-between items-center text-sm">
 						<span className="text-gray-600">Add new post task</span>
-						<kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-700">Ctrl+N</kbd>
+						<div className="flex gap-1">
+							<kbd className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700">Ctrl+N</kbd>
+							<kbd className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700">⌘N</kbd>
+						</div>
 					</div>
 				</div>
 			</div>

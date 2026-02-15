@@ -187,6 +187,33 @@ export default function CampaignEditPage() {
 		return () => setGlobalDirty(false);
 	}, [isDirty, setGlobalDirty]);
 
+	// Keyboard shortcuts
+	useEffect(() => {
+		const handleKeyDown = (e) => {
+			const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+			const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+			// Ctrl+S or Cmd+S: Save changes
+			if (modifier && e.key === 's') {
+				e.preventDefault();
+				if (isDirty && !savingAll) {
+					handleSave();
+				}
+			}
+
+			// Ctrl+N or Cmd+N: Add new post task
+			if (modifier && e.key === 'n') {
+				e.preventDefault();
+				if (!creatingTask) {
+					handleAddTask();
+				}
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [isDirty, savingAll, creatingTask, handleSave, handleAddTask]);
+
 	const applyPendingProcessingUpdates = useCallback((pendingProcessing) => {
 		if (!Array.isArray(pendingProcessing) || pendingProcessing.length === 0) return;
 		const updatesById = new Map(pendingProcessing.map((item) => [getTaskIdKey(item.id), item]));

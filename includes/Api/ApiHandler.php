@@ -436,6 +436,7 @@ class ApiHandler
 				$update_data['status'] = $status;
 				if ($status === 'completed') {
 					$update_data['error_message'] = null;
+					$update_data['progress'] = null;
 				}
 				if ($status === 'failed' && $error_message) {
 					$update_data['error_message'] = $error_message;

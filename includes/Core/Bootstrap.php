@@ -4,7 +4,7 @@ namespace PostStation\Core;
 
 use Exception;
 
-use PostStation\Admin\ReactApp;
+use PostStation\Admin\App;
 use PostStation\Services\Sitemap;
 use PostStation\Services\BackgroundRunner;
 use PostStation\Models\Webhook;
@@ -37,7 +37,7 @@ class Bootstrap
 			$this->check_db_version();
 			
 			// Initialize React App (new SPA interface)
-			new ReactApp();
+			new App();
 		}
 
 		// Register assets

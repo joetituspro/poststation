@@ -7,7 +7,7 @@ use PostStation\Admin\Ajax\PostTaskAjaxHandler;
 use PostStation\Admin\Ajax\SettingsAjaxHandler;
 use PostStation\Admin\Ajax\WebhookAjaxHandler;
 
-class ReactApp
+class App
 {
 	private BootstrapDataProvider $bootstrap_provider;
 	private CampaignAjaxHandler $campaign_handler;

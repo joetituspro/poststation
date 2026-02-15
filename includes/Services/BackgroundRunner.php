@@ -129,7 +129,7 @@ class BackgroundRunner
 			return;
 		}
 
-		$result = BlockRunner::dispatch_task($campaign_id, (int) $task['id'], $webhook_id);
+		$result = TaskRunner::dispatch_task($campaign_id, (int) $task['id'], $webhook_id);
 		if (!$result['success']) {
 			return;
 		}
