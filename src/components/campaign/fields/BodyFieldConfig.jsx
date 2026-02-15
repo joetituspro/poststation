@@ -12,29 +12,6 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 
 	const isListicle = articleType === 'listicle';
 
-	const toneOptions = [
-		{ value: 'none', label: 'None' },
-		{ value: 'friendly', label: 'Friendly' },
-		{ value: 'professional', label: 'Professional' },
-		{ value: 'informational', label: 'Informational' },
-		{ value: 'transactional', label: 'Transactional' },
-		{ value: 'inspirational', label: 'Inspirational' },
-		{ value: 'neutral', label: 'Neutral' },
-		{ value: 'witty', label: 'Witty' },
-		{ value: 'casual', label: 'Casual' },
-		{ value: 'authoritative', label: 'Authoritative' },
-		{ value: 'encouraging', label: 'Encouraging' },
-		{ value: 'persuasive', label: 'Persuasive' },
-		{ value: 'poetic', label: 'Poetic' },
-	];
-
-	const povOptions = [
-		{ value: 'none', label: 'None' },
-		{ value: 'first_person_singular', label: 'First person singular (I, me, my, mine)' },
-		{ value: 'first_person_plural', label: 'First person plural (we, us, our, ours)' },
-		{ value: 'second_person', label: 'Second person (you, your, yours)' },
-		{ value: 'third_person', label: 'Third person (he, she, it, they)' },
-	];
 
 	const yesNoOptions = [
 		{ value: 'yes', label: 'Yes' },
@@ -128,24 +105,6 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 			/>
 
 			<div className="space-y-4">
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<Select
-						label="Tone of Voice"
-						tooltip="Defines the writing tone for sectioned content."
-						options={toneOptions}
-						value={config.tone_of_voice || 'none'}
-						onChange={(e) => handleChange('tone_of_voice', e.target.value)}
-					/>
-
-					<Select
-						label="Point of View"
-						tooltip="Narrative perspective used in the content."
-						options={povOptions}
-						value={config.point_of_view || 'none'}
-						onChange={(e) => handleChange('point_of_view', e.target.value)}
-					/>
-				</div>
-
 				<div className="space-y-2">
 					<div className="border-b border-gray-200 pb-1">
 						<h4 className="text-sm font-semibold text-gray-700">Intro Hook</h4>

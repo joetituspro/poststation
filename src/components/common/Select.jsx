@@ -10,12 +10,16 @@ export default function Select({
 	...props
 }) {
 	const fieldClassName = `poststation-field ${error ? 'poststation-field-error' : ''}`;
+	const isRequired = Boolean(props.required);
 
 	return (
 		<div className={className}>
 			{label && (
 				<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
-					<span>{label}</span>
+					<span>
+						{label}
+						{isRequired && <span className="text-red-600 ml-0.5">*</span>}
+					</span>
 					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}
@@ -46,6 +50,7 @@ export function MultiSelect({
 	error,
 	className = '',
 	placeholder = 'Select...',
+	required = false,
 }) {
 	const fieldClassName = `poststation-field ${error ? 'poststation-field-error' : ''}`;
 
@@ -68,7 +73,10 @@ export function MultiSelect({
 		<div className={className}>
 			{label && (
 				<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
-					<span>{label}</span>
+					<span>
+						{label}
+						{required && <span className="text-red-600 ml-0.5">*</span>}
+					</span>
 					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 			)}

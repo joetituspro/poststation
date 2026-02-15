@@ -32,6 +32,14 @@ class BlockRunner
 			$content_fields = !empty($campaign['content_fields']) ? json_decode($campaign['content_fields'], true) : [];
 			$default_content_fields = Campaign::get_default_content_fields();
 			$content_fields = array_replace_recursive($default_content_fields, $content_fields);
+			$title_override = trim((string) ($task['title_override'] ?? ''));
+			$slug_override = trim((string) ($task['slug_override'] ?? ''));
+			$sitemap_entries = (new Sitemap())->get_sitemap_json($campaign['post_type']);
+			$sitemap_urls = array_values(array_filter(array_map(
+				static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
+				$sitemap_entries
+			)));
+			$sitemap_csv = implode(', ', $sitemap_urls);
 			
 			// Inject terms for auto_select mode in taxonomies
 			if (!empty($content_fields)) {
@@ -45,6 +53,20 @@ class BlockRunner
 
 				if (!empty($task['feature_image_id']) && isset($content_fields['image'])) {
 					$content_fields['image']['enabled'] = false;
+				}
+
+				if ($title_override !== '' && isset($content_fields['title'])) {
+					$content_fields['title']['enabled'] = false;
+				}
+
+				if ($slug_override !== '' && isset($content_fields['slug'])) {
+					$content_fields['slug']['enabled'] = false;
+				}
+
+				if (isset($content_fields['body'])) {
+					$content_fields['body']['tone_of_voice'] = (string) ($campaign['tone_of_voice'] ?? 'none');
+					$content_fields['body']['point_of_view'] = (string) ($campaign['point_of_view'] ?? 'none');
+					$content_fields['body']['readability'] = (string) ($campaign['readability'] ?? 'grade_8');
 				}
 
 				// Helper to get taxonomy info and terms
@@ -154,6 +176,9 @@ class BlockRunner
 				'task_id' => $task['id'],
 				'research_url' => $task['research_url'] ?? '',
 				'topic' => $topic,
+				'title_override' => $title_override,
+				'slug_override' => $slug_override,
+				'feature_image_id' => !empty($task['feature_image_id']) ? (int) $task['feature_image_id'] : null,
 				'keywords' => [
 					'primary_key' => $primary_keyword,
 					'additional_keywords' => implode(', ', array_values(array_filter($keywords, fn($keyword) => $keyword !== $primary_keyword))),
@@ -167,8 +192,11 @@ class BlockRunner
 					'key' => $country_key,
 					'name' => Countries::get_name($country_key),
 				],
+				'tone_of_voice' => (string) ($campaign['tone_of_voice'] ?? 'none'),
+				'point_of_view' => (string) ($campaign['point_of_view'] ?? 'none'),
+				'readability' => (string) ($campaign['readability'] ?? 'grade_8'),
 				'content_fields' => $content_fields,
-				'sitemap' => (new Sitemap())->get_sitemap_json($campaign['post_type']),
+				'sitemap' => $sitemap_csv,
 				'callback_url' => get_site_url() . '/ps-api',
 				'api_key' => get_option('poststation_api_key'),
 			];
@@ -230,7 +258,10 @@ class BlockRunner
 			'{{primary_keyword}}' => $primary_keyword,
 			'{{article_type}}' => $article_type,
 			'{{image_title}}' => str_replace('{{title}}', $topic ?: 'Post', $task['feature_image_title'] ?? '{{title}}'),
-			'{{sitemap}}' => wp_json_encode((new Sitemap())->get_sitemap_json($campaign['post_type'])),
+			'{{sitemap}}' => implode(', ', array_values(array_filter(array_map(
+				static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
+				(new Sitemap())->get_sitemap_json($campaign['post_type'])
+			)))),
 		];
 
 		return str_replace(array_keys($placeholders), array_values($placeholders), $text);

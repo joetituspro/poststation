@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Select, Textarea, Input, Tooltip, ModelSelect } from '../../common';
 
 const MODE_OPTIONS = [
@@ -33,9 +34,53 @@ const imageStyleOptions = [
 ];
 
 export default function ImageFieldConfig({ config, onChange }) {
+	const [backgroundImagePreviews, setBackgroundImagePreviews] = useState({});
+
 	const handleChange = (field, value) => {
 		onChange({ ...config, [field]: value });
 	};
+
+	useEffect(() => {
+		let mounted = true;
+		const ids = (config.background_images || []).filter(Boolean);
+		if (!ids.length || !window.wp?.media?.attachment) {
+			setBackgroundImagePreviews({});
+			return;
+		}
+
+		const resolvePreviews = async () => {
+			const nextPreviews = {};
+			await Promise.all(
+				ids.map(async (rawId) => {
+					const imageId = Number(rawId);
+					if (!imageId) return;
+					try {
+						const attachment = window.wp.media.attachment(imageId);
+						await attachment.fetch();
+						const attrs = attachment.attributes || {};
+						const resolvedUrl =
+							attrs?.sizes?.thumbnail?.url ||
+							attrs?.sizes?.medium?.url ||
+							attrs?.url ||
+							'';
+						if (resolvedUrl) {
+							nextPreviews[imageId] = resolvedUrl;
+						}
+					} catch {
+						// Keep fallback card with ID.
+					}
+				})
+			);
+			if (mounted) {
+				setBackgroundImagePreviews(nextPreviews);
+			}
+		};
+
+		resolvePreviews();
+		return () => {
+			mounted = false;
+		};
+	}, [config.background_images]);
 
 	const handleAddBackgroundImage = () => {
 		if (window.wp?.media) {
@@ -173,7 +218,7 @@ export default function ImageFieldConfig({ config, onChange }) {
 								type="button"
 								onClick={handleAddBackgroundImage}
 								disabled={(config.background_images || []).length >= 15}
-								className="text-sm text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+								className="px-2 py-1 text-xs border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-50 disabled:opacity-50"
 							>
 								Add Images
 							</button>
@@ -183,9 +228,17 @@ export default function ImageFieldConfig({ config, onChange }) {
 								{(config.background_images || []).map((imageId, index) => (
 									<div
 										key={index}
-										className="relative w-16 h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center"
+										className="relative w-16 h-16 bg-gray-100 rounded border border-gray-200 overflow-hidden flex items-center justify-center"
 									>
-										<span className="text-xs text-gray-500">#{imageId}</span>
+										{backgroundImagePreviews[Number(imageId)] ? (
+											<img
+												src={backgroundImagePreviews[Number(imageId)]}
+												alt={`Background ${imageId}`}
+												className="w-full h-full object-cover"
+											/>
+										) : (
+											<span className="text-xs text-gray-500">#{imageId}</span>
+										)}
 										<button
 											type="button"
 											onClick={() => handleRemoveBackgroundImage(index)}

@@ -11,14 +11,12 @@ import CustomFieldConfig from './fields/CustomFieldConfig';
 import ImageFieldConfig from './fields/ImageFieldConfig';
 
 const FIELD_TYPES = [
-	{ value: 'title', label: 'Title' },
 	{ value: 'slug', label: 'Slug' },
-	{ value: 'body', label: 'Body' },
 	{ value: 'categories', label: 'Categories' },
 	{ value: 'tags', label: 'Tags' },
 	{ value: 'custom_tax', label: 'Custom Taxonomy' },
 	{ value: 'custom_field', label: 'Custom Field' },
-	{ value: 'image', label: 'Image' },
+	{ value: 'image', label: 'Featured Image' },
 ];
 
 // Default content fields structure
@@ -34,7 +32,7 @@ const getDefaultContentFields = (settings = null) => {
 		model_id: defaultTextModel,
 	},
 	slug: {
-		enabled: false,
+		enabled: true,
 		mode: 'generate_from_title',
 		prompt: '',
 		model_id: defaultTextModel,
@@ -148,7 +146,7 @@ const normalizeContentFields = (rawFields, settings = null) => {
 	};
 };
 
-export default function ContentFieldsEditor({ postWork, onChange, taxonomies: taxonomiesProp }) {
+export default function ContentFieldsEditor({ campaign, onChange, taxonomies: taxonomiesProp }) {
 	const [selectedType, setSelectedType] = useState('');
 	const [expandedField, setExpandedField] = useState(null);
 	const hasTaxonomies = taxonomiesProp && Object.keys(taxonomiesProp).length > 0;
@@ -157,23 +155,23 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 	const defaultTextModel = bootstrapSettings?.openrouter_default_text_model || '';
 
 	// Parse content fields or use defaults
-	const rawContentFields = postWork.content_fields
-		? (typeof postWork.content_fields === 'string'
-			? JSON.parse(postWork.content_fields)
-			: postWork.content_fields)
+	const rawContentFields = campaign.content_fields
+		? (typeof campaign.content_fields === 'string'
+			? JSON.parse(campaign.content_fields)
+			: campaign.content_fields)
 		: getDefaultContentFields(bootstrapSettings);
 	const contentFields = normalizeContentFields(rawContentFields, bootstrapSettings);
 
 	const updateContentFields = (newFields) => {
 		onChange({
-			...postWork,
+			...campaign,
 			content_fields: JSON.stringify(newFields),
 		});
 	};
 
 	const notifyImageFieldRemoved = () => {
 		onChange({
-			...postWork,
+			...campaign,
 			clear_image_overrides: true,
 		});
 	};
@@ -262,16 +260,14 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 	// Get available field types (exclude already added single fields)
 	const availableTypes = FIELD_TYPES.filter(type => {
 		if (['custom_tax', 'custom_field'].includes(type.value)) return true;
-		if (['title', 'body'].includes(type.value)) return true; // Always show, will expand if already enabled
 		return !contentFields[type.value]?.enabled;
 	});
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4 mt-4">
 			{/* Add Field Controls */}
 			<div className="flex flex-col sm:flex-row gap-2">
 				<Select
-					label="Add Field"
 					tooltip="Choose a content field to configure for this campaign."
 					options={availableTypes}
 					value={selectedType}
@@ -327,7 +323,7 @@ export default function ContentFieldsEditor({ postWork, onChange, taxonomies: ta
 						<BodyFieldConfig
 							config={contentFields.body}
 							onChange={(config) => handleFieldChange('body', config)}
-							articleType={postWork?.article_type || 'blog_post'}
+							articleType={campaign?.article_type || 'blog_post'}
 						/>
 					</FieldCard>
 				)}

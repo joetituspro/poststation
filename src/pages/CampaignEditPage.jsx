@@ -7,13 +7,15 @@ import {
 	PageLoader,
 	useToast,
 } from '../components/common';
-import CampaignForm from '../components/postworks/PostWorkForm';
-import ContentFieldsEditor from '../components/postworks/ContentFieldsEditor';
-import BlocksList from '../components/postworks/BlocksList';
+import CampaignForm from '../components/campaign/CampaignForm';
+import ContentFieldsEditor from '../components/campaign/ContentFieldsEditor';
+import PostTaskList from '../components/campaign/PostTaskList';
 import InfoSidebar from '../components/layout/InfoSidebar';
 import { campaigns, postTasks, webhooks, getTaxonomies, getPendingProcessingPostTasks, refreshBootstrap, getBootstrapWebhooks } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useUnsavedChanges } from '../context/UnsavedChangesContext';
+
+const isBlank = (value) => String(value ?? '').trim() === '';
 
 // Editable title: shows text, pen icon on hover, click to edit inline
 function EditableCampaignTitle({ value, onChange }) {
@@ -91,11 +93,11 @@ function EditableCampaignTitle({ value, onChange }) {
 export default function CampaignEditPage() {
 	const { id } = useParams();
 	const [campaign, setCampaign] = useState(null);
-	const [blocksList, setBlocksList] = useState([]);
+	const [taskItems, setTaskItems] = useState([]);
 	const [showSettings, setShowSettings] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [isDirty, setIsDirty] = useState(false);
-	const [retryingBlockId, setRetryingBlockId] = useState(null);
+	const [retryingTaskId, setRetryingTaskId] = useState(null);
 	const [retryFailedLoading, setRetryFailedLoading] = useState(false);
 	const [savingAll, setSavingAll] = useState(false);
 	const [runLoading, setRunLoading] = useState(false);
@@ -106,7 +108,7 @@ export default function CampaignEditPage() {
 	const { showToast } = useToast();
 	const { setIsDirty: setGlobalDirty } = useUnsavedChanges();
 
-	const getBlockIdKey = useCallback((value) => String(value ?? ''), []);
+	const getTaskIdKey = useCallback((value) => String(value ?? ''), []);
 	const fetchCampaign = useCallback(() => campaigns.getById(id), [id]);
 	const { data, loading, error, refetch } = useQuery(fetchCampaign, [id]);
 
@@ -119,17 +121,17 @@ export default function CampaignEditPage() {
 	const { mutate: updateCampaign, loading: saving } = useMutation(
 		(data) => campaigns.update(id, data)
 	);
-	const { mutate: createBlock, loading: creatingBlock } = useMutation(
+	const { mutate: createTask, loading: creatingTask } = useMutation(
 		() => postTasks.create(id)
 	);
-	const { mutate: updateBlocks } = useMutation(
+	const { mutate: updateTasks } = useMutation(
 		(tasksData) => postTasks.update(id, tasksData)
 	);
-	const { mutate: deleteBlock } = useMutation(postTasks.delete);
-	const { mutate: clearCompletedBlocks } = useMutation(
+	const { mutate: deleteTask } = useMutation(postTasks.delete);
+	const { mutate: clearCompletedTasks } = useMutation(
 		() => postTasks.clearCompleted(id)
 	);
-	const { mutate: importBlocks } = useMutation(
+	const { mutate: importTasks } = useMutation(
 		(file) => postTasks.import(id, file)
 	);
 	const { mutate: runCampaign } = useMutation(
@@ -148,29 +150,37 @@ export default function CampaignEditPage() {
 			const articleType = data.campaign?.article_type || 'blog_post';
 			const language = data.campaign?.language || 'en';
 			const targetCountry = data.campaign?.target_country || 'international';
+			const toneOfVoice = data.campaign?.tone_of_voice || 'none';
+			const pointOfView = data.campaign?.point_of_view || 'none';
+			const readability = data.campaign?.readability || 'grade_8';
 			setCampaign({
 				...data.campaign,
 				article_type: articleType,
 				language,
 				target_country: targetCountry,
+				tone_of_voice: toneOfVoice,
+				point_of_view: pointOfView,
+				readability,
 			});
-			setBlocksList(
-				(data.tasks || []).map((block) => ({
-					...block,
-					article_type: block.article_type || articleType,
-					topic: block.topic ?? '',
-					keywords: block.keywords ?? '',
+			setTaskItems(
+				(data.tasks || []).map((task) => ({
+					...task,
+					article_type: task.article_type || articleType,
+					topic: task.topic ?? '',
+					keywords: task.keywords ?? '',
+					title_override: task.title_override ?? '',
+					slug_override: task.slug_override ?? '',
 				}))
 			);
 		}
 	}, [data]);
 
 	useEffect(() => {
-		const hasProcessing = blocksList.some((block) => block.status === 'processing');
+		const hasProcessing = taskItems.some((task) => task.status === 'processing');
 		if (hasProcessing !== isRunning) {
 			setIsRunning(hasProcessing);
 		}
-	}, [blocksList, isRunning]);
+	}, [taskItems, isRunning]);
 
 	useEffect(() => {
 		setGlobalDirty(isDirty);
@@ -179,18 +189,18 @@ export default function CampaignEditPage() {
 
 	const applyPendingProcessingUpdates = useCallback((pendingProcessing) => {
 		if (!Array.isArray(pendingProcessing) || pendingProcessing.length === 0) return;
-		const updatesById = new Map(pendingProcessing.map((item) => [getBlockIdKey(item.id), item]));
-		setBlocksList((prev) =>
-			prev.map((block) => {
-				const match = updatesById.get(getBlockIdKey(block.id));
-				if (!match) return block;
+		const updatesById = new Map(pendingProcessing.map((item) => [getTaskIdKey(item.id), item]));
+		setTaskItems((prev) =>
+			prev.map((task) => {
+				const match = updatesById.get(getTaskIdKey(task.id));
+				if (!match) return task;
 
 				// Don't overwrite local 'processing' status with 'pending' or 'failed' 
 				// if the server is just slow to catch up
-				if (block.status === 'processing' && match.status !== 'processing') {
+				if (task.status === 'processing' && match.status !== 'processing') {
 					// Only allow transition to completed or failed if it's actually finished
 					if (match.status !== 'completed' && match.status !== 'failed') {
-						return block;
+						return task;
 					}
 				}
 
@@ -200,15 +210,15 @@ export default function CampaignEditPage() {
 						: match.status;
 
 				if (
-					block.status === newStatus &&
-					block.progress === match.progress &&
-					block.post_id === match.post_id &&
-					block.error_message === match.error_message
+					task.status === newStatus &&
+					task.progress === match.progress &&
+					task.post_id === match.post_id &&
+					task.error_message === match.error_message
 				) {
-					return block;
+					return task;
 				}
 				return {
-					...block,
+					...task,
 					status: newStatus,
 					progress: match.progress,
 					post_id: match.post_id,
@@ -216,7 +226,7 @@ export default function CampaignEditPage() {
 				};
 			})
 		);
-	}, [getBlockIdKey]);
+	}, [getTaskIdKey]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -243,14 +253,14 @@ export default function CampaignEditPage() {
 	// Handle campaign changes
 	const handleCampaignChange = (newCampaign) => {
 		if (newCampaign?.clear_image_overrides) {
-			const updatedBlocks = blocksList.map((block) => ({
-				...block,
+			const updatedTasks = taskItems.map((task) => ({
+				...task,
 				feature_image_id: null,
 				feature_image_title: '',
 			}));
-			setBlocksList(updatedBlocks);
+			setTaskItems(updatedTasks);
 			setIsDirty(true);
-			updateBlocks(updatedBlocks).catch(() => {
+			updateTasks(updatedTasks).catch(() => {
 				refetch();
 			});
 			const { clear_image_overrides: _, ...rest } = newCampaign;
@@ -267,32 +277,34 @@ export default function CampaignEditPage() {
 		handleCampaignChange({ ...campaign, title: newTitle });
 	};
 
-	// Handle block changes
-	const handleBlockUpdate = (blockId, updates) => {
-		setBlocksList((prev) =>
-			prev.map((b) => (b.id === blockId ? { ...b, ...updates } : b))
+	// Handle post task changes
+	const handleTaskUpdate = (taskId, updates) => {
+		setTaskItems((prev) =>
+			prev.map((task) => (task.id === taskId ? { ...task, ...updates } : task))
 		);
 		setIsDirty(true);
 	};
 
-	// Add new block
-	const handleAddBlock = async () => {
+	// Add new post task
+	const handleAddTask = async () => {
 		try {
-			const result = await createBlock();
-			const applyCurrentDefaults = (block) => ({
-				...block,
+			const result = await createTask();
+			const applyCurrentDefaults = (task) => ({
+				...task,
 				article_type: campaign?.article_type || 'blog_post',
-				topic: block.topic ?? '',
-				keywords: block.keywords ?? '',
+				topic: task.topic ?? '',
+				keywords: task.keywords ?? '',
+				title_override: task.title_override ?? '',
+				slug_override: task.slug_override ?? '',
 			});
-			if (result?.block) {
-				const enrichedBlock = applyCurrentDefaults(result.block);
-				setBlocksList((prev) => [enrichedBlock, ...prev]);
-				await updateBlocks([enrichedBlock]);
+			if (result?.task) {
+				const enrichedTask = applyCurrentDefaults(result.task);
+				setTaskItems((prev) => [enrichedTask, ...prev]);
+				await updateTasks([enrichedTask]);
 				return;
 			}
 			if (result?.id) {
-				const newBlock = {
+				const newTask = {
 					id: result.id,
 					status: 'pending',
 					topic: '',
@@ -302,98 +314,101 @@ export default function CampaignEditPage() {
 					research_url: '',
 					feature_image_id: null,
 					feature_image_title: '',
+					title_override: '',
+					slug_override: '',
 				};
-				const enrichedBlock = applyCurrentDefaults(newBlock);
-				setBlocksList((prev) => [enrichedBlock, ...prev]);
-				await updateBlocks([enrichedBlock]);
+				const enrichedTask = applyCurrentDefaults(newTask);
+				setTaskItems((prev) => [enrichedTask, ...prev]);
+				await updateTasks([enrichedTask]);
 			}
 		} catch (err) {
-			console.error('Failed to create block:', err);
+			console.error('Failed to create post task:', err);
 		}
 	};
 
-	// Delete block
-	const handleDeleteBlock = async (blockId) => {
+	const handleDeleteTask = async (taskId) => {
 		try {
-			await deleteBlock(blockId);
-			setBlocksList((prev) => prev.filter((b) => b.id !== blockId));
+			await deleteTask(taskId);
+			setTaskItems((prev) => prev.filter((task) => task.id !== taskId));
 		} catch (err) {
-			console.error('Failed to delete block:', err);
+			console.error('Failed to delete post task:', err);
 		}
 	};
 
-	// Duplicate block
-	const handleDuplicateBlock = async (blockId) => {
-		const original = blocksList.find((b) => b.id === blockId);
+	const handleDuplicateTask = async (taskId) => {
+		const original = taskItems.find((task) => task.id === taskId);
 		if (!original) return;
 
 		try {
-			const result = await createBlock();
+			const result = await createTask();
 			const { id: _, status: __, post_id: ___, error_message: ____, ...copyData } = original;
-			if (result?.block) {
-				const newBlock = {
-					...result.block,
+			if (result?.task) {
+				const newTask = {
+					...result.task,
 					...copyData,
 					article_type: copyData.article_type || campaign?.article_type || 'blog_post',
 					topic: copyData.topic ?? '',
 					keywords: copyData.keywords ?? '',
+					title_override: copyData.title_override ?? '',
+					slug_override: copyData.slug_override ?? '',
 				};
-				setBlocksList((prev) => [newBlock, ...prev]);
+				setTaskItems((prev) => [newTask, ...prev]);
 				setIsDirty(true);
 				return;
 			}
 			if (result?.id) {
-				const newBlock = {
+				const newTask = {
 					...copyData,
 					id: result.id,
 					status: 'pending',
 					article_type: copyData.article_type || campaign?.article_type || 'blog_post',
 					topic: copyData.topic ?? '',
 					keywords: copyData.keywords ?? '',
+					title_override: copyData.title_override ?? '',
+					slug_override: copyData.slug_override ?? '',
 				};
-				setBlocksList((prev) => [newBlock, ...prev]);
+				setTaskItems((prev) => [newTask, ...prev]);
 				setIsDirty(true);
 			}
 		} catch (err) {
-			console.error('Failed to duplicate block:', err);
+			console.error('Failed to duplicate post task:', err);
 		}
 	};
 
-	// Reset single block to pending (for retry)
-	const handleRetryBlock = async (blockId) => {
+	const handleRetryTask = async (taskId) => {
 		if (!campaign?.webhook_id) {
 			showToast('Select a webhook before retrying.', 'error');
 			return;
 		}
 
-		if (retryingBlockId) return;
-		setRetryingBlockId(getBlockIdKey(blockId));
+		if (retryingTaskId) return;
+		setRetryingTaskId(getTaskIdKey(taskId));
 
-		const nextBlocks = blocksList.map((block) =>
-			getBlockIdKey(block.id) === getBlockIdKey(blockId)
-				? { ...block, status: 'pending', error_message: null, progress: null }
-				: block
+		const nextTasks = taskItems.map((task) =>
+			getTaskIdKey(task.id) === getTaskIdKey(taskId)
+				? { ...task, status: 'pending', error_message: null, progress: null }
+				: task
 		);
 
 		try {
-			await updateBlocks(nextBlocks);
-			setBlocksList(nextBlocks);
+			await updateTasks(nextTasks);
+			setTaskItems(nextTasks);
 			showToast('Post task set to pending.', 'info');
 		} catch (err) {
 			refetch();
 			showToast(err?.message || 'Failed to reset post task.', 'error');
 		} finally {
-			setRetryingBlockId(null);
+			setRetryingTaskId(null);
 		}
 	};
 
-	const handleRetryFailedBlocks = async () => {
+	const handleRetryFailedTasks = async () => {
 		if (!campaign?.webhook_id) {
 			showToast('Select a webhook before retrying.', 'error');
 			return;
 		}
 
-		const hasFailed = blocksList.some((block) => block.status === 'failed');
+		const hasFailed = taskItems.some((task) => task.status === 'failed');
 		if (!hasFailed) {
 			showToast('No failed post tasks to retry.', 'info');
 			return;
@@ -402,15 +417,15 @@ export default function CampaignEditPage() {
 		if (retryFailedLoading) return;
 		setRetryFailedLoading(true);
 
-		const nextBlocks = blocksList.map((block) =>
-			block.status === 'failed'
-				? { ...block, status: 'pending', error_message: null, progress: null }
-				: block
+		const nextTasks = taskItems.map((task) =>
+			task.status === 'failed'
+				? { ...task, status: 'pending', error_message: null, progress: null }
+				: task
 		);
 
 		try {
-			await updateBlocks(nextBlocks);
-			setBlocksList(nextBlocks);
+			await updateTasks(nextTasks);
+			setTaskItems(nextTasks);
 			showToast('Failed post tasks set to pending.', 'info');
 		} catch (err) {
 			refetch();
@@ -420,12 +435,11 @@ export default function CampaignEditPage() {
 		}
 	};
 
-	// Import blocks
-	const handleImportBlocks = async (file) => {
+	const handleImportTasks = async (file) => {
 		if (importLoading) return;
 		setImportLoading(true);
 		try {
-			await importBlocks(file);
+			await importTasks(file);
 			refetch();
 			showToast('Post tasks imported.', 'success');
 		} catch (err) {
@@ -436,13 +450,13 @@ export default function CampaignEditPage() {
 		}
 	};
 
-	// Clear completed blocks
+	// Clear completed post tasks
 	const handleClearCompleted = async () => {
 		if (clearCompletedLoading) return;
 		setClearCompletedLoading(true);
 		try {
-			await clearCompletedBlocks();
-			setBlocksList((prev) => prev.filter((b) => b.status !== 'completed'));
+			await clearCompletedTasks();
+			setTaskItems((prev) => prev.filter((task) => task.status !== 'completed'));
 			showToast('Completed post tasks cleared.', 'success');
 		} catch (err) {
 			console.error('Failed to clear completed:', err);
@@ -454,6 +468,82 @@ export default function CampaignEditPage() {
 
 	// Save everything
 	const handleSave = async () => {
+		const validationErrors = [];
+
+		if (isBlank(campaign?.title)) {
+			validationErrors.push('Campaign title is required.');
+		}
+		if (isBlank(campaign?.article_type)) {
+			validationErrors.push('Campaign Article Type is required.');
+		}
+		if (isBlank(campaign?.language)) {
+			validationErrors.push('Campaign Language is required.');
+		}
+		if (isBlank(campaign?.tone_of_voice)) {
+			validationErrors.push('Campaign Tone of Voice is required.');
+		}
+		if (isBlank(campaign?.point_of_view)) {
+			validationErrors.push('Campaign Point of View is required.');
+		}
+		if (isBlank(campaign?.readability)) {
+			validationErrors.push('Campaign Readability is required.');
+		}
+		if (isBlank(campaign?.target_country)) {
+			validationErrors.push('Campaign Target Country is required.');
+		}
+		if (isBlank(campaign?.post_type)) {
+			validationErrors.push('Campaign Post Type is required.');
+		}
+		if (isBlank(campaign?.post_status)) {
+			validationErrors.push('Campaign Default Post Status is required.');
+		}
+		if (isBlank(campaign?.default_author_id)) {
+			validationErrors.push('Campaign Default Author is required.');
+		}
+		if (isBlank(campaign?.webhook_id)) {
+			validationErrors.push('Campaign Webhook is required.');
+		}
+
+		let contentFields = {};
+		try {
+			contentFields = campaign?.content_fields
+				? (typeof campaign.content_fields === 'string'
+					? JSON.parse(campaign.content_fields)
+					: campaign.content_fields)
+				: {};
+		} catch {
+			contentFields = {};
+		}
+
+		const customFields = Array.isArray(contentFields?.custom_fields) ? contentFields.custom_fields : [];
+		customFields.forEach((field, index) => {
+			if (isBlank(field?.meta_key)) {
+				validationErrors.push(`Custom Field ${index + 1}: Meta Key is required.`);
+			}
+			if (isBlank(field?.prompt)) {
+				validationErrors.push(`Custom Field ${index + 1}: Generation Prompt is required.`);
+			}
+			if (isBlank(field?.prompt_context)) {
+				validationErrors.push(`Custom Field ${index + 1}: Prompt Context is required.`);
+			}
+		});
+
+		taskItems.forEach((task) => {
+			const taskType = task.article_type || campaign?.article_type || 'blog_post';
+			if (taskType === 'rewrite_blog_post') {
+				if (isBlank(task.research_url)) {
+					validationErrors.push(`Task #${task.id}: Research URL is required for rewrite type.`);
+				}
+			} else if (isBlank(task.topic)) {
+				validationErrors.push(`Task #${task.id}: Topic is required.`);
+			}
+		});
+
+		if (validationErrors.length > 0) {
+			showToast(validationErrors[0], 'error');
+			return false;
+		}
+
 		if (savingAll) return;
 		setSavingAll(true);
 		try {
@@ -464,17 +554,22 @@ export default function CampaignEditPage() {
 				default_author_id: campaign.default_author_id,
 				webhook_id: campaign.webhook_id,
 				article_type: campaign.article_type,
+				tone_of_voice: campaign.tone_of_voice,
+				point_of_view: campaign.point_of_view,
+				readability: campaign.readability,
 				content_fields: campaign.content_fields,
 			});
 
-			await updateBlocks(blocksList);
+			await updateTasks(taskItems);
 			await refreshBootstrap();
 
 			setIsDirty(false);
 			showToast('Changes saved.', 'success');
+			return true;
 		} catch (err) {
 			console.error('Failed to save:', err);
 			showToast(err?.message || 'Failed to save.', 'error');
+			return false;
 		} finally {
 			setSavingAll(false);
 		}
@@ -482,7 +577,10 @@ export default function CampaignEditPage() {
 
 	const handleRun = async () => {
 		if (isDirty) {
-			await handleSave();
+			const saved = await handleSave();
+			if (!saved) {
+				return;
+			}
 		}
 
 		if (!campaign?.webhook_id) {
@@ -490,9 +588,9 @@ export default function CampaignEditPage() {
 			return;
 		}
 
-		const nextBlock = blocksList.find((block) => block.status === 'pending');
+		const nextTask = taskItems.find((task) => task.status === 'pending');
 
-		if (!nextBlock) {
+		if (!nextTask) {
 			showToast('No pending post tasks to run.', 'info');
 			return;
 		}
@@ -504,12 +602,12 @@ export default function CampaignEditPage() {
 
 		try {
 			showToast('Run starting...', 'info');
-			await runCampaign(nextBlock.id, campaign.webhook_id ?? 0);
-			setBlocksList((prev) =>
-				prev.map((block) =>
-					getBlockIdKey(block.id) === getBlockIdKey(nextBlock.id)
-						? { ...block, status: 'processing', error_message: null, progress: null }
-						: block
+			await runCampaign(nextTask.id, campaign.webhook_id ?? 0);
+			setTaskItems((prev) =>
+				prev.map((task) =>
+					getTaskIdKey(task.id) === getTaskIdKey(nextTask.id)
+						? { ...task, status: 'processing', error_message: null, progress: null }
+						: task
 				)
 			);
 
@@ -529,8 +627,8 @@ export default function CampaignEditPage() {
 		setStopLoading(true);
 		try {
 			await stopCampaignRun();
-			setBlocksList((prev) =>
-				prev.map((b) => (b.status === 'processing' ? { ...b, status: 'cancelled' } : b))
+			setTaskItems((prev) =>
+				prev.map((task) => (task.status === 'processing' ? { ...task, status: 'cancelled' } : task))
 			);
 			showToast('Run stopped.', 'info');
 		} catch (err) {
@@ -568,7 +666,7 @@ export default function CampaignEditPage() {
 		<div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
 			<div className="flex-1 min-w-0">
 				{/* Sticky header - below WP admin bar */}
-				<div className="poststation-sticky-header sticky top-8 px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+				<div className="poststation-sticky-header sticky top-8 px-4 py-3 sm:py-4 mb-4 sm:mb-6 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 					<EditableCampaignTitle
 						value={campaign.title}
 						onChange={handleTitleChange}
@@ -591,11 +689,12 @@ export default function CampaignEditPage() {
 							</Button>
 						) : (
 							<Button
+								variant="success"
 								onClick={handleRun}
 								loading={runLoading}
 								disabled={
 									runLoading ||
-									blocksList.filter((b) => b.status === 'pending').length === 0
+									taskItems.filter((task) => task.status === 'pending').length === 0
 								}
 							>
 								Run
@@ -626,17 +725,16 @@ export default function CampaignEditPage() {
 					{showSettings && (
 						<CardBody className="px-5 py-4 space-y-6">
 							<CampaignForm
-								postWork={campaign}
+								campaign={campaign}
 								onChange={handleCampaignChange}
 								webhooks={webhooksList}
 								users={users}
 							/>
 							{/* Content Fields inside same section */}
 							<div className="border-t border-gray-200">
-								<h4 className="text-lg font-medium text-gray-900 mb-1">Content Fields</h4>
-								<p className="text-sm text-gray-500 mb-4">Configure what content to generate for each post</p>
+								<h4 className="text-lg font-medium text-gray-900">Content Fields</h4>
 								<ContentFieldsEditor
-									postWork={campaign}
+									campaign={campaign}
 									onChange={handleCampaignChange}
 									taxonomies={taxonomies}
 								/>
@@ -645,23 +743,23 @@ export default function CampaignEditPage() {
 					)}
 				</Card>
 
-				{/* Blocks List */}
+				{/* Post Task List */}
 				<Card>
 					<CardBody>
-						<BlocksList
-							blocks={blocksList}
-							postWork={campaign}
-							onAddBlock={handleAddBlock}
-							onUpdateBlock={handleBlockUpdate}
-							onDeleteBlock={handleDeleteBlock}
-							onDuplicateBlock={handleDuplicateBlock}
-							onRunBlock={handleRetryBlock}
-							retryingBlockId={retryingBlockId}
-							onRetryFailedBlocks={handleRetryFailedBlocks}
+						<PostTaskList
+							tasks={taskItems}
+							campaign={campaign}
+							onAddTask={handleAddTask}
+							onUpdateTask={handleTaskUpdate}
+							onDeleteTask={handleDeleteTask}
+							onDuplicateTask={handleDuplicateTask}
+							onRunTask={handleRetryTask}
+							retryingTaskId={retryingTaskId}
+							onRetryFailedTasks={handleRetryFailedTasks}
 							retryFailedLoading={retryFailedLoading}
-							onImportBlocks={handleImportBlocks}
+							onImportTasks={handleImportTasks}
 							onClearCompleted={handleClearCompleted}
-							loading={creatingBlock}
+							loading={creatingTask}
 							importLoading={importLoading}
 							clearCompletedLoading={clearCompletedLoading}
 						/>

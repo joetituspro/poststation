@@ -48,6 +48,7 @@ export default function ModelSelect({
 	placeholder = 'Select OpenRouter model...',
 	className = '',
 	disabled = false,
+	required = false,
 }) {
 	const [models, setModels] = useState(() => getBootstrapOpenRouterModels());
 	const [isLoading, setIsLoading] = useState(false);
@@ -113,7 +114,10 @@ export default function ModelSelect({
 		<div className={className}>
 			<div className="flex items-center justify-between mb-1">
 				<label className="flex items-center text-sm font-medium text-gray-700">
-					<span>{label}</span>
+					<span>
+						{label}
+						{required && <span className="text-red-600 ml-0.5">*</span>}
+					</span>
 					{tooltip && <Tooltip content={tooltip} />}
 				</label>
 				<button

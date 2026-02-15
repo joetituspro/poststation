@@ -4,9 +4,8 @@ namespace PostStation\Models;
 
 class PostTask
 {
-	public const DB_VERSION = '3.0';
+	public const DB_VERSION = '3.3';
 	protected const TABLE_NAME = 'poststation_posttasks';
-	private const LEGACY_TABLE_NAME = 'poststation_postblocks';
 
 	public static function get_table_name(): string
 	{
@@ -18,12 +17,7 @@ class PostTask
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		$legacy_table_name = $wpdb->prefix . self::LEGACY_TABLE_NAME;
 		$tables_created_or_updated = false;
-
-		if (self::table_exists($legacy_table_name) && !self::table_exists($table_name)) {
-			$wpdb->query("RENAME TABLE {$legacy_table_name} TO {$table_name}");
-		}
 
 		$sql = "CREATE TABLE $table_name (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -33,6 +27,8 @@ class PostTask
 			topic text,
 			keywords text,
 			article_type varchar(50) NOT NULL DEFAULT 'blog_post',
+			title_override text DEFAULT NULL,
+			slug_override text DEFAULT NULL,
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
 			feature_image_title text DEFAULT NULL,
 			run_started_at datetime DEFAULT NULL,
@@ -49,17 +45,7 @@ class PostTask
 			KEY feature_image_id (feature_image_id)
 		) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
-
-		self::migrate_legacy_columns($table_name);
-		self::drop_legacy_columns($table_name);
 		return (bool) $tables_created_or_updated;
-	}
-
-	private static function table_exists(string $table_name): bool
-	{
-		global $wpdb;
-		$result = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_name));
-		return is_string($result) && $result === $table_name;
 	}
 
 	private static function check_and_create_table($table_name, $sql): bool
@@ -69,28 +55,6 @@ class PostTask
 		return !is_wp_error($result) && !empty($result);
 	}
 
-	private static function migrate_legacy_columns(string $table_name): void
-	{
-		global $wpdb;
-		$campaign_id_exists = $wpdb->get_var("SHOW COLUMNS FROM {$table_name} LIKE 'campaign_id'");
-		$postwork_id_exists = $wpdb->get_var("SHOW COLUMNS FROM {$table_name} LIKE 'postwork_id'");
-		if (!$campaign_id_exists && $postwork_id_exists) {
-			$wpdb->query("ALTER TABLE {$table_name} CHANGE postwork_id campaign_id bigint(20) unsigned NOT NULL");
-			$wpdb->query("ALTER TABLE {$table_name} ADD KEY campaign_id (campaign_id)");
-		}
-	}
-
-	private static function drop_legacy_columns(string $table_name): void
-	{
-		global $wpdb;
-		$columns = ['tone_of_voice', 'point_of_view', 'keyword', 'instructions', 'taxonomies', 'post_fields'];
-		foreach ($columns as $column) {
-			$exists = $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column));
-			if ($exists) {
-				$wpdb->query("ALTER TABLE {$table_name} DROP COLUMN {$column}");
-			}
-		}
-	}
 
 	public static function drop_table(): void
 	{
@@ -131,6 +95,8 @@ class PostTask
 			'topic' => '',
 			'keywords' => '',
 			'article_type' => 'blog_post',
+			'title_override' => '',
+			'slug_override' => '',
 			'feature_image_id' => null,
 			'feature_image_title' => '{{title}}',
 			'status' => 'pending',

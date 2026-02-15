@@ -47,6 +47,21 @@ class PostTaskAjaxHandler
 		}
 
 		foreach ($tasks as $task) {
+			$task_id = (int) ($task['id'] ?? 0);
+			$task_type = sanitize_text_field((string) ($task['article_type'] ?? 'blog_post'));
+			if ($task_type === 'rewrite_blog_post') {
+				if ($this->is_blank($task['research_url'] ?? null)) {
+					wp_send_json_error(['message' => sprintf('Task #%d: Research URL is required for rewrite type.', $task_id)]);
+				}
+				continue;
+			}
+
+			if ($this->is_blank($task['topic'] ?? null)) {
+				wp_send_json_error(['message' => sprintf('Task #%d: Topic is required.', $task_id)]);
+			}
+		}
+
+		foreach ($tasks as $task) {
 			$id = (int) ($task['id'] ?? 0);
 			unset($task['id']);
 			PostTask::update($id, $task);
@@ -115,5 +130,10 @@ class PostTaskAjaxHandler
 		}
 
 		wp_send_json_success();
+	}
+
+	private function is_blank($value): bool
+	{
+		return trim((string) ($value ?? '')) === '';
 	}
 }

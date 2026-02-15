@@ -14,7 +14,39 @@ const ARTICLE_TYPE_OPTIONS = [
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
 
-export default function CampaignForm({ postWork, onChange, webhooks = [], users = [] }) {
+const TONE_OPTIONS = [
+	{ value: 'none', label: 'None' },
+	{ value: 'friendly', label: 'Friendly' },
+	{ value: 'professional', label: 'Professional' },
+	{ value: 'informational', label: 'Informational' },
+	{ value: 'transactional', label: 'Transactional' },
+	{ value: 'inspirational', label: 'Inspirational' },
+	{ value: 'neutral', label: 'Neutral' },
+	{ value: 'witty', label: 'Witty' },
+	{ value: 'casual', label: 'Casual' },
+	{ value: 'authoritative', label: 'Authoritative' },
+	{ value: 'encouraging', label: 'Encouraging' },
+	{ value: 'persuasive', label: 'Persuasive' },
+	{ value: 'poetic', label: 'Poetic' },
+];
+
+const POV_OPTIONS = [
+	{ value: 'none', label: 'None' },
+	{ value: 'first_person_singular', label: 'First Person Singular (I/me)' },
+	{ value: 'first_person_plural', label: 'First Person Plural (we/us)' },
+	{ value: 'second_person', label: 'Second Person (you)' },
+	{ value: 'third_person', label: 'Third Person (he/she/they)' },
+];
+
+const READABILITY_OPTIONS = [
+	{ value: 'grade_4', label: '4th Grade (Very Easy)' },
+	{ value: 'grade_6', label: '6th Grade (Easy)' },
+	{ value: 'grade_8', label: '8th Grade (Plain English/Average)' },
+	{ value: 'grade_10_12', label: '10th–12th Grade (High School)' },
+	{ value: 'college_graduate', label: 'College Graduate/Professional (Difficult)' },
+];
+
+export default function CampaignForm({ campaign, onChange, webhooks = [], users = [] }) {
 	const postTypes = getPostTypes();
 	const languages = getLanguages();
 	const countries = getCountries();
@@ -25,69 +57,103 @@ export default function CampaignForm({ postWork, onChange, webhooks = [], users 
 	const userOptions = users.map((u) => ({ value: u.id.toString(), label: u.display_name }));
 
 	const handleChange = (field, value) => {
-		onChange({ ...postWork, [field]: value });
+		onChange({ ...campaign, [field]: value });
 	};
 
 	return (
 		<div className="space-y-4">
 			{/* Main settings grid - no title (edited in header) */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
 				<Select
 					label="Article Type"
 					tooltip="<strong>Article Type</strong> sets the overall writing style and structure used for this campaign."
 					options={ARTICLE_TYPE_OPTIONS}
-					value={postWork.article_type || 'blog_post'}
+					value={campaign.article_type || 'blog_post'}
 					onChange={(e) => handleChange('article_type', e.target.value)}
+					required
 				/>
 
 				<Select
 					label="Language"
 					tooltip="Primary language for generated content and taxonomy suggestions."
 					options={languageOptions}
-					value={postWork.language || 'en'}
+					value={campaign.language || 'en'}
 					onChange={(e) => handleChange('language', e.target.value)}
+					required
+				/>
+
+				<Select
+					label="Tone of Voice"
+					tooltip="Global tone used for body generation across tasks."
+					options={TONE_OPTIONS}
+					value={campaign.tone_of_voice || 'none'}
+					onChange={(e) => handleChange('tone_of_voice', e.target.value)}
+					required
+				/>
+
+				<Select
+					label="Point of View"
+					tooltip="Global narrative perspective used for generated writing."
+					options={POV_OPTIONS}
+					value={campaign.point_of_view || 'none'}
+					onChange={(e) => handleChange('point_of_view', e.target.value)}
+					required
+				/>
+
+				<Select
+					label="Readability"
+					tooltip="Reading complexity level target for generated text."
+					options={READABILITY_OPTIONS}
+					value={campaign.readability || 'grade_8'}
+					onChange={(e) => handleChange('readability', e.target.value)}
+					required
 				/>
 
 				<Select
 					label="Target Country"
 					tooltip="Preferred country or region for localization. Default is International."
 					options={countryOptions}
-					value={postWork.target_country || 'international'}
+					value={campaign.target_country || 'international'}
 					onChange={(e) => handleChange('target_country', e.target.value)}
+					required
 				/>
 
 				<Select
 					label="Post Type"
 					tooltip="WordPress post type that will be created (e.g., Post, Page, or a custom type)."
 					options={postTypeOptions}
-					value={postWork.post_type || 'post'}
+					value={campaign.post_type || 'post'}
 					onChange={(e) => handleChange('post_type', e.target.value)}
+					required
 				/>
 
 				<Select
 					label="Default Post Status"
 					tooltip="Status applied when publishing (Draft, Pending, Published, or Private)."
 					options={STATUS_OPTIONS}
-					value={postWork.post_status || 'pending'}
+					value={campaign.post_status || 'pending'}
 					onChange={(e) => handleChange('post_status', e.target.value)}
+					required
 				/>
 
 				<Select
 					label="Default Author"
 					tooltip="Default author assigned to created posts."
 					options={userOptions}
-					value={postWork.default_author_id?.toString() || ''}
+					value={campaign.default_author_id?.toString() || ''}
 					onChange={(e) => handleChange('default_author_id', e.target.value)}
 					placeholder="Select author..."
+					required
 				/>
 
 				<Select
 					label="Webhook"
 					tooltip="Webhook endpoint that receives the generation payload for this campaign."
 					options={webhookOptions}
-					value={postWork.webhook_id?.toString() || ''}
+					value={campaign.webhook_id?.toString() || ''}
 					onChange={(e) => handleChange('webhook_id', e.target.value)}
 					placeholder="Select webhook..."
+					required
 				/>
 			</div>
 		</div>

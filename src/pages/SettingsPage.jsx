@@ -97,7 +97,7 @@ export default function SettingsPage() {
 									placeholder="Enter API key"
 									className="flex-1"
 								/>
-								<Button variant="secondary" onClick={handleCopy}>
+								<Button variant="secondary" size="sm" onClick={handleCopy}>
 									{copied ? 'Copied!' : 'Copy'}
 								</Button>
 							</div>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Input, Select, Tooltip } from '../common';
 
 const ARTICLE_TYPE_OPTIONS = [
@@ -6,23 +7,59 @@ const ARTICLE_TYPE_OPTIONS = [
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
 
-export default function BlockForm({ block, postWork, onChange }) {
-	const isProcessing = block.status === 'processing';
+export default function PostTaskForm({ task, campaign, onChange }) {
+	const isProcessing = task.status === 'processing';
+	const [featuredImageUrl, setFeaturedImageUrl] = useState('');
 
 	const handleChange = (field, value) => {
 		if (isProcessing) return;
 		onChange({ [field]: value });
 	};
 
-	const resolvedArticleType = block.article_type || postWork?.article_type || 'blog_post';
-	const contentFields = postWork?.content_fields
-		? (typeof postWork.content_fields === 'string'
-			? JSON.parse(postWork.content_fields)
-			: postWork.content_fields)
+	const resolvedArticleType = task.article_type || campaign?.article_type || 'blog_post';
+	const contentFields = campaign?.content_fields
+		? (typeof campaign.content_fields === 'string'
+			? JSON.parse(campaign.content_fields)
+			: campaign.content_fields)
 		: {};
 	const imageConfig = contentFields?.image || null;
 	const imageMode = imageConfig?.mode || 'generate_from_article';
 	const showImageTitleOverride = Boolean(imageConfig?.enabled && imageMode === 'generate_from_dt');
+
+	useEffect(() => {
+		let mounted = true;
+
+		const resolveAttachment = async () => {
+			const attachmentId = Number(task.feature_image_id);
+			if (!attachmentId || !window.wp?.media?.attachment) {
+				if (mounted) setFeaturedImageUrl('');
+				return;
+			}
+
+			try {
+				const attachment = window.wp.media.attachment(attachmentId);
+				await attachment.fetch();
+				const attrs = attachment.attributes || {};
+				const resolvedUrl =
+					attrs?.sizes?.thumbnail?.url ||
+					attrs?.sizes?.medium?.url ||
+					attrs?.url ||
+					'';
+				if (mounted) {
+					setFeaturedImageUrl(resolvedUrl);
+				}
+			} catch {
+				if (mounted) {
+					setFeaturedImageUrl('');
+				}
+			}
+		};
+
+		resolveAttachment();
+		return () => {
+			mounted = false;
+		};
+	}, [task.feature_image_id]);
 
 	const handleTopicChange = (value) => {
 		handleChange('topic', value);
@@ -53,7 +90,7 @@ export default function BlockForm({ block, postWork, onChange }) {
 					<Input
 						label="Topic"
 						tooltip="Main topic used for generation and placeholders."
-						value={block.topic ?? ''}
+						value={task.topic ?? ''}
 						onChange={(e) => handleTopicChange(e.target.value)}
 						placeholder="Main topic for this post task"
 						required
@@ -63,7 +100,7 @@ export default function BlockForm({ block, postWork, onChange }) {
 					<Input
 						label="Research URL"
 						tooltip="Source URL for rewrite mode. Content is based on this article."
-						value={block.research_url || ''}
+						value={task.research_url || ''}
 						onChange={(e) => handleChange('research_url', e.target.value)}
 						placeholder="https://example.com/article"
 						required
@@ -77,9 +114,29 @@ export default function BlockForm({ block, postWork, onChange }) {
 				<Input
 					label="Keywords (Optional, max 5)"
 					tooltip="Comma-separated list. The first keyword is treated as primary."
-					value={block.keywords || ''}
+					value={task.keywords || ''}
 					onChange={(e) => handleKeywordsChange(e.target.value)}
 					placeholder="keyword one, keyword two"
+					disabled={isProcessing}
+				/>
+			</div>
+
+			{/* Title + Slug Overrides */}
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+				<Input
+					label="Title Override (Optional)"
+					tooltip="If set, campaign title generation is disabled for this task and this value is sent to the webhook."
+					value={task.title_override ?? ''}
+					onChange={(e) => handleChange('title_override', e.target.value)}
+					placeholder="Manual title for this post task"
+					disabled={isProcessing}
+				/>
+				<Input
+					label="Slug Override (Optional)"
+					tooltip="If set, campaign slug generation is disabled for this task and this value is sent to the webhook."
+					value={task.slug_override ?? ''}
+					onChange={(e) => handleChange('slug_override', e.target.value)}
+					placeholder="manual-post-slug"
 					disabled={isProcessing}
 				/>
 			</div>
@@ -90,7 +147,7 @@ export default function BlockForm({ block, postWork, onChange }) {
 					<Input
 						label="Featured Image Title (Override)"
 						tooltip="Overrides the title used when generating the featured image."
-						value={block.feature_image_title || ''}
+						value={task.feature_image_title || ''}
 						onChange={(e) => handleChange('feature_image_title', e.target.value)}
 						placeholder="Leave empty to use generated title"
 						disabled={isProcessing}
@@ -101,9 +158,20 @@ export default function BlockForm({ block, postWork, onChange }) {
 						<span>Featured Image (Override)</span>
 						<Tooltip content="Select a specific image to use instead of the generated image." />
 					</label>
-					{block.feature_image_id ? (
-						<div className="flex items-center gap-2">
-							<span className="text-sm text-gray-600">Image ID: {block.feature_image_id}</span>
+					{task.feature_image_id ? (
+						<div className="flex items-center gap-3">
+							{featuredImageUrl ? (
+								<img
+									src={featuredImageUrl}
+									alt="Featured override preview"
+									className="w-12 h-12 rounded object-cover border border-gray-200"
+								/>
+							) : (
+								<div className="w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-500">
+									#{task.feature_image_id}
+								</div>
+							)}
+							<span className="text-sm text-gray-600">Image ID: {task.feature_image_id}</span>
 							{!isProcessing && (
 								<button
 									type="button"

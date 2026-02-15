@@ -3,8 +3,8 @@ import { ToastProvider } from './components/common';
 import AppShell from './components/layout/AppShell';
 import { UnsavedChangesProvider } from './context/UnsavedChangesContext';
 import SettingsPage from './pages/SettingsPage';
-import CampaignsPage from './pages/PostWorksPage';
-import CampaignEditPage from './pages/PostWorkEditPage';
+import CampaignsPage from './pages/CampaignsPage';
+import CampaignEditPage from './pages/CampaignEditPage';
 import WebhooksPage from './pages/WebhooksPage';
 import WebhookFormPage from './pages/WebhookFormPage';
 

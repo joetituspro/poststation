@@ -13,6 +13,7 @@
 	margin-right: 0;
 	margin-top: -10px;
 	overflow: visible;
+	--poststation-top-offset: 32px;
 	font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 	color: #111827;
 	background: #f9fafb;
@@ -46,6 +47,14 @@
 #poststation-app textarea {
 	font: inherit;
 	color: inherit;
+}
+
+#poststation-app button {
+	cursor: pointer;
+}
+
+#poststation-app button:disabled {
+	cursor: not-allowed;
 }
 
 /* App-scoped form controls to avoid WordPress admin style bleed */
@@ -93,10 +102,22 @@
 	}
 }
 
+@media (min-width: 1024px) {
+	#poststation-app .poststation-desktop-sidebar {
+		position: sticky;
+		align-self: flex-start;
+		top: var(--poststation-top-offset, 32px);
+		height: calc(100vh - var(--poststation-top-offset, 32px));
+		left: auto;
+		bottom: auto;
+		transform: none;
+	}
+}
+
 /* Sticky header on Campaign edit - below WP admin bar */
 .poststation-sticky-header {
 	position: sticky;
-	top: 32px;
+	top: var(--poststation-top-offset, 32px);
 	z-index: 99990;
 	width: 100%;
 }

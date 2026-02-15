@@ -46,7 +46,7 @@ class Bootstrap
 
 	private function check_db_version(): void
 	{
-		$installed_version = get_option('poststation_posttask_db_version', get_option('poststation_postblock_db_version', '0.0.0'));
+		$installed_version = get_option('poststation_posttask_db_version', '0.0.0');
 		if (version_compare($installed_version, PostTask::DB_VERSION, '<')) {
 			// Defer to init so $wp_rewrite is available when registering endpoints
 			add_action('init', [$this, 'activate'], 1);
@@ -104,16 +104,9 @@ class Bootstrap
 		// Remove options
 		delete_option('poststation_api_key');
 		delete_option('poststation_posttask_db_version');
-		delete_option('poststation_postblock_db_version');
 	}
 
 	public function register_assets(): void
 	{
-		wp_register_style(
-			'poststation-admin',
-			POSTSTATION_URL . 'assets/css/admin.css',
-			[],
-			filemtime(POSTSTATION_PATH . 'assets/css/admin.css')
-		);
 	}
 }

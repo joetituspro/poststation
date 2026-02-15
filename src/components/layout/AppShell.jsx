@@ -97,6 +97,57 @@ export default function AppShell({ children }) {
 		};
 	}, [isDirty]);
 
+	useEffect(() => {
+		const appRoot = document.getElementById('poststation-app');
+		if (!appRoot) return undefined;
+
+		const updateTopOffset = () => {
+			const adminBar = document.getElementById('wpadminbar');
+			const adminBarBottom = adminBar ? Math.max(0, adminBar.getBoundingClientRect().bottom) : 0;
+
+			const noticeSelectors = [
+				'#wpbody-content .notice',
+				'#wpbody-content .update-nag',
+				'#wpbody-content .error',
+				'#wpbody-content .updated',
+			];
+
+			let noticeBottom = adminBarBottom;
+			document.querySelectorAll(noticeSelectors.join(',')).forEach((node) => {
+				if (!(node instanceof HTMLElement)) return;
+				if (node.closest('#poststation-app')) return;
+				if (node.offsetParent === null) return;
+
+				const rect = node.getBoundingClientRect();
+				if (rect.height <= 0 || rect.bottom <= adminBarBottom) return;
+				noticeBottom = Math.max(noticeBottom, rect.bottom);
+			});
+
+			const topOffset = Math.max(adminBarBottom, noticeBottom);
+			appRoot.style.setProperty('--poststation-top-offset', `${Math.round(topOffset)}px`);
+		};
+
+		const rafUpdate = () => window.requestAnimationFrame(updateTopOffset);
+		rafUpdate();
+
+		window.addEventListener('resize', rafUpdate, { passive: true });
+		window.addEventListener('scroll', rafUpdate, { passive: true });
+
+		const observer = new MutationObserver(rafUpdate);
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: ['class', 'style'],
+		});
+
+		return () => {
+			window.removeEventListener('resize', rafUpdate);
+			window.removeEventListener('scroll', rafUpdate);
+			observer.disconnect();
+		};
+	}, []);
+
 	return (
 		<div className="min-h-screen bg-gray-50 flex">
 			{isSidebarOpen && (
@@ -109,9 +160,9 @@ export default function AppShell({ children }) {
 			)}
 			{/* Sidebar */}
 			<aside
-				className={`fixed inset-y-0 left-0 z-99980 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 ease-out poststation-mobile-sidebar ${
+				className={`poststation-desktop-sidebar fixed inset-y-0 left-0 z-99980 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 ease-out poststation-mobile-sidebar ${
 					isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-				} lg:static lg:translate-x-0`}
+				} lg:translate-x-0`}
 			>
 				{/* Logo */}
 				<div className="h-16 flex items-center px-6 border-b border-gray-200">

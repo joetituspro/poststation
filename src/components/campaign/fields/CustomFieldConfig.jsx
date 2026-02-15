@@ -21,6 +21,7 @@ export default function CustomFieldConfig({ config, onChange }) {
 				value={config.meta_key || ''}
 				onChange={(e) => handleChange('meta_key', e.target.value)}
 				placeholder="e.g., _seo_description, custom_meta_key"
+				required
 			/>
 
 			<Textarea
@@ -30,6 +31,7 @@ export default function CustomFieldConfig({ config, onChange }) {
 				onChange={(e) => handleChange('prompt', e.target.value)}
 				placeholder="Instructions for generating this field's value..."
 				rows={2}
+				required
 			/>
 
 			<Select
@@ -38,6 +40,7 @@ export default function CustomFieldConfig({ config, onChange }) {
 				options={promptContextOptions}
 				value={config.prompt_context || 'article_and_topic'}
 				onChange={(e) => handleChange('prompt_context', e.target.value)}
+				required
 			/>
 
 			<ModelSelect

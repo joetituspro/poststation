@@ -5,7 +5,6 @@ namespace PostStation\Models;
 class Campaign
 {
 	private const TABLE_NAME = 'poststation_campaigns';
-	private const LEGACY_TABLE_NAME = 'poststation_postworks';
 
 	public static function get_table_name(): string
 	{
@@ -17,12 +16,7 @@ class Campaign
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		$legacy_table_name = $wpdb->prefix . self::LEGACY_TABLE_NAME;
 		$tables_created_or_updated = false;
-
-		if (self::table_exists($legacy_table_name) && !self::table_exists($table_name)) {
-			$wpdb->query("RENAME TABLE {$legacy_table_name} TO {$table_name}");
-		}
 
 		$sql = "CREATE TABLE $table_name (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -30,6 +24,9 @@ class Campaign
             author_id bigint(20) unsigned NOT NULL,
             webhook_id bigint(20) unsigned DEFAULT NULL,
             article_type varchar(50) NOT NULL DEFAULT 'blog_post',
+			tone_of_voice varchar(50) NOT NULL DEFAULT 'none',
+			point_of_view varchar(50) NOT NULL DEFAULT 'none',
+			readability varchar(50) NOT NULL DEFAULT 'grade_8',
 			language varchar(20) NOT NULL DEFAULT 'en',
 			target_country varchar(20) NOT NULL DEFAULT 'international',
             post_type varchar(20) NOT NULL DEFAULT 'post',
@@ -44,27 +41,7 @@ class Campaign
             KEY default_author_id (default_author_id)
             ) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
-		self::drop_legacy_columns($table_name);
 		return (bool) $tables_created_or_updated;
-	}
-
-	private static function table_exists(string $table_name): bool
-	{
-		global $wpdb;
-		$result = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_name));
-		return is_string($result) && $result === $table_name;
-	}
-
-	private static function drop_legacy_columns(string $table_name): void
-	{
-		global $wpdb;
-		$columns = ['tone_of_voice', 'point_of_view', 'enabled_taxonomies', 'default_terms', 'post_fields', 'image_config', 'instructions'];
-		foreach ($columns as $column) {
-			$exists = $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", $column));
-			if ($exists) {
-				$wpdb->query("ALTER TABLE {$table_name} DROP COLUMN {$column}");
-			}
-		}
 	}
 
 	private static function check_and_create_table($table_name, $sql): bool
@@ -98,6 +75,9 @@ class Campaign
 			'author_id' => get_current_user_id(),
 			'webhook_id' => null,
 			'article_type' => 'blog_post',
+			'tone_of_voice' => 'none',
+			'point_of_view' => 'none',
+			'readability' => 'grade_8',
 			'language' => 'en',
 			'target_country' => 'international',
 			'post_type' => 'post',
@@ -122,7 +102,7 @@ class Campaign
 				'model_id' => $default_text_model,
 			],
 			'slug' => [
-				'enabled' => false,
+				'enabled' => true,
 				'mode' => 'generate_from_title',
 				'prompt' => '',
 				'model_id' => $default_text_model,
@@ -134,8 +114,6 @@ class Campaign
 				'model_id' => $default_text_model,
 				'media_prompt' => '',
 				'image_model_id' => $default_image_model,
-				'tone_of_voice' => 'none',
-				'point_of_view' => 'none',
 				'introductory_hook_brief' => '',
 				'key_takeaways' => 'yes',
 				'conclusion' => 'yes',
@@ -192,7 +170,7 @@ class Campaign
 		$update_data = [];
 		$format = [];
 
-		foreach (['title' => '%s', 'webhook_id' => '%d', 'article_type' => '%s', 'language' => '%s', 'target_country' => '%s', 'post_type' => '%s', 'post_status' => '%s', 'default_author_id' => '%d', 'content_fields' => '%s'] as $key => $type) {
+		foreach (['title' => '%s', 'webhook_id' => '%d', 'article_type' => '%s', 'tone_of_voice' => '%s', 'point_of_view' => '%s', 'readability' => '%s', 'language' => '%s', 'target_country' => '%s', 'post_type' => '%s', 'post_status' => '%s', 'default_author_id' => '%d', 'content_fields' => '%s'] as $key => $type) {
 			if (isset($data[$key])) {
 				$update_data[$key] = $data[$key];
 				$format[] = $type;

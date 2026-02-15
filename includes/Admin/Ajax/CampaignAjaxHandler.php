@@ -86,22 +86,84 @@ class CampaignAjaxHandler
 			wp_send_json_error(['message' => 'Invalid payload']);
 		}
 
-		$success = Campaign::update($campaign_id, [
+		$campaign_payload = [
 			'title' => $title,
 			'webhook_id' => (int) ($_POST['webhook_id'] ?? 0) ?: null,
 			'article_type' => sanitize_text_field($_POST['article_type'] ?? 'blog_post'),
+			'tone_of_voice' => sanitize_text_field($_POST['tone_of_voice'] ?? 'none'),
+			'point_of_view' => sanitize_text_field($_POST['point_of_view'] ?? 'none'),
+			'readability' => sanitize_text_field($_POST['readability'] ?? 'grade_8'),
 			'language' => sanitize_text_field($_POST['language'] ?? 'en'),
 			'target_country' => sanitize_text_field($_POST['target_country'] ?? 'international'),
 			'post_type' => sanitize_text_field($_POST['post_type'] ?? 'post'),
 			'post_status' => sanitize_text_field($_POST['post_status'] ?? 'pending'),
 			'default_author_id' => (int) ($_POST['default_author_id'] ?? 0) ?: get_current_user_id(),
 			'content_fields' => wp_unslash($_POST['content_fields'] ?? '{}'),
-		]);
+		];
+
+		$validation_error = $this->validate_campaign_payload($campaign_payload);
+		if ($validation_error !== null) {
+			wp_send_json_error(['message' => $validation_error]);
+		}
+
+		$success = Campaign::update($campaign_id, $campaign_payload);
 
 		if (!$success) {
 			wp_send_json_error(['message' => 'Failed to update campaign']);
 		}
 		wp_send_json_success();
+	}
+
+	private function validate_campaign_payload(array $payload): ?string
+	{
+		$required_fields = [
+			'title' => 'Campaign title is required.',
+			'article_type' => 'Campaign Article Type is required.',
+			'tone_of_voice' => 'Campaign Tone of Voice is required.',
+			'point_of_view' => 'Campaign Point of View is required.',
+			'readability' => 'Campaign Readability is required.',
+			'language' => 'Campaign Language is required.',
+			'target_country' => 'Campaign Target Country is required.',
+			'post_type' => 'Campaign Post Type is required.',
+			'post_status' => 'Campaign Default Post Status is required.',
+			'default_author_id' => 'Campaign Default Author is required.',
+			'webhook_id' => 'Campaign Webhook is required.',
+		];
+
+		foreach ($required_fields as $field => $message) {
+			if ($this->is_blank($payload[$field] ?? null)) {
+				return $message;
+			}
+		}
+
+		$content_fields = json_decode((string) ($payload['content_fields'] ?? '{}'), true);
+		if (!is_array($content_fields)) {
+			return 'Invalid content fields payload.';
+		}
+
+		$custom_fields = is_array($content_fields['custom_fields'] ?? null) ? $content_fields['custom_fields'] : [];
+		foreach ($custom_fields as $index => $custom_field) {
+			if (!is_array($custom_field)) {
+				continue;
+			}
+			$position = (int) $index + 1;
+			if ($this->is_blank($custom_field['meta_key'] ?? null)) {
+				return sprintf('Custom Field %d: Meta Key is required.', $position);
+			}
+			if ($this->is_blank($custom_field['prompt'] ?? null)) {
+				return sprintf('Custom Field %d: Generation Prompt is required.', $position);
+			}
+			if ($this->is_blank($custom_field['prompt_context'] ?? null)) {
+				return sprintf('Custom Field %d: Prompt Context is required.', $position);
+			}
+		}
+
+		return null;
+	}
+
+	private function is_blank($value): bool
+	{
+		return trim((string) ($value ?? '')) === '';
 	}
 
 	public function delete_campaign(): void

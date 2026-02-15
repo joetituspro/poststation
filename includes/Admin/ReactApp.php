@@ -25,6 +25,7 @@ class ReactApp
 
 		add_action('admin_menu', [$this, 'register_menu']);
 		add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+		add_action('admin_head', [$this, 'hide_wp_notices']);
 
 		add_action('wp_ajax_poststation_get_campaigns', [$this->campaign_handler, 'get_campaigns']);
 		add_action('wp_ajax_poststation_get_campaign', [$this->campaign_handler, 'get_campaign']);
@@ -119,6 +120,22 @@ class ReactApp
 			'current_user_id' => get_current_user_id(),
 			'bootstrap' => $bootstrap_data,
 		]);
+	}
+
+	public function hide_wp_notices(): void
+	{
+		$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+		if (!$screen || $screen->id !== 'toplevel_page_poststation-app') {
+			return;
+		}
+		echo '<style>
+			#wpbody-content > .notice,
+			#wpbody-content > .update-nag,
+			#wpbody-content > .error,
+			#wpbody-content > .updated {
+				display: none !important;
+			}
+		</style>';
 	}
 
 	public function ajax_get_bootstrap(): void
