@@ -18,7 +18,7 @@ class PostTaskAjaxHandler
 
 		$campaign_id = (int) ($_POST['campaign_id'] ?? 0);
 		$campaign = Campaign::get_by_id($campaign_id);
-		$article_type = $campaign['article_type'] ?? 'blog_post';
+		$article_type = $campaign['article_type'] ?? 'default';
 		$task_id = PostTask::create([
 			'campaign_id' => $campaign_id,
 			'article_type' => $article_type,
@@ -48,7 +48,7 @@ class PostTaskAjaxHandler
 
 		foreach ($tasks as $task) {
 			$task_id = (int) ($task['id'] ?? 0);
-			$task_type = sanitize_text_field((string) ($task['article_type'] ?? 'blog_post'));
+			$task_type = sanitize_text_field((string) ($task['article_type'] ?? 'default'));
 			if ($task_type === 'rewrite_blog_post') {
 				if ($this->is_blank($task['research_url'] ?? null)) {
 					wp_send_json_error(['message' => sprintf('Task #%d: Research URL is required for rewrite type.', $task_id)]);

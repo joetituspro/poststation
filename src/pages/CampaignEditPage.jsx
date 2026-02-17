@@ -147,7 +147,7 @@ export default function CampaignEditPage() {
 	// Initialize state from fetched data
 	useEffect(() => {
 		if (data) {
-			const articleType = data.campaign?.article_type || 'blog_post';
+			const articleType = data.campaign?.article_type || 'default';
 			const language = data.campaign?.language || 'en';
 			const targetCountry = data.campaign?.target_country || 'international';
 			const toneOfVoice = data.campaign?.tone_of_voice || 'none';
@@ -318,7 +318,7 @@ export default function CampaignEditPage() {
 			const result = await createTask();
 			const applyCurrentDefaults = (task) => ({
 				...task,
-				article_type: campaign?.article_type || 'blog_post',
+				article_type: campaign?.article_type || 'default',
 				topic: task.topic ?? '',
 				keywords: task.keywords ?? '',
 				title_override: task.title_override ?? '',
@@ -336,7 +336,7 @@ export default function CampaignEditPage() {
 					status: 'pending',
 					topic: '',
 					keywords: '',
-					article_type: campaign?.article_type || 'blog_post',
+					article_type: campaign?.article_type || 'default',
 					article_url: '',
 					research_url: '',
 					feature_image_id: null,
@@ -373,7 +373,7 @@ export default function CampaignEditPage() {
 				const newTask = {
 					...result.task,
 					...copyData,
-					article_type: copyData.article_type || campaign?.article_type || 'blog_post',
+					article_type: copyData.article_type || campaign?.article_type || 'default',
 					topic: copyData.topic ?? '',
 					keywords: copyData.keywords ?? '',
 					title_override: copyData.title_override ?? '',
@@ -388,7 +388,7 @@ export default function CampaignEditPage() {
 					...copyData,
 					id: result.id,
 					status: 'pending',
-					article_type: copyData.article_type || campaign?.article_type || 'blog_post',
+					article_type: copyData.article_type || campaign?.article_type || 'default',
 					topic: copyData.topic ?? '',
 					keywords: copyData.keywords ?? '',
 					title_override: copyData.title_override ?? '',
@@ -556,13 +556,18 @@ export default function CampaignEditPage() {
 		});
 
 		taskItems.forEach((task) => {
-			const taskType = task.article_type || campaign?.article_type || 'blog_post';
+			const taskType = task.article_type || campaign?.article_type || 'default';
 			if (taskType === 'rewrite_blog_post') {
 				if (isBlank(task.research_url)) {
 					validationErrors.push(`Task #${task.id}: Research URL is required for rewrite type.`);
 				}
 			} else if (isBlank(task.topic)) {
 				validationErrors.push(`Task #${task.id}: Topic is required.`);
+			}
+
+			// If manually title is provided, slug cannot be empty
+			if (!isBlank(task.title_override) && isBlank(task.slug_override)) {
+				validationErrors.push(`Task #${task.id}: Slug Override is required when a Title Override is provided.`);
 			}
 		});
 

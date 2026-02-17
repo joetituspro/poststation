@@ -9,7 +9,7 @@ const STATUS_OPTIONS = [
 ];
 
 const ARTICLE_TYPE_OPTIONS = [
-	{ value: 'blog_post', label: 'Blog Post' },
+	{ value: 'default', label: 'Default' },
 	{ value: 'listicle', label: 'Listicle' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
@@ -68,7 +68,7 @@ export default function CampaignForm({ campaign, onChange, webhooks = [], users 
 					label="Article Type"
 					tooltip="<strong>Article Type</strong> sets the overall writing style and structure used for this campaign."
 					options={ARTICLE_TYPE_OPTIONS}
-					value={campaign.article_type || 'blog_post'}
+					value={campaign.article_type || 'default'}
 					onChange={(e) => handleChange('article_type', e.target.value)}
 					required
 				/>

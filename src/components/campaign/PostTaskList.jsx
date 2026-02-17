@@ -200,13 +200,13 @@ function TaskItem({
 }) {
 	const adminUrl = getAdminUrl();
 	const topicValue = task.topic ?? '';
-	const articleType = task.article_type || campaign?.article_type || 'blog_post';
+	const articleType = task.article_type || campaign?.article_type || 'default';
 	const showUrl = articleType === 'rewrite_blog_post' && !!task.research_url;
 	const articleTypeLabel = {
-		blog_post: 'Blog Post',
+		default: 'Default',
 		listicle: 'Listicle',
 		rewrite_blog_post: 'Rewrite',
-	}[articleType] || 'Blog Post';
+	}[articleType] || 'Default';
 
 	return (
 		<div className="border border-gray-200 rounded-lg overflow-hidden">

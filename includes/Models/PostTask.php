@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostTask
 {
-	public const DB_VERSION = '3.3';
+	public const DB_VERSION = '3.4';
 	protected const TABLE_NAME = 'poststation_posttasks';
 
 	public static function get_table_name(): string
@@ -26,7 +26,7 @@ class PostTask
 			research_url text,
 			topic text,
 			keywords text,
-			article_type varchar(50) NOT NULL DEFAULT 'blog_post',
+			article_type varchar(50) NOT NULL DEFAULT 'default',
 			title_override text DEFAULT NULL,
 			slug_override text DEFAULT NULL,
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
@@ -94,7 +94,7 @@ class PostTask
 			'research_url' => '',
 			'topic' => '',
 			'keywords' => '',
-			'article_type' => 'blog_post',
+			'article_type' => 'default',
 			'title_override' => '',
 			'slug_override' => '',
 			'feature_image_id' => null,

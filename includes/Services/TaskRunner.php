@@ -167,8 +167,7 @@ class TaskRunner
 			$keywords_raw = $task['keywords'] ?? '';
 			$keywords = array_values(array_filter(array_map('trim', explode(',', $keywords_raw))));
 			$keywords = array_slice($keywords, 0, 5);
-			$primary_keyword = $keywords[0] ?? $topic;
-			$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'blog_post';
+			$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'default';
 			$language_key = $campaign['language'] ?? 'en';
 			$country_key = $campaign['target_country'] ?? 'international';
 
@@ -179,10 +178,7 @@ class TaskRunner
 				'title_override' => $title_override,
 				'slug_override' => $slug_override,
 				'feature_image_id' => !empty($task['feature_image_id']) ? (int) $task['feature_image_id'] : null,
-				'keywords' => [
-					'primary_key' => $primary_keyword,
-					'additional_keywords' => implode(', ', array_values(array_filter($keywords, fn($keyword) => $keyword !== $primary_keyword))),
-				],
+				'keywords' => implode(', ', $keywords),
 				'article_type' => $article_type,
 				'language' => [
 					'key' => $language_key,
@@ -248,14 +244,12 @@ class TaskRunner
 		$keywords_raw = $task['keywords'] ?? '';
 		$keywords = array_values(array_filter(array_map('trim', explode(',', $keywords_raw))));
 		$keywords = array_slice($keywords, 0, 5);
-		$primary_keyword = $keywords[0] ?? $topic;
-		$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'blog_post';
+		$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'default';
 
 		$placeholders = [
 			'{{research_url}}' => $task['research_url'] ?? '',
 			'{{topic}}' => $topic,
 			'{{keywords}}' => implode(', ', $keywords),
-			'{{primary_keyword}}' => $primary_keyword,
 			'{{article_type}}' => $article_type,
 			'{{image_title}}' => str_replace('{{title}}', $topic ?: 'Post', $task['feature_image_title'] ?? '{{title}}'),
 			'{{sitemap}}' => implode(', ', array_values(array_filter(array_map(

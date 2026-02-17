@@ -1,8 +1,9 @@
 import { Select, Textarea, Input, Tooltip, ModelSelect } from '../../common';
 
-const MODE_OPTIONS = [
-	{ value: 'single_prompt', label: 'Single Prompt Article' },
-	{ value: 'sectioned', label: 'Sectioned Article' },
+const RESEARCH_MODE_OPTIONS = [
+	{ value: 'none', label: 'None' },
+	{ value: 'perplexity', label: 'Perplexity (Default)' },
+	{ value: 'google_dataforseo', label: 'Google via DataForSEO (Coming Soon)', disabled: true },
 ];
 
 export default function BodyFieldConfig({ config, onChange, articleType }) {
@@ -11,7 +12,7 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 	};
 
 	const isListicle = articleType === 'listicle';
-
+	const isRewrite = articleType === 'rewrite_blog_post';
 
 	const yesNoOptions = [
 		{ value: 'yes', label: 'Yes' },
@@ -87,13 +88,31 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 
 	return (
 		<div className="space-y-4">
-			<Select
-				label="Mode"
-				tooltip="Single prompt generates one body. Sectioned creates structured sections."
-				options={MODE_OPTIONS}
-				value={config.mode || 'single_prompt'}
-				onChange={(e) => handleChange('mode', e.target.value)}
-			/>
+			{!isRewrite && (
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+					<Select
+						label="Research Mode"
+						tooltip="Select the research engine to use for gathering information."
+						options={RESEARCH_MODE_OPTIONS}
+						value={config.research_mode || 'perplexity'}
+						onChange={(e) => handleChange('research_mode', e.target.value)}
+					/>
+					{config.research_mode !== 'none' && (
+						<Input
+							label="Number of Sources to Use"
+							tooltip="How many sources to research. Max is 10."
+							type="number"
+							min="1"
+							max="10"
+							value={config.sources_count ?? 3}
+							onChange={(e) => {
+								const val = parseInt(e.target.value, 10);
+								handleChange('sources_count', isNaN(val) ? '' : Math.min(10, Math.max(1, val)));
+							}}
+						/>
+					)}
+				</div>
+			)}
 
 			<Textarea
 				label="Additional Instruction"

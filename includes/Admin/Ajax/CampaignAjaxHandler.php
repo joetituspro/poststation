@@ -89,7 +89,7 @@ class CampaignAjaxHandler
 		$campaign_payload = [
 			'title' => $title,
 			'webhook_id' => (int) ($_POST['webhook_id'] ?? 0) ?: null,
-			'article_type' => sanitize_text_field($_POST['article_type'] ?? 'blog_post'),
+			'article_type' => sanitize_text_field($_POST['article_type'] ?? 'default'),
 			'tone_of_voice' => sanitize_text_field($_POST['tone_of_voice'] ?? 'none'),
 			'point_of_view' => sanitize_text_field($_POST['point_of_view'] ?? 'none'),
 			'readability' => sanitize_text_field($_POST['readability'] ?? 'grade_8'),

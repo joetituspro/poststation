@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Input, Select, Tooltip } from '../common';
 
 const ARTICLE_TYPE_OPTIONS = [
-	{ value: 'blog_post', label: 'Blog Post' },
+	{ value: 'default', label: 'Default' },
 	{ value: 'listicle', label: 'Listicle' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
@@ -11,12 +11,40 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 	const isProcessing = task.status === 'processing';
 	const [featuredImageUrl, setFeaturedImageUrl] = useState('');
 
+	const [isSlugSynced, setIsSlugSynced] = useState(!task.slug_override || task.slug_override.trim() === '');
+
 	const handleChange = (field, value) => {
 		if (isProcessing) return;
-		onChange({ [field]: value });
+		const updates = { [field]: value };
+
+		// If user manually edits the slug, stop syncing it from the title
+		if (field === 'slug_override') {
+			const isValueEmpty = !value || value.trim() === '';
+			setIsSlugSynced(isValueEmpty);
+			
+			// Auto format slug when typed manually
+			updates.slug_override = value
+				.toLowerCase()
+				.replace(/[^\w\s-]/g, '') // Remove non-word chars
+				.replace(/\s+/g, '-') // Replace spaces with -
+				.replace(/-+/g, '-') // Replace multiple - with single -
+				.trimStart(); // trimStart instead of trim to allow typing spaces that become hyphens
+		}
+
+		// If title_override is changed and slug should be synced, update slug
+		if (field === 'title_override' && isSlugSynced) {
+			updates.slug_override = value
+				.toLowerCase()
+				.replace(/[^\w\s-]/g, '') // Remove non-word chars
+				.replace(/\s+/g, '-') // Replace spaces with -
+				.replace(/-+/g, '-') // Replace multiple - with single -
+				.trim();
+		}
+
+		onChange(updates);
 	};
 
-	const resolvedArticleType = task.article_type || campaign?.article_type || 'blog_post';
+	const resolvedArticleType = task.article_type || campaign?.article_type || 'default';
 	const contentFields = campaign?.content_fields
 		? (typeof campaign.content_fields === 'string'
 			? JSON.parse(campaign.content_fields)
@@ -65,14 +93,6 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 		handleChange('topic', value);
 	};
 
-	const handleKeywordsChange = (value) => {
-		// Allow free typing, but limit to 5 keywords
-		const parts = value.split(',');
-		if (parts.length <= 5) {
-			handleChange('keywords', value);
-		}
-	};
-
 	return (
 		<div className={`space-y-4 ${isProcessing ? 'opacity-75' : ''}`}>
 			{/* Article Type Selector */}
@@ -88,11 +108,11 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 				/>
 				{resolvedArticleType !== 'rewrite_blog_post' ? (
 					<Input
-						label="Topic"
-						tooltip="Main topic used for generation and placeholders."
+						label="Topic / Main Keyword"
+						tooltip="Main topic or primary keyword you want to write about."
 						value={task.topic ?? ''}
 						onChange={(e) => handleTopicChange(e.target.value)}
-						placeholder="Main topic for this post task"
+						placeholder="e.g. best coffee shops in london"
 						required
 						disabled={isProcessing}
 					/>
@@ -107,18 +127,6 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 						disabled={isProcessing}
 					/>
 				)}
-			</div>
-
-			{/* Keywords */}
-			<div className="grid grid-cols-1">
-				<Input
-					label="Keywords (Optional, max 5)"
-					tooltip="Comma-separated list. The first keyword is treated as primary."
-					value={task.keywords || ''}
-					onChange={(e) => handleKeywordsChange(e.target.value)}
-					placeholder="keyword one, keyword two"
-					disabled={isProcessing}
-				/>
 			</div>
 
 			{/* Title + Slug Overrides */}
