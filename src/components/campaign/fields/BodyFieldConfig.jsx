@@ -150,49 +150,6 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 					</div>
 				</div>
 
-				<div className="space-y-2">
-					<div className="border-b border-gray-200 pb-1">
-						<h4 className="text-sm font-semibold text-gray-700">Structure</h4>
-					</div>
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-						<Select
-							label="Key Takeaways"
-							tooltip="Include a key takeaways section."
-							options={yesNoOptions}
-							value={config.key_takeaways || 'yes'}
-							onChange={(e) => handleChange('key_takeaways', e.target.value)}
-						/>
-						<Select
-							label="Conclusion"
-							tooltip="Include a conclusion section."
-							options={yesNoOptions}
-							value={config.conclusion || 'yes'}
-							onChange={(e) => handleChange('conclusion', e.target.value)}
-						/>
-						<Select
-							label="FAQ"
-							tooltip="Include a FAQ section."
-							options={yesNoOptions}
-							value={config.faq || 'yes'}
-							onChange={(e) => handleChange('faq', e.target.value)}
-						/>
-						<Select
-							label="Internal Linking"
-							tooltip="Include internal links to related content."
-							options={yesNoOptions}
-							value={config.internal_linking || 'yes'}
-							onChange={(e) => handleChange('internal_linking', e.target.value)}
-						/>
-						<Select
-							label="External Linking"
-							tooltip="Include external links to authoritative sources."
-							options={yesNoOptions}
-							value={config.external_linking || 'yes'}
-							onChange={(e) => handleChange('external_linking', e.target.value)}
-						/>
-					</div>
-				</div>
-
 				{isListicle && (
 					<div className="space-y-3">
 						<div className="border-b border-gray-200 pb-1">
@@ -246,6 +203,49 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 						/>
 					</div>
 				)}
+
+				<div className="space-y-2">
+					<div className="border-b border-gray-200 pb-1">
+						<h4 className="text-sm font-semibold text-gray-700">Structure</h4>
+					</div>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						<Select
+							label="Key Takeaways"
+							tooltip="Include a key takeaways section."
+							options={yesNoOptions}
+							value={config.key_takeaways || 'yes'}
+							onChange={(e) => handleChange('key_takeaways', e.target.value)}
+						/>
+						<Select
+							label="Conclusion"
+							tooltip="Include a conclusion section."
+							options={yesNoOptions}
+							value={config.conclusion || 'yes'}
+							onChange={(e) => handleChange('conclusion', e.target.value)}
+						/>
+						<Select
+							label="FAQ"
+							tooltip="Include a FAQ section."
+							options={yesNoOptions}
+							value={config.faq || 'yes'}
+							onChange={(e) => handleChange('faq', e.target.value)}
+						/>
+						<Select
+							label="Internal Linking"
+							tooltip="Include internal links to related content."
+							options={yesNoOptions}
+							value={config.internal_linking || 'yes'}
+							onChange={(e) => handleChange('internal_linking', e.target.value)}
+						/>
+						<Select
+							label="External Linking"
+							tooltip="Include external links to authoritative sources."
+							options={yesNoOptions}
+							value={config.external_linking || 'yes'}
+							onChange={(e) => handleChange('external_linking', e.target.value)}
+						/>
+					</div>
+				</div>
 
 				<ModelSelect
 					label="Model"

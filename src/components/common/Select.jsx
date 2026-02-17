@@ -28,7 +28,7 @@ export default function Select({
 					<option value="">{placeholder}</option>
 				)}
 				{options.map((option) => (
-					<option key={option.value} value={option.value}>
+					<option key={option.value} value={option.value} disabled={option.disabled}>
 						{option.label}
 					</option>
 				))}
@@ -107,7 +107,7 @@ export function MultiSelect({
 			<select className={fieldClassName} onChange={handleAdd} value="">
 				<option value="">{placeholder}</option>
 				{availableOptions.map((option) => (
-					<option key={option.value} value={option.value}>
+					<option key={option.value} value={option.value} disabled={option.disabled}>
 						{option.label}
 					</option>
 				))}
