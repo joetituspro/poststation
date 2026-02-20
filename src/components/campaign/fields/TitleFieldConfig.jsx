@@ -1,20 +1,13 @@
-import { Select, Textarea, ModelSelect } from '../../common';
+import { Select, Textarea } from '../../common';
 
 const MODE_OPTIONS = [
-	{ value: 'generate', label: 'Generate New Title' },
-	{ value: 'use_topic_as_title', label: 'Use Topic as Title' },
+	{ value: 'generate', label: 'Auto Generate Title' },
 ];
 
 export default function TitleFieldConfig({ config, onChange }) {
 	const handleChange = (field, value) => {
 		onChange({ ...config, [field]: value });
 	};
-
-	const promptContextOptions = [
-		{ value: 'article', label: 'Articles' },
-		{ value: 'topic', label: 'Topic' },
-		{ value: 'article_and_topic', label: 'Article and topic' },
-	];
 
 	return (
 		<div className="space-y-4">
@@ -26,34 +19,14 @@ export default function TitleFieldConfig({ config, onChange }) {
 				onChange={(e) => handleChange('mode', e.target.value)}
 			/>
 
-			{config.mode !== 'use_topic_as_title' && (
-				<>
-					<Textarea
-						label="Additional Instruction"
-						tooltip="Extra guidance for the title generation prompt."
-						value={config.prompt || ''}
-						onChange={(e) => handleChange('prompt', e.target.value)}
-						placeholder="Optional: Add specific instructions for title generation..."
-						rows={2}
-					/>
-
-					<Select
-						label="Prompt Context"
-						tooltip="Context included when generating this field."
-						options={promptContextOptions}
-						value={config.prompt_context || 'article_and_topic'}
-						onChange={(e) => handleChange('prompt_context', e.target.value)}
-					/>
-
-					<ModelSelect
-						label="Model"
-						tooltip="OpenRouter model used to generate the title."
-						value={config.model_id || ''}
-						onChange={(e) => handleChange('model_id', e.target.value)}
-						filter="text"
-					/>
-				</>
-			)}
+			<Textarea
+				label="Additional Instruction"
+				tooltip="Extra guidance for the title generation prompt."
+				value={config.prompt || ''}
+				onChange={(e) => handleChange('prompt', e.target.value)}
+				placeholder="Optional: Add specific instructions for title generation..."
+				rows={2}
+			/>
 		</div>
 	);
 }

@@ -43,8 +43,15 @@ class TaskRunner
 			
 			// Inject terms for auto_select mode in taxonomies
 			if (!empty($content_fields)) {
-				if (!empty($content_fields['title']['mode']) && $content_fields['title']['mode'] === 'generate_from_topic') {
+				if (
+					!empty($content_fields['title']['mode']) &&
+					in_array($content_fields['title']['mode'], ['generate_from_topic', 'use_topic_as_title'], true)
+				) {
 					$content_fields['title']['mode'] = 'generate';
+				}
+
+				if (!empty($content_fields['slug']['mode']) && $content_fields['slug']['mode'] === 'generate_from_title') {
+					$content_fields['slug']['mode'] = 'generate';
 				}
 
 				if (!empty($content_fields['image']['mode']) && $content_fields['image']['mode'] === 'generate_from_title') {
@@ -126,8 +133,10 @@ class TaskRunner
 				}
 				*/
 
+				$content_fields = self::sanitize_content_fields_for_webhook($content_fields);
+
 				$unified_taxonomies = [];
-				if (isset($content_fields['categories'])) {
+				if (isset($content_fields['categories']) && self::is_field_enabled($content_fields['categories'])) {
 					$info = $get_taxonomy_info('category');
 					$unified_taxonomies[] = array_merge(
 						['taxonomy' => 'category'],
@@ -135,7 +144,7 @@ class TaskRunner
 						$info ?: []
 					);
 				}
-				if (isset($content_fields['tags'])) {
+				if (isset($content_fields['tags']) && self::is_field_enabled($content_fields['tags'])) {
 					$info = $get_taxonomy_info('post_tag');
 					$unified_taxonomies[] = array_merge(
 						['taxonomy' => 'post_tag'],
@@ -163,17 +172,23 @@ class TaskRunner
 				);
 			}
 
-			$topic = $task['topic'] ?? '';
+			$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'default';
+			$topic = trim((string) ($task['topic'] ?? ''));
+			$research_url = trim((string) ($task['research_url'] ?? ''));
+			if ($article_type === 'rewrite_blog_post') {
+				$topic = '';
+			} else {
+				$research_url = '';
+			}
 			$keywords_raw = $task['keywords'] ?? '';
 			$keywords = array_values(array_filter(array_map('trim', explode(',', $keywords_raw))));
 			$keywords = array_slice($keywords, 0, 5);
-			$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'default';
 			$language_key = $campaign['language'] ?? 'en';
 			$country_key = $campaign['target_country'] ?? 'international';
 
 			$body = [
 				'task_id' => $task['id'],
-				'research_url' => $task['research_url'] ?? '',
+				'research_url' => $research_url,
 				'topic' => $topic,
 				'title_override' => $title_override,
 				'slug_override' => $slug_override,
@@ -259,5 +274,64 @@ class TaskRunner
 		];
 
 		return str_replace(array_keys($placeholders), array_values($placeholders), $text);
+	}
+
+	private static function sanitize_content_fields_for_webhook(array $content_fields): array
+	{
+		$toggle_fields = ['title', 'slug', 'body', 'categories', 'tags', 'image'];
+		foreach ($toggle_fields as $field_name) {
+			if (!isset($content_fields[$field_name]) || !is_array($content_fields[$field_name])) {
+				continue;
+			}
+
+			if (!self::is_field_enabled($content_fields[$field_name])) {
+				$content_fields[$field_name] = ['enabled' => false];
+			}
+		}
+
+		foreach (['custom_taxonomies', 'custom_fields'] as $list_field) {
+			$items = $content_fields[$list_field] ?? [];
+			if (!is_array($items)) {
+				$content_fields[$list_field] = [];
+				continue;
+			}
+
+			$content_fields[$list_field] = array_values(array_filter(
+				$items,
+				static function ($item): bool {
+					if (!is_array($item)) {
+						return false;
+					}
+					return TaskRunner::is_field_enabled($item);
+				}
+			));
+		}
+
+		return $content_fields;
+	}
+
+	private static function is_field_enabled($config): bool
+	{
+		if (!is_array($config)) {
+			return false;
+		}
+
+		if (!array_key_exists('enabled', $config)) {
+			return true;
+		}
+
+		$value = $config['enabled'];
+		if (is_bool($value)) {
+			return $value;
+		}
+		if (is_int($value)) {
+			return $value === 1;
+		}
+		if (is_string($value)) {
+			$normalized = strtolower(trim($value));
+			return in_array($normalized, ['1', 'true', 'yes'], true);
+		}
+
+		return false;
 	}
 }

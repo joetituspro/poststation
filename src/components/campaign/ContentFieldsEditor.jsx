@@ -28,14 +28,11 @@ const getDefaultContentFields = (settings = null) => {
 		enabled: true,
 		mode: 'generate',
 		prompt: '',
-		prompt_context: 'article_and_topic',
-		model_id: defaultTextModel,
 	},
 	slug: {
 		enabled: true,
-		mode: 'generate_from_title',
+		mode: 'generate',
 		prompt: '',
-		model_id: defaultTextModel,
 	},
 	body: {
 		enabled: true,
@@ -44,6 +41,8 @@ const getDefaultContentFields = (settings = null) => {
 		model_id: defaultTextModel,
 		media_prompt: '',
 		image_model_id: defaultImageModel,
+		disable_intelligence_analysis: false,
+		disable_outline: false,
 	},
 	categories: {
 		enabled: false,
@@ -92,12 +91,12 @@ const normalizeContentFields = (rawFields, settings = null) => {
 		title: {
 			...defaults.title,
 			...(fields.title || {}),
-			model_id: modelOrDefault(fields?.title?.model_id, defaultTextModel),
+			mode: 'generate',
 		},
 		slug: {
 			...defaults.slug,
 			...(fields.slug || {}),
-			model_id: modelOrDefault(fields?.slug?.model_id, defaultTextModel),
+			mode: 'generate',
 		},
 		body: {
 			...defaults.body,

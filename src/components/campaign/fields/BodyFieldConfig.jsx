@@ -114,6 +114,31 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 				</div>
 			)}
 
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+				<label className="poststation-switch text-sm font-medium text-gray-700">
+					<input
+						type="checkbox"
+						checked={Boolean(config.disable_intelligence_analysis)}
+						onChange={(e) => handleChange('disable_intelligence_analysis', e.target.checked)}
+						className="poststation-field-checkbox"
+					/>
+					<span className="poststation-switch-track" aria-hidden />
+					<span>Disable Intelligence Analysis</span>
+					<Tooltip content="When enabled, skips AI-powered analysis of the topic or source before writing." />
+				</label>
+				<label className="poststation-switch text-sm font-medium text-gray-700">
+					<input
+						type="checkbox"
+						checked={Boolean(config.disable_outline)}
+						onChange={(e) => handleChange('disable_outline', e.target.checked)}
+						className="poststation-field-checkbox"
+					/>
+					<span className="poststation-switch-track" aria-hidden />
+					<span>Disable Outline</span>
+					<Tooltip content="When enabled, content is generated without creating an outline first." />
+				</label>
+			</div>
+
 			<Textarea
 				label="Additional Instruction"
 				tooltip="Extra guidance used when generating the body content."
@@ -182,13 +207,14 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 							/>
 						</div>
 
-						<label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+						<label className="poststation-switch text-sm font-medium text-gray-700">
 							<input
 								type="checkbox"
 								checked={Boolean(config.use_descending_order)}
 								onChange={(e) => handleChange('use_descending_order', e.target.checked)}
 								className="poststation-field-checkbox"
 							/>
+							<span className="poststation-switch-track" aria-hidden />
 							<span>Use Descending Order</span>
 							<Tooltip content="If enabled, list items will be ordered from highest to lowest." />
 						</label>
@@ -231,18 +257,18 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 							onChange={(e) => handleChange('faq', e.target.value)}
 						/>
 						<Select
-							label="Internal Linking"
-							tooltip="Include internal links to related content."
-							options={yesNoOptions}
-							value={config.internal_linking || 'yes'}
-							onChange={(e) => handleChange('internal_linking', e.target.value)}
-						/>
-						<Select
 							label="External Linking"
 							tooltip="Include external links to authoritative sources."
 							options={yesNoOptions}
 							value={config.external_linking || 'yes'}
 							onChange={(e) => handleChange('external_linking', e.target.value)}
+						/>
+						<Select
+							label="Internal Linking"
+							tooltip="Include internal links to related content."
+							options={yesNoOptions}
+							value={config.internal_linking || 'yes'}
+							onChange={(e) => handleChange('internal_linking', e.target.value)}
 						/>
 					</div>
 				</div>

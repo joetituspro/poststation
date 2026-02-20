@@ -1,7 +1,7 @@
-import { Select, Textarea, ModelSelect } from '../../common';
+import { Select, Textarea } from '../../common';
 
 const MODE_OPTIONS = [
-	{ value: 'generate_from_title', label: 'Generate from Title' },
+	{ value: 'generate', label: 'Auto Generate Slug' },
 ];
 
 export default function SlugFieldConfig({ config, onChange }) {
@@ -15,7 +15,7 @@ export default function SlugFieldConfig({ config, onChange }) {
 				label="Mode"
 				tooltip="Controls how the slug is generated."
 				options={MODE_OPTIONS}
-				value={config.mode || 'generate_from_title'}
+				value={config.mode || 'generate'}
 				onChange={(e) => handleChange('mode', e.target.value)}
 			/>
 
@@ -28,13 +28,6 @@ export default function SlugFieldConfig({ config, onChange }) {
 				rows={2}
 			/>
 
-			<ModelSelect
-				label="Model"
-				tooltip="OpenRouter model used to generate the slug."
-				value={config.model_id || ''}
-				onChange={(e) => handleChange('model_id', e.target.value)}
-				filter="text"
-			/>
 		</div>
 	);
 }

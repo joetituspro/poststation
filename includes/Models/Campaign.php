@@ -98,14 +98,11 @@ class Campaign
 				'enabled' => true,
 				'mode' => 'generate',
 				'prompt' => '',
-				'prompt_context' => 'article_and_topic',
-				'model_id' => $default_text_model,
 			],
 			'slug' => [
 				'enabled' => true,
-				'mode' => 'generate_from_title',
+				'mode' => 'generate',
 				'prompt' => '',
-				'model_id' => $default_text_model,
 			],
 			'body' => [
 				'enabled' => true,
@@ -130,6 +127,8 @@ class Campaign
 				'custom_number_of_images' => 3,
 				'image_size' => '1344x768',
 				'image_style' => 'none',
+				'disable_intelligence_analysis' => false,
+				'disable_outline' => false,
 			],
 			'categories' => [
 				'enabled' => false,
