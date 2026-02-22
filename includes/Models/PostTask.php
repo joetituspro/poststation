@@ -64,6 +64,40 @@ class PostTask
 		delete_option('poststation_posttask_db_version');
 	}
 
+	/**
+	 * Get task counts per campaign in a single query (avoids N+1).
+	 *
+	 * @return array<int, array{pending: int, processing: int, completed: int, failed: int, total: int}>
+	 */
+	public static function get_task_counts_by_campaigns(): array
+	{
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		$rows = $wpdb->get_results(
+			"SELECT campaign_id, status, COUNT(*) AS cnt FROM {$table_name} GROUP BY campaign_id, status",
+			ARRAY_A
+		);
+
+		$statuses = ['pending', 'processing', 'completed', 'failed'];
+		$by_campaign = [];
+		foreach ($rows as $row) {
+			$cid = (int) $row['campaign_id'];
+			if (!isset($by_campaign[$cid])) {
+				$by_campaign[$cid] = array_fill_keys($statuses, 0);
+				$by_campaign[$cid]['total'] = 0;
+			}
+			$cnt = (int) $row['cnt'];
+			$status = $row['status'] ?? 'pending';
+			if (in_array($status, $statuses, true)) {
+				$by_campaign[$cid][$status] += $cnt;
+			} else {
+				$by_campaign[$cid]['pending'] += $cnt;
+			}
+			$by_campaign[$cid]['total'] += $cnt;
+		}
+		return $by_campaign;
+	}
+
 	public static function get_by_campaign(int $campaign_id): array
 	{
 		global $wpdb;

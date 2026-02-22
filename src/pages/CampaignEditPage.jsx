@@ -11,7 +11,7 @@ import CampaignForm from '../components/campaign/CampaignForm';
 import ContentFieldsEditor from '../components/campaign/ContentFieldsEditor';
 import PostTaskList from '../components/campaign/PostTaskList';
 import InfoSidebar from '../components/layout/InfoSidebar';
-import { campaigns, postTasks, webhooks, getTaxonomies, getPendingProcessingPostTasks, refreshBootstrap, getBootstrapWebhooks } from '../api/client';
+import { campaigns, postTasks, webhooks, getTaxonomies, getPendingProcessingPostTasks, getBootstrapWebhooks } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useUnsavedChanges } from '../context/UnsavedChangesContext';
 
@@ -579,21 +579,21 @@ export default function CampaignEditPage() {
 		if (savingAll) return;
 		setSavingAll(true);
 		try {
-			await updateCampaign({
-				title: campaign.title,
-				post_type: campaign.post_type,
-				post_status: campaign.post_status,
-				default_author_id: campaign.default_author_id,
-				webhook_id: campaign.webhook_id,
-				article_type: campaign.article_type,
-				tone_of_voice: campaign.tone_of_voice,
-				point_of_view: campaign.point_of_view,
-				readability: campaign.readability,
-				content_fields: campaign.content_fields,
-			});
-
-			await updateTasks(taskItems);
-			await refreshBootstrap();
+			await Promise.all([
+				updateCampaign({
+					title: campaign.title,
+					post_type: campaign.post_type,
+					post_status: campaign.post_status,
+					default_author_id: campaign.default_author_id,
+					webhook_id: campaign.webhook_id,
+					article_type: campaign.article_type,
+					tone_of_voice: campaign.tone_of_voice,
+					point_of_view: campaign.point_of_view,
+					readability: campaign.readability,
+					content_fields: campaign.content_fields,
+				}),
+				updateTasks(taskItems),
+			]);
 
 			setIsDirty(false);
 			showToast('Changes saved.', 'success');

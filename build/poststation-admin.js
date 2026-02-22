@@ -11359,7 +11359,7 @@ function CampaignEditPage() {
             setSavingAll(true);
             _context9.prev = 23;
             _context9.next = 26;
-            return updateCampaign({
+            return Promise.all([updateCampaign({
               title: campaign.title,
               post_type: campaign.post_type,
               post_status: campaign.post_status,
@@ -11370,32 +11370,26 @@ function CampaignEditPage() {
               point_of_view: campaign.point_of_view,
               readability: campaign.readability,
               content_fields: campaign.content_fields
-            });
+            }), updateTasks(taskItems)]);
           case 26:
-            _context9.next = 28;
-            return updateTasks(taskItems);
-          case 28:
-            _context9.next = 30;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_6__.refreshBootstrap)();
-          case 30:
             setIsDirty(false);
             showToast('Changes saved.', 'success');
             return _context9.abrupt("return", true);
-          case 35:
-            _context9.prev = 35;
+          case 31:
+            _context9.prev = 31;
             _context9.t0 = _context9["catch"](23);
             console.error('Failed to save:', _context9.t0);
             showToast((_context9.t0 === null || _context9.t0 === void 0 ? void 0 : _context9.t0.message) || 'Failed to save.', 'error');
             return _context9.abrupt("return", false);
-          case 40:
-            _context9.prev = 40;
+          case 36:
+            _context9.prev = 36;
             setSavingAll(false);
-            return _context9.finish(40);
-          case 43:
+            return _context9.finish(36);
+          case 39:
           case "end":
             return _context9.stop();
         }
-      }, _callee9, null, [[23, 35, 40, 43]]);
+      }, _callee9, null, [[23, 31, 36, 39]]);
     }));
     return function handleSave() {
       return _ref10.apply(this, arguments);
@@ -11742,9 +11736,7 @@ function CampaignsPage() {
     loading = _useQuery.loading,
     error = _useQuery.error,
     refetch = _useQuery.refetch;
-  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.campaigns.create, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap
-    }),
+  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.campaigns.create),
     createCampaign = _useMutation.mutate,
     creating = _useMutation.loading;
   var _useMutation2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.campaigns["delete"], {
@@ -11772,6 +11764,9 @@ function CampaignsPage() {
             result = _context.sent;
             if (result !== null && result !== void 0 && result.id) {
               navigate("/campaigns/".concat(result.id));
+              setTimeout(function () {
+                return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+              }, 0);
             }
             _context.next = 10;
             break;

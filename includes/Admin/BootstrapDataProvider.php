@@ -11,11 +11,41 @@ use PostStation\Utils\Languages;
 
 class BootstrapDataProvider
 {
+	private const STATIC_CACHE_KEY = 'poststation_bootstrap_static';
+	private const STATIC_CACHE_TTL = 300; // 5 minutes
+
 	private SettingsService $settings_service;
 
 	public function __construct(?SettingsService $settings_service = null)
 	{
 		$this->settings_service = $settings_service ?? new SettingsService();
+	}
+
+	/**
+	 * Clear the static bootstrap cache. Call when taxonomies/terms or users change so the next request gets fresh data.
+	 */
+	public static function clear_static_cache(): void
+	{
+		delete_transient(self::STATIC_CACHE_KEY);
+	}
+
+	/**
+	 * Cached heavy data (taxonomies, users, openrouter_models) to avoid repeated work on every bootstrap request.
+	 */
+	private function get_static_bootstrap(): array
+	{
+		$cached = get_transient(self::STATIC_CACHE_KEY);
+		if (is_array($cached)) {
+			return $cached;
+		}
+
+		$static = [
+			'taxonomies' => $this->get_taxonomy_data(),
+			'users' => $this->get_user_data(),
+			'openrouter_models' => $this->settings_service->get_openrouter_service()->get_models(false, true),
+		];
+		set_transient(self::STATIC_CACHE_KEY, $static, self::STATIC_CACHE_TTL);
+		return $static;
 	}
 
 	public function get_post_type_options(): array
@@ -74,26 +104,36 @@ class BootstrapDataProvider
 	public function get_campaigns_with_counts(): array
 	{
 		$campaigns = Campaign::get_all();
+		$counts_by_campaign = PostTask::get_task_counts_by_campaigns();
+
 		foreach ($campaigns as &$campaign) {
-			$tasks = PostTask::get_by_campaign((int) $campaign['id']);
-			$counts = ['pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0];
-			foreach ($tasks as $task) {
-				$status = $task['status'] ?? 'pending';
-				if (isset($counts[$status])) {
-					$counts[$status]++;
-				}
-			}
-			$campaign['task_counts'] = $counts;
-			$campaign['tasks_total'] = count($tasks);
+			$cid = (int) $campaign['id'];
+			$counts = $counts_by_campaign[$cid] ?? [
+				'pending' => 0,
+				'processing' => 0,
+				'completed' => 0,
+				'failed' => 0,
+				'total' => 0,
+			];
+			$campaign['task_counts'] = [
+				'pending' => $counts['pending'],
+				'processing' => $counts['processing'],
+				'completed' => $counts['completed'],
+				'failed' => $counts['failed'],
+			];
+			$campaign['tasks_total'] = $counts['total'];
 		}
 		return $campaigns;
 	}
 
 	public function get_bootstrap_data(?array $post_type_options = null, ?array $taxonomy_data = null, ?array $user_data = null): array
 	{
+		$static = $this->get_static_bootstrap();
+
+		// Use overrides when provided (e.g. initial page load in enqueue); otherwise use cached static data
 		$post_type_options = $post_type_options ?? $this->get_post_type_options();
-		$taxonomy_data = $taxonomy_data ?? $this->get_taxonomy_data();
-		$user_data = $user_data ?? $this->get_user_data();
+		$taxonomy_data = $taxonomy_data ?? $static['taxonomies'];
+		$user_data = $user_data ?? $static['users'];
 
 		return [
 			'settings' => $this->settings_service->get_settings_data(),
@@ -105,7 +145,7 @@ class BootstrapDataProvider
 			'countries' => Countries::all(),
 			'users' => $user_data,
 			'current_user_id' => get_current_user_id(),
-			'openrouter_models' => $this->settings_service->get_openrouter_service()->get_models(false, true),
+			'openrouter_models' => $static['openrouter_models'],
 		];
 	}
 }

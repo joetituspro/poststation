@@ -28,9 +28,7 @@ export default function CampaignsPage() {
 	const bootstrapCampaigns = getBootstrapCampaigns();
 	const fetchCampaigns = useCallback(() => campaigns.getAll(), []);
 	const { data, loading, error, refetch } = useQuery(fetchCampaigns, [], { initialData: bootstrapCampaigns });
-	const { mutate: createCampaign, loading: creating } = useMutation(campaigns.create, {
-		onSuccess: refreshBootstrap,
-	});
+	const { mutate: createCampaign, loading: creating } = useMutation(campaigns.create);
 	const { mutate: deleteCampaign } = useMutation(campaigns.delete, {
 		onSuccess: refreshBootstrap,
 	});
@@ -46,6 +44,7 @@ export default function CampaignsPage() {
 			const result = await createCampaign();
 			if (result?.id) {
 				navigate(`/campaigns/${result.id}`);
+				setTimeout(() => refreshBootstrap(), 0);
 			}
 		} catch (err) {
 			console.error('Failed to create campaign:', err);

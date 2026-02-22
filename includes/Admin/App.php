@@ -55,6 +55,14 @@ class App
 		add_action('wp_ajax_poststation_get_openrouter_models', [$this->settings_handler, 'get_openrouter_models']);
 
 		add_action('wp_ajax_poststation_get_bootstrap', [$this, 'ajax_get_bootstrap']);
+
+		// Clear static bootstrap cache when terms or users change
+		add_action('created_term', [BootstrapDataProvider::class, 'clear_static_cache']);
+		add_action('edited_term', [BootstrapDataProvider::class, 'clear_static_cache']);
+		add_action('delete_term', [BootstrapDataProvider::class, 'clear_static_cache']);
+		add_action('profile_update', [BootstrapDataProvider::class, 'clear_static_cache']);
+		add_action('user_register', [BootstrapDataProvider::class, 'clear_static_cache']);
+		add_action('delete_user', [BootstrapDataProvider::class, 'clear_static_cache']);
 	}
 
 	public function register_menu(): void

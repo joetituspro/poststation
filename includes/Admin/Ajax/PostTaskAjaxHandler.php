@@ -61,10 +61,19 @@ class PostTaskAjaxHandler
 			}
 		}
 
-		foreach ($tasks as $task) {
-			$id = (int) ($task['id'] ?? 0);
-			unset($task['id']);
-			PostTask::update($id, $task);
+		global $wpdb;
+		$wpdb->query('START TRANSACTION');
+
+		try {
+			foreach ($tasks as $task) {
+				$id = (int) ($task['id'] ?? 0);
+				unset($task['id']);
+				PostTask::update($id, $task);
+			}
+			$wpdb->query('COMMIT');
+		} catch (\Throwable $e) {
+			$wpdb->query('ROLLBACK');
+			wp_send_json_error(['message' => 'Failed to update tasks.']);
 		}
 
 		wp_send_json_success();
