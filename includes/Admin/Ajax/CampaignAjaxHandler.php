@@ -58,15 +58,12 @@ class CampaignAjaxHandler
 			wp_send_json_error(['message' => 'Permission denied']);
 		}
 
-		$title = sanitize_text_field(wp_unslash($_POST['title'] ?? ''));
-		if ($title === '') {
-			wp_send_json_error(['message' => 'Title is required']);
-		}
-
-		$campaign_id = Campaign::create(['title' => $title]);
+		$campaign_id = Campaign::create(['title' => 'Campaign']);
 		if (!$campaign_id) {
 			wp_send_json_error(['message' => 'Failed to create campaign']);
 		}
+
+		Campaign::update($campaign_id, ['title' => "Campaign #{$campaign_id}"]);
 
 		wp_send_json_success(['id' => $campaign_id]);
 	}

@@ -11,15 +11,18 @@ import {
 	EmptyState,
 	PageHeader,
 	PageLoader,
-	ConfirmModal,
 	CountsBadge,
 } from '../components/common';
 import { campaigns, getPostTypes, getBootstrapCampaigns, refreshBootstrap } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
+const DELETE_CONFIRM_MESSAGE =
+	'Are you sure you want to delete this Campaign and all its post tasks? This action cannot be undone.';
+
 export default function CampaignsPage() {
 	const navigate = useNavigate();
-	const [deleteId, setDeleteId] = useState(null);
+	const [deletedIds, setDeletedIds] = useState([]);
+	const [deletingIds, setDeletingIds] = useState([]);
 	const importRef = useRef(null);
 
 	const bootstrapCampaigns = getBootstrapCampaigns();
@@ -28,7 +31,7 @@ export default function CampaignsPage() {
 	const { mutate: createCampaign, loading: creating } = useMutation(campaigns.create, {
 		onSuccess: refreshBootstrap,
 	});
-	const { mutate: deleteCampaign, loading: deleting } = useMutation(campaigns.delete, {
+	const { mutate: deleteCampaign } = useMutation(campaigns.delete, {
 		onSuccess: refreshBootstrap,
 	});
 	const { mutate: importCampaign, loading: importing } = useMutation(campaigns.import, {
@@ -49,10 +52,16 @@ export default function CampaignsPage() {
 		}
 	};
 
-	const handleDelete = async () => {
-		if (deleteId) {
-			await deleteCampaign(deleteId);
-			refetch();
+	const handleDeleteClick = async (id) => {
+		if (!window.confirm(DELETE_CONFIRM_MESSAGE)) return;
+		setDeletingIds((prev) => [...prev, id]);
+		try {
+			await deleteCampaign(id);
+			setDeletedIds((prev) => [...prev, id]);
+		} catch (err) {
+			console.error('Failed to delete campaign:', err);
+		} finally {
+			setDeletingIds((prev) => prev.filter((x) => x !== id));
 		}
 	};
 
@@ -90,7 +99,7 @@ export default function CampaignsPage() {
 
 	if (loading) return <PageLoader />;
 
-	const campaignsList = data?.campaigns || [];
+	const campaignsList = (data?.campaigns || []).filter((c) => !deletedIds.includes(c.id));
 
 	return (
 		<div>
@@ -169,24 +178,30 @@ export default function CampaignsPage() {
 								</TableCell>
 								<TableCell>
 									<div className="flex items-center gap-2">
-										<button
+										<Button
+											variant="ghost"
+											size="sm"
 											onClick={() => navigate(`/campaigns/${campaign.id}`)}
-											className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+											className="text-indigo-600 hover:text-indigo-900"
 										>
 											Edit
-										</button>
-										<button
+										</Button>
+										<Button
+											variant="ghost"
+											size="sm"
 											onClick={() => handleExport(campaign.id)}
-											className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+											className="text-gray-600 hover:text-gray-900"
 										>
 											Export
-										</button>
-										<button
-											onClick={() => setDeleteId(campaign.id)}
-											className="text-red-600 hover:text-red-900 text-sm font-medium"
+										</Button>
+										<Button
+											variant="danger"
+											size="sm"
+											onClick={() => handleDeleteClick(campaign.id)}
+											loading={deletingIds.includes(campaign.id)}
 										>
 											Delete
-										</button>
+										</Button>
 									</div>
 								</TableCell>
 							</TableRow>
@@ -194,15 +209,6 @@ export default function CampaignsPage() {
 					</TableBody>
 				</Table>
 			)}
-
-			<ConfirmModal
-				isOpen={deleteId !== null}
-				onClose={() => setDeleteId(null)}
-				onConfirm={handleDelete}
-				title="Delete Campaign"
-				message="Are you sure you want to delete this Campaign and all its post tasks? This action cannot be undone."
-				confirmText="Delete"
-			/>
 		</div>
 	);
 }

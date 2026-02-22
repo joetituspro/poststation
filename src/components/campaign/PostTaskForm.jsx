@@ -108,8 +108,8 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 				/>
 				{resolvedArticleType !== 'rewrite_blog_post' ? (
 					<Input
-						label="Topic / Main Keyword"
-						tooltip="Main topic or primary keyword you want to write about."
+						label="Topic / Keyword"
+						tooltip="Topic or keyword you want to write about."
 						value={task.topic ?? ''}
 						onChange={(e) => handleTopicChange(e.target.value)}
 						placeholder="e.g. best coffee shops in london"
