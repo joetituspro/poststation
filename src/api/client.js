@@ -234,3 +234,8 @@ export const openrouter = {
 	getModels: ({ forceRefresh = false } = {}) =>
 		ajax('poststation_get_openrouter_models', { force_refresh: forceRefresh ? '1' : '0' }),
 };
+
+export const ai = {
+	generateInstructionPreset: ({ prompt, provider = 'openrouter' }) =>
+		ajax('poststation_generate_instruction_preset', { prompt, provider }),
+};

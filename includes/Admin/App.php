@@ -2,6 +2,7 @@
 
 namespace PostStation\Admin;
 
+use PostStation\Admin\Ajax\AiAjaxHandler;
 use PostStation\Admin\Ajax\CampaignAjaxHandler;
 use PostStation\Admin\Ajax\InstructionAjaxHandler;
 use PostStation\Admin\Ajax\PostTaskAjaxHandler;
@@ -18,6 +19,7 @@ class App
 	private SettingsAjaxHandler $settings_handler;
 	private InstructionAjaxHandler $instruction_handler;
 	private RssAjaxHandler $rss_handler;
+	private AiAjaxHandler $ai_handler;
 
 	public function __construct()
 	{
@@ -28,6 +30,7 @@ class App
 		$this->settings_handler = new SettingsAjaxHandler();
 		$this->instruction_handler = new InstructionAjaxHandler();
 		$this->rss_handler = new RssAjaxHandler();
+		$this->ai_handler = new AiAjaxHandler();
 
 		add_action('admin_menu', [$this, 'register_menu']);
 		add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
@@ -71,6 +74,7 @@ class App
 		add_action('wp_ajax_poststation_duplicate_instruction', [$this->instruction_handler, 'duplicate_instruction']);
 		add_action('wp_ajax_poststation_reset_instruction', [$this->instruction_handler, 'reset_instruction']);
 		add_action('wp_ajax_poststation_delete_instruction', [$this->instruction_handler, 'delete_instruction']);
+		add_action('wp_ajax_poststation_generate_instruction_preset', [$this->ai_handler, 'generate_instruction_preset']);
 
 		// Clear static bootstrap cache when terms or users change
 		add_action('created_term', [BootstrapDataProvider::class, 'clear_static_cache']);
