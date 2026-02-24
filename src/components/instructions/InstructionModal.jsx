@@ -17,8 +17,6 @@ export default function InstructionModal({
 	const [description, setDescription] = useState('');
 	const [titleInstruction, setTitleInstruction] = useState('');
 	const [bodyInstruction, setBodyInstruction] = useState('');
-	const [outlineInstruction, setOutlineInstruction] = useState('');
-	const [sectionInstruction, setSectionInstruction] = useState('');
 	const [saving, setSaving] = useState(false);
 	const [resetting, setResetting] = useState(false);
 	const [error, setError] = useState('');
@@ -35,8 +33,6 @@ export default function InstructionModal({
 			setDescription('');
 			setTitleInstruction('');
 			setBodyInstruction('');
-			setOutlineInstruction('');
-			setSectionInstruction('');
 			return;
 		}
 		if (mode === 'duplicate' || mode === 'edit') {
@@ -47,8 +43,6 @@ export default function InstructionModal({
 			setDescription(inst.description ?? '');
 			setTitleInstruction(instr.title ?? '');
 			setBodyInstruction(instr.body ?? '');
-			setOutlineInstruction(instr.outline ?? '');
-			setSectionInstruction(instr.section ?? '');
 		}
 	}, [isOpen, mode, instruction]);
 
@@ -66,8 +60,6 @@ export default function InstructionModal({
 			instructions: {
 				title: String(titleInstruction ?? '').trim(),
 				body: String(bodyInstruction ?? '').trim(),
-				outline: String(outlineInstruction ?? '').trim(),
-				section: String(sectionInstruction ?? '').trim(),
 			},
 		};
 		setSaving(true);
@@ -105,8 +97,6 @@ export default function InstructionModal({
 				setDescription(inst.description ?? '');
 				setTitleInstruction(inst.instructions?.title ?? '');
 				setBodyInstruction(inst.instructions?.body ?? '');
-				setOutlineInstruction(inst.instructions?.outline ?? '');
-				setSectionInstruction(inst.instructions?.section ?? '');
 			}
 			onSaved?.();
 		} catch (err) {
@@ -157,7 +147,7 @@ export default function InstructionModal({
 					rows={2}
 				/>
 				<div className="border-t border-gray-200 pt-4 space-y-4">
-					<h4 className="text-sm font-medium text-gray-900">Instructions (for webhook)</h4>
+					<h4 className="text-sm font-medium text-gray-900">Instructions</h4>
 					<Textarea
 						label="Title instruction"
 						value={titleInstruction}
@@ -171,20 +161,6 @@ export default function InstructionModal({
 						onChange={(e) => setBodyInstruction(e.target.value)}
 						placeholder="How to write the body"
 						rows={3}
-					/>
-					<Textarea
-						label="Outline instruction"
-						value={outlineInstruction}
-						onChange={(e) => setOutlineInstruction(e.target.value)}
-						placeholder="How to generate or structure the outline (leave empty if not applicable)"
-						rows={2}
-					/>
-					<Textarea
-						label="Section instruction"
-						value={sectionInstruction}
-						onChange={(e) => setSectionInstruction(e.target.value)}
-						placeholder="How to write sections (leave empty if not applicable)"
-						rows={2}
 					/>
 				</div>
 				<div className="flex justify-end gap-2 pt-2">

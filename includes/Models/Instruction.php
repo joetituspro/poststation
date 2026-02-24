@@ -49,7 +49,13 @@ class Instruction
 		foreach ($rows as &$row) {
 			if (isset($row['instructions']) && is_string($row['instructions'])) {
 				$decoded = json_decode($row['instructions'], true);
-				$row['instructions'] = is_array($decoded) ? $decoded : ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+				if (!is_array($decoded)) {
+					$decoded = [];
+				}
+				$row['instructions'] = [
+					'title' => (string) ($decoded['title'] ?? ''),
+					'body' => (string) ($decoded['body'] ?? ''),
+				];
 			}
 		}
 		return $rows;
@@ -65,7 +71,13 @@ class Instruction
 		}
 		if (isset($row['instructions']) && is_string($row['instructions'])) {
 			$decoded = json_decode($row['instructions'], true);
-			$row['instructions'] = is_array($decoded) ? $decoded : ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+			if (!is_array($decoded)) {
+				$decoded = [];
+			}
+			$row['instructions'] = [
+				'title' => (string) ($decoded['title'] ?? ''),
+				'body' => (string) ($decoded['body'] ?? ''),
+			];
 		}
 		return $row;
 	}
@@ -80,7 +92,13 @@ class Instruction
 		}
 		if (isset($row['instructions']) && is_string($row['instructions'])) {
 			$decoded = json_decode($row['instructions'], true);
-			$row['instructions'] = is_array($decoded) ? $decoded : ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+			if (!is_array($decoded)) {
+				$decoded = [];
+			}
+			$row['instructions'] = [
+				'title' => (string) ($decoded['title'] ?? ''),
+				'body' => (string) ($decoded['body'] ?? ''),
+			];
 		}
 		return $row;
 	}
@@ -99,8 +117,6 @@ class Instruction
 				'instructions' => [
 					'title' => 'Instruction on how to write a listicle-style title (curiosity, number, clarity).',
 					'body' => 'Instruction on how to write listicle body with distinct sections per list item.',
-					'outline' => '',
-					'section' => 'Instruction on how to write each list item section.',
 				],
 			],
 			[
@@ -110,8 +126,6 @@ class Instruction
 				'instructions' => [
 					'title' => 'Instruction on how to write a news-style headline.',
 					'body' => 'Instruction on how to write a news article body.',
-					'outline' => '',
-					'section' => '',
 				],
 			],
 			[
@@ -121,8 +135,6 @@ class Instruction
 				'instructions' => [
 					'title' => 'Instruction on how to write a guide-style title.',
 					'body' => 'Instruction on how to write a guide body.',
-					'outline' => '',
-					'section' => 'Instruction on how to write guide sections.',
 				],
 			],
 			[
@@ -132,8 +144,6 @@ class Instruction
 				'instructions' => [
 					'title' => 'Instruction on how to write a how-to title.',
 					'body' => 'Instruction on how to write a how-to body.',
-					'outline' => '',
-					'section' => 'Instruction on how to write step-by-step sections.',
 				],
 			],
 		];
@@ -175,15 +185,13 @@ class Instruction
 		$key = sanitize_key((string) ($data['key'] ?? ''));
 		$name = sanitize_text_field((string) ($data['name'] ?? ''));
 		$description = sanitize_textarea_field((string) ($data['description'] ?? ''));
-		$instructions = $data['instructions'] ?? ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+		$instructions = $data['instructions'] ?? ['title' => '', 'body' => ''];
 		if (!is_array($instructions)) {
-			$instructions = ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+			$instructions = ['title' => '', 'body' => ''];
 		}
 		$instructions_json = json_encode([
 			'title' => (string) ($instructions['title'] ?? ''),
 			'body' => (string) ($instructions['body'] ?? ''),
-			'outline' => (string) ($instructions['outline'] ?? ''),
-			'section' => (string) ($instructions['section'] ?? ''),
 		]);
 		if ($key === '' || $name === '') {
 			return false;
@@ -218,13 +226,11 @@ class Instruction
 		if (array_key_exists('instructions', $data)) {
 			$instructions = $data['instructions'];
 			if (!is_array($instructions)) {
-				$instructions = ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+				$instructions = ['title' => '', 'body' => ''];
 			}
 			$update_data['instructions'] = json_encode([
 				'title' => (string) ($instructions['title'] ?? ''),
 				'body' => (string) ($instructions['body'] ?? ''),
-				'outline' => (string) ($instructions['outline'] ?? ''),
-				'section' => (string) ($instructions['section'] ?? ''),
 			]);
 			$format[] = '%s';
 		}
@@ -250,7 +256,7 @@ class Instruction
 			if (($row['key'] ?? '') === $key) {
 				return self::update($id, [
 					'description' => $row['description'] ?? '',
-					'instructions' => $row['instructions'] ?? ['title' => '', 'body' => '', 'outline' => '', 'section' => ''],
+					'instructions' => $row['instructions'] ?? ['title' => '', 'body' => ''],
 				]);
 			}
 		}

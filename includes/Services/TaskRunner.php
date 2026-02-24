@@ -201,7 +201,7 @@ class TaskRunner
 						'key' => $instruction['key'] ?? '',
 						'name' => $instruction['name'] ?? '',
 						'description' => $instruction['description'] ?? '',
-						'instructions' => $instruction['instructions'] ?? ['title' => '', 'body' => '', 'outline' => '', 'section' => ''],
+						'instructions' => $instruction['instructions'] ?? ['title' => '', 'body' => ''],
 					];
 				}
 			}

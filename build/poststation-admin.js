@@ -5554,9 +5554,7 @@ var instructions = {
       description: (_data$description = data.description) !== null && _data$description !== void 0 ? _data$description : '',
       instructions: JSON.stringify((_data$instructions = data.instructions) !== null && _data$instructions !== void 0 ? _data$instructions : {
         title: '',
-        body: '',
-        outline: '',
-        section: ''
+        body: ''
       })
     });
   },
@@ -5567,9 +5565,7 @@ var instructions = {
       description: (_data$description2 = data.description) !== null && _data$description2 !== void 0 ? _data$description2 : '',
       instructions: JSON.stringify((_data$instructions2 = data.instructions) !== null && _data$instructions2 !== void 0 ? _data$instructions2 : {
         title: '',
-        body: '',
-        outline: '',
-        section: ''
+        body: ''
       })
     });
   },
@@ -11093,26 +11089,18 @@ function InstructionModal(_ref) {
     _useState10 = _slicedToArray(_useState9, 2),
     bodyInstruction = _useState10[0],
     setBodyInstruction = _useState10[1];
-  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    outlineInstruction = _useState12[0],
-    setOutlineInstruction = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    saving = _useState12[0],
+    setSaving = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
-    sectionInstruction = _useState14[0],
-    setSectionInstruction = _useState14[1];
-  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    resetting = _useState14[0],
+    setResetting = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState16 = _slicedToArray(_useState15, 2),
-    saving = _useState16[0],
-    setSaving = _useState16[1];
-  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState18 = _slicedToArray(_useState17, 2),
-    resetting = _useState18[0],
-    setResetting = _useState18[1];
-  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState20 = _slicedToArray(_useState19, 2),
-    error = _useState20[0],
-    setError = _useState20[1];
+    error = _useState16[0],
+    setError = _useState16[1];
   var lockKeyAndName = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
   var showResetButton = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -11124,12 +11112,10 @@ function InstructionModal(_ref) {
       setDescription('');
       setTitleInstruction('');
       setBodyInstruction('');
-      setOutlineInstruction('');
-      setSectionInstruction('');
       return;
     }
     if (mode === 'duplicate' || mode === 'edit') {
-      var _inst$key, _inst$name, _inst$description, _instr$title, _instr$body, _instr$outline, _instr$section;
+      var _inst$key, _inst$name, _inst$description, _instr$title, _instr$body;
       var inst = instruction || {};
       var instr = inst.instructions || {};
       setKey(mode === 'duplicate' ? '' : (_inst$key = inst.key) !== null && _inst$key !== void 0 ? _inst$key : '');
@@ -11137,8 +11123,6 @@ function InstructionModal(_ref) {
       setDescription((_inst$description = inst.description) !== null && _inst$description !== void 0 ? _inst$description : '');
       setTitleInstruction((_instr$title = instr.title) !== null && _instr$title !== void 0 ? _instr$title : '');
       setBodyInstruction((_instr$body = instr.body) !== null && _instr$body !== void 0 ? _instr$body : '');
-      setOutlineInstruction((_instr$outline = instr.outline) !== null && _instr$outline !== void 0 ? _instr$outline : '');
-      setSectionInstruction((_instr$section = instr.section) !== null && _instr$section !== void 0 ? _instr$section : '');
     }
   }, [isOpen, mode, instruction]);
   var handleSubmit = /*#__PURE__*/function () {
@@ -11162,9 +11146,7 @@ function InstructionModal(_ref) {
               description: String(description !== null && description !== void 0 ? description : '').trim(),
               instructions: {
                 title: String(titleInstruction !== null && titleInstruction !== void 0 ? titleInstruction : '').trim(),
-                body: String(bodyInstruction !== null && bodyInstruction !== void 0 ? bodyInstruction : '').trim(),
-                outline: String(outlineInstruction !== null && outlineInstruction !== void 0 ? outlineInstruction : '').trim(),
-                section: String(sectionInstruction !== null && sectionInstruction !== void 0 ? sectionInstruction : '').trim()
+                body: String(bodyInstruction !== null && bodyInstruction !== void 0 ? bodyInstruction : '').trim()
               }
             };
             setSaving(true);
@@ -11218,7 +11200,7 @@ function InstructionModal(_ref) {
   }();
   var handleReset = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2, _inst$instructions$ou, _inst$instructions3, _inst$instructions$se, _inst$instructions4;
+      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
@@ -11243,8 +11225,6 @@ function InstructionModal(_ref) {
               setDescription((_inst$description2 = inst.description) !== null && _inst$description2 !== void 0 ? _inst$description2 : '');
               setTitleInstruction((_inst$instructions$ti = (_inst$instructions = inst.instructions) === null || _inst$instructions === void 0 ? void 0 : _inst$instructions.title) !== null && _inst$instructions$ti !== void 0 ? _inst$instructions$ti : '');
               setBodyInstruction((_inst$instructions$bo = (_inst$instructions2 = inst.instructions) === null || _inst$instructions2 === void 0 ? void 0 : _inst$instructions2.body) !== null && _inst$instructions$bo !== void 0 ? _inst$instructions$bo : '');
-              setOutlineInstruction((_inst$instructions$ou = (_inst$instructions3 = inst.instructions) === null || _inst$instructions3 === void 0 ? void 0 : _inst$instructions3.outline) !== null && _inst$instructions$ou !== void 0 ? _inst$instructions$ou : '');
-              setSectionInstruction((_inst$instructions$se = (_inst$instructions4 = inst.instructions) === null || _inst$instructions4 === void 0 ? void 0 : _inst$instructions4.section) !== null && _inst$instructions$se !== void 0 ? _inst$instructions$se : '');
             }
             onSaved === null || onSaved === void 0 || onSaved();
             _context2.next = 18;
@@ -11312,7 +11292,7 @@ function InstructionModal(_ref) {
         className: "border-t border-gray-200 pt-4 space-y-4",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
           className: "text-sm font-medium text-gray-900",
-          children: "Instructions (for webhook)"
+          children: "Instructions"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
           label: "Title instruction",
           value: titleInstruction,
@@ -11329,22 +11309,6 @@ function InstructionModal(_ref) {
           },
           placeholder: "How to write the body",
           rows: 3
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
-          label: "Outline instruction",
-          value: outlineInstruction,
-          onChange: function onChange(e) {
-            return setOutlineInstruction(e.target.value);
-          },
-          placeholder: "How to generate or structure the outline (leave empty if not applicable)",
-          rows: 2
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
-          label: "Section instruction",
-          value: sectionInstruction,
-          onChange: function onChange(e) {
-            return setSectionInstruction(e.target.value);
-          },
-          placeholder: "How to write sections (leave empty if not applicable)",
-          rows: 2
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "flex justify-end gap-2 pt-2",

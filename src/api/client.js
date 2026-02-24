@@ -181,13 +181,13 @@ export const instructions = {
 			key: data.key,
 			name: data.name,
 			description: data.description ?? '',
-			instructions: JSON.stringify(data.instructions ?? { title: '', body: '', outline: '', section: '' }),
+			instructions: JSON.stringify(data.instructions ?? { title: '', body: '' }),
 		}),
 	update: (id, data) =>
 		ajax('poststation_update_instruction', {
 			id,
 			description: data.description ?? '',
-			instructions: JSON.stringify(data.instructions ?? { title: '', body: '', outline: '', section: '' }),
+			instructions: JSON.stringify(data.instructions ?? { title: '', body: '' }),
 		}),
 	duplicate: (id, newKey, newName) =>
 		ajax('poststation_duplicate_instruction', { id, new_key: newKey, new_name: newName }),

@@ -20,7 +20,7 @@ class InstructionAjaxHandler
 		$description = sanitize_textarea_field((string) ($_POST['description'] ?? ''));
 		$instructions = json_decode(stripslashes((string) ($_POST['instructions'] ?? '{}')), true);
 		if (!is_array($instructions)) {
-			$instructions = ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+			$instructions = ['title' => '', 'body' => ''];
 		}
 		if ($key === '' || $name === '') {
 			wp_send_json_error(['message' => 'Key and name are required']);
@@ -63,7 +63,7 @@ class InstructionAjaxHandler
 		$description = sanitize_textarea_field((string) ($_POST['description'] ?? ''));
 		$instructions = json_decode(stripslashes((string) ($_POST['instructions'] ?? '{}')), true);
 		if (!is_array($instructions)) {
-			$instructions = ['title' => '', 'body' => '', 'outline' => '', 'section' => ''];
+			$instructions = ['title' => '', 'body' => ''];
 		}
 
 		$success = Instruction::update($id, [
@@ -104,7 +104,7 @@ class InstructionAjaxHandler
 			'key' => $new_key,
 			'name' => $new_name,
 			'description' => $source['description'] ?? '',
-			'instructions' => $source['instructions'] ?? ['title' => '', 'body' => '', 'outline' => '', 'section' => ''],
+			'instructions' => $source['instructions'] ?? ['title' => '', 'body' => ''],
 		]);
 		if ($new_id) {
 			$instruction = Instruction::get_by_id($new_id);
