@@ -4,12 +4,16 @@ namespace PostStation\Core;
 
 use Exception;
 
+use PostStation\Models\Webhook;
+use PostStation\Models\Campaign;
+use PostStation\Models\CampaignRss;
+use PostStation\Models\PostTask;
+use PostStation\Models\Instruction;
+use PostStation\Models\RssHistory;
 use PostStation\Admin\App;
 use PostStation\Services\Sitemap;
 use PostStation\Services\BackgroundRunner;
-use PostStation\Models\Webhook;
-use PostStation\Models\Campaign;
-use PostStation\Models\PostTask;
+use PostStation\Services\GlobalUpdateService;
 
 class Bootstrap
 {
@@ -28,9 +32,13 @@ class Bootstrap
 		$sitemap_service = new Sitemap();
 		$sitemap_service->init();
 
-		// Initialize Background Runner
+		// Initialize Background Runner (live campaign orchestration)
 		$background_runner = new BackgroundRunner();
 		$background_runner->init();
+
+		// Initialize global update service (single background loop for live + RSS)
+		$global_update = new GlobalUpdateService();
+		$global_update->init();
 
 		// Initialize Admin
 		if (is_admin()) {
@@ -74,6 +82,24 @@ class Bootstrap
 				// throw new Exception('Failed to create/update PostTask tables');
 			}
 
+			if (!Instruction::update_tables()) {
+				// throw new Exception('Failed to create/update Instruction table');
+			}
+			Instruction::seed_defaults();
+
+			if (!CampaignRss::update_tables()) {
+				// continue
+			}
+			if (!RssHistory::update_tables()) {
+				// continue
+			}
+
+			// Ensure global update schedule exists and clean up legacy schedules.
+			if (class_exists(GlobalUpdateService::class)) {
+				$global_update = new GlobalUpdateService();
+				$global_update->ensure_schedule_and_cleanup();
+			}
+
 			// Update version
 			update_option('poststation_posttask_db_version', PostTask::DB_VERSION);
 
@@ -99,7 +125,10 @@ class Bootstrap
 		// Drop tables
 		Webhook::drop_table();
 		Campaign::drop_table();
+		CampaignRss::drop_table();
+		RssHistory::drop_table();
 		PostTask::drop_table();
+		Instruction::drop_table();
 
 		// Remove options
 		delete_option('poststation_api_key');

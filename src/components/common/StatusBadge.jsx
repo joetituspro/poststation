@@ -9,10 +9,10 @@ const statusStyles = {
 
 export default function StatusBadge({ status, className = '' }) {
 	const style = statusStyles[status] || 'bg-gray-100 text-gray-800';
-	
+	const label = status ? status.charAt(0).toUpperCase() + (status.slice(1) || '').toLowerCase() : status;
 	return (
-		<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style} ${className}`}>
-			{status}
+		<span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] leading-none font-medium ${style} ${className}`}>
+			{label}
 		</span>
 	);
 }

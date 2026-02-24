@@ -8,7 +8,7 @@ const STATUS_OPTIONS = [
 	{ value: 'private', label: 'Private' },
 ];
 
-const ARTICLE_TYPE_OPTIONS = [
+const CAMPAIGN_TYPE_OPTIONS = [
 	{ value: 'default', label: 'Default' },
 	{ value: 'listicle', label: 'Listicle' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
@@ -65,11 +65,11 @@ export default function CampaignForm({ campaign, onChange, webhooks = [], users 
 			{/* Main settings grid - no title (edited in header) */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
 				<Select
-					label="Article Type"
-					tooltip="<strong>Article Type</strong> sets the overall writing style and structure used for this campaign."
-					options={ARTICLE_TYPE_OPTIONS}
-					value={campaign.article_type || 'default'}
-					onChange={(e) => handleChange('article_type', e.target.value)}
+					label="Campaign Type"
+					tooltip="<strong>Campaign Type</strong> sets the overall writing style and structure used for this campaign."
+					options={CAMPAIGN_TYPE_OPTIONS}
+					value={campaign.campaign_type || 'default'}
+					onChange={(e) => handleChange('campaign_type', e.target.value)}
 					required
 				/>
 
@@ -144,6 +144,17 @@ export default function CampaignForm({ campaign, onChange, webhooks = [], users 
 					onChange={(e) => handleChange('default_author_id', e.target.value)}
 					placeholder="Select author..."
 					required
+				/>
+
+				<Select
+					label="RSS Feeds"
+					tooltip="Enable RSS feed sources for this campaign. When enabled, you can set feed URLs and frequency, and run RSS checks to add items as tasks."
+					options={[
+						{ value: 'no', label: 'No' },
+						{ value: 'yes', label: 'Yes' },
+					]}
+					value={campaign.rss_enabled || 'no'}
+					onChange={(e) => handleChange('rss_enabled', e.target.value)}
 				/>
 
 				<Select

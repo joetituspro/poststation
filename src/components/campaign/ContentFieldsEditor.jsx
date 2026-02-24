@@ -322,7 +322,7 @@ export default function ContentFieldsEditor({ campaign, onChange, taxonomies: ta
 						<BodyFieldConfig
 							config={contentFields.body}
 							onChange={(config) => handleFieldChange('body', config)}
-							articleType={campaign?.article_type || 'default'}
+							campaignType={campaign?.campaign_type || 'default'}
 						/>
 					</FieldCard>
 				)}

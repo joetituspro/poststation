@@ -19,10 +19,12 @@ export default function Button({
 	disabled = false,
 	loading = false,
 	className = '',
+	type = 'button',
 	...props
 }) {
 	return (
 		<button
+			type={type}
 			className={`
 				inline-flex items-center justify-center gap-2 font-medium rounded-lg
 				focus:outline-none focus:ring-2 focus:ring-offset-2

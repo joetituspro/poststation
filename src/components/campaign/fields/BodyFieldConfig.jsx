@@ -6,13 +6,13 @@ const RESEARCH_MODE_OPTIONS = [
 	{ value: 'google_dataforseo', label: 'Google via DataForSEO (Coming Soon)', disabled: true },
 ];
 
-export default function BodyFieldConfig({ config, onChange, articleType }) {
+export default function BodyFieldConfig({ config, onChange, campaignType }) {
 	const handleChange = (field, value) => {
 		onChange({ ...config, [field]: value });
 	};
 
-	const isListicle = articleType === 'listicle';
-	const isRewrite = articleType === 'rewrite_blog_post';
+	const isListicle = campaignType === 'listicle';
+	const isRewrite = campaignType === 'rewrite_blog_post';
 
 	const yesNoOptions = [
 		{ value: 'yes', label: 'Yes' },
@@ -59,40 +59,13 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 		{ value: 'comic_book', label: 'Comic Book' },
 	];
 
-	const hookPresets = [
-		{
-			label: 'Question',
-			value: "Craft an intriguing question that immediately draws the reader's attention. The question should be relevant to the article's topic and evoke curiosity or challenge common beliefs. Aim to make the reader reflect or feel compelled to find the answer within the article.",
-		},
-		{
-			label: 'Statistical or Fact',
-			value: "Begin with a surprising statistic or an unexpected fact that relates directly to the article's main topic. This hook should provide a sense of scale or impact that makes the reader eager to learn more about the subject.",
-		},
-		{
-			label: 'Quotation',
-			value: "Use a powerful or thought-provoking quote from a well-known figure that ties into the theme of the article. The quote should set the tone for the article and provoke interest in the topic.",
-		},
-		{
-			label: 'Anecdotal or Story',
-			value: "Create a brief, engaging story or anecdote that is relevant to the article's main subject. This story should be relatable and set the stage for the main content.",
-		},
-		{
-			label: 'Personal or Emotional',
-			value: "Write an emotionally resonant opening that connects personally with the reader. This could be a reflection, a personal experience, or an emotional appeal that aligns with the article's theme.",
-		},
-	];
-
-	const handleHookPreset = (value) => {
-		handleChange('introductory_hook_brief', value);
-	};
-
 	return (
 		<div className="space-y-4">
 			{!isRewrite && (
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<Select
-						label="Research Mode"
-						tooltip="Select the research engine to use for gathering information."
+						label="Real-Time Data"
+						tooltip="Select the source for real-time data when generating content."
 						options={RESEARCH_MODE_OPTIONS}
 						value={config.research_mode || 'perplexity'}
 						onChange={(e) => handleChange('research_mode', e.target.value)}
@@ -149,32 +122,6 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 			/>
 
 			<div className="space-y-4">
-				<div className="space-y-2">
-					<div className="border-b border-gray-200 pb-1">
-						<h4 className="text-sm font-semibold text-gray-700">Intro Hook</h4>
-					</div>
-					<Textarea
-						label="Introductory Hook Brief"
-						tooltip="Short brief for how the intro hook should start."
-						value={config.introductory_hook_brief || ''}
-						onChange={(e) => handleChange('introductory_hook_brief', e.target.value)}
-						placeholder="Leave empty for default behavior"
-						rows={2}
-					/>
-					<div className="flex flex-wrap gap-2">
-						{hookPresets.map((preset) => (
-							<button
-								key={preset.label}
-								type="button"
-								onClick={() => handleHookPreset(preset.value)}
-								className="px-2 py-1 text-xs rounded border border-gray-200 text-gray-700 hover:bg-gray-50"
-							>
-								{preset.label}
-							</button>
-						))}
-					</div>
-				</div>
-
 				{isListicle && (
 					<div className="space-y-3">
 						<div className="border-b border-gray-200 pb-1">
@@ -270,7 +217,33 @@ export default function BodyFieldConfig({ config, onChange, articleType }) {
 							value={config.internal_linking || 'yes'}
 							onChange={(e) => handleChange('internal_linking', e.target.value)}
 						/>
+						{config.internal_linking === 'yes' && (
+							<Input
+								label="Number of Internal Links"
+								tooltip="How many internal links to include. Default is 4."
+								type="number"
+								min="1"
+								value={config.internal_links_count ?? 4}
+								onChange={(e) => {
+									const val = parseInt(e.target.value, 10);
+									handleChange('internal_links_count', isNaN(val) ? 4 : Math.max(1, val));
+								}}
+							/>
+						)}
 					</div>
+					{config.internal_linking === 'yes' && (
+						<label className="poststation-switch text-sm font-medium text-gray-700">
+							<input
+								type="checkbox"
+								checked={Boolean(config.internal_links_post_type_only)}
+								onChange={(e) => handleChange('internal_links_post_type_only', e.target.checked)}
+								className="poststation-field-checkbox"
+							/>
+							<span className="poststation-switch-track" aria-hidden />
+							<span>Use only selected post type</span>
+							<Tooltip content="When enabled, internal links will only point to posts of the campaign's selected post type." />
+						</label>
+					)}
 				</div>
 
 				<ModelSelect

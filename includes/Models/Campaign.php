@@ -23,7 +23,7 @@ class Campaign
             title varchar(255) NOT NULL,
             author_id bigint(20) unsigned NOT NULL,
             webhook_id bigint(20) unsigned DEFAULT NULL,
-            article_type varchar(50) NOT NULL DEFAULT 'default',
+            campaign_type varchar(50) NOT NULL DEFAULT 'default',
 			tone_of_voice varchar(50) NOT NULL DEFAULT 'none',
 			point_of_view varchar(50) NOT NULL DEFAULT 'none',
 			readability varchar(50) NOT NULL DEFAULT 'grade_8',
@@ -32,16 +32,32 @@ class Campaign
             post_type varchar(20) NOT NULL DEFAULT 'post',
             post_status varchar(20) NOT NULL DEFAULT 'pending',
             default_author_id bigint(20) unsigned DEFAULT NULL,
+			instruction_id bigint(20) unsigned DEFAULT NULL,
 			content_fields text DEFAULT NULL,
+			rss_enabled varchar(3) NOT NULL DEFAULT 'no',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY author_id (author_id),
             KEY webhook_id (webhook_id),
-            KEY default_author_id (default_author_id)
+            KEY default_author_id (default_author_id),
+            KEY instruction_id (instruction_id)
             ) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
+		self::migrate_article_type_to_campaign_type($table_name);
+		self::migrate_add_rss_enabled($table_name);
+		self::migrate_add_status($table_name);
 		return (bool) $tables_created_or_updated;
+	}
+
+	private static function migrate_add_status(string $table_name): void
+	{
+		global $wpdb;
+		$col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'status'", ARRAY_A);
+		if (!empty($col)) {
+			return;
+		}
+		$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN status varchar(20) NOT NULL DEFAULT 'paused' AFTER rss_enabled");
 	}
 
 	private static function check_and_create_table($table_name, $sql): bool
@@ -49,6 +65,26 @@ class Campaign
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		$result = dbDelta($sql);
 		return !is_wp_error($result) && !empty($result);
+	}
+
+	private static function migrate_article_type_to_campaign_type(string $table_name): void
+	{
+		global $wpdb;
+		$col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'article_type'", ARRAY_A);
+		if (empty($col)) {
+			return;
+		}
+		$wpdb->query("ALTER TABLE `{$table_name}` CHANGE COLUMN `article_type` `campaign_type` varchar(50) NOT NULL DEFAULT 'default'");
+	}
+
+	private static function migrate_add_rss_enabled(string $table_name): void
+	{
+		global $wpdb;
+		$col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'rss_enabled'", ARRAY_A);
+		if (!empty($col)) {
+			return;
+		}
+		$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN rss_enabled varchar(3) NOT NULL DEFAULT 'no' AFTER content_fields");
 	}
 
 	public static function get_all(): array
@@ -74,7 +110,7 @@ class Campaign
 			'title' => '',
 			'author_id' => get_current_user_id(),
 			'webhook_id' => null,
-			'article_type' => 'default',
+			'campaign_type' => 'default',
 			'tone_of_voice' => 'none',
 			'point_of_view' => 'none',
 			'readability' => 'grade_8',
@@ -83,7 +119,10 @@ class Campaign
 			'post_type' => 'post',
 			'post_status' => 'pending',
 			'default_author_id' => get_current_user_id(),
+			'instruction_id' => null,
 			'content_fields' => json_encode($default_content_fields),
+			'rss_enabled' => 'no',
+			'status' => 'paused',
 		]);
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
 	}
@@ -112,7 +151,6 @@ class Campaign
 				'model_id' => $default_text_model,
 				'media_prompt' => '',
 				'image_model_id' => $default_image_model,
-				'introductory_hook_brief' => '',
 				'key_takeaways' => 'yes',
 				'conclusion' => 'yes',
 				'faq' => 'yes',
@@ -170,7 +208,7 @@ class Campaign
 		$update_data = [];
 		$format = [];
 
-		foreach (['title' => '%s', 'webhook_id' => '%d', 'article_type' => '%s', 'tone_of_voice' => '%s', 'point_of_view' => '%s', 'readability' => '%s', 'language' => '%s', 'target_country' => '%s', 'post_type' => '%s', 'post_status' => '%s', 'default_author_id' => '%d', 'content_fields' => '%s'] as $key => $type) {
+		foreach (['title' => '%s', 'webhook_id' => '%d', 'campaign_type' => '%s', 'tone_of_voice' => '%s', 'point_of_view' => '%s', 'readability' => '%s', 'language' => '%s', 'target_country' => '%s', 'post_type' => '%s', 'post_status' => '%s', 'default_author_id' => '%d', 'instruction_id' => '%d', 'content_fields' => '%s', 'rss_enabled' => '%s', 'status' => '%s'] as $key => $type) {
 			if (isset($data[$key])) {
 				$update_data[$key] = $data[$key];
 				$format[] = $type;

@@ -3,7 +3,9 @@
 namespace PostStation\Admin;
 
 use PostStation\Admin\Ajax\CampaignAjaxHandler;
+use PostStation\Admin\Ajax\InstructionAjaxHandler;
 use PostStation\Admin\Ajax\PostTaskAjaxHandler;
+use PostStation\Admin\Ajax\RssAjaxHandler;
 use PostStation\Admin\Ajax\SettingsAjaxHandler;
 use PostStation\Admin\Ajax\WebhookAjaxHandler;
 
@@ -14,6 +16,8 @@ class App
 	private PostTaskAjaxHandler $posttask_handler;
 	private WebhookAjaxHandler $webhook_handler;
 	private SettingsAjaxHandler $settings_handler;
+	private InstructionAjaxHandler $instruction_handler;
+	private RssAjaxHandler $rss_handler;
 
 	public function __construct()
 	{
@@ -22,6 +26,8 @@ class App
 		$this->posttask_handler = new PostTaskAjaxHandler();
 		$this->webhook_handler = new WebhookAjaxHandler();
 		$this->settings_handler = new SettingsAjaxHandler();
+		$this->instruction_handler = new InstructionAjaxHandler();
+		$this->rss_handler = new RssAjaxHandler();
 
 		add_action('admin_menu', [$this, 'register_menu']);
 		add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
@@ -36,6 +42,8 @@ class App
 		add_action('wp_ajax_poststation_stop_campaign_run', [$this->campaign_handler, 'stop_campaign_run']);
 		add_action('wp_ajax_poststation_export_campaign', [$this->campaign_handler, 'export_campaign']);
 		add_action('wp_ajax_poststation_import_campaign', [$this->campaign_handler, 'import_campaign']);
+		add_action('wp_ajax_poststation_run_rss_now', [$this->rss_handler, 'run_rss_now']);
+		add_action('wp_ajax_poststation_rss_add_to_tasks', [$this->rss_handler, 'rss_add_to_tasks']);
 
 		add_action('wp_ajax_poststation_create_posttask', [$this->posttask_handler, 'create_posttask']);
 		add_action('wp_ajax_poststation_update_posttasks', [$this->posttask_handler, 'update_posttasks']);
@@ -55,6 +63,12 @@ class App
 		add_action('wp_ajax_poststation_get_openrouter_models', [$this->settings_handler, 'get_openrouter_models']);
 
 		add_action('wp_ajax_poststation_get_bootstrap', [$this, 'ajax_get_bootstrap']);
+
+		add_action('wp_ajax_poststation_create_instruction', [$this->instruction_handler, 'create_instruction']);
+		add_action('wp_ajax_poststation_update_instruction', [$this->instruction_handler, 'update_instruction']);
+		add_action('wp_ajax_poststation_duplicate_instruction', [$this->instruction_handler, 'duplicate_instruction']);
+		add_action('wp_ajax_poststation_reset_instruction', [$this->instruction_handler, 'reset_instruction']);
+		add_action('wp_ajax_poststation_delete_instruction', [$this->instruction_handler, 'delete_instruction']);
 
 		// Clear static bootstrap cache when terms or users change
 		add_action('created_term', [BootstrapDataProvider::class, 'clear_static_cache']);
@@ -101,11 +115,14 @@ class App
 		$asset_file = $build_path . 'poststation-admin.asset.php';
 		$asset = file_exists($asset_file)
 			? require $asset_file
-			: ['dependencies' => ['react', 'react-dom'], 'version' => filemtime($build_path . 'poststation-admin.js')];
+			: [];
+		$asset = is_array($asset) ? $asset : [];
+		$dependencies = $asset['dependencies'] ?? ['react', 'react-dom'];
+		$version = $asset['version'] ?? filemtime($build_path . 'poststation-admin.js');
 
-		wp_enqueue_script('poststation-react-app', $build_url . 'poststation-admin.js', $asset['dependencies'], $asset['version'], true);
+		wp_enqueue_script('poststation-react-app', $build_url . 'poststation-admin.js', $dependencies, $version, true);
 		if (file_exists($build_path . 'poststation-admin.css')) {
-			wp_enqueue_style('poststation-react-app', $build_url . 'poststation-admin.css', [], $asset['version']);
+			wp_enqueue_style('poststation-react-app', $build_url . 'poststation-admin.css', [], $version);
 		}
 		wp_enqueue_media();
 

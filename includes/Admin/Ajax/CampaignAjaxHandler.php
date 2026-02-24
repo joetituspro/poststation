@@ -4,8 +4,10 @@ namespace PostStation\Admin\Ajax;
 
 use PostStation\Admin\BootstrapDataProvider;
 use PostStation\Models\Campaign;
+use PostStation\Models\CampaignRss;
 use PostStation\Models\PostTask;
 use PostStation\Services\BackgroundRunner;
+use PostStation\Services\RssService;
 use PostStation\Services\TaskRunner;
 
 class CampaignAjaxHandler
@@ -39,6 +41,22 @@ class CampaignAjaxHandler
 		$campaign = Campaign::get_by_id($id);
 		if (!$campaign) {
 			wp_send_json_error(['message' => 'Campaign not found']);
+		}
+
+		if (!isset($campaign['rss_enabled']) || $campaign['rss_enabled'] === '') {
+			$campaign['rss_enabled'] = 'no';
+		}
+		if (!isset($campaign['status']) || $campaign['status'] === '') {
+			$campaign['status'] = 'paused';
+		}
+		$rss_config = CampaignRss::get_by_campaign($id);
+		if ($rss_config) {
+			$campaign['rss_config'] = [
+				'frequency_interval' => (int) ($rss_config['frequency_interval'] ?? 60),
+				'sources' => $rss_config['sources'],
+			];
+		} else {
+			$campaign['rss_config'] = null;
 		}
 
 		wp_send_json_success([
@@ -83,10 +101,21 @@ class CampaignAjaxHandler
 			wp_send_json_error(['message' => 'Invalid payload']);
 		}
 
+		// Preserve existing status if not explicitly provided, so Live doesn't auto-turn off on unrelated updates.
+		$existing_campaign = Campaign::get_by_id($campaign_id);
+		$current_status = $existing_campaign['status'] ?? 'paused';
+
+		$rss_enabled = sanitize_text_field($_POST['rss_enabled'] ?? 'no');
+		if (!in_array($rss_enabled, ['yes', 'no'], true)) {
+			$rss_enabled = 'no';
+		}
+		$rss_config_raw = isset($_POST['rss_config']) ? wp_unslash($_POST['rss_config']) : '';
+		$rss_config = is_string($rss_config_raw) ? json_decode($rss_config_raw, true) : $rss_config_raw;
+
 		$campaign_payload = [
 			'title' => $title,
 			'webhook_id' => (int) ($_POST['webhook_id'] ?? 0) ?: null,
-			'article_type' => sanitize_text_field($_POST['article_type'] ?? 'default'),
+			'campaign_type' => sanitize_text_field($_POST['campaign_type'] ?? 'default'),
 			'tone_of_voice' => sanitize_text_field($_POST['tone_of_voice'] ?? 'none'),
 			'point_of_view' => sanitize_text_field($_POST['point_of_view'] ?? 'none'),
 			'readability' => sanitize_text_field($_POST['readability'] ?? 'grade_8'),
@@ -95,7 +124,10 @@ class CampaignAjaxHandler
 			'post_type' => sanitize_text_field($_POST['post_type'] ?? 'post'),
 			'post_status' => sanitize_text_field($_POST['post_status'] ?? 'pending'),
 			'default_author_id' => (int) ($_POST['default_author_id'] ?? 0) ?: get_current_user_id(),
+			'instruction_id' => (int) ($_POST['instruction_id'] ?? 0) ?: null,
 			'content_fields' => wp_unslash($_POST['content_fields'] ?? '{}'),
+			'rss_enabled' => $rss_enabled,
+			'status' => $this->sanitize_campaign_status($_POST['status'] ?? $current_status),
 		];
 
 		$validation_error = $this->validate_campaign_payload($campaign_payload);
@@ -103,19 +135,54 @@ class CampaignAjaxHandler
 			wp_send_json_error(['message' => $validation_error]);
 		}
 
+		$rss_validation = $this->validate_rss_config($rss_enabled, $rss_config);
+		if ($rss_validation !== null) {
+			wp_send_json_error(['message' => $rss_validation]);
+		}
+
 		$success = Campaign::update($campaign_id, $campaign_payload);
 
 		if (!$success) {
 			wp_send_json_error(['message' => 'Failed to update campaign']);
 		}
+
+		if ($rss_enabled === 'no') {
+			CampaignRss::delete_by_campaign($campaign_id);
+		} else {
+			$frequency_interval = 60;
+			$sources = [];
+			if (is_array($rss_config)) {
+				$frequency_interval = isset($rss_config['frequency_interval']) ? (int) $rss_config['frequency_interval'] : 60;
+				if (!in_array($frequency_interval, RssService::ALLOWED_INTERVALS, true)) {
+					$frequency_interval = 60;
+				}
+				$sources = isset($rss_config['sources']) && is_array($rss_config['sources']) ? $rss_config['sources'] : [];
+			}
+			$sources = array_values(array_filter($sources, function ($s) {
+				return is_array($s) && !empty(trim((string) ($s['feed_url'] ?? '')));
+			}));
+			CampaignRss::save($campaign_id, $frequency_interval, $sources);
+		}
+
+		$new_status = $this->sanitize_campaign_status($_POST['status'] ?? $current_status);
+		if ($new_status === 'active' && !empty((int) ($_POST['webhook_id'] ?? 0))) {
+			$runner = new BackgroundRunner();
+			$runner->start_run_if_pending($campaign_id);
+		}
+
 		wp_send_json_success();
+	}
+
+	private function sanitize_campaign_status(string $status): string
+	{
+		return in_array($status, ['active', 'paused'], true) ? $status : 'paused';
 	}
 
 	private function validate_campaign_payload(array $payload): ?string
 	{
 		$required_fields = [
 			'title' => 'Campaign title is required.',
-			'article_type' => 'Campaign Article Type is required.',
+			'campaign_type' => 'Campaign Type is required.',
 			'tone_of_voice' => 'Campaign Tone of Voice is required.',
 			'point_of_view' => 'Campaign Point of View is required.',
 			'readability' => 'Campaign Readability is required.',
@@ -158,6 +225,21 @@ class CampaignAjaxHandler
 		return null;
 	}
 
+	private function validate_rss_config(string $rss_enabled, $rss_config): ?string
+	{
+		if ($rss_enabled !== 'yes') {
+			return null;
+		}
+		if (!is_array($rss_config)) {
+			return null;
+		}
+		$interval = isset($rss_config['frequency_interval']) ? (int) $rss_config['frequency_interval'] : 0;
+		if (!in_array($interval, RssService::ALLOWED_INTERVALS, true)) {
+			return __('RSS frequency must be 15, 60, 360, or 1440 minutes.', 'poststation');
+		}
+		return null;
+	}
+
 	private function is_blank($value): bool
 	{
 		return trim((string) ($value ?? '')) === '';
@@ -173,6 +255,7 @@ class CampaignAjaxHandler
 		}
 
 		$campaign_id = (int) ($_POST['id'] ?? 0);
+		CampaignRss::delete_by_campaign($campaign_id);
 		PostTask::delete_by_campaign($campaign_id);
 		if (!Campaign::delete($campaign_id)) {
 			wp_send_json_error(['message' => 'Failed to delete campaign']);
@@ -193,13 +276,23 @@ class CampaignAjaxHandler
 		$task_id = (int) ($_POST['task_id'] ?? 0);
 		$webhook_id = (int) ($_POST['webhook_id'] ?? 0);
 
-		$result = TaskRunner::dispatch_task($campaign_id, $task_id, $webhook_id);
-		if (!$result['success']) {
-			wp_send_json_error(['message' => $result['message'] ?? 'Failed to run task']);
+		$campaign = Campaign::get_by_id($campaign_id);
+		if (!$campaign || empty($campaign['webhook_id'])) {
+			wp_send_json_error(['message' => 'Campaign not found or webhook missing']);
 		}
 
-		$runner = new BackgroundRunner();
-		$runner->schedule_status_check($campaign_id, $task_id, $webhook_id, 0);
+		$is_live = ($campaign['status'] ?? '') === 'active';
+		if ($is_live) {
+			$runner = new BackgroundRunner();
+			if (!$runner->start_run_for_task($campaign_id, $task_id, $webhook_id)) {
+				wp_send_json_error(['message' => 'Failed to run task']);
+			}
+		} else {
+			$result = TaskRunner::dispatch_task($campaign_id, $task_id, $webhook_id);
+			if (empty($result['success'])) {
+				wp_send_json_error(['message' => $result['message'] ?? 'Failed to run task']);
+			}
+		}
 
 		wp_send_json_success([
 			'message' => 'Task sent to webhook for processing',

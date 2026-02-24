@@ -15,6 +15,7 @@ class ApiHandler
 	private const OPTION_KEY = 'poststation_api_key';
 	private const REQUIRED_FIELDS = [];
 	private const ALLOWED_FIELDS = [
+		'execution_id',
 		'task_id',
 		'title',
 		'content',
@@ -153,7 +154,8 @@ class ApiHandler
 					}
 
 					$status_filter = trim((string)($_GET['status'] ?? ''));
-					$response = $this->get_tasks_by_status($campaign_id, $status_filter);
+					$last_task_count = (int) ($_GET['last_task_count'] ?? -1);
+					$response = $this->get_tasks_by_status($campaign_id, $status_filter, $last_task_count);
 					$this->send_response($response);
 					break;
 
@@ -358,12 +360,15 @@ class ApiHandler
 	}
 
 	/**
-	 * Get pending and processing tasks for a campaign.
+	 * Get tasks by status for a campaign. Returns status payload and, when client sends last_task_count,
+	 * a flag and full task list if new tasks were added (e.g. by background RSS).
 	 *
 	 * @param int $campaign_id
-	 * @return array
+	 * @param string $status_filter
+	 * @param int $last_task_count Client's last known task count; -1 to omit new_tasks_available logic.
+	 * @return array{tasks: array, new_tasks_available: bool, full_tasks?: array}
 	 */
-	private function get_tasks_by_status(int $campaign_id, string $status_filter): array
+	private function get_tasks_by_status(int $campaign_id, string $status_filter, int $last_task_count = -1): array
 	{
 		$allowed_statuses = ['pending', 'processing', 'completed', 'failed', 'cancelled'];
 		if ($status_filter === 'all' || $status_filter === '') {
@@ -381,26 +386,33 @@ class ApiHandler
 		}
 
 		$tasks = PostTask::get_by_campaign($campaign_id);
-		if (empty($tasks)) {
-			return [];
-		}
+		$current_count = is_array($tasks) ? count($tasks) : 0;
+		$new_tasks_available = $last_task_count >= 0 && $current_count > $last_task_count;
 
-		$response = [];
-		foreach ($tasks as $task) {
-			if (!in_array($task['status'], $statuses, true)) {
-				continue;
+		$status_list = [];
+		if (!empty($tasks)) {
+			foreach ($tasks as $task) {
+				if (!in_array($task['status'], $statuses, true)) {
+					continue;
+				}
+				$status_list[] = [
+					'id' => (int) $task['id'],
+					'status' => $task['status'],
+					'progress' => $task['progress'] ?? null,
+					'post_id' => $task['post_id'] ?? null,
+					'error_message' => $task['error_message'] ?? null,
+				];
 			}
-
-			$response[] = [
-				'id' => (int) $task['id'],
-				'status' => $task['status'],
-				'progress' => $task['progress'] ?? null,
-				'post_id' => $task['post_id'] ?? null,
-				'error_message' => $task['error_message'] ?? null,
-			];
 		}
 
-		return $response;
+		$result = [
+			'tasks' => $status_list,
+			'new_tasks_available' => $new_tasks_available,
+		];
+		if ($new_tasks_available && !empty($tasks)) {
+			$result['full_tasks'] = $tasks;
+		}
+		return $result;
 	}
 
 	/**
@@ -412,21 +424,39 @@ class ApiHandler
 	 */
 	private function update_task_progress(array $data): array
 	{
-		$task_id = $data['task_id'] ?? null;
+		$task_id = isset($data['task_id']) ? (int) $data['task_id'] : null;
+		$execution_id = isset($data['execution_id']) ? trim((string) $data['execution_id']) : null;
 		$status = $data['status'] ?? null;
 		$progress = $data['progress'] ?? null;
-		$error_message = $data['error_message'] ?? null;
+		$error_message = isset($data['error_message']) ? (string) $data['error_message'] : null;
 
-		if (!$task_id) {
-			throw new Exception('Missing task_id', 400);
+		if (!$task_id && ($execution_id === null || $execution_id === '')) {
+			throw new Exception('Missing task_id or execution_id', 400);
 		}
 
-		$task = PostTask::get_by_id($task_id);
+		if ($task_id) {
+			$task = PostTask::get_by_id($task_id);
+		} else {
+			$task = PostTask::get_latest_by_execution_id($execution_id);
+			if ($task) {
+				$task_id = (int) $task['id'];
+			}
+		}
+
 		if (!$task) {
 			throw new Exception('Post task not found', 404);
 		}
 
+		if ($status === 'failed') {
+			if ($error_message === '' || $error_message === null) {
+				throw new Exception('error_message is required when status is failed', 400);
+			}
+		}
+
 		$update_data = [];
+		if ($execution_id !== null && $execution_id !== '') {
+			$update_data['execution_id'] = $execution_id;
+		}
 		if ($progress !== null) {
 			$update_data['progress'] = $progress;
 		}
@@ -438,7 +468,7 @@ class ApiHandler
 					$update_data['error_message'] = null;
 					$update_data['progress'] = null;
 				}
-				if ($status === 'failed' && $error_message) {
+				if ($status === 'failed' && $error_message !== null && $error_message !== '') {
 					$update_data['error_message'] = $error_message;
 				}
 			}
@@ -454,7 +484,7 @@ class ApiHandler
 
 		return [
 			'success' => true,
-			'message' => 'Progress updated successfully'
+			'message' => 'Progress updated successfully',
 		];
 	}
 }

@@ -24,6 +24,7 @@ export const setBootstrap = (bootstrap = {}) => {
 		'settings',
 		'webhooks',
 		'campaigns',
+		'instructions',
 		'openrouter_models',
 	];
 
@@ -113,6 +114,8 @@ export const campaigns = {
 	delete: (id) => ajax('poststation_delete_campaign', { id }),
 	run: (id, taskId, webhookId) => ajax('poststation_run_campaign', { id, task_id: taskId, webhook_id: webhookId }),
 	stopRun: (id) => ajax('poststation_stop_campaign_run', { id }),
+	runRssNow: (id) => ajax('poststation_run_rss_now', { id }),
+	rssAddToTasks: (id, items) => ajax('poststation_rss_add_to_tasks', { id, items }),
 	export: (id) => ajax('poststation_export_campaign', { id }),
 	import: (file) => {
 		const formData = new FormData();
@@ -130,9 +133,18 @@ export const campaigns = {
 	},
 };
 
+/**
+ * Generate a task id under 8 digits (ms % 1e7 * 10 + random 0-9). Safe for JS and MySQL bigint unsigned.
+ */
+export function generateTaskId() {
+	const n = (Date.now() % 1e7) * 10 + Math.floor(Math.random() * 10);
+	return n > 0 ? n : 1;
+}
+
 // PostTask API
 export const postTasks = {
-	create: (campaignId) => ajax('poststation_create_posttask', { campaign_id: campaignId }),
+	create: (campaignId, options = {}) =>
+		ajax('poststation_create_posttask', { campaign_id: campaignId, ...options }),
 	update: (campaignId, tasksData) => ajax('poststation_update_posttasks', { campaign_id: campaignId, tasks: tasksData }),
 	delete: (id) => ajax('poststation_delete_posttask', { id }),
 	clearCompleted: (campaignId) => ajax('poststation_clear_completed_posttasks', { campaign_id: campaignId }),
@@ -161,6 +173,27 @@ export const webhooks = {
 	delete: (id) => ajax('poststation_delete_webhook', { id }),
 };
 
+// Instruction presets API
+export const instructions = {
+	create: (data) =>
+		ajax('poststation_create_instruction', {
+			key: data.key,
+			name: data.name,
+			description: data.description ?? '',
+			instructions: JSON.stringify(data.instructions ?? { title: '', body: '', outline: '', section: '' }),
+		}),
+	update: (id, data) =>
+		ajax('poststation_update_instruction', {
+			id,
+			description: data.description ?? '',
+			instructions: JSON.stringify(data.instructions ?? { title: '', body: '', outline: '', section: '' }),
+		}),
+	duplicate: (id, newKey, newName) =>
+		ajax('poststation_duplicate_instruction', { id, new_key: newKey, new_name: newName }),
+	reset: (id) => ajax('poststation_reset_instruction', { id }),
+	delete: (id) => ajax('poststation_delete_instruction', { id }),
+};
+
 // Settings API
 export const settings = {
 	get: () => ajax('poststation_get_settings'),
@@ -173,8 +206,13 @@ export const settings = {
 		}),
 };
 
-export const getPendingProcessingPostTasks = (campaignId) =>
-	psApi(`posttasks?campaign_id=${campaignId}&status=all`);
+export const getPendingProcessingPostTasks = (campaignId, lastTaskCount = null) => {
+	const params = new URLSearchParams({ campaign_id: campaignId, status: 'all' });
+	if (lastTaskCount != null && lastTaskCount >= 0) {
+		params.set('last_task_count', String(lastTaskCount));
+	}
+	return psApi(`posttasks?${params.toString()}`);
+};
 
 // Get config values
 const getBootstrapValue = (key) => getBootstrap()[key] ?? getConfig()[key];
@@ -188,6 +226,7 @@ export const getCountries = () => getBootstrapValue('countries') || {};
 export const getBootstrapSettings = () => getBootstrap().settings || null;
 export const getBootstrapWebhooks = () => getBootstrap().webhooks || null;
 export const getBootstrapCampaigns = () => getBootstrap().campaigns || null;
+export const getBootstrapInstructions = () => getBootstrap().instructions || [];
 export const getBootstrapOpenRouterModels = () => getBootstrap().openrouter_models || [];
 
 export const openrouter = {

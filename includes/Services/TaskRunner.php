@@ -5,6 +5,7 @@ namespace PostStation\Services;
 use PostStation\Models\PostTask;
 use PostStation\Models\Campaign;
 use PostStation\Models\Webhook;
+use PostStation\Models\Instruction;
 use PostStation\Utils\Languages;
 use PostStation\Utils\Countries;
 use Exception;
@@ -34,7 +35,12 @@ class TaskRunner
 			$content_fields = array_replace_recursive($default_content_fields, $content_fields);
 			$title_override = trim((string) ($task['title_override'] ?? ''));
 			$slug_override = trim((string) ($task['slug_override'] ?? ''));
-			$sitemap_entries = (new Sitemap())->get_sitemap_json($campaign['post_type']);
+			$sitemap_service = new Sitemap();
+			$body_config = $content_fields['body'] ?? [];
+			$post_type_only = !empty($body_config['internal_links_post_type_only']);
+			$sitemap_entries = $post_type_only
+				? $sitemap_service->get_sitemap_json($campaign['post_type'])
+				: $sitemap_service->get_sitemap_json_all_public();
 			$sitemap_urls = array_values(array_filter(array_map(
 				static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
 				$sitemap_entries
@@ -172,10 +178,10 @@ class TaskRunner
 				);
 			}
 
-			$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'default';
+			$campaign_type = $task['campaign_type'] ?? $campaign['campaign_type'] ?? 'default';
 			$topic = trim((string) ($task['topic'] ?? ''));
 			$research_url = trim((string) ($task['research_url'] ?? ''));
-			if ($article_type === 'rewrite_blog_post') {
+			if ($campaign_type === 'rewrite_blog_post') {
 				$topic = '';
 			} else {
 				$research_url = '';
@@ -186,6 +192,20 @@ class TaskRunner
 			$language_key = $campaign['language'] ?? 'en';
 			$country_key = $campaign['target_country'] ?? 'international';
 
+			$instruction_set = null;
+			$instruction_id = isset($campaign['instruction_id']) ? (int) $campaign['instruction_id'] : 0;
+			if ($instruction_id > 0) {
+				$instruction = Instruction::get_by_id($instruction_id);
+				if ($instruction) {
+					$instruction_set = [
+						'key' => $instruction['key'] ?? '',
+						'name' => $instruction['name'] ?? '',
+						'description' => $instruction['description'] ?? '',
+						'instructions' => $instruction['instructions'] ?? ['title' => '', 'body' => '', 'outline' => '', 'section' => ''],
+					];
+				}
+			}
+
 			$body = [
 				'task_id' => $task['id'],
 				'research_url' => $research_url,
@@ -194,7 +214,7 @@ class TaskRunner
 				'slug_override' => $slug_override,
 				'feature_image_id' => !empty($task['feature_image_id']) ? (int) $task['feature_image_id'] : null,
 				'keywords' => implode(', ', $keywords),
-				'article_type' => $article_type,
+				'campaign_type' => $campaign_type,
 				'language' => [
 					'key' => $language_key,
 					'name' => Languages::get_name($language_key),
@@ -207,6 +227,7 @@ class TaskRunner
 				'point_of_view' => (string) ($campaign['point_of_view'] ?? 'none'),
 				'readability' => (string) ($campaign['readability'] ?? 'grade_8'),
 				'content_fields' => $content_fields,
+				'instruction_set' => $instruction_set,
 				'sitemap' => $sitemap_csv,
 				'callback_url' => get_site_url() . '/ps-api',
 				'api_key' => get_option('poststation_api_key'),
@@ -238,6 +259,14 @@ class TaskRunner
 				));
 			}
 
+			$response_body = wp_remote_retrieve_body($response);
+			if (is_string($response_body)) {
+				$execution_id = trim($response_body);
+				if ($execution_id !== '') {
+					PostTask::update($task_id, ['execution_id' => $execution_id]);
+				}
+			}
+
 			return ['success' => true, 'task' => $task];
 		} catch (Exception $e) {
 			PostTask::update($task_id, [
@@ -259,18 +288,27 @@ class TaskRunner
 		$keywords_raw = $task['keywords'] ?? '';
 		$keywords = array_values(array_filter(array_map('trim', explode(',', $keywords_raw))));
 		$keywords = array_slice($keywords, 0, 5);
-		$article_type = $task['article_type'] ?? $campaign['article_type'] ?? 'default';
+		$campaign_type = $task['campaign_type'] ?? $campaign['campaign_type'] ?? 'default';
+
+		$content_fields = !empty($campaign['content_fields']) ? json_decode($campaign['content_fields'], true) : [];
+		$body_config = is_array($content_fields) ? ($content_fields['body'] ?? []) : [];
+		$post_type_only = !empty($body_config['internal_links_post_type_only']);
+		$sitemap_service = new Sitemap();
+		$sitemap_entries = $post_type_only
+			? $sitemap_service->get_sitemap_json($campaign['post_type'])
+			: $sitemap_service->get_sitemap_json_all_public();
+		$sitemap_str = implode(', ', array_values(array_filter(array_map(
+			static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
+			$sitemap_entries
+		))));
 
 		$placeholders = [
 			'{{research_url}}' => $task['research_url'] ?? '',
 			'{{topic}}' => $topic,
 			'{{keywords}}' => implode(', ', $keywords),
-			'{{article_type}}' => $article_type,
+			'{{campaign_type}}' => $campaign_type,
 			'{{image_title}}' => str_replace('{{title}}', $topic ?: 'Post', $task['feature_image_title'] ?? '{{title}}'),
-			'{{sitemap}}' => implode(', ', array_values(array_filter(array_map(
-				static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
-				(new Sitemap())->get_sitemap_json($campaign['post_type'])
-			)))),
+			'{{sitemap}}' => $sitemap_str,
 		];
 
 		return str_replace(array_keys($placeholders), array_values($placeholders), $text);

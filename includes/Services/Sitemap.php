@@ -44,6 +44,26 @@ class Sitemap
 		return $sitemap;
 	}
 
+	/**
+	 * Get sitemap entries for all public post types (merged).
+	 */
+	public function get_sitemap_json_all_public(): array
+	{
+		$cache_key = self::CACHE_PREFIX . 'all_public';
+		$sitemap = get_transient($cache_key);
+
+		if (false === $sitemap) {
+			$post_types = get_post_types(['public' => true], 'names');
+			$sitemap = [];
+			foreach ($post_types as $post_type) {
+				$sitemap = array_merge($sitemap, $this->get_sitemap_json($post_type));
+			}
+			set_transient($cache_key, $sitemap, self::CACHE_EXPIRATION);
+		}
+
+		return $sitemap;
+	}
+
 	public function clear_sitemap_cache($post_id, $post = null, $update = null): void
 	{
 		if ($post === null) {
@@ -55,5 +75,6 @@ class Sitemap
 		}
 
 		delete_transient(self::CACHE_PREFIX . $post->post_type);
+		delete_transient(self::CACHE_PREFIX . 'all_public');
 	}
 }

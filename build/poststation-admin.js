@@ -5205,9 +5205,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ajax: () => (/* binding */ ajax),
 /* harmony export */   campaigns: () => (/* binding */ campaigns),
+/* harmony export */   generateTaskId: () => (/* binding */ generateTaskId),
 /* harmony export */   getAdminUrl: () => (/* binding */ getAdminUrl),
 /* harmony export */   getBootstrap: () => (/* binding */ getBootstrap),
 /* harmony export */   getBootstrapCampaigns: () => (/* binding */ getBootstrapCampaigns),
+/* harmony export */   getBootstrapInstructions: () => (/* binding */ getBootstrapInstructions),
 /* harmony export */   getBootstrapOpenRouterModels: () => (/* binding */ getBootstrapOpenRouterModels),
 /* harmony export */   getBootstrapSettings: () => (/* binding */ getBootstrapSettings),
 /* harmony export */   getBootstrapWebhooks: () => (/* binding */ getBootstrapWebhooks),
@@ -5216,6 +5218,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getPendingProcessingPostTasks: () => (/* binding */ getPendingProcessingPostTasks),
 /* harmony export */   getPostTypes: () => (/* binding */ getPostTypes),
 /* harmony export */   getTaxonomies: () => (/* binding */ getTaxonomies),
+/* harmony export */   instructions: () => (/* binding */ instructions),
 /* harmony export */   openrouter: () => (/* binding */ openrouter),
 /* harmony export */   postTasks: () => (/* binding */ postTasks),
 /* harmony export */   psApi: () => (/* binding */ psApi),
@@ -5256,7 +5259,7 @@ var setBootstrap = function setBootstrap() {
     window.poststation = {};
   }
   window.poststation.bootstrap = bootstrap;
-  var mirrorKeys = ['post_types', 'taxonomies', 'languages', 'countries', 'users', 'current_user_id', 'settings', 'webhooks', 'campaigns', 'openrouter_models'];
+  var mirrorKeys = ['post_types', 'taxonomies', 'languages', 'countries', 'users', 'current_user_id', 'settings', 'webhooks', 'campaigns', 'instructions', 'openrouter_models'];
   mirrorKeys.forEach(function (key) {
     if (bootstrap[key] !== undefined) {
       window.poststation[key] = bootstrap[key];
@@ -5436,6 +5439,17 @@ var campaigns = {
       id: id
     });
   },
+  runRssNow: function runRssNow(id) {
+    return ajax('poststation_run_rss_now', {
+      id: id
+    });
+  },
+  rssAddToTasks: function rssAddToTasks(id, items) {
+    return ajax('poststation_rss_add_to_tasks', {
+      id: id,
+      items: items
+    });
+  },
   "export": function _export(id) {
     return ajax('poststation_export_campaign', {
       id: id
@@ -5460,12 +5474,21 @@ var campaigns = {
   }
 };
 
+/**
+ * Generate a task id under 8 digits (ms % 1e7 * 10 + random 0-9). Safe for JS and MySQL bigint unsigned.
+ */
+function generateTaskId() {
+  var n = Date.now() % 1e7 * 10 + Math.floor(Math.random() * 10);
+  return n > 0 ? n : 1;
+}
+
 // PostTask API
 var postTasks = {
   create: function create(campaignId) {
-    return ajax('poststation_create_posttask', {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    return ajax('poststation_create_posttask', _objectSpread({
       campaign_id: campaignId
-    });
+    }, options));
   },
   update: function update(campaignId, tasksData) {
     return ajax('poststation_update_posttasks', {
@@ -5523,6 +5546,54 @@ var webhooks = {
   }
 };
 
+// Instruction presets API
+var instructions = {
+  create: function create(data) {
+    var _data$description, _data$instructions;
+    return ajax('poststation_create_instruction', {
+      key: data.key,
+      name: data.name,
+      description: (_data$description = data.description) !== null && _data$description !== void 0 ? _data$description : '',
+      instructions: JSON.stringify((_data$instructions = data.instructions) !== null && _data$instructions !== void 0 ? _data$instructions : {
+        title: '',
+        body: '',
+        outline: '',
+        section: ''
+      })
+    });
+  },
+  update: function update(id, data) {
+    var _data$description2, _data$instructions2;
+    return ajax('poststation_update_instruction', {
+      id: id,
+      description: (_data$description2 = data.description) !== null && _data$description2 !== void 0 ? _data$description2 : '',
+      instructions: JSON.stringify((_data$instructions2 = data.instructions) !== null && _data$instructions2 !== void 0 ? _data$instructions2 : {
+        title: '',
+        body: '',
+        outline: '',
+        section: ''
+      })
+    });
+  },
+  duplicate: function duplicate(id, newKey, newName) {
+    return ajax('poststation_duplicate_instruction', {
+      id: id,
+      new_key: newKey,
+      new_name: newName
+    });
+  },
+  reset: function reset(id) {
+    return ajax('poststation_reset_instruction', {
+      id: id
+    });
+  },
+  "delete": function _delete(id) {
+    return ajax('poststation_delete_instruction', {
+      id: id
+    });
+  }
+};
+
 // Settings API
 var settings = {
   get: function get() {
@@ -5546,7 +5617,15 @@ var settings = {
   }
 };
 var getPendingProcessingPostTasks = function getPendingProcessingPostTasks(campaignId) {
-  return psApi("posttasks?campaign_id=".concat(campaignId, "&status=all"));
+  var lastTaskCount = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  var params = new URLSearchParams({
+    campaign_id: campaignId,
+    status: 'all'
+  });
+  if (lastTaskCount != null && lastTaskCount >= 0) {
+    params.set('last_task_count', String(lastTaskCount));
+  }
+  return psApi("posttasks?".concat(params.toString()));
 };
 
 // Get config values
@@ -5577,6 +5656,9 @@ var getBootstrapWebhooks = function getBootstrapWebhooks() {
 };
 var getBootstrapCampaigns = function getBootstrapCampaigns() {
   return getBootstrap().campaigns || null;
+};
+var getBootstrapInstructions = function getBootstrapInstructions() {
+  return getBootstrap().instructions || [];
 };
 var getBootstrapOpenRouterModels = function getBootstrapOpenRouterModels() {
   return getBootstrap().openrouter_models || [];
@@ -5635,7 +5717,7 @@ var STATUS_OPTIONS = [{
   value: 'private',
   label: 'Private'
 }];
-var ARTICLE_TYPE_OPTIONS = [{
+var CAMPAIGN_TYPE_OPTIONS = [{
   value: 'default',
   label: 'Default'
 }, {
@@ -5775,12 +5857,12 @@ function CampaignForm(_ref) {
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
       className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Select, {
-        label: "Article Type",
-        tooltip: "<strong>Article Type</strong> sets the overall writing style and structure used for this campaign.",
-        options: ARTICLE_TYPE_OPTIONS,
-        value: campaign.article_type || 'default',
+        label: "Campaign Type",
+        tooltip: "<strong>Campaign Type</strong> sets the overall writing style and structure used for this campaign.",
+        options: CAMPAIGN_TYPE_OPTIONS,
+        value: campaign.campaign_type || 'default',
         onChange: function onChange(e) {
-          return handleChange('article_type', e.target.value);
+          return handleChange('campaign_type', e.target.value);
         },
         required: true
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Select, {
@@ -5856,6 +5938,20 @@ function CampaignForm(_ref) {
         },
         placeholder: "Select author...",
         required: true
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Select, {
+        label: "RSS Feeds",
+        tooltip: "Enable RSS feed sources for this campaign. When enabled, you can set feed URLs and frequency, and run RSS checks to add items as tasks.",
+        options: [{
+          value: 'no',
+          label: 'No'
+        }, {
+          value: 'yes',
+          label: 'Yes'
+        }],
+        value: campaign.rss_enabled || 'no',
+        onChange: function onChange(e) {
+          return handleChange('rss_enabled', e.target.value);
+        }
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Select, {
         label: "Webhook",
         tooltip: "Webhook endpoint that receives the generation payload for this campaign.",
@@ -6240,7 +6336,7 @@ function ContentFieldsEditor(_ref) {
           onChange: function onChange(config) {
             return handleFieldChange('body', config);
           },
-          articleType: (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default'
+          campaignType: (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default'
         })
       }), ((_contentFields$catego = contentFields.categories) === null || _contentFields$catego === void 0 ? void 0 : _contentFields$catego.enabled) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(FieldCard, {
         title: "Categories",
@@ -6397,9 +6493,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common */ "./src/components/common/index.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
@@ -6412,7 +6505,10 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var ARTICLE_TYPE_OPTIONS = [{
+// Cache attachment ID -> preview URL so image doesn't refetch when task block is expanded again
+
+var attachmentUrlCache = new Map();
+var CAMPAIGN_TYPE_OPTIONS = [{
   value: 'default',
   label: 'Default'
 }, {
@@ -6423,19 +6519,26 @@ var ARTICLE_TYPE_OPTIONS = [{
   label: 'Rewrite Blog Post'
 }];
 function PostTaskForm(_ref) {
-  var _task$topic, _task$title_override, _task$slug_override;
+  var _task$topic, _task$keywords, _task$title_override, _task$slug_override;
   var task = _ref.task,
     campaign = _ref.campaign,
     onChange = _ref.onChange;
   var isProcessing = task.status === 'processing';
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
+      var id = Number(task === null || task === void 0 ? void 0 : task.feature_image_id);
+      return id ? attachmentUrlCache.get(id) || '' : '';
+    }),
     _useState2 = _slicedToArray(_useState, 2),
     featuredImageUrl = _useState2[0],
     setFeaturedImageUrl = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(!task.slug_override || task.slug_override.trim() === ''),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState4 = _slicedToArray(_useState3, 2),
-    isSlugSynced = _useState4[0],
-    setIsSlugSynced = _useState4[1];
+    featureImageLoading = _useState4[0],
+    setFeatureImageLoading = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(!task.slug_override || task.slug_override.trim() === ''),
+    _useState6 = _slicedToArray(_useState5, 2),
+    isSlugSynced = _useState6[0],
+    setIsSlugSynced = _useState6[1];
   var handleChange = function handleChange(field, value) {
     if (isProcessing) return;
     var updates = _defineProperty({}, field, value);
@@ -6461,57 +6564,42 @@ function PostTaskForm(_ref) {
     }
     onChange(updates);
   };
-  var resolvedArticleType = task.article_type || (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default';
+  var resolvedCampaignType = task.campaign_type || (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default';
   var contentFields = campaign !== null && campaign !== void 0 && campaign.content_fields ? typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields : {};
   var imageConfig = (contentFields === null || contentFields === void 0 ? void 0 : contentFields.image) || null;
   var imageMode = (imageConfig === null || imageConfig === void 0 ? void 0 : imageConfig.mode) || 'generate_from_article';
   var showImageTitleOverride = Boolean((imageConfig === null || imageConfig === void 0 ? void 0 : imageConfig.enabled) && imageMode === 'generate_from_dt');
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var _window$wp;
     var mounted = true;
-    var resolveAttachment = /*#__PURE__*/function () {
-      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var _window$wp;
-        var attachmentId, _attrs$sizes, _attrs$sizes2, attachment, attrs, resolvedUrl;
-        return _regeneratorRuntime().wrap(function _callee$(_context) {
-          while (1) switch (_context.prev = _context.next) {
-            case 0:
-              attachmentId = Number(task.feature_image_id);
-              if (!(!attachmentId || !((_window$wp = window.wp) !== null && _window$wp !== void 0 && (_window$wp = _window$wp.media) !== null && _window$wp !== void 0 && _window$wp.attachment))) {
-                _context.next = 4;
-                break;
-              }
-              if (mounted) setFeaturedImageUrl('');
-              return _context.abrupt("return");
-            case 4:
-              _context.prev = 4;
-              attachment = window.wp.media.attachment(attachmentId);
-              _context.next = 8;
-              return attachment.fetch();
-            case 8:
-              attrs = attachment.attributes || {};
-              resolvedUrl = (attrs === null || attrs === void 0 || (_attrs$sizes = attrs.sizes) === null || _attrs$sizes === void 0 || (_attrs$sizes = _attrs$sizes.thumbnail) === null || _attrs$sizes === void 0 ? void 0 : _attrs$sizes.url) || (attrs === null || attrs === void 0 || (_attrs$sizes2 = attrs.sizes) === null || _attrs$sizes2 === void 0 || (_attrs$sizes2 = _attrs$sizes2.medium) === null || _attrs$sizes2 === void 0 ? void 0 : _attrs$sizes2.url) || (attrs === null || attrs === void 0 ? void 0 : attrs.url) || '';
-              if (mounted) {
-                setFeaturedImageUrl(resolvedUrl);
-              }
-              _context.next = 16;
-              break;
-            case 13:
-              _context.prev = 13;
-              _context.t0 = _context["catch"](4);
-              if (mounted) {
-                setFeaturedImageUrl('');
-              }
-            case 16:
-            case "end":
-              return _context.stop();
-          }
-        }, _callee, null, [[4, 13]]);
-      }));
-      return function resolveAttachment() {
-        return _ref2.apply(this, arguments);
-      };
-    }();
-    resolveAttachment();
+    var attachmentId = Number(task.feature_image_id);
+    if (!attachmentId || !((_window$wp = window.wp) !== null && _window$wp !== void 0 && (_window$wp = _window$wp.media) !== null && _window$wp !== void 0 && _window$wp.attachment)) {
+      setFeaturedImageUrl('');
+      setFeatureImageLoading(false);
+      return;
+    }
+    var cached = attachmentUrlCache.get(attachmentId);
+    if (cached) {
+      setFeaturedImageUrl(cached);
+      setFeatureImageLoading(false);
+      return;
+    }
+    setFeatureImageLoading(true);
+    var attachment = window.wp.media.attachment(attachmentId);
+    attachment.fetch().then(function () {
+      var _attrs$sizes, _attrs$sizes2;
+      if (!mounted) return;
+      var attrs = attachment.attributes || {};
+      var resolvedUrl = (attrs === null || attrs === void 0 || (_attrs$sizes = attrs.sizes) === null || _attrs$sizes === void 0 || (_attrs$sizes = _attrs$sizes.thumbnail) === null || _attrs$sizes === void 0 ? void 0 : _attrs$sizes.url) || (attrs === null || attrs === void 0 || (_attrs$sizes2 = attrs.sizes) === null || _attrs$sizes2 === void 0 || (_attrs$sizes2 = _attrs$sizes2.medium) === null || _attrs$sizes2 === void 0 ? void 0 : _attrs$sizes2.url) || (attrs === null || attrs === void 0 ? void 0 : attrs.url) || '';
+      attachmentUrlCache.set(attachmentId, resolvedUrl);
+      setFeaturedImageUrl(resolvedUrl);
+      setFeatureImageLoading(false);
+    })["catch"](function () {
+      if (mounted) {
+        setFeaturedImageUrl('');
+        setFeatureImageLoading(false);
+      }
+    });
     return function () {
       mounted = false;
     };
@@ -6524,16 +6612,16 @@ function PostTaskForm(_ref) {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
       className: "grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-3",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Select, {
-        label: "Article Type",
-        tooltip: "Overrides the campaign article type for this post task only.",
-        options: ARTICLE_TYPE_OPTIONS,
-        value: resolvedArticleType,
+        label: "Campaign Type",
+        tooltip: "Overrides the campaign type for this post task only.",
+        options: CAMPAIGN_TYPE_OPTIONS,
+        value: resolvedCampaignType,
         onChange: function onChange(e) {
-          return handleChange('article_type', e.target.value);
+          return handleChange('campaign_type', e.target.value);
         },
         className: "min-w-0",
         disabled: isProcessing
-      }), resolvedArticleType !== 'rewrite_blog_post' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+      }), resolvedCampaignType !== 'rewrite_blog_post' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
         label: "Topic / Keyword",
         tooltip: "Topic or keyword you want to write about.",
         value: (_task$topic = task.topic) !== null && _task$topic !== void 0 ? _task$topic : '',
@@ -6554,6 +6642,15 @@ function PostTaskForm(_ref) {
         required: true,
         disabled: isProcessing
       })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+      label: "Keywords",
+      tooltip: "Comma-separated keywords for this task (e.g. for generation or SEO).",
+      value: (_task$keywords = task.keywords) !== null && _task$keywords !== void 0 ? _task$keywords : '',
+      onChange: function onChange(e) {
+        return handleChange('keywords', e.target.value);
+      },
+      placeholder: "e.g. coffee, london, guide",
+      disabled: isProcessing
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
       className: "grid grid-cols-1 md:grid-cols-2 gap-3",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
@@ -6600,6 +6697,25 @@ function PostTaskForm(_ref) {
             src: featuredImageUrl,
             alt: "Featured override preview",
             className: "w-12 h-12 rounded object-cover border border-gray-200"
+          }) : featureImageLoading ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+            className: "w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
+              className: "w-5 h-5 animate-spin text-gray-400",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+                className: "opacity-25",
+                cx: "12",
+                cy: "12",
+                r: "10",
+                stroke: "currentColor",
+                strokeWidth: "4"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                className: "opacity-75",
+                fill: "currentColor",
+                d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              })]
+            })
           }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-500",
             children: ["#", task.feature_image_id]
@@ -6629,7 +6745,11 @@ function PostTaskForm(_ref) {
                 multiple: false
               });
               frame.on('select', function () {
+                var _attachment$sizes, _attachment$sizes2;
                 var attachment = frame.state().get('selection').first().toJSON();
+                var url = ((_attachment$sizes = attachment.sizes) === null || _attachment$sizes === void 0 || (_attachment$sizes = _attachment$sizes.thumbnail) === null || _attachment$sizes === void 0 ? void 0 : _attachment$sizes.url) || ((_attachment$sizes2 = attachment.sizes) === null || _attachment$sizes2 === void 0 || (_attachment$sizes2 = _attachment$sizes2.medium) === null || _attachment$sizes2 === void 0 ? void 0 : _attachment$sizes2.url) || attachment.url || '';
+                if (url) attachmentUrlCache.set(attachment.id, url);
+                setFeaturedImageUrl(url);
                 handleChange('feature_image_id', attachment.id);
               });
               frame.open();
@@ -6661,10 +6781,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _PostTaskForm__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PostTaskForm */ "./src/components/campaign/PostTaskForm.jsx");
 /* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -6710,7 +6826,9 @@ function PostTaskList(_ref) {
     _ref$importLoading = _ref.importLoading,
     importLoading = _ref$importLoading === void 0 ? false : _ref$importLoading,
     _ref$clearCompletedLo = _ref.clearCompletedLoading,
-    clearCompletedLoading = _ref$clearCompletedLo === void 0 ? false : _ref$clearCompletedLo;
+    clearCompletedLoading = _ref$clearCompletedLo === void 0 ? false : _ref$clearCompletedLo,
+    _ref$deletingTaskIds = _ref.deletingTaskIds,
+    deletingTaskIds = _ref$deletingTaskIds === void 0 ? [] : _ref$deletingTaskIds;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState2 = _slicedToArray(_useState, 2),
     filter = _useState2[0],
@@ -6719,18 +6837,10 @@ function PostTaskList(_ref) {
     _useState4 = _slicedToArray(_useState3, 2),
     expandedId = _useState4[0],
     setExpandedId = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
-    deleteId = _useState6[0],
-    setDeleteId = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState8 = _slicedToArray(_useState7, 2),
-    isDeleting = _useState8[0],
-    setIsDeleting = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState10 = _slicedToArray(_useState9, 2),
-    menuOpen = _useState10[0],
-    setMenuOpen = _useState10[1];
+    menuOpen = _useState6[0],
+    setMenuOpen = _useState6[1];
   var importRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var menuRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var filteredTasks = filter ? tasks.filter(function (task) {
@@ -6744,38 +6854,6 @@ function PostTaskList(_ref) {
     }
     e.target.value = '';
   };
-  var handleDelete = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-      return _regeneratorRuntime().wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            if (!deleteId) {
-              _context.next = 10;
-              break;
-            }
-            setIsDeleting(true);
-            _context.prev = 2;
-            _context.next = 5;
-            return onDeleteTask(deleteId);
-          case 5:
-            if (expandedId === deleteId) {
-              setExpandedId(null);
-            }
-            setDeleteId(null);
-          case 7:
-            _context.prev = 7;
-            setIsDeleting(false);
-            return _context.finish(7);
-          case 10:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, null, [[2,, 7, 10]]);
-    }));
-    return function handleDelete() {
-      return _ref2.apply(this, arguments);
-    };
-  }();
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var onDocumentClick = function onDocumentClick(event) {
       var _menuRef$current;
@@ -6903,49 +6981,48 @@ function PostTaskList(_ref) {
             return onUpdateTask(task.id, data);
           },
           onDelete: function onDelete() {
-            return setDeleteId(task.id);
+            return onDeleteTask(task.id);
           },
           onDuplicate: function onDuplicate() {
             return onDuplicateTask(task.id);
           },
           onRun: function onRun() {
             return onRunTask(task.id);
-          }
+          },
+          isDeleting: deletingTaskIds.some(function (id) {
+            return String(id) === String(task.id);
+          })
         }, task.id);
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.ConfirmModal, {
-      isOpen: deleteId !== null,
-      onClose: function onClose() {
-        return setDeleteId(null);
-      },
-      onConfirm: handleDelete,
-      loading: isDeleting,
-      title: "Delete Post Task",
-      message: "Are you sure you want to delete this post task?",
-      confirmText: "Delete"
     })]
   });
 }
-function TaskItem(_ref3) {
-  var _task$topic;
-  var task = _ref3.task,
-    campaign = _ref3.campaign,
-    retryingTaskId = _ref3.retryingTaskId,
-    isExpanded = _ref3.isExpanded,
-    onToggle = _ref3.onToggle,
-    onUpdate = _ref3.onUpdate,
-    onDelete = _ref3.onDelete,
-    onDuplicate = _ref3.onDuplicate,
-    onRun = _ref3.onRun;
+function TaskItem(_ref2) {
+  var _task$topic, _task$research_url, _task$keywords, _task$title_override, _task$slug_override, _task$feature_image_t;
+  var task = _ref2.task,
+    campaign = _ref2.campaign,
+    retryingTaskId = _ref2.retryingTaskId,
+    isExpanded = _ref2.isExpanded,
+    onToggle = _ref2.onToggle,
+    onUpdate = _ref2.onUpdate,
+    onDelete = _ref2.onDelete,
+    onDuplicate = _ref2.onDuplicate,
+    onRun = _ref2.onRun,
+    _ref2$isDeleting = _ref2.isDeleting,
+    isDeleting = _ref2$isDeleting === void 0 ? false : _ref2$isDeleting;
   var adminUrl = (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getAdminUrl)();
   var topicValue = (_task$topic = task.topic) !== null && _task$topic !== void 0 ? _task$topic : '';
-  var articleType = task.article_type || (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default';
-  var showUrl = articleType === 'rewrite_blog_post' && !!task.research_url;
-  var articleTypeLabel = {
+  var researchUrl = (_task$research_url = task.research_url) !== null && _task$research_url !== void 0 ? _task$research_url : '';
+  var campaignType = task.campaign_type || (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default';
+  var isRewrite = campaignType === 'rewrite_blog_post';
+  var isPublished = !!task.post_id;
+  var primaryLabel = isRewrite ? (researchUrl || '').replace(/^https?:\/\//i, '') : topicValue || 'No Topic';
+  var showSubRow = isPublished ? task.title_override || topicValue || 'Post' : false;
+  var campaignTypeLabel = {
     "default": 'Default',
     listicle: 'Listicle',
     rewrite_blog_post: 'Rewrite'
-  }[articleType] || 'Default';
+  }[campaignType] || 'Default';
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "border border-gray-200 rounded-lg overflow-hidden",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
@@ -6970,23 +7047,29 @@ function TaskItem(_ref3) {
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "flex flex-col min-w-0 flex-1",
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-            className: "flex items-center gap-2 flex-wrap",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
-              className: "text-xs font-medium text-gray-400 shrink-0",
-              children: ["#", task.id]
-            }), articleType !== 'rewrite_blog_post' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-              className: "font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-md",
-              children: topicValue || 'No Topic'
+            className: "text-[10px] font-medium text-gray-400 shrink-0",
+            children: ["#", task.id, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "mx-2 text-gray-600 font-medium",
+              children: "\xB7"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-              className: "text-[10px] text-gray-600 font-medium bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200",
-              children: articleTypeLabel
+              className: " text-gray-600 ",
+              children: campaignTypeLabel
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "mx-2 text-gray-600 font-medium",
+              children: "\xB7"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.StatusBadge, {
               status: task.status
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            className: "flex items-center gap-2 mt-0.5",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "text-[14px] font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-md",
+              children: primaryLabel
             }), task.progress !== null && task.progress !== undefined && task.status !== 'completed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic truncate max-w-[120px]",
               children: String(task.progress)
             })]
-          }), showUrl && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), showSubRow && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "flex items-center gap-1 text-[11px] text-gray-500 truncate mt-0.5",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
               className: "w-3 h-3 shrink-0",
@@ -7001,71 +7084,90 @@ function TaskItem(_ref3) {
               })
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "truncate",
-              children: task.research_url
+              children: showSubRow
             })]
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-        className: "flex items-center gap-1.5 sm:gap-2 shrink-0 ml-7 sm:ml-0",
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+        className: "flex flex-col items-end gap-1 shrink-0 ml-7 sm:ml-0",
         onClick: function onClick(e) {
           return e.stopPropagation();
         },
-        children: [task.status === 'completed' && task.post_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-          className: "flex items-center gap-1.5 mr-1 sm:mr-2",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
-            href: "".concat(adminUrl, "post.php?post=").concat(task.post_id, "&action=edit"),
-            target: "_blank",
-            rel: "noopener noreferrer",
-            className: "inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors",
-            children: "Edit"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
-            href: "/?p=".concat(task.post_id),
-            target: "_blank",
-            rel: "noopener noreferrer",
-            className: "inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors",
-            children: "View"
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          className: "flex items-center gap-1.5 sm:gap-2",
+          children: [task.status === 'completed' && task.post_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              href: "".concat(adminUrl, "post.php?post=").concat(task.post_id, "&action=edit"),
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors",
+              children: "Edit"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              href: "/?p=".concat(task.post_id),
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors",
+              children: "View"
+            })]
+          }), task.status === 'failed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            variant: "secondary",
+            size: "sm",
+            onClick: onRun,
+            className: "h-7 text-[11px] px-2",
+            loading: String(retryingTaskId) === String(task.id),
+            disabled: String(retryingTaskId) === String(task.id),
+            children: "Retry"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+            onClick: onDuplicate,
+            className: "p-1.5 text-gray-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors",
+            title: "Duplicate",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+              className: "w-4 h-4",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              stroke: "currentColor",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+                strokeWidth: 2,
+                d: "M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+              })
+            })
+          }), task.status !== 'processing' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+            onClick: onDelete,
+            disabled: isDeleting,
+            className: "p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+            title: "Delete",
+            children: isDeleting ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+              className: "w-4 h-4 animate-spin",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                className: "opacity-25",
+                cx: "12",
+                cy: "12",
+                r: "10",
+                stroke: "currentColor",
+                strokeWidth: "4"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                className: "opacity-75",
+                fill: "currentColor",
+                d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              })]
+            }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+              className: "w-4 h-4",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              stroke: "currentColor",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+                strokeWidth: 2,
+                d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              })
+            })
           })]
-        }), task.status === 'failed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-          variant: "secondary",
-          size: "sm",
-          onClick: onRun,
-          className: "h-7 text-[11px] px-2",
-          loading: String(retryingTaskId) === String(task.id),
-          disabled: String(retryingTaskId) === String(task.id),
-          children: "Retry"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
-          onClick: onDuplicate,
-          className: "p-1.5 text-gray-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors",
-          title: "Duplicate",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
-            className: "w-4 h-4",
-            fill: "none",
-            viewBox: "0 0 24 24",
-            stroke: "currentColor",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
-              strokeLinecap: "round",
-              strokeLinejoin: "round",
-              strokeWidth: 2,
-              d: "M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-            })
-          })
-        }), task.status !== 'processing' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
-          onClick: onDelete,
-          className: "p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors",
-          title: "Delete",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
-            className: "w-4 h-4",
-            fill: "none",
-            viewBox: "0 0 24 24",
-            stroke: "currentColor",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
-              strokeLinecap: "round",
-              strokeLinejoin: "round",
-              strokeWidth: 2,
-              d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            })
-          })
-        })]
+        })
       })]
     }), isExpanded && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "px-4 py-4 bg-gray-50 border-t border-gray-200",
@@ -7075,12 +7177,710 @@ function TaskItem(_ref3) {
           className: "text-sm text-red-700",
           children: task.error_message
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_PostTaskForm__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      }), task.status === 'completed' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        className: "text-sm text-gray-700 space-y-1",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Campaign Type:"
+          }), " ", campaignTypeLabel]
+        }), isRewrite ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Research URL:"
+          }), " ", researchUrl || '—']
+        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Topic:"
+          }), " ", topicValue || '—']
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Keywords:"
+          }), " ", ((_task$keywords = task.keywords) !== null && _task$keywords !== void 0 ? _task$keywords : '').trim() || '—']
+        }), ((_task$title_override = task.title_override) !== null && _task$title_override !== void 0 ? _task$title_override : '').trim() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Title Override:"
+          }), " ", task.title_override]
+        }), ((_task$slug_override = task.slug_override) !== null && _task$slug_override !== void 0 ? _task$slug_override : '').trim() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Slug Override:"
+          }), " ", task.slug_override]
+        }), task.feature_image_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Featured Image:"
+          }), " ID ", task.feature_image_id]
+        }), ((_task$feature_image_t = task.feature_image_title) !== null && _task$feature_image_t !== void 0 ? _task$feature_image_t : '').trim() && task.feature_image_title !== '{{title}}' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "font-medium text-gray-600",
+            children: "Featured Image Title:"
+          }), " ", task.feature_image_title]
+        })]
+      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_PostTaskForm__WEBPACK_IMPORTED_MODULE_2__["default"], {
         task: task,
         campaign: campaign,
         onChange: onUpdate
       })]
     })]
+  });
+}
+
+/***/ }),
+
+/***/ "./src/components/campaign/RssFeedConfigModal.jsx":
+/*!********************************************************!*\
+  !*** ./src/components/campaign/RssFeedConfigModal.jsx ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ RssFeedConfigModal)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common */ "./src/components/common/index.js");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+
+
+
+var FREQUENCY_OPTIONS = [{
+  value: 15,
+  label: 'Every 15 minutes'
+}, {
+  value: 60,
+  label: 'Hourly'
+}, {
+  value: 360,
+  label: 'Every 6 hours'
+}, {
+  value: 1440,
+  label: 'Daily'
+}];
+function generateSourceId() {
+  return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : "src-".concat(Date.now(), "-").concat(Math.random().toString(36).slice(2, 9));
+}
+
+/** Build full campaign payload so backend does not overwrite other fields with defaults. */
+function buildCampaignPayload(campaign, frequency_interval, validSources) {
+  var _campaign$post_type, _campaign$post_status, _campaign$webhook_id, _campaign$campaign_ty, _campaign$tone_of_voi, _campaign$point_of_vi, _campaign$readability, _campaign$language, _campaign$target_coun, _campaign$instruction;
+  return {
+    title: campaign.title || 'Campaign',
+    post_type: (_campaign$post_type = campaign.post_type) !== null && _campaign$post_type !== void 0 ? _campaign$post_type : 'post',
+    post_status: (_campaign$post_status = campaign.post_status) !== null && _campaign$post_status !== void 0 ? _campaign$post_status : 'pending',
+    default_author_id: campaign.default_author_id,
+    webhook_id: (_campaign$webhook_id = campaign.webhook_id) !== null && _campaign$webhook_id !== void 0 ? _campaign$webhook_id : null,
+    campaign_type: (_campaign$campaign_ty = campaign.campaign_type) !== null && _campaign$campaign_ty !== void 0 ? _campaign$campaign_ty : 'default',
+    tone_of_voice: (_campaign$tone_of_voi = campaign.tone_of_voice) !== null && _campaign$tone_of_voi !== void 0 ? _campaign$tone_of_voi : 'none',
+    point_of_view: (_campaign$point_of_vi = campaign.point_of_view) !== null && _campaign$point_of_vi !== void 0 ? _campaign$point_of_vi : 'none',
+    readability: (_campaign$readability = campaign.readability) !== null && _campaign$readability !== void 0 ? _campaign$readability : 'grade_8',
+    language: (_campaign$language = campaign.language) !== null && _campaign$language !== void 0 ? _campaign$language : 'en',
+    target_country: (_campaign$target_coun = campaign.target_country) !== null && _campaign$target_coun !== void 0 ? _campaign$target_coun : 'international',
+    instruction_id: (_campaign$instruction = campaign.instruction_id) !== null && _campaign$instruction !== void 0 ? _campaign$instruction : null,
+    content_fields: campaign.content_fields,
+    rss_enabled: 'yes',
+    rss_config: {
+      frequency_interval: frequency_interval,
+      sources: validSources
+    }
+  };
+}
+function RssFeedConfigModal(_ref) {
+  var isOpen = _ref.isOpen,
+    onClose = _ref.onClose,
+    campaign = _ref.campaign,
+    onSave = _ref.onSave,
+    onRunNowComplete = _ref.onRunNowComplete,
+    onRssConfigChange = _ref.onRssConfigChange,
+    onTriggerSave = _ref.onTriggerSave;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(60),
+    _useState2 = _slicedToArray(_useState, 2),
+    frequency_interval = _useState2[0],
+    setFrequencyInterval = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState4 = _slicedToArray(_useState3, 2),
+    sources = _useState4[0],
+    setSources = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    running = _useState6[0],
+    setRunning = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    saving = _useState8[0],
+    setSaving = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState10 = _slicedToArray(_useState9, 2),
+    error = _useState10[0],
+    setError = _useState10[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!isOpen) return;
+    setError('');
+    var config = campaign === null || campaign === void 0 ? void 0 : campaign.rss_config;
+    if (config) {
+      setFrequencyInterval(FREQUENCY_OPTIONS.some(function (o) {
+        return o.value === config.frequency_interval;
+      }) ? config.frequency_interval : 60);
+      var src = Array.isArray(config.sources) ? config.sources : [];
+      setSources(src.length ? src.map(function (s) {
+        var _s$source_id, _s$feed_url;
+        return {
+          source_id: (_s$source_id = s.source_id) !== null && _s$source_id !== void 0 ? _s$source_id : generateSourceId(),
+          feed_url: (_s$feed_url = s.feed_url) !== null && _s$feed_url !== void 0 ? _s$feed_url : ''
+        };
+      }) : [{
+        source_id: generateSourceId(),
+        feed_url: ''
+      }]);
+    } else {
+      setFrequencyInterval(60);
+      setSources([{
+        source_id: generateSourceId(),
+        feed_url: ''
+      }]);
+    }
+  }, [isOpen, campaign === null || campaign === void 0 ? void 0 : campaign.rss_config]);
+  var syncToCampaign = function syncToCampaign(freq, src) {
+    onRssConfigChange === null || onRssConfigChange === void 0 || onRssConfigChange({
+      frequency_interval: freq,
+      sources: src
+    });
+  };
+  var addSource = function addSource() {
+    setSources(function (prev) {
+      var next = [].concat(_toConsumableArray(prev), [{
+        source_id: generateSourceId(),
+        feed_url: ''
+      }]);
+      syncToCampaign(frequency_interval, next);
+      return next;
+    });
+  };
+  var removeSource = function removeSource(index) {
+    setSources(function (prev) {
+      var next = prev.filter(function (_, i) {
+        return i !== index;
+      });
+      syncToCampaign(frequency_interval, next);
+      return next;
+    });
+  };
+  var updateSourceUrl = function updateSourceUrl(index, feed_url) {
+    setSources(function (prev) {
+      var next = prev.map(function (s, i) {
+        return i === index ? _objectSpread(_objectSpread({}, s), {}, {
+          feed_url: feed_url
+        }) : s;
+      });
+      syncToCampaign(frequency_interval, next);
+      return next;
+    });
+  };
+  var handleFrequencyChange = function handleFrequencyChange(e) {
+    var next = Number(e.target.value);
+    setFrequencyInterval(next);
+    syncToCampaign(next, sources);
+  };
+  var handleSave = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+      var validSources, rssConfig, saved;
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            validSources = sources.filter(function (s) {
+              var _s$feed_url2;
+              return String((_s$feed_url2 = s.feed_url) !== null && _s$feed_url2 !== void 0 ? _s$feed_url2 : '').trim();
+            });
+            if (!(validSources.length === 0)) {
+              _context.next = 4;
+              break;
+            }
+            setError('Add at least one feed URL before saving.');
+            return _context.abrupt("return");
+          case 4:
+            setError('');
+            setSaving(true);
+            _context.prev = 6;
+            rssConfig = {
+              frequency_interval: frequency_interval,
+              sources: validSources
+            };
+            syncToCampaign(frequency_interval, validSources);
+            _context.next = 11;
+            return onTriggerSave === null || onTriggerSave === void 0 ? void 0 : onTriggerSave({
+              rss_config: rssConfig
+            });
+          case 11:
+            saved = _context.sent;
+            if (saved) {
+              onClose();
+            }
+            _context.next = 18;
+            break;
+          case 15:
+            _context.prev = 15;
+            _context.t0 = _context["catch"](6);
+            setError((_context.t0 === null || _context.t0 === void 0 ? void 0 : _context.t0.message) || 'Save failed.');
+          case 18:
+            _context.prev = 18;
+            setSaving(false);
+            return _context.finish(18);
+          case 21:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee, null, [[6, 15, 18, 21]]);
+    }));
+    return function handleSave() {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var handleFetch = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+      var validSources, response;
+      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            validSources = sources.filter(function (s) {
+              var _s$feed_url3;
+              return String((_s$feed_url3 = s.feed_url) !== null && _s$feed_url3 !== void 0 ? _s$feed_url3 : '').trim();
+            });
+            if (!(validSources.length === 0)) {
+              _context2.next = 4;
+              break;
+            }
+            setError('Add at least one feed URL before fetching.');
+            return _context2.abrupt("return");
+          case 4:
+            setError('');
+            setRunning(true);
+            _context2.prev = 6;
+            _context2.next = 9;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.campaigns.update(campaign.id, buildCampaignPayload(campaign, frequency_interval, validSources));
+          case 9:
+            _context2.next = 11;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.campaigns.runRssNow(campaign.id);
+          case 11:
+            response = _context2.sent;
+            onRunNowComplete === null || onRunNowComplete === void 0 || onRunNowComplete(response);
+            _context2.next = 18;
+            break;
+          case 15:
+            _context2.prev = 15;
+            _context2.t0 = _context2["catch"](6);
+            setError((_context2.t0 === null || _context2.t0 === void 0 ? void 0 : _context2.t0.message) || 'Fetch failed.');
+          case 18:
+            _context2.prev = 18;
+            setRunning(false);
+            return _context2.finish(18);
+          case 21:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee2, null, [[6, 15, 18, 21]]);
+    }));
+    return function handleFetch() {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  if (!(campaign !== null && campaign !== void 0 && campaign.id)) return null;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
+    isOpen: isOpen,
+    onClose: onClose,
+    title: "RSS Feed configuration",
+    size: "lg",
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      className: "px-6 pb-6 space-y-4",
+      children: [error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+        className: "rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800",
+        children: error
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+          className: "block text-sm font-medium text-gray-700 mb-1",
+          children: "Check frequency"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Select, {
+          options: FREQUENCY_OPTIONS.map(function (o) {
+            return {
+              value: String(o.value),
+              label: o.label
+            };
+          }),
+          value: String(frequency_interval),
+          onChange: handleFrequencyChange
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          className: "flex items-center justify-between mb-1",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+            className: "block text-sm font-medium text-gray-700",
+            children: "Feed URLs"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            type: "button",
+            variant: "secondary",
+            size: "sm",
+            onClick: addSource,
+            children: "Add source"
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          className: "space-y-2",
+          children: sources.map(function (source, index) {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              className: "flex gap-2 items-center",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                type: "url",
+                value: source.feed_url,
+                onChange: function onChange(e) {
+                  return updateSourceUrl(index, e.target.value);
+                },
+                placeholder: "https://example.com/feed.xml",
+                className: "flex-1"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                type: "button",
+                variant: "secondary",
+                size: "sm",
+                onClick: function onClick() {
+                  return removeSource(index);
+                },
+                disabled: sources.length <= 1,
+                "aria-label": "Remove source",
+                children: "Remove"
+              })]
+            }, source.source_id);
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        className: "flex flex-wrap gap-3 pt-2 border-t border-gray-200",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "primary",
+          onClick: handleSave,
+          disabled: saving || running,
+          children: saving ? 'Saving…' : 'Save'
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "secondary",
+          onClick: handleFetch,
+          disabled: running || saving,
+          children: running ? 'Fetching…' : 'Fetch'
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "secondary",
+          onClick: onClose,
+          disabled: saving,
+          children: "Back"
+        })]
+      })]
+    })
+  });
+}
+
+/***/ }),
+
+/***/ "./src/components/campaign/RssResultsModal.jsx":
+/*!*****************************************************!*\
+  !*** ./src/components/campaign/RssResultsModal.jsx ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ RssResultsModal)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common */ "./src/components/common/index.js");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+
+
+
+function getDomain(url) {
+  if (!url || typeof url !== 'string') return '—';
+  try {
+    var u = new URL(url.trim());
+    return u.hostname.replace(/^www\./, '') || '—';
+  } catch (_unused) {
+    return '—';
+  }
+}
+function flattenItems(data) {
+  var items = [];
+  // Webhook may return { sources: [...] } or a top-level array of sources
+  var sourcesList = Array.isArray(data) ? data : data === null || data === void 0 ? void 0 : data.sources;
+  if (!sourcesList || !Array.isArray(sourcesList)) {
+    return items;
+  }
+  sourcesList.forEach(function (source) {
+    var _source$feed_url, _source$items;
+    var sourceId = source.source_id;
+    var feedUrl = (_source$feed_url = source.feed_url) !== null && _source$feed_url !== void 0 ? _source$feed_url : '';
+    var list = (_source$items = source.items) !== null && _source$items !== void 0 ? _source$items : [];
+    list.forEach(function (item) {
+      var _item$url, _item$title, _item$date;
+      var url = (_item$url = item.url) !== null && _item$url !== void 0 ? _item$url : '';
+      items.push({
+        source_id: sourceId,
+        feed_url: feedUrl,
+        title: (_item$title = item.title) !== null && _item$title !== void 0 ? _item$title : '',
+        url: url,
+        date: (_item$date = item.date) !== null && _item$date !== void 0 ? _item$date : '',
+        domain: getDomain(url)
+      });
+    });
+  });
+  return items;
+}
+function RssResultsModal(_ref) {
+  var _data$status;
+  var isOpen = _ref.isOpen,
+    onClose = _ref.onClose,
+    data = _ref.data,
+    campaignId = _ref.campaignId,
+    onAddedToTasks = _ref.onAddedToTasks;
+  var _useToast = (0,_common__WEBPACK_IMPORTED_MODULE_1__.useToast)(),
+    showToast = _useToast.showToast;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState2 = _slicedToArray(_useState, 2),
+    adding = _useState2[0],
+    setAdding = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({}),
+    _useState4 = _slicedToArray(_useState3, 2),
+    selected = _useState4[0],
+    setSelected = _useState4[1];
+  var items = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
+    return flattenItems(data);
+  }, [data]);
+  var selectedCount = Object.values(selected).filter(Boolean).length;
+  var toggleAll = function toggleAll(checked) {
+    if (checked) {
+      var next = {};
+      items.forEach(function (item, i) {
+        if (item.url) next[i] = true;
+      });
+      setSelected(next);
+    } else {
+      setSelected({});
+    }
+  };
+  var toggleOne = function toggleOne(index) {
+    setSelected(function (prev) {
+      return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, index, !prev[index]));
+    });
+  };
+  var handleAddToTasks = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+      var toAdd, _result$count, _result$tasks, result, count, newTasks;
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            toAdd = items.filter(function (_, i) {
+              return selected[i] && items[i].url;
+            });
+            if (!(toAdd.length === 0)) {
+              _context.next = 4;
+              break;
+            }
+            showToast('Select at least one item.', 'error');
+            return _context.abrupt("return");
+          case 4:
+            setAdding(true);
+            _context.prev = 5;
+            _context.next = 8;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.campaigns.rssAddToTasks(campaignId, toAdd);
+          case 8:
+            result = _context.sent;
+            count = (_result$count = result === null || result === void 0 ? void 0 : result.count) !== null && _result$count !== void 0 ? _result$count : 0;
+            newTasks = (_result$tasks = result === null || result === void 0 ? void 0 : result.tasks) !== null && _result$tasks !== void 0 ? _result$tasks : [];
+            showToast("Added ".concat(count, " task(s) to the campaign."), 'success');
+            onAddedToTasks === null || onAddedToTasks === void 0 || onAddedToTasks(newTasks, count);
+            onClose();
+            _context.next = 19;
+            break;
+          case 16:
+            _context.prev = 16;
+            _context.t0 = _context["catch"](5);
+            showToast((_context.t0 === null || _context.t0 === void 0 ? void 0 : _context.t0.message) || 'Failed to add tasks.', 'error');
+          case 19:
+            _context.prev = 19;
+            setAdding(false);
+            return _context.finish(19);
+          case 22:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee, null, [[5, 16, 19, 22]]);
+    }));
+    return function handleAddToTasks() {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  if (!isOpen) return null;
+  var status = (_data$status = data === null || data === void 0 ? void 0 : data.status) !== null && _data$status !== void 0 ? _data$status : '';
+  var hasItems = items.length > 0;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
+    isOpen: isOpen,
+    onClose: onClose,
+    title: "RSS feed results",
+    size: "xl",
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      className: "px-6 pb-6 space-y-4",
+      children: [status && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
+        className: "text-sm text-gray-600",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+          children: "Status:"
+        }), " ", status]
+      }), !hasItems ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        className: "text-sm text-gray-500",
+        children: "No items returned from the feed(s)."
+      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          className: "flex items-center justify-between gap-2 flex-wrap",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+            className: "flex items-center gap-2 text-xs text-gray-600",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              type: "checkbox",
+              checked: selectedCount === items.filter(function (i) {
+                return i.url;
+              }).length && selectedCount > 0,
+              onChange: function onChange(e) {
+                return toggleAll(e.target.checked);
+              },
+              className: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-1"
+            }), "Select all"]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+            className: "text-xs text-gray-500 tabular-nums",
+            children: [selectedCount, " selected \xB7 ", items.length, " items"]
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          className: "rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden max-h-112 overflow-y-auto",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("table", {
+            className: "min-w-full text-xs",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("thead", {
+              className: "sticky top-0 z-10 bg-gray-50/95 backdrop-blur border-b border-gray-200",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("tr", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("th", {
+                  className: "w-8 pl-2.5 pr-1.5 py-1.5 text-left",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                    className: "sr-only",
+                    children: "Select"
+                  })
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("th", {
+                  className: "w-9 pl-1.5 pr-2 py-1.5 text-right font-medium text-gray-500 uppercase tracking-wider",
+                  children: "#"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("th", {
+                  className: "w-32 pl-1.5 pr-2 py-1.5 text-left font-medium text-gray-500 uppercase tracking-wider",
+                  children: "Domain"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("th", {
+                  className: "pl-2 pr-2 py-1.5 text-left font-medium text-gray-500 uppercase tracking-wider min-w-48",
+                  children: "Title"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("th", {
+                  className: "pl-2 pr-2 py-1.5 text-left font-medium text-gray-500 uppercase tracking-wider min-w-32 max-w-56",
+                  children: "URL"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("th", {
+                  className: "w-28 pl-2 pr-2.5 py-1.5 text-left font-medium text-gray-500 uppercase tracking-wider",
+                  children: "Date"
+                })]
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("tbody", {
+              className: "divide-y divide-gray-100",
+              children: items.map(function (item, index) {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("tr", {
+                  className: "hover:bg-gray-50/80 transition-colors",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("td", {
+                    className: "pl-2.5 pr-1.5 py-1",
+                    children: item.url ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+                      type: "checkbox",
+                      checked: !!selected[index],
+                      onChange: function onChange() {
+                        return toggleOne(index);
+                      },
+                      className: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-1"
+                    }) : null
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("td", {
+                    className: "pl-1.5 pr-2 py-1 text-right text-gray-400 tabular-nums",
+                    children: index + 1
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("td", {
+                    className: "pl-1.5 pr-2 py-1 text-gray-600 truncate max-w-32",
+                    title: item.domain,
+                    children: item.domain
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("td", {
+                    className: "pl-2 pr-2 py-1 text-gray-900 truncate max-w-72",
+                    title: item.title || '',
+                    children: item.title || '—'
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("td", {
+                    className: "pl-2 pr-2 py-1 max-w-56",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("a", {
+                      href: item.url,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      className: "text-indigo-600 hover:underline truncate block",
+                      children: item.url || '—'
+                    })
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("td", {
+                    className: "pl-2 pr-2.5 py-1 text-gray-500 whitespace-nowrap truncate max-w-28",
+                    title: item.date || '',
+                    children: item.date || '—'
+                  })]
+                }, index);
+              })
+            })]
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          className: "flex gap-3 pt-2",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            variant: "primary",
+            onClick: handleAddToTasks,
+            disabled: adding || selectedCount === 0,
+            children: adding ? 'Adding…' : "Add to tasks (".concat(selectedCount, ")")
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            variant: "secondary",
+            onClick: onClose,
+            children: "Back"
+          })]
+        })]
+      })]
+    })
   });
 }
 
@@ -7118,15 +7918,15 @@ var RESEARCH_MODE_OPTIONS = [{
   disabled: true
 }];
 function BodyFieldConfig(_ref) {
-  var _config$sources_count, _config$number_of_lis, _config$custom_number;
+  var _config$sources_count, _config$number_of_lis, _config$internal_link, _config$custom_number;
   var config = _ref.config,
     onChange = _ref.onChange,
-    articleType = _ref.articleType;
+    campaignType = _ref.campaignType;
   var handleChange = function handleChange(field, value) {
     onChange(_objectSpread(_objectSpread({}, config), {}, _defineProperty({}, field, value)));
   };
-  var isListicle = articleType === 'listicle';
-  var isRewrite = articleType === 'rewrite_blog_post';
+  var isListicle = campaignType === 'listicle';
+  var isRewrite = campaignType === 'rewrite_blog_post';
   var yesNoOptions = [{
     value: 'yes',
     label: 'Yes'
@@ -7222,32 +8022,13 @@ function BodyFieldConfig(_ref) {
     value: 'comic_book',
     label: 'Comic Book'
   }];
-  var hookPresets = [{
-    label: 'Question',
-    value: "Craft an intriguing question that immediately draws the reader's attention. The question should be relevant to the article's topic and evoke curiosity or challenge common beliefs. Aim to make the reader reflect or feel compelled to find the answer within the article."
-  }, {
-    label: 'Statistical or Fact',
-    value: "Begin with a surprising statistic or an unexpected fact that relates directly to the article's main topic. This hook should provide a sense of scale or impact that makes the reader eager to learn more about the subject."
-  }, {
-    label: 'Quotation',
-    value: "Use a powerful or thought-provoking quote from a well-known figure that ties into the theme of the article. The quote should set the tone for the article and provoke interest in the topic."
-  }, {
-    label: 'Anecdotal or Story',
-    value: "Create a brief, engaging story or anecdote that is relevant to the article's main subject. This story should be relatable and set the stage for the main content."
-  }, {
-    label: 'Personal or Emotional',
-    value: "Write an emotionally resonant opening that connects personally with the reader. This could be a reflection, a personal experience, or an emotional appeal that aligns with the article's theme."
-  }];
-  var handleHookPreset = function handleHookPreset(value) {
-    handleChange('introductory_hook_brief', value);
-  };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
     className: "space-y-4",
     children: [!isRewrite && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
       className: "grid grid-cols-1 sm:grid-cols-2 gap-3",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Select, {
-        label: "Research Mode",
-        tooltip: "Select the research engine to use for gathering information.",
+        label: "Real-Time Data",
+        tooltip: "Select the source for real-time data when generating content.",
         options: RESEARCH_MODE_OPTIONS,
         value: config.research_mode || 'perplexity',
         onChange: function onChange(e) {
@@ -7313,37 +8094,7 @@ function BodyFieldConfig(_ref) {
       rows: 2
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
       className: "space-y-4",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
-        className: "space-y-2",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-          className: "border-b border-gray-200 pb-1",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("h4", {
-            className: "text-sm font-semibold text-gray-700",
-            children: "Intro Hook"
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Textarea, {
-          label: "Introductory Hook Brief",
-          tooltip: "Short brief for how the intro hook should start.",
-          value: config.introductory_hook_brief || '',
-          onChange: function onChange(e) {
-            return handleChange('introductory_hook_brief', e.target.value);
-          },
-          placeholder: "Leave empty for default behavior",
-          rows: 2
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-          className: "flex flex-wrap gap-2",
-          children: hookPresets.map(function (preset) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("button", {
-              type: "button",
-              onClick: function onClick() {
-                return handleHookPreset(preset.value);
-              },
-              className: "px-2 py-1 text-xs rounded border border-gray-200 text-gray-700 hover:bg-gray-50",
-              children: preset.label
-            }, preset.label);
-          })
-        })]
-      }), isListicle && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
+      children: [isListicle && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
         className: "space-y-3",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
           className: "border-b border-gray-200 pb-1",
@@ -7454,6 +8205,33 @@ function BodyFieldConfig(_ref) {
             onChange: function onChange(e) {
               return handleChange('internal_linking', e.target.value);
             }
+          }), config.internal_linking === 'yes' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Input, {
+            label: "Number of Internal Links",
+            tooltip: "How many internal links to include. Default is 4.",
+            type: "number",
+            min: "1",
+            value: (_config$internal_link = config.internal_links_count) !== null && _config$internal_link !== void 0 ? _config$internal_link : 4,
+            onChange: function onChange(e) {
+              var val = parseInt(e.target.value, 10);
+              handleChange('internal_links_count', isNaN(val) ? 4 : Math.max(1, val));
+            }
+          })]
+        }), config.internal_linking === 'yes' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("label", {
+          className: "poststation-switch text-sm font-medium text-gray-700",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("input", {
+            type: "checkbox",
+            checked: Boolean(config.internal_links_post_type_only),
+            onChange: function onChange(e) {
+              return handleChange('internal_links_post_type_only', e.target.checked);
+            },
+            className: "poststation-field-checkbox"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("span", {
+            className: "poststation-switch-track",
+            "aria-hidden": true
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("span", {
+            children: "Use only selected post type"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Tooltip, {
+            content: "When enabled, internal links will only point to posts of the campaign's selected post type."
           })]
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.ModelSelect, {
@@ -8467,7 +9245,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-var _excluded = ["children", "variant", "size", "disabled", "loading", "className"];
+var _excluded = ["children", "variant", "size", "disabled", "loading", "className", "type"];
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -8500,8 +9278,11 @@ function Button(_ref) {
     loading = _ref$loading === void 0 ? false : _ref$loading,
     _ref$className = _ref.className,
     className = _ref$className === void 0 ? '' : _ref$className,
+    _ref$type = _ref.type,
+    type = _ref$type === void 0 ? 'button' : _ref$type,
     props = _objectWithoutProperties(_ref, _excluded);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", _objectSpread(_objectSpread({
+    type: type,
     className: "\n\t\t\t\tinline-flex items-center justify-center gap-2 font-medium rounded-lg\n\t\t\t\tfocus:outline-none focus:ring-2 focus:ring-offset-2\n\t\t\t\tdisabled:opacity-50 disabled:cursor-not-allowed\n\t\t\t\ttransition-colors\n\t\t\t\t".concat(variants[variant], "\n\t\t\t\t").concat(sizes[size], "\n\t\t\t\t").concat(className, "\n\t\t\t"),
     disabled: disabled || loading
   }, props), {}, {
@@ -8992,6 +9773,232 @@ function ModelSelect(_ref) {
 
 /***/ }),
 
+/***/ "./src/components/common/RichSelect.jsx":
+/*!**********************************************!*\
+  !*** ./src/components/common/RichSelect.jsx ***!
+  \**********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ RichSelect)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "react-dom");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Tooltip__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Tooltip */ "./src/components/common/Tooltip.jsx");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+
+
+
+/**
+ * Rich select: full-width dropdown that shows icon + label + description per option.
+ * Uses a portal to escape overflow:hidden/auto parent containers.
+ */
+
+function RichSelect(_ref) {
+  var label = _ref.label,
+    tooltip = _ref.tooltip,
+    labelAction = _ref.labelAction,
+    _ref$options = _ref.options,
+    options = _ref$options === void 0 ? [] : _ref$options,
+    value = _ref.value,
+    onChange = _ref.onChange,
+    _ref$placeholder = _ref.placeholder,
+    placeholder = _ref$placeholder === void 0 ? 'Select...' : _ref$placeholder,
+    _ref$className = _ref.className,
+    className = _ref$className === void 0 ? '' : _ref$className,
+    error = _ref.error;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState2 = _slicedToArray(_useState, 2),
+    open = _useState2[0],
+    setOpen = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({}),
+    _useState4 = _slicedToArray(_useState3, 2),
+    dropdownStyle = _useState4[0],
+    setDropdownStyle = _useState4[1];
+  var containerRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var buttonRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var DROPDOWN_MAX_HEIGHT = 240; // max-h-60 = 240px
+  var GAP = 4;
+  var calcPosition = function calcPosition() {
+    if (!buttonRef.current) return {};
+    var rect = buttonRef.current.getBoundingClientRect();
+    var spaceBelow = window.innerHeight - rect.bottom;
+    var spaceAbove = rect.top;
+    var flipUp = spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow;
+    return _objectSpread({
+      position: 'fixed',
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999
+    }, flipUp ? {
+      bottom: window.innerHeight - rect.top + GAP,
+      top: 'auto'
+    } : {
+      top: rect.bottom + GAP,
+      bottom: 'auto'
+    });
+  };
+
+  // Recalculate dropdown position whenever it opens
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (open) setDropdownStyle(calcPosition());
+  }, [open]);
+
+  // Close on outside click
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var handleClickOutside = function handleClickOutside(e) {
+      var _document$getElementB;
+      if (containerRef.current && !containerRef.current.contains(e.target) &&
+      // also allow clicks inside the portal dropdown
+      !((_document$getElementB = document.getElementById('rich-select-portal')) !== null && _document$getElementB !== void 0 && _document$getElementB.contains(e.target))) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return function () {
+      return document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
+  // Reposition on scroll/resize so the dropdown tracks the button and re-evaluates flip
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!open) return;
+    var reposition = function reposition() {
+      return setDropdownStyle(calcPosition());
+    };
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+    return function () {
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
+    };
+  }, [open]);
+  var selected = value != null && value !== '' ? options.find(function (o) {
+    return String(o.value) === String(value);
+  }) : null;
+  var displayValue = selected ? selected.label : placeholder;
+  var dropdown = open ? /*#__PURE__*/(0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createPortal)(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("ul", {
+    id: "rich-select-portal",
+    style: dropdownStyle,
+    className: "max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white py-2 shadow-lg",
+    role: "listbox",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("li", {
+      role: "option",
+      "aria-selected": value == null || value === '',
+      onClick: function onClick() {
+        onChange(null);
+        setOpen(false);
+      },
+      className: "cursor-pointer pl-4 pr-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 border-b border-gray-100",
+      children: placeholder
+    }), options.map(function (option) {
+      var isSelected = String(option.value) === String(value);
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("li", {
+        role: "option",
+        "aria-selected": isSelected,
+        onClick: function onClick() {
+          onChange(option.value);
+          setOpen(false);
+        },
+        className: "cursor-pointer pl-4 pr-4 py-2.5 hover:bg-gray-50 flex items-start gap-3 ".concat(isSelected ? 'bg-indigo-50 hover:bg-indigo-100' : ''),
+        children: [option.icon && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          className: "flex items-center justify-center w-6 h-6 shrink-0 rounded bg-gray-100 text-gray-600 mt-0.5",
+          children: option.icon
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          className: "min-w-0 flex-1 pt-0.5",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            className: "font-medium text-gray-900",
+            children: option.label
+          }), option.description && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            className: "text-xs text-gray-500 mt-1",
+            children: option.description
+          })]
+        })]
+      }, option.value);
+    })]
+  }), document.body) : null;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    className: "w-full ".concat(className).trim(),
+    ref: containerRef,
+    children: [(label || labelAction) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      className: "flex items-center justify-between gap-2 mb-1",
+      children: [label && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        className: "flex items-center text-sm font-medium text-gray-700",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          children: label
+        }), tooltip && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_Tooltip__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          content: tooltip
+        })]
+      }), labelAction && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+        className: "shrink-0",
+        children: labelAction
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      className: "relative w-full",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+        ref: buttonRef,
+        type: "button",
+        onClick: function onClick() {
+          return setOpen(function (prev) {
+            return !prev;
+          });
+        },
+        className: "\n\t\t\t\t\t\tw-full min-h-[38px] flex items-center gap-3 rounded-lg border bg-white\n\t\t\t\t\t\tpl-4 pr-4 py-2.5 text-left text-sm\n\t\t\t\t\t\t".concat(error ? 'poststation-field-error border-red-300' : 'border-gray-300', "\n\t\t\t\t\t\thover:border-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none\n\t\t\t\t\t"),
+        "aria-haspopup": "listbox",
+        "aria-expanded": open,
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+          className: "flex items-center gap-3 min-w-0 flex-1",
+          children: [(selected === null || selected === void 0 ? void 0 : selected.icon) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            className: "flex items-center justify-center w-5 h-5 shrink-0 text-gray-500",
+            children: selected.icon
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            className: selected ? 'text-gray-900 truncate' : 'text-gray-500',
+            children: displayValue
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          className: "shrink-0 flex items-center justify-center w-5 h-5 ml-2",
+          "aria-hidden": true,
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+            className: "w-4 h-4 text-gray-400 transition-transform ".concat(open ? 'rotate-180' : ''),
+            fill: "none",
+            viewBox: "0 0 24 24",
+            stroke: "currentColor",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              strokeWidth: 2,
+              d: "M19 9l-7 7-7-7"
+            })
+          })
+        })]
+      })
+    }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+      className: "mt-1 text-sm text-red-600",
+      children: error
+    }), dropdown]
+  });
+}
+
+/***/ }),
+
 /***/ "./src/components/common/Select.jsx":
 /*!******************************************!*\
   !*** ./src/components/common/Select.jsx ***!
@@ -9189,9 +10196,10 @@ function StatusBadge(_ref) {
     _ref$className = _ref.className,
     className = _ref$className === void 0 ? '' : _ref$className;
   var style = statusStyles[status] || 'bg-gray-100 text-gray-800';
+  var label = status ? status.charAt(0).toUpperCase() + (status.slice(1) || '').toLowerCase() : status;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", {
-    className: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ".concat(style, " ").concat(className),
-    children: status
+    className: "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] leading-none font-medium ".concat(style, " ").concat(className),
+    children: label
   });
 }
 
@@ -9651,39 +10659,42 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Card: () => (/* binding */ Card),
 /* harmony export */   CardBody: () => (/* binding */ CardBody),
 /* harmony export */   CardHeader: () => (/* binding */ CardHeader),
-/* harmony export */   ConfirmModal: () => (/* reexport safe */ _Modal__WEBPACK_IMPORTED_MODULE_5__.ConfirmModal),
-/* harmony export */   CountsBadge: () => (/* reexport safe */ _StatusBadge__WEBPACK_IMPORTED_MODULE_8__.CountsBadge),
-/* harmony export */   EmptyState: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_7__.EmptyState),
+/* harmony export */   ConfirmModal: () => (/* reexport safe */ _Modal__WEBPACK_IMPORTED_MODULE_6__.ConfirmModal),
+/* harmony export */   CountsBadge: () => (/* reexport safe */ _StatusBadge__WEBPACK_IMPORTED_MODULE_9__.CountsBadge),
+/* harmony export */   EmptyState: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_8__.EmptyState),
 /* harmony export */   Input: () => (/* reexport safe */ _Input__WEBPACK_IMPORTED_MODULE_2__["default"]),
-/* harmony export */   Modal: () => (/* reexport safe */ _Modal__WEBPACK_IMPORTED_MODULE_5__["default"]),
-/* harmony export */   ModelSelect: () => (/* reexport safe */ _ModelSelect__WEBPACK_IMPORTED_MODULE_4__["default"]),
+/* harmony export */   Modal: () => (/* reexport safe */ _Modal__WEBPACK_IMPORTED_MODULE_6__["default"]),
+/* harmony export */   ModelSelect: () => (/* reexport safe */ _ModelSelect__WEBPACK_IMPORTED_MODULE_5__["default"]),
 /* harmony export */   MultiSelect: () => (/* reexport safe */ _Select__WEBPACK_IMPORTED_MODULE_3__.MultiSelect),
 /* harmony export */   PageHeader: () => (/* binding */ PageHeader),
 /* harmony export */   PageLoader: () => (/* binding */ PageLoader),
+/* harmony export */   RichSelect: () => (/* reexport safe */ _RichSelect__WEBPACK_IMPORTED_MODULE_4__["default"]),
 /* harmony export */   Select: () => (/* reexport safe */ _Select__WEBPACK_IMPORTED_MODULE_3__["default"]),
 /* harmony export */   Spinner: () => (/* binding */ Spinner),
-/* harmony export */   StatusBadge: () => (/* reexport safe */ _StatusBadge__WEBPACK_IMPORTED_MODULE_8__["default"]),
-/* harmony export */   Table: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_7__["default"]),
-/* harmony export */   TableBody: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_7__.TableBody),
-/* harmony export */   TableCell: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_7__.TableCell),
-/* harmony export */   TableHead: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_7__.TableHead),
-/* harmony export */   TableHeader: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_7__.TableHeader),
-/* harmony export */   TableRow: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_7__.TableRow),
+/* harmony export */   StatusBadge: () => (/* reexport safe */ _StatusBadge__WEBPACK_IMPORTED_MODULE_9__["default"]),
+/* harmony export */   Table: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_8__["default"]),
+/* harmony export */   TableBody: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_8__.TableBody),
+/* harmony export */   TableCell: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_8__.TableCell),
+/* harmony export */   TableHead: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_8__.TableHead),
+/* harmony export */   TableHeader: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_8__.TableHeader),
+/* harmony export */   TableRow: () => (/* reexport safe */ _Table__WEBPACK_IMPORTED_MODULE_8__.TableRow),
 /* harmony export */   Textarea: () => (/* reexport safe */ _Input__WEBPACK_IMPORTED_MODULE_2__.Textarea),
-/* harmony export */   ToastProvider: () => (/* reexport safe */ _Toast__WEBPACK_IMPORTED_MODULE_6__.ToastProvider),
-/* harmony export */   Tooltip: () => (/* reexport safe */ _Tooltip__WEBPACK_IMPORTED_MODULE_9__["default"]),
-/* harmony export */   useToast: () => (/* reexport safe */ _Toast__WEBPACK_IMPORTED_MODULE_6__.useToast)
+/* harmony export */   ToastProvider: () => (/* reexport safe */ _Toast__WEBPACK_IMPORTED_MODULE_7__.ToastProvider),
+/* harmony export */   Tooltip: () => (/* reexport safe */ _Tooltip__WEBPACK_IMPORTED_MODULE_10__["default"]),
+/* harmony export */   useToast: () => (/* reexport safe */ _Toast__WEBPACK_IMPORTED_MODULE_7__.useToast)
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* harmony import */ var _Button__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Button */ "./src/components/common/Button.jsx");
 /* harmony import */ var _Input__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Input */ "./src/components/common/Input.jsx");
 /* harmony import */ var _Select__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Select */ "./src/components/common/Select.jsx");
-/* harmony import */ var _ModelSelect__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ModelSelect */ "./src/components/common/ModelSelect.jsx");
-/* harmony import */ var _Modal__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Modal */ "./src/components/common/Modal.jsx");
-/* harmony import */ var _Toast__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Toast */ "./src/components/common/Toast.jsx");
-/* harmony import */ var _Table__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Table */ "./src/components/common/Table.jsx");
-/* harmony import */ var _StatusBadge__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./StatusBadge */ "./src/components/common/StatusBadge.jsx");
-/* harmony import */ var _Tooltip__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Tooltip */ "./src/components/common/Tooltip.jsx");
+/* harmony import */ var _RichSelect__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./RichSelect */ "./src/components/common/RichSelect.jsx");
+/* harmony import */ var _ModelSelect__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./ModelSelect */ "./src/components/common/ModelSelect.jsx");
+/* harmony import */ var _Modal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Modal */ "./src/components/common/Modal.jsx");
+/* harmony import */ var _Toast__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Toast */ "./src/components/common/Toast.jsx");
+/* harmony import */ var _Table__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Table */ "./src/components/common/Table.jsx");
+/* harmony import */ var _StatusBadge__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./StatusBadge */ "./src/components/common/StatusBadge.jsx");
+/* harmony import */ var _Tooltip__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./Tooltip */ "./src/components/common/Tooltip.jsx");
+
 
 
 
@@ -9785,6 +10796,353 @@ function PageHeader(_ref5) {
       }), actions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
         className: "flex items-center gap-3",
         children: actions
+      })]
+    })
+  });
+}
+
+/***/ }),
+
+/***/ "./src/components/instructions/InstructionModal.jsx":
+/*!**********************************************************!*\
+  !*** ./src/components/instructions/InstructionModal.jsx ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ InstructionModal)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common */ "./src/components/common/index.js");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+
+
+
+var DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
+var isDefaultPreset = function isDefaultPreset(key) {
+  return key && DEFAULT_KEYS.includes(key);
+};
+function InstructionModal(_ref) {
+  var isOpen = _ref.isOpen,
+    onClose = _ref.onClose,
+    _ref$mode = _ref.mode,
+    mode = _ref$mode === void 0 ? 'add' : _ref$mode,
+    _ref$instruction = _ref.instruction,
+    instruction = _ref$instruction === void 0 ? null : _ref$instruction,
+    onSaved = _ref.onSaved;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState2 = _slicedToArray(_useState, 2),
+    key = _useState2[0],
+    setKey = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState4 = _slicedToArray(_useState3, 2),
+    name = _useState4[0],
+    setName = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState6 = _slicedToArray(_useState5, 2),
+    description = _useState6[0],
+    setDescription = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState8 = _slicedToArray(_useState7, 2),
+    titleInstruction = _useState8[0],
+    setTitleInstruction = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState10 = _slicedToArray(_useState9, 2),
+    bodyInstruction = _useState10[0],
+    setBodyInstruction = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState12 = _slicedToArray(_useState11, 2),
+    outlineInstruction = _useState12[0],
+    setOutlineInstruction = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState14 = _slicedToArray(_useState13, 2),
+    sectionInstruction = _useState14[0],
+    setSectionInstruction = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState16 = _slicedToArray(_useState15, 2),
+    saving = _useState16[0],
+    setSaving = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState18 = _slicedToArray(_useState17, 2),
+    resetting = _useState18[0],
+    setResetting = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState20 = _slicedToArray(_useState19, 2),
+    error = _useState20[0],
+    setError = _useState20[1];
+  var lockKeyAndName = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
+  var showResetButton = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!isOpen) return;
+    setError('');
+    if (mode === 'add' && !instruction) {
+      setKey('');
+      setName('');
+      setDescription('');
+      setTitleInstruction('');
+      setBodyInstruction('');
+      setOutlineInstruction('');
+      setSectionInstruction('');
+      return;
+    }
+    if (mode === 'duplicate' || mode === 'edit') {
+      var _inst$key, _inst$name, _inst$description, _instr$title, _instr$body, _instr$outline, _instr$section;
+      var inst = instruction || {};
+      var instr = inst.instructions || {};
+      setKey(mode === 'duplicate' ? '' : (_inst$key = inst.key) !== null && _inst$key !== void 0 ? _inst$key : '');
+      setName(mode === 'duplicate' ? '' : (_inst$name = inst.name) !== null && _inst$name !== void 0 ? _inst$name : '');
+      setDescription((_inst$description = inst.description) !== null && _inst$description !== void 0 ? _inst$description : '');
+      setTitleInstruction((_instr$title = instr.title) !== null && _instr$title !== void 0 ? _instr$title : '');
+      setBodyInstruction((_instr$body = instr.body) !== null && _instr$body !== void 0 ? _instr$body : '');
+      setOutlineInstruction((_instr$outline = instr.outline) !== null && _instr$outline !== void 0 ? _instr$outline : '');
+      setSectionInstruction((_instr$section = instr.section) !== null && _instr$section !== void 0 ? _instr$section : '');
+    }
+  }, [isOpen, mode, instruction]);
+  var handleSubmit = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(e) {
+      var keyTrim, nameTrim, payload, _result$id, _result$instruction, result;
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            e.preventDefault();
+            setError('');
+            keyTrim = String(key !== null && key !== void 0 ? key : '').trim().toLowerCase().replace(/\s+/g, '_');
+            nameTrim = String(name !== null && name !== void 0 ? name : '').trim();
+            if (!(!keyTrim || !nameTrim)) {
+              _context.next = 7;
+              break;
+            }
+            setError('Key and name are required.');
+            return _context.abrupt("return");
+          case 7:
+            payload = {
+              description: String(description !== null && description !== void 0 ? description : '').trim(),
+              instructions: {
+                title: String(titleInstruction !== null && titleInstruction !== void 0 ? titleInstruction : '').trim(),
+                body: String(bodyInstruction !== null && bodyInstruction !== void 0 ? bodyInstruction : '').trim(),
+                outline: String(outlineInstruction !== null && outlineInstruction !== void 0 ? outlineInstruction : '').trim(),
+                section: String(sectionInstruction !== null && sectionInstruction !== void 0 ? sectionInstruction : '').trim()
+              }
+            };
+            setSaving(true);
+            _context.prev = 9;
+            if (!(mode === 'add' || mode === 'duplicate')) {
+              _context.next = 19;
+              break;
+            }
+            _context.next = 13;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.instructions.create(_objectSpread({
+              key: keyTrim,
+              name: nameTrim
+            }, payload));
+          case 13:
+            result = _context.sent;
+            _context.next = 16;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 16:
+            onSaved === null || onSaved === void 0 || onSaved((_result$id = result === null || result === void 0 ? void 0 : result.id) !== null && _result$id !== void 0 ? _result$id : result === null || result === void 0 || (_result$instruction = result.instruction) === null || _result$instruction === void 0 ? void 0 : _result$instruction.id);
+            _context.next = 24;
+            break;
+          case 19:
+            _context.next = 21;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.instructions.update(instruction.id, payload);
+          case 21:
+            _context.next = 23;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 23:
+            onSaved === null || onSaved === void 0 || onSaved();
+          case 24:
+            onClose();
+            _context.next = 30;
+            break;
+          case 27:
+            _context.prev = 27;
+            _context.t0 = _context["catch"](9);
+            setError((_context.t0 === null || _context.t0 === void 0 ? void 0 : _context.t0.message) || 'Failed to save.');
+          case 30:
+            _context.prev = 30;
+            setSaving(false);
+            return _context.finish(30);
+          case 33:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee, null, [[9, 27, 30, 33]]);
+    }));
+    return function handleSubmit(_x) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var handleReset = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2, _inst$instructions$ou, _inst$instructions3, _inst$instructions$se, _inst$instructions4;
+      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            if (!(!(instruction !== null && instruction !== void 0 && instruction.id) || !showResetButton)) {
+              _context2.next = 2;
+              break;
+            }
+            return _context2.abrupt("return");
+          case 2:
+            setError('');
+            setResetting(true);
+            _context2.prev = 4;
+            _context2.next = 7;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.instructions.reset(instruction.id);
+          case 7:
+            result = _context2.sent;
+            _context2.next = 10;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 10:
+            inst = result === null || result === void 0 ? void 0 : result.instruction;
+            if (inst) {
+              setDescription((_inst$description2 = inst.description) !== null && _inst$description2 !== void 0 ? _inst$description2 : '');
+              setTitleInstruction((_inst$instructions$ti = (_inst$instructions = inst.instructions) === null || _inst$instructions === void 0 ? void 0 : _inst$instructions.title) !== null && _inst$instructions$ti !== void 0 ? _inst$instructions$ti : '');
+              setBodyInstruction((_inst$instructions$bo = (_inst$instructions2 = inst.instructions) === null || _inst$instructions2 === void 0 ? void 0 : _inst$instructions2.body) !== null && _inst$instructions$bo !== void 0 ? _inst$instructions$bo : '');
+              setOutlineInstruction((_inst$instructions$ou = (_inst$instructions3 = inst.instructions) === null || _inst$instructions3 === void 0 ? void 0 : _inst$instructions3.outline) !== null && _inst$instructions$ou !== void 0 ? _inst$instructions$ou : '');
+              setSectionInstruction((_inst$instructions$se = (_inst$instructions4 = inst.instructions) === null || _inst$instructions4 === void 0 ? void 0 : _inst$instructions4.section) !== null && _inst$instructions$se !== void 0 ? _inst$instructions$se : '');
+            }
+            onSaved === null || onSaved === void 0 || onSaved();
+            _context2.next = 18;
+            break;
+          case 15:
+            _context2.prev = 15;
+            _context2.t0 = _context2["catch"](4);
+            setError((_context2.t0 === null || _context2.t0 === void 0 ? void 0 : _context2.t0.message) || 'Failed to reset.');
+          case 18:
+            _context2.prev = 18;
+            setResetting(false);
+            return _context2.finish(18);
+          case 21:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee2, null, [[4, 15, 18, 21]]);
+    }));
+    return function handleReset() {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  var title = mode === 'add' ? 'Add instruction preset' : mode === 'duplicate' ? 'Duplicate instruction preset' : 'Edit instruction preset';
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
+    isOpen: isOpen,
+    onClose: onClose,
+    title: title,
+    size: "lg",
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("form", {
+      onSubmit: handleSubmit,
+      className: "space-y-4",
+      children: [error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+        className: "p-3 rounded-lg bg-red-50 text-red-700 text-sm",
+        children: error
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        className: "grid grid-cols-1 sm:grid-cols-2 gap-4",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+          label: "Key",
+          value: key,
+          onChange: function onChange(e) {
+            return setKey(e.target.value);
+          },
+          placeholder: "e.g. my_preset",
+          disabled: lockKeyAndName,
+          required: true
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+          label: "Name",
+          value: name,
+          onChange: function onChange(e) {
+            return setName(e.target.value);
+          },
+          placeholder: "Display name",
+          disabled: lockKeyAndName,
+          required: true
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+        label: "Description",
+        value: description,
+        onChange: function onChange(e) {
+          return setDescription(e.target.value);
+        },
+        placeholder: "Short description for the preset",
+        rows: 2
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        className: "border-t border-gray-200 pt-4 space-y-4",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+          className: "text-sm font-medium text-gray-900",
+          children: "Instructions (for webhook)"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+          label: "Title instruction",
+          value: titleInstruction,
+          onChange: function onChange(e) {
+            return setTitleInstruction(e.target.value);
+          },
+          placeholder: "How to write the title for this type",
+          rows: 2
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+          label: "Body instruction",
+          value: bodyInstruction,
+          onChange: function onChange(e) {
+            return setBodyInstruction(e.target.value);
+          },
+          placeholder: "How to write the body",
+          rows: 3
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+          label: "Outline instruction",
+          value: outlineInstruction,
+          onChange: function onChange(e) {
+            return setOutlineInstruction(e.target.value);
+          },
+          placeholder: "How to generate or structure the outline (leave empty if not applicable)",
+          rows: 2
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+          label: "Section instruction",
+          value: sectionInstruction,
+          onChange: function onChange(e) {
+            return setSectionInstruction(e.target.value);
+          },
+          placeholder: "How to write sections (leave empty if not applicable)",
+          rows: 2
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        className: "flex justify-end gap-2 pt-2",
+        children: [showResetButton && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "secondary",
+          onClick: handleReset,
+          loading: resetting,
+          disabled: saving,
+          className: "mr-auto",
+          children: "Reset to default"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "secondary",
+          onClick: onClose,
+          disabled: saving,
+          children: "Cancel"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "submit",
+          loading: saving,
+          children: mode === 'add' || mode === 'duplicate' ? 'Create' : 'Save'
+        })]
       })]
     })
   });
@@ -10461,26 +11819,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
 /* harmony import */ var _components_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/common */ "./src/components/common/index.js");
 /* harmony import */ var _components_campaign_CampaignForm__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/campaign/CampaignForm */ "./src/components/campaign/CampaignForm.jsx");
 /* harmony import */ var _components_campaign_ContentFieldsEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/campaign/ContentFieldsEditor */ "./src/components/campaign/ContentFieldsEditor.jsx");
 /* harmony import */ var _components_campaign_PostTaskList__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/campaign/PostTaskList */ "./src/components/campaign/PostTaskList.jsx");
 /* harmony import */ var _components_layout_InfoSidebar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/layout/InfoSidebar */ "./src/components/layout/InfoSidebar.jsx");
-/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
-/* harmony import */ var _hooks_useApi__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../hooks/useApi */ "./src/hooks/useApi.js");
-/* harmony import */ var _context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../context/UnsavedChangesContext */ "./src/context/UnsavedChangesContext.jsx");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/instructions/InstructionModal */ "./src/components/instructions/InstructionModal.jsx");
+/* harmony import */ var _components_campaign_RssFeedConfigModal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/campaign/RssFeedConfigModal */ "./src/components/campaign/RssFeedConfigModal.jsx");
+/* harmony import */ var _components_campaign_RssResultsModal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../components/campaign/RssResultsModal */ "./src/components/campaign/RssResultsModal.jsx");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
+/* harmony import */ var _hooks_useApi__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../hooks/useApi */ "./src/hooks/useApi.js");
+/* harmony import */ var _context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../context/UnsavedChangesContext */ "./src/context/UnsavedChangesContext.jsx");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 var _excluded = ["clear_image_overrides"],
-  _excluded2 = ["id", "status", "post_id", "error_message"];
+  _excluded2 = ["id", "post_id", "error_message", "status"];
+function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var s = Object.getOwnPropertySymbols(e); for (r = 0; r < s.length; r++) o = s[r], t.includes(o) || {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
+function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (e.includes(n)) continue; t[n] = r[n]; } return t; }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var s = Object.getOwnPropertySymbols(e); for (r = 0; r < s.length; r++) o = s[r], t.includes(o) || {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
-function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (e.includes(n)) continue; t[n] = r[n]; } return t; }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -10505,14 +11866,98 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
+
+
 var isBlank = function isBlank(value) {
   return String(value !== null && value !== void 0 ? value : '').trim() === '';
 };
 
+// Icons for instruction set options (by key)
+var InstructionIcon = function InstructionIcon(_ref) {
+  var type = _ref.type,
+    _ref$className = _ref.className,
+    className = _ref$className === void 0 ? 'w-4 h-4' : _ref$className;
+  var c = className;
+  if (type === 'listicle') {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("svg", {
+      className: c,
+      fill: "none",
+      viewBox: "0 0 24 24",
+      stroke: "currentColor",
+      strokeWidth: 2,
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        d: "M4 6h16M4 10h16M4 14h16M4 18h16"
+      })
+    });
+  }
+  if (type === 'news') {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("svg", {
+      className: c,
+      fill: "none",
+      viewBox: "0 0 24 24",
+      stroke: "currentColor",
+      strokeWidth: 2,
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        d: "M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+      })
+    });
+  }
+  if (type === 'guide') {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("svg", {
+      className: c,
+      fill: "none",
+      viewBox: "0 0 24 24",
+      stroke: "currentColor",
+      strokeWidth: 2,
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        d: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+      })
+    });
+  }
+  if (type === 'howto') {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("svg", {
+      className: c,
+      fill: "none",
+      viewBox: "0 0 24 24",
+      stroke: "currentColor",
+      strokeWidth: 2,
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        d: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      })]
+    });
+  }
+  // Default icon for custom instruction presets
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("svg", {
+    className: c,
+    fill: "none",
+    viewBox: "0 0 24 24",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      d: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+    })
+  });
+};
+
 // Editable title: shows text, pen icon on hover, click to edit inline
-function EditableCampaignTitle(_ref) {
-  var value = _ref.value,
-    onChange = _ref.onChange;
+function EditableCampaignTitle(_ref2) {
+  var value = _ref2.value,
+    onChange = _ref2.onChange;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
     isEditing = _useState2[0],
@@ -10552,9 +11997,9 @@ function EditableCampaignTitle(_ref) {
     }
   };
   var displayName = (value === null || value === void 0 ? void 0 : value.trim()) || 'Untitled Campaign';
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
     className: "flex items-center min-w-0",
-    children: isEditing ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("input", {
+    children: isEditing ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("input", {
       ref: inputRef,
       type: "text",
       value: editValue,
@@ -10564,21 +12009,21 @@ function EditableCampaignTitle(_ref) {
       onBlur: handleBlur,
       onKeyDown: handleKeyDown,
       className: "poststation-field flex-1 min-w-0 px-3 py-1.5 text-xl font-semibold border-indigo-300 focus:border-indigo-500 focus:ring-indigo-500"
-    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("button", {
+    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("button", {
       type: "button",
       onClick: function onClick() {
         return setIsEditing(true);
       },
       className: "group flex items-center gap-2 min-w-0 rounded-lg py-1.5 px-2 -ml-2 hover:bg-gray-100 transition-colors text-left",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", {
         className: "text-xl font-semibold text-gray-900 truncate",
         children: displayName
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("svg", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("svg", {
         className: "shrink-0 w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity",
         fill: "none",
         viewBox: "0 0 24 24",
         stroke: "currentColor",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("path", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
           strokeLinecap: "round",
           strokeLinejoin: "round",
           strokeWidth: 2,
@@ -10589,8 +12034,8 @@ function EditableCampaignTitle(_ref) {
   });
 }
 function CampaignEditPage() {
-  var _getTaxonomies;
-  var _useParams = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_10__.useParams)(),
+  var _getTaxonomies, _campaign$rss_config, _campaign$rss_config2, _campaign$instruction2;
+  var _useParams = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_13__.useParams)(),
     id = _useParams.id;
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState6 = _slicedToArray(_useState5, 2),
@@ -10622,86 +12067,127 @@ function CampaignEditPage() {
     setRetryFailedLoading = _useState18[1];
   var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState20 = _slicedToArray(_useState19, 2),
-    savingAll = _useState20[0],
-    setSavingAll = _useState20[1];
+    instructionModalOpen = _useState20[0],
+    setInstructionModalOpen = _useState20[1];
   var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    runLoading = _useState22[0],
-    setRunLoading = _useState22[1];
+    rssConfigModalOpen = _useState22[0],
+    setRssConfigModalOpen = _useState22[1];
   var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState24 = _slicedToArray(_useState23, 2),
-    stopLoading = _useState24[0],
-    setStopLoading = _useState24[1];
-  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    rssResultsModalOpen = _useState24[0],
+    setRssResultsModalOpen = _useState24[1];
+  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState26 = _slicedToArray(_useState25, 2),
-    clearCompletedLoading = _useState26[0],
-    setClearCompletedLoading = _useState26[1];
+    rssResultsData = _useState26[0],
+    setRssResultsData = _useState26[1];
   var _useState27 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState28 = _slicedToArray(_useState27, 2),
-    importLoading = _useState28[0],
-    setImportLoading = _useState28[1];
+    savingAll = _useState28[0],
+    setSavingAll = _useState28[1];
+  var _useState29 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState30 = _slicedToArray(_useState29, 2),
+    runLoading = _useState30[0],
+    setRunLoading = _useState30[1];
+  var _useState31 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState32 = _slicedToArray(_useState31, 2),
+    stopLoading = _useState32[0],
+    setStopLoading = _useState32[1];
+  var _useState33 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState34 = _slicedToArray(_useState33, 2),
+    clearCompletedLoading = _useState34[0],
+    setClearCompletedLoading = _useState34[1];
+  var _useState35 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState36 = _slicedToArray(_useState35, 2),
+    importLoading = _useState36[0],
+    setImportLoading = _useState36[1];
+  var _useState37 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState38 = _slicedToArray(_useState37, 2),
+    deletingTaskIds = _useState38[0],
+    setDeletingTaskIds = _useState38[1];
   var stopRunRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
+  var manualRunRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
+  var currentManualTaskIdRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var taskCountRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(0);
+  var campaignRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var hasRequiredData = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (task) {
+    var _task$campaign_type, _task$topic;
+    var taskType = (_task$campaign_type = task === null || task === void 0 ? void 0 : task.campaign_type) !== null && _task$campaign_type !== void 0 ? _task$campaign_type : 'default';
+    if (taskType === 'rewrite_blog_post') {
+      var _task$research_url;
+      return String((_task$research_url = task === null || task === void 0 ? void 0 : task.research_url) !== null && _task$research_url !== void 0 ? _task$research_url : '').trim() !== '';
+    }
+    return String((_task$topic = task === null || task === void 0 ? void 0 : task.topic) !== null && _task$topic !== void 0 ? _task$topic : '').trim() !== '';
+  }, []);
+  var getNextPendingTask = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
+    var _taskItems$find;
+    return (_taskItems$find = taskItems.find(function (t) {
+      return t.status === 'pending' && hasRequiredData(t);
+    })) !== null && _taskItems$find !== void 0 ? _taskItems$find : null;
+  }, [taskItems, hasRequiredData]);
   var _useToast = (0,_components_common__WEBPACK_IMPORTED_MODULE_1__.useToast)(),
     showToast = _useToast.showToast;
-  var _useUnsavedChanges = (0,_context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_8__.useUnsavedChanges)(),
+  var _useUnsavedChanges = (0,_context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_11__.useUnsavedChanges)(),
     setGlobalDirty = _useUnsavedChanges.setIsDirty;
   var getTaskIdKey = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (value) {
     return String(value !== null && value !== void 0 ? value : '');
   }, []);
   var fetchCampaign = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
-    return _api_client__WEBPACK_IMPORTED_MODULE_6__.campaigns.getById(id);
+    return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns.getById(id);
   }, [id]);
-  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useQuery)(fetchCampaign, [id]),
+  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useQuery)(fetchCampaign, [id]),
     data = _useQuery.data,
     loading = _useQuery.loading,
     error = _useQuery.error,
     refetch = _useQuery.refetch;
 
   // Fetch webhooks for dropdown
-  var bootstrapWebhooks = (0,_api_client__WEBPACK_IMPORTED_MODULE_6__.getBootstrapWebhooks)();
+  var bootstrapWebhooks = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapWebhooks)();
   var fetchWebhooks = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
-    return _api_client__WEBPACK_IMPORTED_MODULE_6__.webhooks.getAll();
+    return _api_client__WEBPACK_IMPORTED_MODULE_9__.webhooks.getAll();
   }, []);
-  var _useQuery2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useQuery)(fetchWebhooks, [], {
+  var _useQuery2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useQuery)(fetchWebhooks, [], {
       initialData: bootstrapWebhooks
     }),
     webhooksData = _useQuery2.data;
 
   // Mutations
-  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function (data) {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.campaigns.update(id, data);
+  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (data) {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns.update(id, data);
     }),
     updateCampaign = _useMutation.mutate,
     saving = _useMutation.loading;
-  var _useMutation2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function () {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.postTasks.create(id);
+  var _useMutation2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (clientId) {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks.create(id, clientId != null ? {
+        id: clientId
+      } : {});
     }),
     createTask = _useMutation2.mutate,
     creatingTask = _useMutation2.loading;
-  var _useMutation3 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function (tasksData) {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.postTasks.update(id, tasksData);
+  var _useMutation3 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (tasksData) {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks.update(id, tasksData);
     }),
     updateTasks = _useMutation3.mutate;
-  var _useMutation4 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_6__.postTasks["delete"]),
+  var _useMutation4 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks["delete"]),
     deleteTask = _useMutation4.mutate;
-  var _useMutation5 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function () {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.postTasks.clearCompleted(id);
+  var _useMutation5 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function () {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks.clearCompleted(id);
     }),
     clearCompletedTasks = _useMutation5.mutate;
-  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function (file) {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.postTasks["import"](id, file);
+  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (file) {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks["import"](id, file);
     }),
     importTasks = _useMutation6.mutate;
-  var _useMutation7 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function (taskId, webhookId) {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.campaigns.run(id, taskId, webhookId);
+  var _useMutation7 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (taskId, webhookId) {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns.run(id, taskId, webhookId);
     }),
     runCampaign = _useMutation7.mutate;
-  var _useMutation8 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function () {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.campaigns.stopRun(id);
+  var _useMutation8 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function () {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns.stopRun(id);
     }),
     stopCampaignRun = _useMutation8.mutate;
-  var _useMutation9 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_7__.useMutation)(function () {
-      return _api_client__WEBPACK_IMPORTED_MODULE_6__.campaigns["export"](id);
+  var _useMutation9 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function () {
+      return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns["export"](id);
     }),
     exportCampaign = _useMutation9.mutate;
 
@@ -10709,14 +12195,14 @@ function CampaignEditPage() {
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (data) {
       var _data$campaign, _data$campaign2, _data$campaign3, _data$campaign4, _data$campaign5, _data$campaign6;
-      var articleType = ((_data$campaign = data.campaign) === null || _data$campaign === void 0 ? void 0 : _data$campaign.article_type) || 'default';
+      var campaignType = ((_data$campaign = data.campaign) === null || _data$campaign === void 0 ? void 0 : _data$campaign.campaign_type) || 'default';
       var language = ((_data$campaign2 = data.campaign) === null || _data$campaign2 === void 0 ? void 0 : _data$campaign2.language) || 'en';
       var targetCountry = ((_data$campaign3 = data.campaign) === null || _data$campaign3 === void 0 ? void 0 : _data$campaign3.target_country) || 'international';
       var toneOfVoice = ((_data$campaign4 = data.campaign) === null || _data$campaign4 === void 0 ? void 0 : _data$campaign4.tone_of_voice) || 'none';
       var pointOfView = ((_data$campaign5 = data.campaign) === null || _data$campaign5 === void 0 ? void 0 : _data$campaign5.point_of_view) || 'none';
       var readability = ((_data$campaign6 = data.campaign) === null || _data$campaign6 === void 0 ? void 0 : _data$campaign6.readability) || 'grade_8';
       setCampaign(_objectSpread(_objectSpread({}, data.campaign), {}, {
-        article_type: articleType,
+        campaign_type: campaignType,
         language: language,
         target_country: targetCountry,
         tone_of_voice: toneOfVoice,
@@ -10724,10 +12210,10 @@ function CampaignEditPage() {
         readability: readability
       }));
       setTaskItems((data.tasks || []).map(function (task) {
-        var _task$topic, _task$keywords, _task$title_override, _task$slug_override;
+        var _task$topic2, _task$keywords, _task$title_override, _task$slug_override;
         return _objectSpread(_objectSpread({}, task), {}, {
-          article_type: task.article_type || articleType,
-          topic: (_task$topic = task.topic) !== null && _task$topic !== void 0 ? _task$topic : '',
+          campaign_type: task.campaign_type || campaignType,
+          topic: (_task$topic2 = task.topic) !== null && _task$topic2 !== void 0 ? _task$topic2 : '',
           keywords: (_task$keywords = task.keywords) !== null && _task$keywords !== void 0 ? _task$keywords : '',
           title_override: (_task$title_override = task.title_override) !== null && _task$title_override !== void 0 ? _task$title_override : '',
           slug_override: (_task$slug_override = task.slug_override) !== null && _task$slug_override !== void 0 ? _task$slug_override : ''
@@ -10809,38 +12295,105 @@ function CampaignEditPage() {
     });
   }, [getTaskIdKey]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    taskCountRef.current = taskItems.length;
+  }, [taskItems.length]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    campaignRef.current = campaign;
+  }, [campaign]);
+
+  // In active (manual) mode, when current task completes/fails, start next pending or end run
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var _campaign$webhook_id;
+    if (!manualRunRef.current || !currentManualTaskIdRef.current || (campaign === null || campaign === void 0 ? void 0 : campaign.status) === 'active') return;
+    if (stopRunRef.current) {
+      manualRunRef.current = false;
+      currentManualTaskIdRef.current = null;
+      return;
+    }
+    var currentId = currentManualTaskIdRef.current;
+    var currentTask = taskItems.find(function (t) {
+      return getTaskIdKey(t.id) === currentId;
+    });
+    if (!currentTask || currentTask.status !== 'completed' && currentTask.status !== 'failed') return;
+    var nextTask = taskItems.find(function (t) {
+      return t.status === 'pending' && hasRequiredData(t);
+    });
+    if (!nextTask) {
+      manualRunRef.current = false;
+      currentManualTaskIdRef.current = null;
+      setIsRunning(false);
+      return;
+    }
+    currentManualTaskIdRef.current = getTaskIdKey(nextTask.id);
+    setTaskItems(function (prev) {
+      return prev.map(function (task) {
+        return getTaskIdKey(task.id) === getTaskIdKey(nextTask.id) ? _objectSpread(_objectSpread({}, task), {}, {
+          status: 'processing',
+          error_message: null,
+          progress: null
+        }) : task;
+      });
+    });
+    runCampaign(nextTask.id, (_campaign$webhook_id = campaign === null || campaign === void 0 ? void 0 : campaign.webhook_id) !== null && _campaign$webhook_id !== void 0 ? _campaign$webhook_id : 0);
+  }, [taskItems, campaign === null || campaign === void 0 ? void 0 : campaign.status, campaign === null || campaign === void 0 ? void 0 : campaign.webhook_id, runCampaign, getTaskIdKey, hasRequiredData]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var cancelled = false;
     var refreshPendingProcessing = /*#__PURE__*/function () {
-      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var pendingProcessing;
+      var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+        var _data$tasks, lastCount, _data, taskList;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
               _context.prev = 0;
-              _context.next = 3;
-              return (0,_api_client__WEBPACK_IMPORTED_MODULE_6__.getPendingProcessingPostTasks)(id);
-            case 3:
-              pendingProcessing = _context.sent;
+              lastCount = taskCountRef.current;
+              _context.next = 4;
+              return (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getPendingProcessingPostTasks)(id, lastCount);
+            case 4:
+              _data = _context.sent;
               if (!cancelled) {
-                _context.next = 6;
+                _context.next = 7;
                 break;
               }
               return _context.abrupt("return");
-            case 6:
-              applyPendingProcessingUpdates(pendingProcessing);
-              _context.next = 11;
+            case 7:
+              taskList = Array.isArray(_data) ? _data : (_data$tasks = _data === null || _data === void 0 ? void 0 : _data.tasks) !== null && _data$tasks !== void 0 ? _data$tasks : [];
+              applyPendingProcessingUpdates(taskList);
+              if (_data !== null && _data !== void 0 && _data.new_tasks_available && Array.isArray(_data === null || _data === void 0 ? void 0 : _data.full_tasks) && _data.full_tasks.length > 0) {
+                setTaskItems(function (prev) {
+                  var _campaignData$campaig;
+                  var prevIds = new Set(prev.map(function (t) {
+                    return getTaskIdKey(t.id);
+                  }));
+                  var campaignData = campaignRef.current;
+                  var campaignType = (_campaignData$campaig = campaignData === null || campaignData === void 0 ? void 0 : campaignData.campaign_type) !== null && _campaignData$campaig !== void 0 ? _campaignData$campaig : 'default';
+                  var toAdd = _data.full_tasks.filter(function (t) {
+                    return !prevIds.has(getTaskIdKey(t.id));
+                  }).map(function (task) {
+                    var _task$topic3, _task$keywords2, _task$title_override2, _task$slug_override2;
+                    return _objectSpread(_objectSpread({}, task), {}, {
+                      campaign_type: task.campaign_type || campaignType,
+                      topic: (_task$topic3 = task.topic) !== null && _task$topic3 !== void 0 ? _task$topic3 : '',
+                      keywords: (_task$keywords2 = task.keywords) !== null && _task$keywords2 !== void 0 ? _task$keywords2 : '',
+                      title_override: (_task$title_override2 = task.title_override) !== null && _task$title_override2 !== void 0 ? _task$title_override2 : '',
+                      slug_override: (_task$slug_override2 = task.slug_override) !== null && _task$slug_override2 !== void 0 ? _task$slug_override2 : ''
+                    });
+                  });
+                  return toAdd.length ? [].concat(_toConsumableArray(toAdd), _toConsumableArray(prev)) : prev;
+                });
+              }
+              _context.next = 14;
               break;
-            case 9:
-              _context.prev = 9;
+            case 12:
+              _context.prev = 12;
               _context.t0 = _context["catch"](0);
-            case 11:
+            case 14:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[0, 9]]);
+        }, _callee, null, [[0, 12]]);
       }));
       return function refreshPendingProcessing() {
-        return _ref2.apply(this, arguments);
+        return _ref3.apply(this, arguments);
       };
     }();
     refreshPendingProcessing();
@@ -10849,7 +12402,7 @@ function CampaignEditPage() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [id, applyPendingProcessingUpdates]);
+  }, [id, applyPendingProcessingUpdates, getTaskIdKey]);
 
   // Handle campaign changes
   var handleCampaignChange = function handleCampaignChange(newCampaign) {
@@ -10891,198 +12444,183 @@ function CampaignEditPage() {
     setIsDirty(true);
   };
 
-  // Add new post task
-  var handleAddTask = /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-      var result, applyCurrentDefaults, enrichedTask, newTask, _enrichedTask;
+  // Add new post task (optimistic: show row with client-generated id, server stores it)
+  var applyCurrentDefaults = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (task) {
+    var _task$topic4, _task$keywords3, _task$title_override3, _task$slug_override3;
+    return _objectSpread(_objectSpread({}, task), {}, {
+      campaign_type: (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default',
+      topic: (_task$topic4 = task.topic) !== null && _task$topic4 !== void 0 ? _task$topic4 : '',
+      keywords: (_task$keywords3 = task.keywords) !== null && _task$keywords3 !== void 0 ? _task$keywords3 : '',
+      title_override: (_task$title_override3 = task.title_override) !== null && _task$title_override3 !== void 0 ? _task$title_override3 : '',
+      slug_override: (_task$slug_override3 = task.slug_override) !== null && _task$slug_override3 !== void 0 ? _task$slug_override3 : ''
+    });
+  }, [campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type]);
+  var handleAddTask = function handleAddTask() {
+    var newId = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.generateTaskId)();
+    var optimisticTask = {
+      id: newId,
+      status: 'pending',
+      topic: '',
+      keywords: '',
+      campaign_type: (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default',
+      article_url: '',
+      research_url: '',
+      feature_image_id: null,
+      feature_image_title: '',
+      title_override: '',
+      slug_override: ''
+    };
+    setTaskItems(function (prev) {
+      return [optimisticTask].concat(_toConsumableArray(prev));
+    });
+    createTask(newId).then(function (result) {
+      var apply = applyCurrentDefaults;
+      var enrichedTask = result !== null && result !== void 0 && result.task ? apply(_objectSpread(_objectSpread({}, result.task), {}, {
+        id: newId
+      })) : apply(_objectSpread(_objectSpread({}, optimisticTask), {}, {
+        id: newId
+      }));
+      setTaskItems(function (prev) {
+        return prev.map(function (t) {
+          return t.id === newId ? enrichedTask : t;
+        });
+      });
+    })["catch"](function (err) {
+      var _err$message;
+      setTaskItems(function (prev) {
+        return prev.filter(function (t) {
+          return t.id !== newId;
+        });
+      });
+      showToast((_err$message = err === null || err === void 0 ? void 0 : err.message) !== null && _err$message !== void 0 ? _err$message : 'Failed to create task.', 'error');
+    });
+  };
+  var handleDeleteTask = /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(taskId) {
+      var _err$message2;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
-            _context2.prev = 0;
-            _context2.next = 3;
-            return createTask();
-          case 3:
-            result = _context2.sent;
-            applyCurrentDefaults = function applyCurrentDefaults(task) {
-              var _task$topic2, _task$keywords2, _task$title_override2, _task$slug_override2;
-              return _objectSpread(_objectSpread({}, task), {}, {
-                article_type: (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default',
-                topic: (_task$topic2 = task.topic) !== null && _task$topic2 !== void 0 ? _task$topic2 : '',
-                keywords: (_task$keywords2 = task.keywords) !== null && _task$keywords2 !== void 0 ? _task$keywords2 : '',
-                title_override: (_task$title_override2 = task.title_override) !== null && _task$title_override2 !== void 0 ? _task$title_override2 : '',
-                slug_override: (_task$slug_override2 = task.slug_override) !== null && _task$slug_override2 !== void 0 ? _task$slug_override2 : ''
-              });
-            };
-            if (!(result !== null && result !== void 0 && result.task)) {
-              _context2.next = 11;
+            if (window.confirm('Are you sure you want to delete this post task?')) {
+              _context2.next = 2;
               break;
             }
-            enrichedTask = applyCurrentDefaults(result.task);
-            setTaskItems(function (prev) {
-              return [enrichedTask].concat(_toConsumableArray(prev));
-            });
-            _context2.next = 10;
-            return updateTasks([enrichedTask]);
-          case 10:
             return _context2.abrupt("return");
-          case 11:
-            if (!(result !== null && result !== void 0 && result.id)) {
-              _context2.next = 17;
-              break;
-            }
-            newTask = {
-              id: result.id,
-              status: 'pending',
-              topic: '',
-              keywords: '',
-              article_type: (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default',
-              article_url: '',
-              research_url: '',
-              feature_image_id: null,
-              feature_image_title: '',
-              title_override: '',
-              slug_override: ''
-            };
-            _enrichedTask = applyCurrentDefaults(newTask);
-            setTaskItems(function (prev) {
-              return [_enrichedTask].concat(_toConsumableArray(prev));
+          case 2:
+            setDeletingTaskIds(function (prev) {
+              return [].concat(_toConsumableArray(prev), [taskId]);
             });
-            _context2.next = 17;
-            return updateTasks([_enrichedTask]);
-          case 17:
-            _context2.next = 22;
-            break;
-          case 19:
-            _context2.prev = 19;
-            _context2.t0 = _context2["catch"](0);
-            console.error('Failed to create post task:', _context2.t0);
-          case 22:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2, null, [[0, 19]]);
-    }));
-    return function handleAddTask() {
-      return _ref3.apply(this, arguments);
-    };
-  }();
-  var handleDeleteTask = /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(taskId) {
-      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            _context3.prev = 0;
-            _context3.next = 3;
+            _context2.prev = 3;
+            _context2.next = 6;
             return deleteTask(taskId);
-          case 3:
+          case 6:
             setTaskItems(function (prev) {
               return prev.filter(function (task) {
                 return task.id !== taskId;
               });
             });
-            _context3.next = 9;
+            _context2.next = 12;
             break;
-          case 6:
-            _context3.prev = 6;
-            _context3.t0 = _context3["catch"](0);
-            console.error('Failed to delete post task:', _context3.t0);
           case 9:
+            _context2.prev = 9;
+            _context2.t0 = _context2["catch"](3);
+            showToast((_err$message2 = _context2.t0 === null || _context2.t0 === void 0 ? void 0 : _context2.t0.message) !== null && _err$message2 !== void 0 ? _err$message2 : 'Failed to delete post task.', 'error');
+          case 12:
+            _context2.prev = 12;
+            setDeletingTaskIds(function (prev) {
+              return prev.filter(function (id) {
+                return id !== taskId;
+              });
+            });
+            return _context2.finish(12);
+          case 15:
           case "end":
-            return _context3.stop();
+            return _context2.stop();
         }
-      }, _callee3, null, [[0, 6]]);
+      }, _callee2, null, [[3, 9, 12, 15]]);
     }));
     return function handleDeleteTask(_x) {
       return _ref4.apply(this, arguments);
     };
   }();
-  var handleDuplicateTask = /*#__PURE__*/function () {
-    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(taskId) {
-      var original, result, _, __, ___, ____, copyData, _copyData$topic, _copyData$keywords, _copyData$title_overr, _copyData$slug_overri, newTask, _copyData$topic2, _copyData$keywords2, _copyData$title_overr2, _copyData$slug_overri2, _newTask;
-      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
-          case 0:
-            original = taskItems.find(function (task) {
-              return task.id === taskId;
-            });
-            if (original) {
-              _context4.next = 3;
-              break;
-            }
-            return _context4.abrupt("return");
-          case 3:
-            _context4.prev = 3;
-            _context4.next = 6;
-            return createTask();
-          case 6:
-            result = _context4.sent;
-            _ = original.id, __ = original.status, ___ = original.post_id, ____ = original.error_message, copyData = _objectWithoutProperties(original, _excluded2);
-            if (!(result !== null && result !== void 0 && result.task)) {
-              _context4.next = 13;
-              break;
-            }
-            newTask = _objectSpread(_objectSpread(_objectSpread({}, result.task), copyData), {}, {
-              article_type: copyData.article_type || (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default',
-              topic: (_copyData$topic = copyData.topic) !== null && _copyData$topic !== void 0 ? _copyData$topic : '',
-              keywords: (_copyData$keywords = copyData.keywords) !== null && _copyData$keywords !== void 0 ? _copyData$keywords : '',
-              title_override: (_copyData$title_overr = copyData.title_override) !== null && _copyData$title_overr !== void 0 ? _copyData$title_overr : '',
-              slug_override: (_copyData$slug_overri = copyData.slug_override) !== null && _copyData$slug_overri !== void 0 ? _copyData$slug_overri : ''
-            });
-            setTaskItems(function (prev) {
-              return [newTask].concat(_toConsumableArray(prev));
-            });
-            setIsDirty(true);
-            return _context4.abrupt("return");
-          case 13:
-            if (result !== null && result !== void 0 && result.id) {
-              _newTask = _objectSpread(_objectSpread({}, copyData), {}, {
-                id: result.id,
-                status: 'pending',
-                article_type: copyData.article_type || (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default',
-                topic: (_copyData$topic2 = copyData.topic) !== null && _copyData$topic2 !== void 0 ? _copyData$topic2 : '',
-                keywords: (_copyData$keywords2 = copyData.keywords) !== null && _copyData$keywords2 !== void 0 ? _copyData$keywords2 : '',
-                title_override: (_copyData$title_overr2 = copyData.title_override) !== null && _copyData$title_overr2 !== void 0 ? _copyData$title_overr2 : '',
-                slug_override: (_copyData$slug_overri2 = copyData.slug_override) !== null && _copyData$slug_overri2 !== void 0 ? _copyData$slug_overri2 : ''
-              });
-              setTaskItems(function (prev) {
-                return [_newTask].concat(_toConsumableArray(prev));
-              });
-              setIsDirty(true);
-            }
-            _context4.next = 19;
-            break;
-          case 16:
-            _context4.prev = 16;
-            _context4.t0 = _context4["catch"](3);
-            console.error('Failed to duplicate post task:', _context4.t0);
-          case 19:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee4, null, [[3, 16]]);
-    }));
-    return function handleDuplicateTask(_x2) {
-      return _ref5.apply(this, arguments);
-    };
-  }();
+  var handleDuplicateTask = function handleDuplicateTask(taskId) {
+    var _copyData$topic, _copyData$keywords, _copyData$title_overr, _copyData$slug_overri;
+    var original = taskItems.find(function (task) {
+      return task.id === taskId;
+    });
+    if (!original) return;
+    var newId = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.generateTaskId)();
+    var _id = original.id,
+      _pid = original.post_id,
+      _err = original.error_message,
+      _status = original.status,
+      copyData = _objectWithoutProperties(original, _excluded2);
+    var optimisticCopy = _objectSpread(_objectSpread({}, copyData), {}, {
+      id: newId,
+      status: 'pending',
+      campaign_type: copyData.campaign_type || (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default',
+      topic: (_copyData$topic = copyData.topic) !== null && _copyData$topic !== void 0 ? _copyData$topic : '',
+      keywords: (_copyData$keywords = copyData.keywords) !== null && _copyData$keywords !== void 0 ? _copyData$keywords : '',
+      title_override: (_copyData$title_overr = copyData.title_override) !== null && _copyData$title_overr !== void 0 ? _copyData$title_overr : '',
+      slug_override: (_copyData$slug_overri = copyData.slug_override) !== null && _copyData$slug_overri !== void 0 ? _copyData$slug_overri : ''
+    });
+    setTaskItems(function (prev) {
+      return [optimisticCopy].concat(_toConsumableArray(prev));
+    });
+    setIsDirty(true);
+    createTask(newId).then(function (result) {
+      var _result$task$status, _copyData$topic2, _copyData$keywords2, _copyData$title_overr2, _copyData$slug_overri2, _copyData$topic3, _copyData$keywords3, _copyData$title_overr3, _copyData$slug_overri3;
+      var newTask = result !== null && result !== void 0 && result.task ? _objectSpread(_objectSpread(_objectSpread({}, result.task), copyData), {}, {
+        id: newId,
+        status: (_result$task$status = result.task.status) !== null && _result$task$status !== void 0 ? _result$task$status : 'pending',
+        campaign_type: copyData.campaign_type || (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default',
+        topic: (_copyData$topic2 = copyData.topic) !== null && _copyData$topic2 !== void 0 ? _copyData$topic2 : '',
+        keywords: (_copyData$keywords2 = copyData.keywords) !== null && _copyData$keywords2 !== void 0 ? _copyData$keywords2 : '',
+        title_override: (_copyData$title_overr2 = copyData.title_override) !== null && _copyData$title_overr2 !== void 0 ? _copyData$title_overr2 : '',
+        slug_override: (_copyData$slug_overri2 = copyData.slug_override) !== null && _copyData$slug_overri2 !== void 0 ? _copyData$slug_overri2 : ''
+      }) : _objectSpread(_objectSpread({}, copyData), {}, {
+        id: newId,
+        status: 'pending',
+        campaign_type: copyData.campaign_type || (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default',
+        topic: (_copyData$topic3 = copyData.topic) !== null && _copyData$topic3 !== void 0 ? _copyData$topic3 : '',
+        keywords: (_copyData$keywords3 = copyData.keywords) !== null && _copyData$keywords3 !== void 0 ? _copyData$keywords3 : '',
+        title_override: (_copyData$title_overr3 = copyData.title_override) !== null && _copyData$title_overr3 !== void 0 ? _copyData$title_overr3 : '',
+        slug_override: (_copyData$slug_overri3 = copyData.slug_override) !== null && _copyData$slug_overri3 !== void 0 ? _copyData$slug_overri3 : ''
+      });
+      setTaskItems(function (prev) {
+        return prev.map(function (t) {
+          return t.id === newId ? newTask : t;
+        });
+      });
+      setIsDirty(true);
+    })["catch"](function (err) {
+      var _err$message3;
+      setTaskItems(function (prev) {
+        return prev.filter(function (t) {
+          return t.id !== newId;
+        });
+      });
+      showToast((_err$message3 = err === null || err === void 0 ? void 0 : err.message) !== null && _err$message3 !== void 0 ? _err$message3 : 'Failed to duplicate task.', 'error');
+    });
+  };
   var handleRetryTask = /*#__PURE__*/function () {
-    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(taskId) {
+    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(taskId) {
       var nextTasks;
-      return _regeneratorRuntime().wrap(function _callee5$(_context5) {
-        while (1) switch (_context5.prev = _context5.next) {
+      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
           case 0:
             if (campaign !== null && campaign !== void 0 && campaign.webhook_id) {
-              _context5.next = 3;
+              _context3.next = 3;
               break;
             }
             showToast('Select a webhook before retrying.', 'error');
-            return _context5.abrupt("return");
+            return _context3.abrupt("return");
           case 3:
             if (!retryingTaskId) {
-              _context5.next = 5;
+              _context3.next = 5;
               break;
             }
-            return _context5.abrupt("return");
+            return _context3.abrupt("return");
           case 5:
             setRetryingTaskId(getTaskIdKey(taskId));
             nextTasks = taskItems.map(function (task) {
@@ -11092,61 +12630,60 @@ function CampaignEditPage() {
                 progress: null
               }) : task;
             });
-            _context5.prev = 7;
-            _context5.next = 10;
+            _context3.prev = 7;
+            _context3.next = 10;
             return updateTasks(nextTasks);
           case 10:
             setTaskItems(nextTasks);
             showToast('Post task set to pending.', 'info');
-            _context5.next = 18;
+            _context3.next = 17;
             break;
           case 14:
-            _context5.prev = 14;
-            _context5.t0 = _context5["catch"](7);
-            refetch();
-            showToast((_context5.t0 === null || _context5.t0 === void 0 ? void 0 : _context5.t0.message) || 'Failed to reset post task.', 'error');
-          case 18:
-            _context5.prev = 18;
+            _context3.prev = 14;
+            _context3.t0 = _context3["catch"](7);
+            showToast((_context3.t0 === null || _context3.t0 === void 0 ? void 0 : _context3.t0.message) || 'Failed to reset post task.', 'error');
+          case 17:
+            _context3.prev = 17;
             setRetryingTaskId(null);
-            return _context5.finish(18);
-          case 21:
+            return _context3.finish(17);
+          case 20:
           case "end":
-            return _context5.stop();
+            return _context3.stop();
         }
-      }, _callee5, null, [[7, 14, 18, 21]]);
+      }, _callee3, null, [[7, 14, 17, 20]]);
     }));
-    return function handleRetryTask(_x3) {
-      return _ref6.apply(this, arguments);
+    return function handleRetryTask(_x2) {
+      return _ref5.apply(this, arguments);
     };
   }();
   var handleRetryFailedTasks = /*#__PURE__*/function () {
-    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
+    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
       var hasFailed, nextTasks;
-      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
-        while (1) switch (_context6.prev = _context6.next) {
+      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
           case 0:
             if (campaign !== null && campaign !== void 0 && campaign.webhook_id) {
-              _context6.next = 3;
+              _context4.next = 3;
               break;
             }
             showToast('Select a webhook before retrying.', 'error');
-            return _context6.abrupt("return");
+            return _context4.abrupt("return");
           case 3:
             hasFailed = taskItems.some(function (task) {
               return task.status === 'failed';
             });
             if (hasFailed) {
-              _context6.next = 7;
+              _context4.next = 7;
               break;
             }
             showToast('No failed post tasks to retry.', 'info');
-            return _context6.abrupt("return");
+            return _context4.abrupt("return");
           case 7:
             if (!retryFailedLoading) {
-              _context6.next = 9;
+              _context4.next = 9;
               break;
             }
-            return _context6.abrupt("return");
+            return _context4.abrupt("return");
           case 9:
             setRetryFailedLoading(true);
             nextTasks = taskItems.map(function (task) {
@@ -11156,88 +12693,87 @@ function CampaignEditPage() {
                 progress: null
               }) : task;
             });
-            _context6.prev = 11;
-            _context6.next = 14;
+            _context4.prev = 11;
+            _context4.next = 14;
             return updateTasks(nextTasks);
           case 14:
             setTaskItems(nextTasks);
             showToast('Failed post tasks set to pending.', 'info');
-            _context6.next = 22;
+            _context4.next = 21;
             break;
           case 18:
-            _context6.prev = 18;
-            _context6.t0 = _context6["catch"](11);
-            refetch();
-            showToast((_context6.t0 === null || _context6.t0 === void 0 ? void 0 : _context6.t0.message) || 'Failed to reset post tasks.', 'error');
-          case 22:
-            _context6.prev = 22;
+            _context4.prev = 18;
+            _context4.t0 = _context4["catch"](11);
+            showToast((_context4.t0 === null || _context4.t0 === void 0 ? void 0 : _context4.t0.message) || 'Failed to reset post tasks.', 'error');
+          case 21:
+            _context4.prev = 21;
             setRetryFailedLoading(false);
-            return _context6.finish(22);
-          case 25:
+            return _context4.finish(21);
+          case 24:
           case "end":
-            return _context6.stop();
+            return _context4.stop();
         }
-      }, _callee6, null, [[11, 18, 22, 25]]);
+      }, _callee4, null, [[11, 18, 21, 24]]);
     }));
     return function handleRetryFailedTasks() {
-      return _ref7.apply(this, arguments);
+      return _ref6.apply(this, arguments);
     };
   }();
   var handleImportTasks = /*#__PURE__*/function () {
-    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7(file) {
-      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
-        while (1) switch (_context7.prev = _context7.next) {
+    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(file) {
+      return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+        while (1) switch (_context5.prev = _context5.next) {
           case 0:
             if (!importLoading) {
-              _context7.next = 2;
+              _context5.next = 2;
               break;
             }
-            return _context7.abrupt("return");
+            return _context5.abrupt("return");
           case 2:
             setImportLoading(true);
-            _context7.prev = 3;
-            _context7.next = 6;
+            _context5.prev = 3;
+            _context5.next = 6;
             return importTasks(file);
           case 6:
             refetch();
             showToast('Post tasks imported.', 'success');
-            _context7.next = 14;
+            _context5.next = 14;
             break;
           case 10:
-            _context7.prev = 10;
-            _context7.t0 = _context7["catch"](3);
-            console.error('Failed to import post tasks:', _context7.t0);
-            showToast((_context7.t0 === null || _context7.t0 === void 0 ? void 0 : _context7.t0.message) || 'Failed to import post tasks.', 'error');
+            _context5.prev = 10;
+            _context5.t0 = _context5["catch"](3);
+            console.error('Failed to import post tasks:', _context5.t0);
+            showToast((_context5.t0 === null || _context5.t0 === void 0 ? void 0 : _context5.t0.message) || 'Failed to import post tasks.', 'error');
           case 14:
-            _context7.prev = 14;
+            _context5.prev = 14;
             setImportLoading(false);
-            return _context7.finish(14);
+            return _context5.finish(14);
           case 17:
           case "end":
-            return _context7.stop();
+            return _context5.stop();
         }
-      }, _callee7, null, [[3, 10, 14, 17]]);
+      }, _callee5, null, [[3, 10, 14, 17]]);
     }));
-    return function handleImportTasks(_x4) {
-      return _ref8.apply(this, arguments);
+    return function handleImportTasks(_x3) {
+      return _ref7.apply(this, arguments);
     };
   }();
 
   // Clear completed post tasks
   var handleClearCompleted = /*#__PURE__*/function () {
-    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
-      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
-        while (1) switch (_context8.prev = _context8.next) {
+    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
+      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+        while (1) switch (_context6.prev = _context6.next) {
           case 0:
             if (!clearCompletedLoading) {
-              _context8.next = 2;
+              _context6.next = 2;
               break;
             }
-            return _context8.abrupt("return");
+            return _context6.abrupt("return");
           case 2:
             setClearCompletedLoading(true);
-            _context8.prev = 3;
-            _context8.next = 6;
+            _context6.prev = 3;
+            _context6.next = 6;
             return clearCompletedTasks();
           case 6:
             setTaskItems(function (prev) {
@@ -11246,42 +12782,50 @@ function CampaignEditPage() {
               });
             });
             showToast('Completed post tasks cleared.', 'success');
-            _context8.next = 14;
+            _context6.next = 14;
             break;
           case 10:
-            _context8.prev = 10;
-            _context8.t0 = _context8["catch"](3);
-            console.error('Failed to clear completed:', _context8.t0);
-            showToast((_context8.t0 === null || _context8.t0 === void 0 ? void 0 : _context8.t0.message) || 'Failed to clear completed post tasks.', 'error');
+            _context6.prev = 10;
+            _context6.t0 = _context6["catch"](3);
+            console.error('Failed to clear completed:', _context6.t0);
+            showToast((_context6.t0 === null || _context6.t0 === void 0 ? void 0 : _context6.t0.message) || 'Failed to clear completed post tasks.', 'error');
           case 14:
-            _context8.prev = 14;
+            _context6.prev = 14;
             setClearCompletedLoading(false);
-            return _context8.finish(14);
+            return _context6.finish(14);
           case 17:
           case "end":
-            return _context8.stop();
+            return _context6.stop();
         }
-      }, _callee8, null, [[3, 10, 14, 17]]);
+      }, _callee6, null, [[3, 10, 14, 17]]);
     }));
     return function handleClearCompleted() {
-      return _ref9.apply(this, arguments);
+      return _ref8.apply(this, arguments);
     };
   }();
 
   // Save everything
   var handleSave = /*#__PURE__*/function () {
-    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
-      var _contentFields;
-      var validationErrors, contentFields, customFields;
-      return _regeneratorRuntime().wrap(function _callee9$(_context9) {
-        while (1) switch (_context9.prev = _context9.next) {
+    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
+      var _contentFields, _ref10, _overrides$status, _campaign$instruction, _campaign$rss_enabled, _ref11, _overrides$rss_config;
+      var overrides,
+        validationErrors,
+        contentFields,
+        customFields,
+        rssOverride,
+        statusValue,
+        payload,
+        _args7 = arguments;
+      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+        while (1) switch (_context7.prev = _context7.next) {
           case 0:
+            overrides = _args7.length > 0 && _args7[0] !== undefined ? _args7[0] : {};
             validationErrors = [];
             if (isBlank(campaign === null || campaign === void 0 ? void 0 : campaign.title)) {
               validationErrors.push('Campaign title is required.');
             }
-            if (isBlank(campaign === null || campaign === void 0 ? void 0 : campaign.article_type)) {
-              validationErrors.push('Campaign Article Type is required.');
+            if (isBlank(campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type)) {
+              validationErrors.push('Campaign Type is required.');
             }
             if (isBlank(campaign === null || campaign === void 0 ? void 0 : campaign.language)) {
               validationErrors.push('Campaign Language is required.');
@@ -11329,7 +12873,7 @@ function CampaignEditPage() {
               }
             });
             taskItems.forEach(function (task) {
-              var taskType = task.article_type || (campaign === null || campaign === void 0 ? void 0 : campaign.article_type) || 'default';
+              var taskType = task.campaign_type || (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default';
               if (taskType === 'rewrite_blog_post') {
                 if (isBlank(task.research_url)) {
                   validationErrors.push("Task #".concat(task.id, ": Research URL is required for rewrite type."));
@@ -11344,108 +12888,135 @@ function CampaignEditPage() {
               }
             });
             if (!(validationErrors.length > 0)) {
-              _context9.next = 20;
+              _context7.next = 21;
               break;
             }
             showToast(validationErrors[0], 'error');
-            return _context9.abrupt("return", false);
-          case 20:
+            return _context7.abrupt("return", false);
+          case 21:
             if (!savingAll) {
-              _context9.next = 22;
+              _context7.next = 23;
               break;
             }
-            return _context9.abrupt("return");
-          case 22:
+            return _context7.abrupt("return");
+          case 23:
             setSavingAll(true);
-            _context9.prev = 23;
-            _context9.next = 26;
-            return Promise.all([updateCampaign({
+            rssOverride = (overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) != null;
+            statusValue = (_ref10 = (_overrides$status = overrides === null || overrides === void 0 ? void 0 : overrides.status) !== null && _overrides$status !== void 0 ? _overrides$status : campaign.status) !== null && _ref10 !== void 0 ? _ref10 : 'paused';
+            payload = {
               title: campaign.title,
               post_type: campaign.post_type,
               post_status: campaign.post_status,
               default_author_id: campaign.default_author_id,
               webhook_id: campaign.webhook_id,
-              article_type: campaign.article_type,
+              campaign_type: campaign.campaign_type,
               tone_of_voice: campaign.tone_of_voice,
               point_of_view: campaign.point_of_view,
               readability: campaign.readability,
-              content_fields: campaign.content_fields
-            }), updateTasks(taskItems)]);
-          case 26:
+              language: campaign.language,
+              target_country: campaign.target_country,
+              instruction_id: (_campaign$instruction = campaign.instruction_id) !== null && _campaign$instruction !== void 0 ? _campaign$instruction : null,
+              content_fields: campaign.content_fields,
+              rss_enabled: rssOverride ? 'yes' : (_campaign$rss_enabled = campaign.rss_enabled) !== null && _campaign$rss_enabled !== void 0 ? _campaign$rss_enabled : 'no',
+              rss_config: (_ref11 = (_overrides$rss_config = overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) !== null && _overrides$rss_config !== void 0 ? _overrides$rss_config : campaign.rss_config) !== null && _ref11 !== void 0 ? _ref11 : null,
+              status: statusValue
+            };
+            _context7.prev = 27;
+            _context7.next = 30;
+            return Promise.all([updateCampaign(payload), updateTasks(taskItems)]);
+          case 30:
+            if (rssOverride) {
+              setCampaign(function (prev) {
+                return _objectSpread(_objectSpread({}, prev), {}, {
+                  rss_enabled: 'yes',
+                  rss_config: overrides.rss_config
+                });
+              });
+            }
+            if ((overrides === null || overrides === void 0 ? void 0 : overrides.status) != null) {
+              setCampaign(function (prev) {
+                return _objectSpread(_objectSpread({}, prev), {}, {
+                  status: overrides.status
+                });
+              });
+            }
             setIsDirty(false);
             showToast('Changes saved.', 'success');
-            return _context9.abrupt("return", true);
-          case 31:
-            _context9.prev = 31;
-            _context9.t0 = _context9["catch"](23);
-            console.error('Failed to save:', _context9.t0);
-            showToast((_context9.t0 === null || _context9.t0 === void 0 ? void 0 : _context9.t0.message) || 'Failed to save.', 'error');
-            return _context9.abrupt("return", false);
-          case 36:
-            _context9.prev = 36;
+            return _context7.abrupt("return", true);
+          case 37:
+            _context7.prev = 37;
+            _context7.t0 = _context7["catch"](27);
+            console.error('Failed to save:', _context7.t0);
+            showToast((_context7.t0 === null || _context7.t0 === void 0 ? void 0 : _context7.t0.message) || 'Failed to save.', 'error');
+            return _context7.abrupt("return", false);
+          case 42:
+            _context7.prev = 42;
             setSavingAll(false);
-            return _context9.finish(36);
-          case 39:
+            return _context7.finish(42);
+          case 45:
           case "end":
-            return _context9.stop();
+            return _context7.stop();
         }
-      }, _callee9, null, [[23, 31, 36, 39]]);
+      }, _callee7, null, [[27, 37, 42, 45]]);
     }));
     return function handleSave() {
-      return _ref10.apply(this, arguments);
+      return _ref9.apply(this, arguments);
     };
   }();
   var handleRun = /*#__PURE__*/function () {
-    var _ref11 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
-      var saved, nextTask, _campaign$webhook_id, pendingProcessing;
-      return _regeneratorRuntime().wrap(function _callee10$(_context10) {
-        while (1) switch (_context10.prev = _context10.next) {
+    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+      var saved, nextTask, isLive, _campaign$webhook_id2, _pollData$tasks, pollData, pendingProcessing;
+      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+        while (1) switch (_context8.prev = _context8.next) {
           case 0:
             if (!isDirty) {
-              _context10.next = 6;
+              _context8.next = 6;
               break;
             }
-            _context10.next = 3;
+            _context8.next = 3;
             return handleSave();
           case 3:
-            saved = _context10.sent;
+            saved = _context8.sent;
             if (saved) {
-              _context10.next = 6;
+              _context8.next = 6;
               break;
             }
-            return _context10.abrupt("return");
+            return _context8.abrupt("return");
           case 6:
             if (campaign !== null && campaign !== void 0 && campaign.webhook_id) {
-              _context10.next = 9;
+              _context8.next = 9;
               break;
             }
             showToast('Select a webhook before running.', 'error');
-            return _context10.abrupt("return");
+            return _context8.abrupt("return");
           case 9:
-            nextTask = taskItems.find(function (task) {
-              return task.status === 'pending';
-            });
+            nextTask = getNextPendingTask();
             if (nextTask) {
-              _context10.next = 13;
+              _context8.next = 13;
               break;
             }
             showToast('No pending post tasks to run.', 'info');
-            return _context10.abrupt("return");
+            return _context8.abrupt("return");
           case 13:
             if (!runLoading) {
-              _context10.next = 15;
+              _context8.next = 15;
               break;
             }
-            return _context10.abrupt("return");
+            return _context8.abrupt("return");
           case 15:
             setRunLoading(true);
             setIsRunning(true);
             stopRunRef.current = false;
-            _context10.prev = 18;
+            isLive = (campaign === null || campaign === void 0 ? void 0 : campaign.status) === 'active';
+            if (!isLive) {
+              manualRunRef.current = true;
+              currentManualTaskIdRef.current = getTaskIdKey(nextTask.id);
+            }
+            _context8.prev = 20;
             showToast('Run starting...', 'info');
-            _context10.next = 22;
-            return runCampaign(nextTask.id, (_campaign$webhook_id = campaign.webhook_id) !== null && _campaign$webhook_id !== void 0 ? _campaign$webhook_id : 0);
-          case 22:
+            _context8.next = 24;
+            return runCampaign(nextTask.id, (_campaign$webhook_id2 = campaign.webhook_id) !== null && _campaign$webhook_id2 !== void 0 ? _campaign$webhook_id2 : 0);
+          case 24:
             setTaskItems(function (prev) {
               return prev.map(function (task) {
                 return getTaskIdKey(task.id) === getTaskIdKey(nextTask.id) ? _objectSpread(_objectSpread({}, task), {}, {
@@ -11455,49 +13026,56 @@ function CampaignEditPage() {
                 }) : task;
               });
             });
-            _context10.next = 25;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_6__.getPendingProcessingPostTasks)(id);
-          case 25:
-            pendingProcessing = _context10.sent;
+            _context8.next = 27;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getPendingProcessingPostTasks)(id);
+          case 27:
+            pollData = _context8.sent;
+            pendingProcessing = Array.isArray(pollData) ? pollData : (_pollData$tasks = pollData === null || pollData === void 0 ? void 0 : pollData.tasks) !== null && _pollData$tasks !== void 0 ? _pollData$tasks : [];
             applyPendingProcessingUpdates(pendingProcessing);
-            _context10.next = 33;
+            _context8.next = 37;
             break;
-          case 29:
-            _context10.prev = 29;
-            _context10.t0 = _context10["catch"](18);
+          case 32:
+            _context8.prev = 32;
+            _context8.t0 = _context8["catch"](20);
             setIsRunning(false);
-            showToast((_context10.t0 === null || _context10.t0 === void 0 ? void 0 : _context10.t0.message) || 'Failed to start run.', 'error');
-          case 33:
-            _context10.prev = 33;
+            if (!isLive) {
+              manualRunRef.current = false;
+              currentManualTaskIdRef.current = null;
+            }
+            showToast((_context8.t0 === null || _context8.t0 === void 0 ? void 0 : _context8.t0.message) || 'Failed to start run.', 'error');
+          case 37:
+            _context8.prev = 37;
             setRunLoading(false);
-            return _context10.finish(33);
-          case 36:
+            return _context8.finish(37);
+          case 40:
           case "end":
-            return _context10.stop();
+            return _context8.stop();
         }
-      }, _callee10, null, [[18, 29, 33, 36]]);
+      }, _callee8, null, [[20, 32, 37, 40]]);
     }));
     return function handleRun() {
-      return _ref11.apply(this, arguments);
+      return _ref12.apply(this, arguments);
     };
   }();
   var handleStop = /*#__PURE__*/function () {
-    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
-      return _regeneratorRuntime().wrap(function _callee11$(_context11) {
-        while (1) switch (_context11.prev = _context11.next) {
+    var _ref13 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
+      return _regeneratorRuntime().wrap(function _callee9$(_context9) {
+        while (1) switch (_context9.prev = _context9.next) {
           case 0:
             stopRunRef.current = true;
+            manualRunRef.current = false;
+            currentManualTaskIdRef.current = null;
             if (!stopLoading) {
-              _context11.next = 3;
+              _context9.next = 5;
               break;
             }
-            return _context11.abrupt("return");
-          case 3:
+            return _context9.abrupt("return");
+          case 5:
             setStopLoading(true);
-            _context11.prev = 4;
-            _context11.next = 7;
+            _context9.prev = 6;
+            _context9.next = 9;
             return stopCampaignRun();
-          case 7:
+          case 9:
             setTaskItems(function (prev) {
               return prev.map(function (task) {
                 return task.status === 'processing' ? _objectSpread(_objectSpread({}, task), {}, {
@@ -11506,37 +13084,37 @@ function CampaignEditPage() {
               });
             });
             showToast('Run stopped.', 'info');
-            _context11.next = 14;
+            _context9.next = 16;
             break;
-          case 11:
-            _context11.prev = 11;
-            _context11.t0 = _context11["catch"](4);
-            showToast((_context11.t0 === null || _context11.t0 === void 0 ? void 0 : _context11.t0.message) || 'Failed to stop run.', 'error');
-          case 14:
-            _context11.prev = 14;
+          case 13:
+            _context9.prev = 13;
+            _context9.t0 = _context9["catch"](6);
+            showToast((_context9.t0 === null || _context9.t0 === void 0 ? void 0 : _context9.t0.message) || 'Failed to stop run.', 'error');
+          case 16:
+            _context9.prev = 16;
             setStopLoading(false);
-            return _context11.finish(14);
-          case 17:
+            return _context9.finish(16);
+          case 19:
           case "end":
-            return _context11.stop();
+            return _context9.stop();
         }
-      }, _callee11, null, [[4, 11, 14, 17]]);
+      }, _callee9, null, [[6, 13, 16, 19]]);
     }));
     return function handleStop() {
-      return _ref12.apply(this, arguments);
+      return _ref13.apply(this, arguments);
     };
   }();
   var handleExport = /*#__PURE__*/function () {
-    var _ref13 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
+    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
       var result, blob, url, a;
-      return _regeneratorRuntime().wrap(function _callee12$(_context12) {
-        while (1) switch (_context12.prev = _context12.next) {
+      return _regeneratorRuntime().wrap(function _callee10$(_context10) {
+        while (1) switch (_context10.prev = _context10.next) {
           case 0:
-            _context12.prev = 0;
-            _context12.next = 3;
+            _context10.prev = 0;
+            _context10.next = 3;
             return exportCampaign();
           case 3:
-            result = _context12.sent;
+            result = _context10.sent;
             blob = new Blob([JSON.stringify(result.data, null, 2)], {
               type: 'application/json'
             });
@@ -11547,55 +13125,114 @@ function CampaignEditPage() {
             a.click();
             URL.revokeObjectURL(url);
             showToast('Export downloaded.', 'success');
-            _context12.next = 18;
+            _context10.next = 18;
             break;
           case 14:
-            _context12.prev = 14;
-            _context12.t0 = _context12["catch"](0);
-            console.error('Failed to export:', _context12.t0);
-            showToast((_context12.t0 === null || _context12.t0 === void 0 ? void 0 : _context12.t0.message) || 'Failed to export.', 'error');
+            _context10.prev = 14;
+            _context10.t0 = _context10["catch"](0);
+            console.error('Failed to export:', _context10.t0);
+            showToast((_context10.t0 === null || _context10.t0 === void 0 ? void 0 : _context10.t0.message) || 'Failed to export.', 'error');
           case 18:
           case "end":
-            return _context12.stop();
+            return _context10.stop();
         }
-      }, _callee12, null, [[0, 14]]);
+      }, _callee10, null, [[0, 14]]);
     }));
     return function handleExport() {
-      return _ref13.apply(this, arguments);
+      return _ref14.apply(this, arguments);
     };
   }();
-  if (loading || !campaign) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
+  if (loading || !campaign) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
   var webhooksList = (webhooksData === null || webhooksData === void 0 ? void 0 : webhooksData.webhooks) || [];
   var users = (data === null || data === void 0 ? void 0 : data.users) || [];
   var hasTaxonomies = (data === null || data === void 0 ? void 0 : data.taxonomies) && Object.keys(data.taxonomies).length > 0;
-  var taxonomies = hasTaxonomies ? data.taxonomies : (_getTaxonomies = (0,_api_client__WEBPACK_IMPORTED_MODULE_6__.getTaxonomies)()) !== null && _getTaxonomies !== void 0 ? _getTaxonomies : {};
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+  var taxonomies = hasTaxonomies ? data.taxonomies : (_getTaxonomies = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getTaxonomies)()) !== null && _getTaxonomies !== void 0 ? _getTaxonomies : {};
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
     className: "flex flex-col xl:flex-row gap-4 lg:gap-6",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
       className: "flex-1 min-w-0",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
         className: "poststation-sticky-header sticky top-8 px-4 py-3 sm:py-4 mb-4 sm:mb-6 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(EditableCampaignTitle, {
-          value: campaign.title,
-          onChange: handleTitleChange
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+          className: "flex items-center gap-3 min-w-0",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(EditableCampaignTitle, {
+            value: campaign.title,
+            onChange: handleTitleChange
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("label", {
+            className: "poststation-switch flex items-center gap-2 shrink-0 cursor-pointer",
+            title: "When Live is on, pending tasks run automatically without clicking Run. New or saved tasks start immediately.",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("input", {
+              type: "checkbox",
+              className: "poststation-field-checkbox",
+              checked: (campaign === null || campaign === void 0 ? void 0 : campaign.status) === 'active',
+              disabled: savingAll,
+              onChange: (/*#__PURE__*/function () {
+                var _ref15 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11(e) {
+                  var _campaign$status;
+                  var newStatus, previousStatus, saved;
+                  return _regeneratorRuntime().wrap(function _callee11$(_context11) {
+                    while (1) switch (_context11.prev = _context11.next) {
+                      case 0:
+                        newStatus = e.target.checked ? 'active' : 'paused';
+                        previousStatus = (_campaign$status = campaign === null || campaign === void 0 ? void 0 : campaign.status) !== null && _campaign$status !== void 0 ? _campaign$status : 'paused';
+                        setCampaign(function (prev) {
+                          return prev ? _objectSpread(_objectSpread({}, prev), {}, {
+                            status: newStatus
+                          }) : prev;
+                        });
+                        _context11.next = 5;
+                        return handleSave({
+                          status: newStatus
+                        });
+                      case 5:
+                        saved = _context11.sent;
+                        if (!saved) {
+                          setCampaign(function (prev) {
+                            return prev ? _objectSpread(_objectSpread({}, prev), {}, {
+                              status: previousStatus
+                            }) : prev;
+                          });
+                        }
+                      case 7:
+                      case "end":
+                        return _context11.stop();
+                    }
+                  }, _callee11);
+                }));
+                return function (_x4) {
+                  return _ref15.apply(this, arguments);
+                };
+              }())
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", {
+              className: "poststation-switch-track"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", {
+              className: "text-sm font-medium text-gray-700 whitespace-nowrap",
+              title: "When Live is on, pending tasks run automatically without clicking Run. New or saved tasks start immediately.",
+              children: "Live"
+            })]
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
           className: "flex flex-wrap items-center gap-2 sm:gap-3 shrink-0",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
             variant: "secondary",
             onClick: handleExport,
             children: "Export"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
             variant: "secondary",
             onClick: handleSave,
             loading: savingAll,
             disabled: !isDirty || savingAll,
             children: isDirty ? 'Save Changes' : 'Saved'
-          }), isRunning ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          }), (campaign === null || campaign === void 0 ? void 0 : campaign.status) === 'active' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", {
+            className: "text-sm font-medium ".concat(!isDirty ? 'text-green-600' : 'text-gray-500'),
+            title: !isDirty ? 'Campaign is live; tasks run automatically.' : 'Save to activate live mode.',
+            children: "Running"
+          }) : isRunning ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
             variant: "danger",
             onClick: handleStop,
             loading: stopLoading,
             children: "Stop"
-          }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
             variant: "success",
             onClick: handleRun,
             loading: runLoading,
@@ -11605,24 +13242,24 @@ function CampaignEditPage() {
             children: "Run"
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
         className: "mb-5",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
           className: "px-5 py-3 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors",
           onClick: function onClick() {
             return setShowSettings(!showSettings);
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("h3", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("h3", {
             className: "text-lg font-medium text-gray-900",
             children: "Campaign Settings"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
             className: "flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700",
-            children: [showSettings ? 'Hide' : 'Show', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("svg", {
+            children: [showSettings ? 'Hide' : 'Show', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("svg", {
               className: "w-4 h-4 transition-transform ".concat(showSettings ? 'rotate-180' : ''),
               fill: "none",
               viewBox: "0 0 24 24",
               stroke: "currentColor",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("path", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
                 strokeLinecap: "round",
                 strokeLinejoin: "round",
                 strokeWidth: 2,
@@ -11630,28 +13267,120 @@ function CampaignEditPage() {
               })
             })]
           })]
-        }), showSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+        }), showSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
           className: "px-5 py-4 space-y-6",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_campaign_CampaignForm__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_campaign_CampaignForm__WEBPACK_IMPORTED_MODULE_2__["default"], {
             campaign: campaign,
             onChange: handleCampaignChange,
             webhooks: webhooksList,
             users: users
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
-            className: "border-t border-gray-200",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("h4", {
-              className: "text-lg font-medium text-gray-900",
+          }), (campaign === null || campaign === void 0 ? void 0 : campaign.rss_enabled) === 'yes' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
+            className: "border-t border-gray-200 pt-6",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+              className: "flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
+                className: "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("svg", {
+                  className: "h-4 w-4",
+                  fill: "currentColor",
+                  viewBox: "0 0 24 24",
+                  "aria-hidden": true,
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("path", {
+                    d: "M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"
+                  })
+                })
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+                className: "min-w-0 flex-1",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+                  className: "flex flex-wrap items-center gap-2",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", {
+                    className: "text-sm font-medium text-gray-900",
+                    children: "RSS Feeds"
+                  }), (campaign === null || campaign === void 0 || (_campaign$rss_config = campaign.rss_config) === null || _campaign$rss_config === void 0 || (_campaign$rss_config = _campaign$rss_config.sources) === null || _campaign$rss_config === void 0 ? void 0 : _campaign$rss_config.length) > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", {
+                    className: "inline-flex items-center rounded-md bg-gray-200/80 px-2 py-0.5 text-xs font-medium text-gray-700",
+                    children: function () {
+                      var m = campaign.rss_config.frequency_interval;
+                      var labels = {
+                        15: 'Every 15 min',
+                        60: 'Hourly',
+                        360: 'Every 6 h',
+                        1440: 'Daily'
+                      };
+                      return labels[m] || "Every ".concat(m, " min");
+                    }()
+                  })]
+                }), (campaign === null || campaign === void 0 || (_campaign$rss_config2 = campaign.rss_config) === null || _campaign$rss_config2 === void 0 || (_campaign$rss_config2 = _campaign$rss_config2.sources) === null || _campaign$rss_config2 === void 0 ? void 0 : _campaign$rss_config2.length) > 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("ul", {
+                  className: "mt-1.5 space-y-0.5",
+                  children: [campaign.rss_config.sources.slice(0, 5).map(function (s, i) {
+                    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("li", {
+                      className: "text-xs text-gray-600 truncate",
+                      title: s.feed_url || '',
+                      children: s.feed_url || '—'
+                    }, i);
+                  }), campaign.rss_config.sources.length > 5 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("li", {
+                    className: "text-xs text-gray-500",
+                    children: ["+", campaign.rss_config.sources.length - 5, " more"]
+                  })]
+                }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", {
+                  className: "mt-1 text-xs text-gray-500",
+                  children: "No feeds configured. Add feed URLs to run RSS checks."
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                type: "button",
+                variant: "secondary",
+                size: "sm",
+                onClick: function onClick() {
+                  return setRssConfigModalOpen(true);
+                },
+                className: "shrink-0",
+                children: "Set Feeds"
+              })]
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+            className: "border-t border-gray-200 pt-6",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.RichSelect, {
+              label: "Instruction set",
+              tooltip: "Optional preset instructions for title, body, and section generation.",
+              labelAction: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                type: "button",
+                variant: "secondary",
+                size: "sm",
+                onClick: function onClick() {
+                  return setInstructionModalOpen(true);
+                },
+                children: "Add new preset"
+              }),
+              options: (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapInstructions)().map(function (i) {
+                return {
+                  value: Number(i.id),
+                  label: i.name,
+                  description: i.description || '',
+                  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(InstructionIcon, {
+                    type: i.key,
+                    className: "w-4 h-4"
+                  })
+                };
+              }),
+              value: (_campaign$instruction2 = campaign === null || campaign === void 0 ? void 0 : campaign.instruction_id) !== null && _campaign$instruction2 !== void 0 ? _campaign$instruction2 : null,
+              onChange: function onChange(id) {
+                return handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
+                  instruction_id: id !== null && id !== void 0 ? id : null
+                }));
+              },
+              placeholder: "None"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("h4", {
+              className: "text-lg font-medium text-gray-900 mt-6",
               children: "Content Fields"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_campaign_ContentFieldsEditor__WEBPACK_IMPORTED_MODULE_3__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_campaign_ContentFieldsEditor__WEBPACK_IMPORTED_MODULE_3__["default"], {
               campaign: campaign,
               onChange: handleCampaignChange,
               taxonomies: taxonomies
             })]
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_campaign_PostTaskList__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_campaign_PostTaskList__WEBPACK_IMPORTED_MODULE_4__["default"], {
             tasks: taskItems,
             campaign: campaign,
             onAddTask: handleAddTask,
@@ -11666,11 +13395,71 @@ function CampaignEditPage() {
             onClearCompleted: handleClearCompleted,
             loading: creatingTask,
             importLoading: importLoading,
-            clearCompletedLoading: clearCompletedLoading
+            clearCompletedLoading: clearCompletedLoading,
+            deletingTaskIds: deletingTaskIds
           })
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_layout_InfoSidebar__WEBPACK_IMPORTED_MODULE_5__["default"], {})]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_layout_InfoSidebar__WEBPACK_IMPORTED_MODULE_5__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      isOpen: instructionModalOpen,
+      onClose: function onClose() {
+        return setInstructionModalOpen(false);
+      },
+      mode: "add",
+      onSaved: function onSaved(newId) {
+        if (newId != null) {
+          handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
+            instruction_id: newId
+          }));
+        }
+      }
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_campaign_RssFeedConfigModal__WEBPACK_IMPORTED_MODULE_7__["default"], {
+      isOpen: rssConfigModalOpen,
+      onClose: function onClose() {
+        return setRssConfigModalOpen(false);
+      },
+      campaign: campaign,
+      onSave: function onSave() {
+        return refetch();
+      },
+      onRunNowComplete: function onRunNowComplete(responseData) {
+        setRssResultsData(responseData !== null && responseData !== void 0 ? responseData : null);
+        setRssResultsModalOpen(true);
+      },
+      onRssConfigChange: function onRssConfigChange(rssConfig) {
+        handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
+          rss_enabled: 'yes',
+          rss_config: rssConfig
+        }));
+      },
+      onTriggerSave: handleSave
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_campaign_RssResultsModal__WEBPACK_IMPORTED_MODULE_8__["default"], {
+      isOpen: rssResultsModalOpen,
+      onClose: function onClose() {
+        setRssResultsModalOpen(false);
+        setRssResultsData(null);
+      },
+      data: rssResultsData,
+      campaignId: id,
+      onAddedToTasks: function onAddedToTasks(newTasks) {
+        var _campaign$campaign_ty;
+        if (!Array.isArray(newTasks) || newTasks.length === 0) return;
+        var campaignType = (_campaign$campaign_ty = campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) !== null && _campaign$campaign_ty !== void 0 ? _campaign$campaign_ty : 'default';
+        var normalized = newTasks.map(function (task) {
+          var _task$topic5, _task$keywords4, _task$title_override4, _task$slug_override4;
+          return _objectSpread(_objectSpread({}, task), {}, {
+            campaign_type: task.campaign_type || campaignType,
+            topic: (_task$topic5 = task.topic) !== null && _task$topic5 !== void 0 ? _task$topic5 : '',
+            keywords: (_task$keywords4 = task.keywords) !== null && _task$keywords4 !== void 0 ? _task$keywords4 : '',
+            title_override: (_task$title_override4 = task.title_override) !== null && _task$title_override4 !== void 0 ? _task$title_override4 : '',
+            slug_override: (_task$slug_override4 = task.slug_override) !== null && _task$slug_override4 !== void 0 ? _task$slug_override4 : ''
+          });
+        });
+        setTaskItems(function (prev) {
+          return [].concat(_toConsumableArray(normalized), _toConsumableArray(prev));
+        });
+      }
+    })]
   });
 }
 
@@ -12049,10 +13838,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/common */ "./src/components/common/index.js");
-/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
-/* harmony import */ var _hooks_useApi__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../hooks/useApi */ "./src/hooks/useApi.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/instructions/InstructionModal */ "./src/components/instructions/InstructionModal.jsx");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
+/* harmony import */ var _hooks_useApi__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../hooks/useApi */ "./src/hooks/useApi.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
@@ -12065,6 +13860,11 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
+var DEFAULT_INSTRUCTION_KEYS = ['listicle', 'news', 'guide', 'howto'];
+var isDefaultPreset = function isDefaultPreset(key) {
+  return key && DEFAULT_INSTRUCTION_KEYS.includes(key);
+};
 
 
 function SettingsPage() {
@@ -12092,29 +13892,65 @@ function SettingsPage() {
     _useState12 = _slicedToArray(_useState11, 2),
     copied = _useState12[0],
     setCopied = _useState12[1];
-  var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSettings)();
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+      open: false,
+      mode: 'add',
+      instruction: null
+    }),
+    _useState14 = _slicedToArray(_useState13, 2),
+    instructionModal = _useState14[0],
+    setInstructionModal = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState16 = _slicedToArray(_useState15, 2),
+    deleteInstruction = _useState16[0],
+    setDeleteInstruction = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState18 = _slicedToArray(_useState17, 2),
+    deleting = _useState18[0],
+    setDeleting = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
+      return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)();
+    }),
+    _useState20 = _slicedToArray(_useState19, 2),
+    instructionsList = _useState20[0],
+    setInstructionsList = _useState20[1];
+  var fetchInstructions = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
+        case 2:
+          setInstructionsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)());
+        case 3:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  })), []);
+  var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapSettings)();
   var fetchSettings = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
-    return _api_client__WEBPACK_IMPORTED_MODULE_2__.settings.get();
+    return _api_client__WEBPACK_IMPORTED_MODULE_3__.settings.get();
   }, []);
-  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchSettings, [], {
+  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useQuery)(fetchSettings, [], {
       initialData: bootstrapSettings
     }),
     data = _useQuery.data,
     loading = _useQuery.loading,
     error = _useQuery.error,
     refetch = _useQuery.refetch;
-  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.settings.saveApiKey, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap
+  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveApiKey, {
+      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
     }),
     saveApiKey = _useMutation.mutate,
     saving = _useMutation.loading;
-  var _useMutation2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.settings.saveOpenRouterApiKey, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap
+  var _useMutation2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveOpenRouterApiKey, {
+      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
     }),
     saveOpenRouterApiKey = _useMutation2.mutate,
     savingOpenRouter = _useMutation2.loading;
-  var _useMutation3 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.settings.saveOpenRouterDefaults, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap
+  var _useMutation3 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveOpenRouterDefaults, {
+      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
     }),
     saveOpenRouterDefaults = _useMutation3.mutate,
     savingOpenRouterDefaults = _useMutation3.loading;
@@ -12133,88 +13969,148 @@ function SettingsPage() {
     }, 2000);
   };
   var handleSave = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-      return _regeneratorRuntime().wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            _context.prev = 0;
-            _context.next = 3;
-            return saveApiKey(apiKey);
-          case 3:
-            refetch();
-            _context.next = 10;
-            break;
-          case 6:
-            _context.prev = 6;
-            _context.t0 = _context["catch"](0);
-            console.error('Failed to save API key:', _context.t0);
-            refetch();
-          case 10:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, null, [[0, 6]]);
-    }));
-    return function handleSave() {
-      return _ref.apply(this, arguments);
-    };
-  }();
-  var handleSaveOpenRouterSettings = /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
             _context2.prev = 0;
+            _context2.next = 3;
+            return saveApiKey(apiKey);
+          case 3:
+            refetch();
+            _context2.next = 10;
+            break;
+          case 6:
+            _context2.prev = 6;
+            _context2.t0 = _context2["catch"](0);
+            console.error('Failed to save API key:', _context2.t0);
+            refetch();
+          case 10:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee2, null, [[0, 6]]);
+    }));
+    return function handleSave() {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var handleSaveOpenRouterSettings = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.prev = 0;
             if (!((openRouterApiKey || '').trim() !== '')) {
-              _context2.next = 5;
+              _context3.next = 5;
               break;
             }
-            _context2.next = 4;
+            _context3.next = 4;
             return saveOpenRouterApiKey(openRouterApiKey);
           case 4:
             setOpenRouterApiKey('');
           case 5:
-            _context2.next = 7;
+            _context3.next = 7;
             return saveOpenRouterDefaults(defaultTextModel, defaultImageModel);
           case 7:
             refetch();
-            _context2.next = 14;
+            _context3.next = 14;
             break;
           case 10:
-            _context2.prev = 10;
-            _context2.t0 = _context2["catch"](0);
-            console.error('Failed to save OpenRouter settings:', _context2.t0);
+            _context3.prev = 10;
+            _context3.t0 = _context3["catch"](0);
+            console.error('Failed to save OpenRouter settings:', _context3.t0);
             refetch();
           case 14:
           case "end":
-            return _context2.stop();
+            return _context3.stop();
         }
-      }, _callee2, null, [[0, 10]]);
+      }, _callee3, null, [[0, 10]]);
     }));
     return function handleSaveOpenRouterSettings() {
-      return _ref2.apply(this, arguments);
+      return _ref3.apply(this, arguments);
     };
   }();
-  if (loading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageHeader, {
+  var openInstructionModal = function openInstructionModal(mode) {
+    var instruction = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    setInstructionModal({
+      open: true,
+      mode: mode,
+      instruction: instruction
+    });
+  };
+  var closeInstructionModal = function closeInstructionModal() {
+    setInstructionModal(function (prev) {
+      return _objectSpread(_objectSpread({}, prev), {}, {
+        open: false
+      });
+    });
+  };
+  var handleInstructionSaved = function handleInstructionSaved() {
+    // Modal already called refreshBootstrap() before onSaved; use current bootstrap so list updates immediately
+    setInstructionsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)());
+  };
+  var handleConfirmDelete = /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
+            if (deleteInstruction !== null && deleteInstruction !== void 0 && deleteInstruction.id) {
+              _context4.next = 2;
+              break;
+            }
+            return _context4.abrupt("return");
+          case 2:
+            setDeleting(true);
+            _context4.prev = 3;
+            _context4.next = 6;
+            return _api_client__WEBPACK_IMPORTED_MODULE_3__.instructions["delete"](deleteInstruction.id);
+          case 6:
+            _context4.next = 8;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
+          case 8:
+            setInstructionsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)());
+            setDeleteInstruction(null);
+            _context4.next = 15;
+            break;
+          case 12:
+            _context4.prev = 12;
+            _context4.t0 = _context4["catch"](3);
+            console.error('Failed to delete instruction:', _context4.t0);
+          case 15:
+            _context4.prev = 15;
+            setDeleting(false);
+            return _context4.finish(15);
+          case 18:
+          case "end":
+            return _context4.stop();
+        }
+      }, _callee4, null, [[3, 12, 15, 18]]);
+    }));
+    return function handleConfirmDelete() {
+      return _ref4.apply(this, arguments);
+    };
+  }();
+  if (loading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageHeader, {
       title: "Settings",
       description: "Manage your PostStation configuration"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "max-w-2xl space-y-6",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "flex items-center justify-between",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
                 className: "text-lg font-medium text-gray-900",
                 children: "API Key"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
                 className: "text-sm text-gray-500",
                 children: "Use this key to authenticate API requests"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
               variant: "secondary",
               onClick: function onClick() {
                 return setShowApiDocs(true);
@@ -12222,12 +14118,12 @@ function SettingsPage() {
               children: "View API Docs"
             })]
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "space-y-4",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
               className: "flex gap-2",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
                 label: "API Key",
                 tooltip: "Used to authenticate requests to the PostStation API.",
                 type: "text",
@@ -12237,15 +14133,15 @@ function SettingsPage() {
                 },
                 placeholder: "Enter API key",
                 className: "flex-1"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
                 variant: "secondary",
                 size: "sm",
                 onClick: handleCopy,
                 children: copied ? 'Copied!' : 'Copy'
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "flex justify-end",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
                 onClick: handleSave,
                 loading: saving,
                 children: "Save API Key"
@@ -12253,21 +14149,21 @@ function SettingsPage() {
             })]
           })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
               className: "text-lg font-medium text-gray-900",
               children: "OpenRouter"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
               className: "text-sm text-gray-500",
               children: "Store your OpenRouter API key for model discovery"
             })]
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "space-y-4",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
               label: "OpenRouter API Key",
               tooltip: "Saved encrypted server-side. The value cannot be viewed after saving.",
               type: "password",
@@ -12276,12 +14172,12 @@ function SettingsPage() {
                 return setOpenRouterApiKey(e.target.value);
               },
               placeholder: data !== null && data !== void 0 && data.openrouter_api_key_set ? 'Saved (hidden). Enter new key to replace or leave empty to clear.' : 'Enter OpenRouter API key'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
               className: "text-xs text-gray-500",
               children: data !== null && data !== void 0 && data.openrouter_api_key_set ? 'An OpenRouter key is currently stored and hidden.' : 'No OpenRouter key stored yet.'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
               className: "grid grid-cols-1 gap-3 pt-2 border-t border-gray-100",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
                 label: "Default Text Model",
                 tooltip: "Used as the default text model for new and unconfigured Campaign fields.",
                 value: defaultTextModel,
@@ -12289,7 +14185,7 @@ function SettingsPage() {
                   return setDefaultTextModel(e.target.value);
                 },
                 filter: "text"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
                 label: "Default Image Model",
                 tooltip: "Used as the default image model for new and unconfigured Campaign image fields.",
                 value: defaultImageModel,
@@ -12298,9 +14194,9 @@ function SettingsPage() {
                 },
                 filter: "image"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "flex justify-end gap-2",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
                 onClick: handleSaveOpenRouterSettings,
                 loading: savingOpenRouter || savingOpenRouterDefaults,
                 children: "Save OpenRouter Settings"
@@ -12308,115 +14204,205 @@ function SettingsPage() {
             })]
           })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            className: "flex items-center justify-between",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
+                className: "text-lg font-medium text-gray-900",
+                children: "Instruction presets"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+                className: "text-sm text-gray-500",
+                children: "Manage instruction sets used for title, body, and section generation"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+              variant: "primary",
+              onClick: function onClick() {
+                return openInstructionModal('add');
+              },
+              children: "Add new"
+            })]
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+            className: "space-y-2",
+            children: instructionsList.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              className: "text-sm text-gray-500",
+              children: "No instruction presets. Add one to get started."
+            }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("ul", {
+              className: "divide-y divide-gray-200",
+              children: instructionsList.map(function (inst) {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+                  className: "py-3 flex items-center justify-between gap-4",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+                    className: "min-w-0 flex-1",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+                      className: "font-medium text-gray-900",
+                      children: inst.name
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+                      className: "text-xs text-gray-500",
+                      children: inst.key
+                    }), inst.description && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+                      className: "text-sm text-gray-600 mt-1 truncate",
+                      children: inst.description
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+                    className: "flex items-center gap-2 shrink-0",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                      variant: "secondary",
+                      size: "sm",
+                      onClick: function onClick() {
+                        return openInstructionModal('edit', inst);
+                      },
+                      children: "Edit"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                      variant: "secondary",
+                      size: "sm",
+                      onClick: function onClick() {
+                        return openInstructionModal('duplicate', inst);
+                      },
+                      children: "Duplicate"
+                    }), !isDefaultPreset(inst.key) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                      variant: "danger",
+                      size: "sm",
+                      onClick: function onClick() {
+                        return setDeleteInstruction(inst);
+                      },
+                      children: "Delete"
+                    })]
+                  })]
+                }, inst.id);
+              })
+            })
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
             className: "text-lg font-medium text-gray-900",
             children: "About PostStation"
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
             className: "text-sm text-gray-600",
             children: "PostStation is a WordPress plugin that enables automated post creation through webhooks and API endpoints. Configure Campaigns to define post templates, then trigger content generation via webhooks."
           })
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
       isOpen: showApiDocs,
       onClose: function onClose() {
         return setShowApiDocs(false);
       },
       title: "API Documentation",
       size: "lg",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "space-y-6",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "Endpoints"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "space-y-3",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
               className: "p-3 bg-gray-50 rounded-lg",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
                 className: "text-sm font-mono text-indigo-600",
                 children: "POST /wp-json/poststation/v1/create"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
                 className: "text-sm text-gray-600 mt-1",
                 children: "REST API endpoint for creating posts"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
               className: "p-3 bg-gray-50 rounded-lg",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
                 className: "text-sm font-mono text-indigo-600",
                 children: "POST /ps-api/create"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
                 className: "text-sm text-gray-600 mt-1",
                 children: "Custom API endpoint (alternative)"
               })]
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "Authentication"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
             className: "text-sm text-gray-600 mb-2",
             children: "Include your API key in the request header:"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("pre", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("pre", {
             className: "p-3 bg-gray-900 text-gray-100 rounded-lg text-sm overflow-x-auto",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
               children: "X-API-Key: your-api-key"
             })
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "Request Body"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("pre", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("pre", {
             className: "p-3 bg-gray-900 text-gray-100 rounded-lg text-sm overflow-x-auto",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
               children: "{\n  \"title\": \"Post Title\",\n  \"content\": \"Post content...\",\n  \"slug\": \"post-slug\",\n  \"thumbnail_url\": \"https://...\",\n  \"taxonomies\": {\n    \"category\": [\"news\"],\n    \"post_tag\": [\"featured\"]\n  },\n  \"custom_fields\": {\n    \"meta_key\": \"meta_value\"\n  },\n  \"task_id\": 123\n}"
             })
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "Fields"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("ul", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("ul", {
             className: "text-sm text-gray-600 space-y-1",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                 children: "title"
               }), " (required) - Post title"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                 children: "content"
               }), " (required) - Post content (HTML)"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                 children: "slug"
               }), " - URL slug"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                 children: "thumbnail_url"
               }), " - Featured image URL"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                 children: "taxonomies"
               }), " - Object with taxonomy terms"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                 children: "custom_fields"
               }), " - Custom meta fields"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                 children: "task_id"
               }), " - Associated Post Task ID"]
             })]
           })]
         })]
       })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      isOpen: instructionModal.open,
+      onClose: closeInstructionModal,
+      mode: instructionModal.mode,
+      instruction: instructionModal.instruction,
+      onSaved: handleInstructionSaved
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ConfirmModal, {
+      isOpen: Boolean(deleteInstruction),
+      onClose: function onClose() {
+        return setDeleteInstruction(null);
+      },
+      onConfirm: handleConfirmDelete,
+      title: "Delete instruction preset",
+      message: deleteInstruction ? "Delete \"".concat(deleteInstruction.name, "\"? This cannot be undone.") : '',
+      confirmText: "Delete",
+      variant: "danger",
+      loading: deleting
     })]
   });
 }
@@ -13365,6 +15351,17 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .pointer-events-none {
     pointer-events: none;
   }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
   .absolute {
     position: absolute;
   }
@@ -13382,6 +15379,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .inset-0 {
     inset: calc(var(--spacing) * 0);
+  }
+  .inset-x-0 {
+    inset-inline: calc(var(--spacing) * 0);
   }
   .inset-y-0 {
     inset-block: calc(var(--spacing) * 0);
@@ -13424,6 +15424,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .left-1 {
     left: calc(var(--spacing) * 1);
+  }
+  .z-10 {
+    z-index: 10;
   }
   .z-20 {
     z-index: 20;
@@ -13488,6 +15491,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .-mx-8 {
     margin-inline: calc(var(--spacing) * -8);
   }
+  .mx-1 {
+    margin-inline: calc(var(--spacing) * 1);
+  }
+  .mx-2 {
+    margin-inline: calc(var(--spacing) * 2);
+  }
   .mx-auto {
     margin-inline: auto;
   }
@@ -13503,20 +15512,32 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .mt-1 {
     margin-top: calc(var(--spacing) * 1);
   }
+  .mt-1\\.5 {
+    margin-top: calc(var(--spacing) * 1.5);
+  }
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
   }
   .mt-4 {
     margin-top: calc(var(--spacing) * 4);
   }
+  .mt-6 {
+    margin-top: calc(var(--spacing) * 6);
+  }
   .mr-1 {
     margin-right: calc(var(--spacing) * 1);
+  }
+  .mr-auto {
+    margin-right: auto;
   }
   .-mb-px {
     margin-bottom: -1px;
   }
   .mb-0 {
     margin-bottom: calc(var(--spacing) * 0);
+  }
+  .mb-0\\.5 {
+    margin-bottom: calc(var(--spacing) * 0.5);
   }
   .mb-1 {
     margin-bottom: calc(var(--spacing) * 1);
@@ -13559,6 +15580,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .ml-auto {
     margin-left: auto;
+  }
+  .box-border {
+    box-sizing: border-box;
   }
   .block {
     display: block;
@@ -13623,6 +15647,18 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .h-full {
     height: 100%;
   }
+  .max-h-60 {
+    max-height: calc(var(--spacing) * 60);
+  }
+  .max-h-96 {
+    max-height: calc(var(--spacing) * 96);
+  }
+  .max-h-112 {
+    max-height: calc(var(--spacing) * 112);
+  }
+  .max-h-\\[28rem\\] {
+    max-height: 28rem;
+  }
   .min-h-0 {
     min-height: calc(var(--spacing) * 0);
   }
@@ -13631,6 +15667,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .min-h-24 {
     min-height: calc(var(--spacing) * 24);
+  }
+  .min-h-\\[38px\\] {
+    min-height: 38px;
   }
   .min-h-screen {
     min-height: 100vh;
@@ -13668,6 +15707,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .w-24 {
     width: calc(var(--spacing) * 24);
   }
+  .w-28 {
+    width: calc(var(--spacing) * 28);
+  }
   .w-32 {
     width: calc(var(--spacing) * 32);
   }
@@ -13695,6 +15737,30 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .max-w-4xl {
     max-width: var(--container-4xl);
   }
+  .max-w-28 {
+    max-width: calc(var(--spacing) * 28);
+  }
+  .max-w-32 {
+    max-width: calc(var(--spacing) * 32);
+  }
+  .max-w-56 {
+    max-width: calc(var(--spacing) * 56);
+  }
+  .max-w-72 {
+    max-width: calc(var(--spacing) * 72);
+  }
+  .max-w-\\[7rem\\] {
+    max-width: 7rem;
+  }
+  .max-w-\\[8rem\\] {
+    max-width: 8rem;
+  }
+  .max-w-\\[14rem\\] {
+    max-width: 14rem;
+  }
+  .max-w-\\[18rem\\] {
+    max-width: 18rem;
+  }
   .max-w-\\[80vw\\] {
     max-width: 80vw;
   }
@@ -13703,6 +15769,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .max-w-\\[200px\\] {
     max-width: 200px;
+  }
+  .max-w-full {
+    max-width: 100%;
   }
   .max-w-lg {
     max-width: var(--container-lg);
@@ -13716,8 +15785,23 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .max-w-sm {
     max-width: var(--container-sm);
   }
+  .max-w-xs {
+    max-width: var(--container-xs);
+  }
   .min-w-0 {
     min-width: calc(var(--spacing) * 0);
+  }
+  .min-w-32 {
+    min-width: calc(var(--spacing) * 32);
+  }
+  .min-w-48 {
+    min-width: calc(var(--spacing) * 48);
+  }
+  .min-w-\\[8rem\\] {
+    min-width: 8rem;
+  }
+  .min-w-\\[12rem\\] {
+    min-width: 12rem;
   }
   .min-w-full {
     min-width: 100%;
@@ -13776,6 +15860,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .resize {
     resize: both;
   }
+  .resize-y {
+    resize: vertical;
+  }
   .grid-cols-1 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
@@ -13785,6 +15872,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .flex-col {
     flex-direction: column;
   }
+  .flex-row {
+    flex-direction: row;
+  }
   .flex-wrap {
     flex-wrap: wrap;
   }
@@ -13793,6 +15883,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .items-end {
     align-items: flex-end;
+  }
+  .items-start {
+    align-items: flex-start;
   }
   .justify-between {
     justify-content: space-between;
@@ -13823,6 +15916,20 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .gap-6 {
     gap: calc(var(--spacing) * 6);
+  }
+  .space-y-0 {
+    :where(& > :not(:last-child)) {
+      --tw-space-y-reverse: 0;
+      margin-block-start: calc(calc(var(--spacing) * 0) * var(--tw-space-y-reverse));
+      margin-block-end: calc(calc(var(--spacing) * 0) * calc(1 - var(--tw-space-y-reverse)));
+    }
+  }
+  .space-y-0\\.5 {
+    :where(& > :not(:last-child)) {
+      --tw-space-y-reverse: 0;
+      margin-block-start: calc(calc(var(--spacing) * 0.5) * var(--tw-space-y-reverse));
+      margin-block-end: calc(calc(var(--spacing) * 0.5) * calc(1 - var(--tw-space-y-reverse)));
+    }
   }
   .space-y-1 {
     :where(& > :not(:last-child)) {
@@ -13866,6 +15973,11 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
       border-top-style: var(--tw-border-style);
       border-top-width: calc(1px * var(--tw-divide-y-reverse));
       border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+    }
+  }
+  .divide-gray-100 {
+    :where(& > :not(:last-child)) {
+      border-color: var(--color-gray-100);
     }
   }
   .divide-gray-200 {
@@ -13969,6 +16081,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .border-transparent {
     border-color: transparent;
   }
+  .bg-amber-100 {
+    background-color: var(--color-amber-100);
+  }
   .bg-black {
     background-color: var(--color-black);
   }
@@ -13993,11 +16108,29 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .bg-gray-50 {
     background-color: var(--color-gray-50);
   }
+  .bg-gray-50\\/50 {
+    background-color: color-mix(in srgb, oklch(98.5% 0.002 247.839) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-gray-50) 50%, transparent);
+    }
+  }
+  .bg-gray-50\\/95 {
+    background-color: color-mix(in srgb, oklch(98.5% 0.002 247.839) 95%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-gray-50) 95%, transparent);
+    }
+  }
   .bg-gray-100 {
     background-color: var(--color-gray-100);
   }
   .bg-gray-200 {
     background-color: var(--color-gray-200);
+  }
+  .bg-gray-200\\/80 {
+    background-color: color-mix(in srgb, oklch(92.8% 0.006 264.531) 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-gray-200) 80%, transparent);
+    }
   }
   .bg-gray-900 {
     background-color: var(--color-gray-900);
@@ -14129,6 +16262,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .py-2 {
     padding-block: calc(var(--spacing) * 2);
   }
+  .py-2\\.5 {
+    padding-block: calc(var(--spacing) * 2.5);
+  }
   .py-3 {
     padding-block: calc(var(--spacing) * 3);
   }
@@ -14141,6 +16277,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .py-12 {
     padding-block: calc(var(--spacing) * 12);
   }
+  .pt-0 {
+    padding-top: calc(var(--spacing) * 0);
+  }
+  .pt-0\\.5 {
+    padding-top: calc(var(--spacing) * 0.5);
+  }
   .pt-2 {
     padding-top: calc(var(--spacing) * 2);
   }
@@ -14149,6 +16291,21 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .pt-6 {
     padding-top: calc(var(--spacing) * 6);
+  }
+  .pr-1 {
+    padding-right: calc(var(--spacing) * 1);
+  }
+  .pr-1\\.5 {
+    padding-right: calc(var(--spacing) * 1.5);
+  }
+  .pr-2 {
+    padding-right: calc(var(--spacing) * 2);
+  }
+  .pr-2\\.5 {
+    padding-right: calc(var(--spacing) * 2.5);
+  }
+  .pr-4 {
+    padding-right: calc(var(--spacing) * 4);
   }
   .pr-10 {
     padding-right: calc(var(--spacing) * 10);
@@ -14162,6 +16319,24 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .pb-5 {
     padding-bottom: calc(var(--spacing) * 5);
   }
+  .pb-6 {
+    padding-bottom: calc(var(--spacing) * 6);
+  }
+  .pl-1 {
+    padding-left: calc(var(--spacing) * 1);
+  }
+  .pl-1\\.5 {
+    padding-left: calc(var(--spacing) * 1.5);
+  }
+  .pl-2 {
+    padding-left: calc(var(--spacing) * 2);
+  }
+  .pl-2\\.5 {
+    padding-left: calc(var(--spacing) * 2.5);
+  }
+  .pl-4 {
+    padding-left: calc(var(--spacing) * 4);
+  }
   .pl-7 {
     padding-left: calc(var(--spacing) * 7);
   }
@@ -14170,6 +16345,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .text-left {
     text-align: left;
+  }
+  .text-right {
+    text-align: right;
   }
   .font-mono {
     font-family: var(--font-mono);
@@ -14207,6 +16385,18 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .text-\\[11px\\] {
     font-size: 11px;
   }
+  .text-\\[12px\\] {
+    font-size: 12px;
+  }
+  .text-\\[14px\\] {
+    font-size: 14px;
+  }
+  .text-\\[15px\\] {
+    font-size: 15px;
+  }
+  .text-\\[16px\\] {
+    font-size: 16px;
+  }
   .leading-none {
     --tw-leading: 1;
     line-height: 1;
@@ -14218,6 +16408,10 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .leading-snug {
     --tw-leading: var(--leading-snug);
     line-height: var(--leading-snug);
+  }
+  .font-bold {
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
   }
   .font-medium {
     --tw-font-weight: var(--font-weight-medium);
@@ -14241,6 +16435,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .whitespace-nowrap {
     white-space: nowrap;
   }
+  .text-amber-700 {
+    color: var(--color-amber-700);
+  }
   .text-blue-800 {
     color: var(--color-blue-800);
   }
@@ -14252,6 +16449,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .text-gray-100 {
     color: var(--color-gray-100);
+  }
+  .text-gray-300 {
+    color: var(--color-gray-300);
   }
   .text-gray-400 {
     color: var(--color-gray-400);
@@ -14270,6 +16470,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .text-gray-900 {
     color: var(--color-gray-900);
+  }
+  .text-green-600 {
+    color: var(--color-green-600);
   }
   .text-green-800 {
     color: var(--color-green-800);
@@ -14309,6 +16512,10 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .italic {
     font-style: italic;
+  }
+  .tabular-nums {
+    --tw-numeric-spacing: tabular-nums;
+    font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,) var(--tw-numeric-spacing,) var(--tw-numeric-fraction,);
   }
   .underline {
     text-decoration-line: underline;
@@ -14366,6 +16573,11 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .filter {
     filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .backdrop-blur {
+    --tw-backdrop-blur: blur(8px);
+    -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+    backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
   }
   .backdrop-blur-sm {
     --tw-backdrop-blur: blur(var(--blur-sm));
@@ -14443,6 +16655,16 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-gray-50);
+      }
+    }
+  }
+  .hover\\:bg-gray-50\\/80 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: color-mix(in srgb, oklch(98.5% 0.002 247.839) 80%, transparent);
+        @supports (color: color-mix(in lab, red, red)) {
+          background-color: color-mix(in oklab, var(--color-gray-50) 80%, transparent);
+        }
       }
     }
   }
@@ -14551,6 +16773,13 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
       }
     }
   }
+  .hover\\:underline {
+    &:hover {
+      @media (hover: hover) {
+        text-decoration-line: underline;
+      }
+    }
+  }
   .hover\\:opacity-70 {
     &:hover {
       @media (hover: hover) {
@@ -14566,6 +16795,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .focus\\:border-red-500 {
     &:focus {
       border-color: var(--color-red-500);
+    }
+  }
+  .focus\\:ring-1 {
+    &:focus {
+      --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+      box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
     }
   }
   .focus\\:ring-2 {
@@ -14862,8 +17097,10 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
 }
 #poststation-app textarea.poststation-field {
   field-sizing: content;
+  max-height: calc(var(--spacing) * 60);
   min-height: calc(var(--spacing) * 10);
   resize: vertical;
+  overflow-y: auto;
 }
 #poststation-app .poststation-switch {
   display: inline-flex;
@@ -14885,8 +17122,8 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
 #poststation-app .poststation-switch .poststation-switch-track {
   position: relative;
   display: inline-flex;
-  height: calc(var(--spacing) * 6);
-  width: calc(var(--spacing) * 11);
+  height: calc(var(--spacing) * 5);
+  width: calc(var(--spacing) * 9);
   flex-shrink: 0;
   border-radius: calc(infinity * 1px);
   background-color: var(--color-gray-200);
@@ -14901,8 +17138,8 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   position: absolute;
   top: calc(var(--spacing) * 0.5);
   left: calc(var(--spacing) * 0.5);
-  height: calc(var(--spacing) * 5);
-  width: calc(var(--spacing) * 5);
+  height: calc(var(--spacing) * 4);
+  width: calc(var(--spacing) * 4);
   border-radius: calc(infinity * 1px);
   background-color: var(--color-white);
   --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
@@ -14925,7 +17162,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   background-color: var(--color-indigo-600);
 }
 #poststation-app .poststation-switch input:checked + .poststation-switch-track::after {
-  --tw-translate-x: calc(var(--spacing) * 5);
+  --tw-translate-x: calc(var(--spacing) * 4);
   translate: var(--tw-translate-x) var(--tw-translate-y);
 }
 #poststation-app .poststation-switch input:disabled + .poststation-switch-track {
@@ -15123,6 +17360,26 @@ body.admin-bar .poststation-mobile-sidebar {
   inherits: false;
 }
 @property --tw-tracking {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ordinal {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-slashed-zero {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-figure {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-spacing {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-fraction {
   syntax: "*";
   inherits: false;
 }
@@ -15345,6 +17602,11 @@ body.admin-bar .poststation-mobile-sidebar {
       --tw-leading: initial;
       --tw-font-weight: initial;
       --tw-tracking: initial;
+      --tw-ordinal: initial;
+      --tw-slashed-zero: initial;
+      --tw-numeric-figure: initial;
+      --tw-numeric-spacing: initial;
+      --tw-numeric-fraction: initial;
       --tw-shadow: 0 0 #0000;
       --tw-shadow-color: initial;
       --tw-shadow-alpha: 100%;
@@ -15387,7 +17649,7 @@ body.admin-bar .poststation-mobile-sidebar {
     }
   }
 }
-`, "",{"version":3,"sources":["<no source>","webpack://./node_modules/tailwindcss/index.css","webpack://./src/index.css"],"names":[],"mappings":"AAAA,kEAAA;AC83BE,iBAAmB;AA93BrB,yCAAyC;AAEzC;EACE;IACE;6DAEyD;IACzD,yEAAyE;IACzE;8BAE0B;IAE1B,wCAAwC;IACxC,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAE1C,0CAA0C;IAC1C,6CAA6C;IAC7C,6CAA6C;IAC7C,4CAA4C;IAC5C,2CAA2C;IAC3C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,2CAA2C;IAC3C,6CAA6C;IAC7C,6CAA6C;IAE7C,2CAA2C;IAC3C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAE5C,6CAA6C;IAC7C,8CAA8C;IAC9C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAE7C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,2CAA2C;IAC3C,0CAA0C;IAC1C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAE5C,4CAA4C;IAC5C,6CAA6C;IAC7C,6CAA6C;IAC7C,4CAA4C;IAC5C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAE7C,8CAA8C;IAC9C,6CAA6C;IAC7C,8CAA8C;IAC9C,+CAA+C;IAC/C,+CAA+C;IAC/C,6CAA6C;IAC7C,+CAA+C;IAC/C,+CAA+C;IAC/C,+CAA+C;IAC/C,8CAA8C;IAC9C,+CAA+C;IAE/C,0CAA0C;IAC1C,4CAA4C;IAC5C,0CAA0C;IAC1C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,0CAA0C;IAC1C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAE5C,2CAA2C;IAC3C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,0CAA0C;IAC1C,0CAA0C;IAC1C,2CAA2C;IAC3C,4CAA4C;IAE5C,yCAAyC;IACzC,2CAA2C;IAC3C,2CAA2C;IAC3C,2CAA2C;IAC3C,0CAA0C;IAC1C,2CAA2C;IAC3C,2CAA2C;IAC3C,yCAAyC;IACzC,yCAAyC;IACzC,0CAA0C;IAC1C,2CAA2C;IAE3C,yCAAyC;IACzC,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAE5C,6CAA6C;IAC7C,4CAA4C;IAC5C,4CAA4C;IAC5C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,6CAA6C;IAC7C,8CAA8C;IAC9C,8CAA8C;IAC9C,6CAA6C;IAE7C,6CAA6C;IAC7C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,6CAA6C;IAC7C,8CAA8C;IAC9C,6CAA6C;IAC7C,8CAA8C;IAC9C,4CAA4C;IAC5C,8CAA8C;IAE9C,6CAA6C;IAC7C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,4CAA4C;IAC5C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAC9C,8CAA8C;IAE9C,8CAA8C;IAC9C,+CAA+C;IAC/C,8CAA8C;IAC9C,+CAA+C;IAC/C,4CAA4C;IAC5C,8CAA8C;IAC9C,+CAA+C;IAC/C,+CAA+C;IAC/C,+CAA+C;IAC/C,8CAA8C;IAC9C,+CAA+C;IAE/C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAC1C,0CAA0C;IAE1C,0CAA0C;IAC1C,yCAAyC;IACzC,2CAA2C;IAC3C,yCAAyC;IACzC,2CAA2C;IAC3C,2CAA2C;IAC3C,2CAA2C;IAC3C,2CAA2C;IAC3C,2CAA2C;IAC3C,yCAAyC;IACzC,2CAA2C;IAE3C,4CAA4C;IAC5C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,4CAA4C;IAC5C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAE7C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,0CAA0C;IAC1C,0CAA0C;IAE1C,iCAAiC;IACjC,4CAA4C;IAC5C,yCAAyC;IACzC,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,4CAA4C;IAC5C,0CAA0C;IAC1C,4CAA4C;IAC5C,0CAA0C;IAC1C,4CAA4C;IAE5C,oCAAoC;IACpC,mCAAmC;IACnC,qCAAqC;IACrC,mCAAmC;IACnC,qCAAqC;IACrC,qCAAqC;IACrC,qCAAqC;IACrC,qCAAqC;IACrC,qCAAqC;IACrC,qCAAqC;IACrC,qCAAqC;IAErC,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAC3C,4CAA4C;IAC5C,4CAA4C;IAC5C,2CAA2C;IAE3C,mBAAmB;IACnB,mBAAmB;IAEnB,kBAAkB;IAElB,sBAAsB;IACtB,sBAAsB;IACtB,sBAAsB;IACtB,sBAAsB;IACtB,uBAAuB;IAEvB,sBAAsB;IACtB,sBAAsB;IACtB,qBAAqB;IACrB,qBAAqB;IACrB,qBAAqB;IACrB,qBAAqB;IACrB,qBAAqB;IACrB,sBAAsB;IACtB,sBAAsB;IACtB,sBAAsB;IACtB,sBAAsB;IACtB,sBAAsB;IACtB,sBAAsB;IAEtB,kBAAkB;IAClB,sCAAsC;IACtC,mBAAmB;IACnB,0CAA0C;IAC1C,iBAAiB;IACjB,uCAAuC;IACvC,mBAAmB;IACnB,0CAA0C;IAC1C,kBAAkB;IAClB,yCAAyC;IACzC,kBAAkB;IAClB,sCAAsC;IACtC,oBAAoB;IACpB,2CAA2C;IAC3C,mBAAmB;IACnB,yCAAyC;IACzC,gBAAgB;IAChB,0BAA0B;IAC1B,mBAAmB;IACnB,0BAA0B;IAC1B,kBAAkB;IAClB,0BAA0B;IAC1B,gBAAgB;IAChB,0BAA0B;IAC1B,gBAAgB;IAChB,0BAA0B;IAE1B,uBAAuB;IACvB,6BAA6B;IAC7B,wBAAwB;IACxB,yBAAyB;IACzB,yBAAyB;IACzB,2BAA2B;IAC3B,uBAAuB;IACvB,4BAA4B;IAC5B,wBAAwB;IAExB,2BAA2B;IAC3B,0BAA0B;IAC1B,sBAAsB;IACtB,wBAAwB;IACxB,wBAAwB;IACxB,wBAAwB;IAExB,qBAAqB;IACrB,qBAAqB;IACrB,qBAAqB;IACrB,wBAAwB;IACxB,kBAAkB;IAElB,qBAAqB;IACrB,oBAAoB;IACpB,qBAAqB;IACrB,mBAAmB;IACnB,oBAAoB;IACpB,kBAAkB;IAClB,oBAAoB;IACpB,kBAAkB;IAElB,qCAAqC;IACrC,0CAA0C;IAC1C,0EAA0E;IAC1E,6EACkE;IAClE,+EACoE;IACpE,gFACqE;IACrE,iDAAiD;IAEjD,iDAAiD;IACjD,oDAAoD;IACpD,oDAAoD;IAEpD,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,6CAA6C;IAC7C,4CAA4C;IAC5C,gDAAgD;IAEhD,gDAAgD;IAChD,8CAA8C;IAC9C;oCAEgC;IAChC;kCAE8B;IAC9B;kCAE8B;IAE9B,qCAAqC;IACrC,sCAAsC;IACtC,2CAA2C;IAE3C,uCAAuC;IACvC,2DAA2D;IAC3D,+DAA+D;IAC/D,oCAAoC;IAmCpC,cAAc;IACd,cAAc;IACd,eAAe;IACf,eAAe;IACf,eAAe;IACf,gBAAgB;IAChB,gBAAgB;IAEhB,6BAA6B;IAC7B,yBAAyB;IACzB,2BAA2B;IAC3B,6BAA6B;IAC7B,6BAA6B;IAE7B,sBAAsB;IAEtB,oCAAoC;IACpC,kEAAkE;IAClE,uCAAoD;IASpD,4CAAyD;EA5c5C;AADJ;AAmeb;EAOE;IAKE,sBAAsB;IACtB,SAAS;IACT,UAAU;IACV,eAAe;EAJM;EAiBvB;IAEE,gBAAgB;IAChB,8BAA8B;IAC9B,WAAW;IACX,2JASC;IACD,mEAGC;IACD,uEAGC;IACD,wCAAwC;EAtBpC;EA+BN;IACE,SAAS;IACT,cAAc;IACd,qBAAqB;EAHpB;EAUH;IACE,yCAAyC;IACzC,iCAAiC;EAFf;EASpB;IAME,kBAAkB;IAClB,oBAAoB;EAFnB;EASH;IACE,cAAc;IACd,gCAAgC;IAChC,wBAAwB;EAHxB;EAUF;IAEE,mBAAmB;EADd;EAWP;IAIE,gJAUC;IACD,wEAGC;IACD,4EAGC;IACD,cAAc;EApBZ;EA2BJ;IACE,cAAc;EADV;EAQN;IAEE,cAAc;IACd,cAAc;IACd,kBAAkB;IAClB,wBAAwB;EAJtB;EAOJ;IACE,eAAe;EADb;EAIJ;IACE,WAAW;EADT;EAUJ;IACE,cAAc;IACd,qBAAqB;IACrB,yBAAyB;EAHrB;EAUN;IACE,aAAa;EADC;EAQhB;IACE,wBAAwB;EADjB;EAQT;IACE,kBAAkB;EADZ;EAQR;IAGE,gBAAgB;EADb;EAUL;IAQE,cAAc;IACd,sBAAsB;EAFjB;EASP;IAEE,eAAe;IACf,YAAY;EAFR;EAYN;IAME,aAAa;IACb,8BAA8B;IAC9B,gCAAgC;IAChC,uBAAuB;IACvB,cAAc;IACd,gBAAgB;IAChB,6BAA6B;IAC7B,UAAU;EARW;EAevB;IACE,mBAAmB;EAD0B;EAQ/C;IACE,0BAA0B;EAD0B;EAQtD;IACE,sBAAsB;EADD;EAQvB;IACE,UAAU;EADE;EASd;IAEE;MACE,mBAAyD;MAAzD;QAAA,yDAAyD;MAAA;IAD7C;EADiC;EAUjD;IACE,gBAAgB;EADT;EAQT;IACE,wBAAwB;EADE;EAS5B;IACE,eAAe;IACf,mBAAmB;EAFS;EAS9B;IACE,oBAAoB;EADE;EAQxB;IACE,UAAU;EAD2B;EAIvC;IASE,gBAAgB;EADqB;EAQvC;IACE,cAAc;EADoB;EAQpC;IACE,gBAAgB;EADD;EAQjB;IAGE,kBAAkB;EADG;EAQvB;IAEE,YAAY;EADc;EAQ5B;IACE,wBAAwB;EADmB;AAnZnC;AAwZZ;EACE;IAAA,oBAAmB;EAAA;EAAnB;IAAA,oBAAmB;EAAA;EAAnB;IAAA,kBAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,kBAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,WAAmB;EAAA;EAAnB;IAAA,WAAmB;EAAA;EAAnB;IAAA,WAAmB;EAAA;EAAnB;IAAA,WAAmB;EAAA;EAAnB;IAAA,aAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,QAAmB;EAAA;EAAnB;IAAA,QAAmB;EAAA;EAAnB;IAAA,WAAmB;IAAnB;MAAA,gBAAmB;IAAA;IAAnB;MAAA,gBAAmB;IAAA;IAAnB;MAAA,gBAAmB;IAAA;IAAnB;MAAA,gBAAmB;IAAA;IAAnB;MAAA,gBAAmB;IAAA;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,mBAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,oCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,oCAAmB;EAAA;EAAnB;IAAA,oCAAmB;EAAA;EAAnB;IAAA,oCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,mBAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,iBAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,iBAAmB;EAAA;EAAnB;IAAA,aAAmB;EAAA;EAAnB;IAAA,aAAmB;EAAA;EAAnB;IAAA,aAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,qBAAmB;EAAA;EAAnB;IAAA,oBAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,qBAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,YAAmB;EAAA;EAAnB;IAAA,oCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,iBAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,gCAAmB;EAAA;EAAnB;IAAA,WAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,mCAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,OAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,YAAmB;EAAA;EAAnB;IAAA,YAAmB;EAAA;EAAnB;IAAA,yBAAmB;EAAA;EAAnB;IAAA,2CAAmB;IAAnB,sDAAmB;EAAA;EAAnB;IAAA,uBAAmB;IAAnB,sDAAmB;EAAA;EAAnB;IAAA,0CAAmB;IAAnB,sDAAmB;EAAA;EAAnB;IAAA,aAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,0GAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,0BAAmB;EAAA;EAAnB;IAAA,YAAmB;EAAA;EAAnB;IAAA,gDAAmB;EAAA;EAAnB;IAAA,gDAAmB;EAAA;EAAnB;IAAA,sBAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,mBAAmB;EAAA;EAAnB;IAAA,qBAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,uBAAmB;EAAA;EAAnB;IAAA,yBAAmB;EAAA;EAAnB;IAAA,2BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA;MAAA,uBAAmB;MAAnB,8EAAmB;MAAnB,sFAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uBAAmB;MAAnB,8EAAmB;MAAnB,sFAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uBAAmB;MAAnB,8EAAmB;MAAnB,sFAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uBAAmB;MAAnB,8EAAmB;MAAnB,sFAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uBAAmB;MAAnB,8EAAmB;MAAnB,sFAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,wBAAmB;MAAnB,2CAAmB;MAAnB,wCAAmB;MAAnB,wDAAmB;MAAnB,qEAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,mCAAmB;IAAA;EAAA;EAAnB;IAAA,gBAAmB;IAAnB,uBAAmB;IAAnB,mBAAmB;EAAA;EAAnB;IAAA,cAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,sBAAmB;EAAA;EAAnB;IAAA,mCAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,oCAAmB;IAAnB,iBAAmB;EAAA;EAAnB;IAAA,oCAAmB;IAAnB,iBAAmB;EAAA;EAAnB;IAAA,wCAAmB;IAAnB,qBAAmB;EAAA;EAAnB;IAAA,0CAAmB;IAAnB,uBAAmB;EAAA;EAAnB;IAAA,2CAAmB;IAAnB,wBAAmB;EAAA;EAAnB;IAAA,2CAAmB;IAAnB,wBAAmB;EAAA;EAAnB;IAAA,uBAAmB;IAAnB,kBAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,mCAAmB;EAAA;EAAnB;IAAA,mCAAmB;EAAA;EAAnB;IAAA,mCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,kCAAmB;EAAA;EAAnB;IAAA,kCAAmB;EAAA;EAAnB;IAAA,yBAAmB;EAAA;EAAnB;IAAA,oCAAmB;EAAA;EAAnB;IAAA,2DAAmB;IAAnB;MAAA,0EAAmB;IAAA;EAAA;EAAnB;IAAA,2DAAmB;IAAnB;MAAA,0EAAmB;IAAA;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,yCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,yCAAmB;EAAA;EAAnB;IAAA,yCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,oCAAmB;EAAA;EAAnB;IAAA,yCAAmB;EAAA;EAAnB;IAAA,uCAAmB;IAAnB;MAAA,gDAAmB;IAAA;IAAnB,2DAAmB;EAAA;EAAnB;IAAA,gDAAmB;IAAnB,2DAAmB;EAAA;EAAnB;IAAA,2CAAmB;IAAnB,8LAAmB;EAAA;EAAnB;IAAA,yCAAmB;IAAnB,8LAAmB;EAAA;EAAnB;IAAA,mBAAmB;EAAA;EAAnB;IAAA,iBAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,mCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,iCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,0CAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,0CAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,yCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,yCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,uCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,qCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,sCAAmB;EAAA;EAAnB;IAAA,kBAAmB;EAAA;EAAnB;IAAA,gBAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,0BAAmB;IAAnB,4DAAmB;EAAA;EAAnB;IAAA,2BAAmB;IAAnB,6DAAmB;EAAA;EAAnB;IAAA,yBAAmB;IAAnB,2DAAmB;EAAA;EAAnB;IAAA,yBAAmB;IAAnB,2DAAmB;EAAA;EAAnB;IAAA,yBAAmB;IAAnB,2DAAmB;EAAA;EAAnB;IAAA,yBAAmB;IAAnB,2DAAmB;EAAA;EAAnB;IAAA,yBAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,eAAmB;IAAnB,cAAmB;EAAA;EAAnB;IAAA,oCAAmB;IAAnB,mCAAmB;EAAA;EAAnB;IAAA,iCAAmB;IAAnB,gCAAmB;EAAA;EAAnB;IAAA,2CAAmB;IAAnB,sCAAmB;EAAA;EAAnB;IAAA,2CAAmB;IAAnB,sCAAmB;EAAA;EAAnB;IAAA,6CAAmB;IAAnB,wCAAmB;EAAA;EAAnB;IAAA,oCAAmB;IAAnB,qCAAmB;EAAA;EAAnB;IAAA,eAAmB;EAAA;EAAnB;IAAA,mBAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,4BAAmB;EAAA;EAAnB;IAAA,6BAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,2BAAmB;EAAA;EAAnB;IAAA,2BAAmB;EAAA;EAAnB;IAAA,2BAAmB;EAAA;EAAnB;IAAA,2BAAmB;EAAA;EAAnB;IAAA,yBAAmB;EAAA;EAAnB;IAAA,8BAAmB;EAAA;EAAnB;IAAA,yBAAmB;EAAA;EAAnB;IAAA,kBAAmB;EAAA;EAAnB;IAAA,+BAAmB;EAAA;EAAnB;IAAA,WAAmB;EAAA;EAAnB;IAAA,YAAmB;EAAA;EAAnB;IAAA,YAAmB;EAAA;EAAnB;IAAA,YAAmB;EAAA;EAAnB;IAAA,+HAAmB;IAAnB,sIAAmB;EAAA;EAAnB;IAAA,6HAAmB;IAAnB,sIAAmB;EAAA;EAAnB;IAAA,sBAAmB;IAAnB,sIAAmB;EAAA;EAAnB;IAAA,0HAAmB;IAAnB,sIAAmB;EAAA;EAAnB;IAAA,gIAAmB;IAAnB,sIAAmB;EAAA;EAAnB;IAAA,wHAAmB;IAAnB,sIAAmB;EAAA;EAAnB;IAAA,wHAAmB;IAAnB,sIAAmB;EAAA;EAAnB;IAAA,wCAAmB;EAAA;EAAnB;IAAA,sCAAmB;IAAnB,kBAAmB;EAAA;EAAnB;IAAA,oBAAmB;IAAnB,0LAAmB;EAAA;EAAnB;IAAA,0LAAmB;EAAA;EAAnB;IAAA,wCAAmB;IAAnB,wRAAmB;IAAnB,gRAAmB;EAAA;EAAnB;IAAA,wRAAmB;IAAnB,gRAAmB;EAAA;EAAnB;IAAA,yUAAmB;IAAnB,qFAAmB;IAAnB,2EAAmB;EAAA;EAAnB;IAAA,wBAAmB;IAAnB,qFAAmB;IAAnB,2EAAmB;EAAA;EAAnB;IAAA,uKAAmB;IAAnB,qFAAmB;IAAnB,2EAAmB;EAAA;EAAnB;IAAA,4BAAmB;IAAnB,qFAAmB;IAAnB,2EAAmB;EAAA;EAAnB;IAAA,wDAAmB;IAAnB,qFAAmB;IAAnB,2EAAmB;EAAA;EAAnB;IAAA,oBAAmB;IAAnB,0BAAmB;EAAA;EAAnB;IAAA,6BAAmB;IAAnB,8CAAmB;EAAA;EAAnB;IAAA,0BAAmB;IAAnB,2CAAmB;EAAA;EAAnB;IAAA;MAAA;QAAA,aAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA,4BAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,mCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,qCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,sCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,uCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,wCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,wCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,yCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,yCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,qCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,sCAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,4BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,4BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,4BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,8BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,8BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,2BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,2BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,2BAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA;QAAA,YAAmB;MAAA;IAAA;EAAA;EAAnB;IAAA;MAAA,qCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,kCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,wHAAmB;MAAnB,sIAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,sCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,wCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,qCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,2BAAmB;MAAnB,4GAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,2BAAmB;MAAnB,4GAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,wBAAmB;MAAnB,mBAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,mBAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,sCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,YAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,sCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,qCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,WAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,8BAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,gDAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,gCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,mBAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,mBAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,qBAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uBAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,8BAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,6BAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,6BAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,iCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,wCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,uCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,gDAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,aAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,0CAAmB;MAAnB,sDAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,gDAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,6BAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,gCAAmB;IAAA;EAAA;EAAnB;IAAA;MAAA,mBAAmB;IAAA;EAAA;AADJ;AC13BjB;EACC;IACQ,sCAAU;EACjB;AACD;AAGD;EACC,kBAAmB;EACnB,eAAgB;EAChB,iBAAkB;EAClB,iBAAkB;EAClB,8BAA+B;EAC/B,4EAA6E;EAC7E,cAAe;EACf,mBAAoB;AACpB;AAED;;;EAGC,sBAAuB;AACvB;AAED;;;;;;;;;;;;EAYC,SAAU;EACV,UAAW;AACX;AAED;;;;EAIC,aAAc;EACd,cAAe;AACf;AAED;EACC,eAAgB;AAChB;AAED;EACC,mBAAoB;AACpB;AAGD;EACQ,cAAK;EAAC,WAAM;EAAC,eAAU;EAAC,+BAAU;EAAC,oCAAM;EAAN,iBAAM;EAAC,mCAAe;EAAC,oCAAQ;EAAC,wCAAI;EAAC,uCAAI;EAAC,yBAAO;EAAP,2DAAO;EAAC,4BAAa;EAAC,sBAAW;EAAX,sIAAW;EAAC,yUAAU;EAAV,qFAAU;EAAV,2EAAU;EACzH;IAAA,4BAAyB;EAAA;EAAC;IAAA,qCAAuB;EAAA;EAAoB;IAAA,wHAAY;IAAZ,sIAAY;EAAA;EAAC;IAAA,wCAAqB;EAAA;EAArD;IAAA,wBAAkB;IAAlB,mBAAkB;EAAA;EACpE;IAAA,mBAA2B;EAAA;EAAC;IAAA,sCAAmB;EAAA;EAAC;IAAA,4BAAsB;EAAA;AAC7E;AAED;EACQ,kCAAc;EAAC;IAAA,kCAAoB;EAAA;EAAC;IAAA,qCAAkB;EAAA;AAC7D;AAED;EACQ,uCAAI;AACX;AAED;EACiB,qBAAoB;EAA7B,qCAAQ;EAAsB,gBAAQ;AAC7C;AAGD;EACQ,oBAAW;EAAoB,eAAc;EAAjC,mBAAY;EAAC,6BAAK;AACrC;AACD;EACQ,kBAAO;EAAP,UAAO;EAAP,WAAO;EAAP,UAAO;EAAP,YAAO;EAAP,gBAAO;EAAP,qBAAO;EAAP,mBAAO;EAAP,eAAO;AACd;AACD;EACQ,kBAAQ;EAAC,oBAAW;EAAC,gCAAG;EAAC,gCAAI;EAAC,cAAQ;EAAC,mCAAY;EAAC,uCAAW;EAAC,uKAAiB;EAAjB,qFAAiB;EAAjB,2EAAiB;EAAC,oBAAY;EAAZ,0BAAY;AACrG;AACD;EACC,WAAY;EACL,kBAAQ;EAAU,+BAAO;EAAhB,gCAAQ;EAAS,gCAAG;EAAC,+BAAG;EAAC,mCAAY;EAAC,oCAAQ;EAAC,0HAAS;EAAC,wHAAM;EAAN,sIAAM;EAAC,yUAAU;EAAV,qFAAU;EAAV,2EAAU;EAAC,oBAAY;EAAZ,0BAAY;AACvG;AACD;EACQ,wHAAM;EAAN,sIAAM;EAAC,wCAAe;EAAC,2BAAa;EAAb,4GAAa;AAC3C;AACD;EACQ,yCAAa;AACpB;AACD;EACQ,0CAAa;EAAb,sDAAa;AACpB;AACD;EACmB,mBAAkB;EAA7B,YAAU;AACjB;AAED;EACQ,iCAAI;EAAC,WAAM;EAAC,eAAc;EAAC,+BAAU;EAAC,oCAAM;EAAN,iBAAM;EAAC,mCAAe;EAAC,oCAAQ;EAAC,iCAAG;AAChF;AAED;EACQ,oBAAW;EAAC,mBAAY;EAAC,uBAAc;EAAC,+BAAU;EAAC,oCAAM;EAAN,iBAAM;EAAC,mCAAe;EAAC,oCAAQ;EAAC,mCAAK;EAAC,4BAAa;EAAC,yUAAU;EAAV,qFAAU;EAAV,2EAAU;EACjH;IAAA;MAAA,qCAAuB;IAAA;EAAA;EAAC;IAAA;MAAA,wCAAkB;IAAA;EAAA;EAAC;IAAA;MAAA,8BAAqB;IAAA;EAAA;EAChE;IAAA,mBAA2B;EAAA;EAAC;IAAA,YAAmB;EAAA;AACtD;AAED;EACC,cAAe;EACf,qBAAsB;AACtB;AAED;EACC;IACC,kBAAmB;EACnB;AACD;AAED;EACC;IACC,gBAAiB;IACjB,sBAAuB;IACvB,wCAAyC;IACzC,yDAA0D;IAC1D,UAAW;IACX,YAAa;IACb,eAAgB;EAChB;AACD;AAGD;EACC,gBAAiB;EACjB,wCAAyC;EACzC,cAAe;EACf,WAAY;AACZ;AAED;EACC;IACC,MAAO;EACP;AACD;AAED;;EAEC,SAAU;EACV,0BAA2B;AAC3B;AAED;EACC;;IAEC,SAAU;IACV,0BAA2B;EAC3B;AACD;AD0tBC;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,gBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,gBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,gBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,gBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,gBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,oBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,iBAAmB;EAAnB,eAAmB;EAAnB,oBAAmB;AAAA;AAAnB;EAAA,iBAAmB;EAAnB,eAAmB;EAAnB,oBAAmB;AAAA;AAAnB;EAAA,iBAAmB;EAAnB,eAAmB;EAAnB,oBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,6BAAmB;EAAnB,eAAmB;EAAnB,iBAAmB;AAAA;AAAnB;EAAA,6BAAmB;EAAnB,eAAmB;EAAnB,kBAAmB;AAAA;AAAnB;EAAA,6BAAmB;EAAnB,eAAmB;EAAnB,mBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,wBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,sBAAmB;EAAnB,eAAmB;EAAnB,mBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,wBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,sBAAmB;EAAnB,eAAmB;EAAnB,mBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,wBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,wBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,kBAAmB;EAAnB,eAAmB;EAAnB,kBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,mBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,wBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;EAAnB,oBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,sBAAmB;EAAnB,eAAmB;EAAnB,mBAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AAAnB;EAAA,WAAmB;EAAnB,eAAmB;AAAA;AA3ejB;EACE;IACE,yBAAyB;EADxB;AADW;AAMhB;EACE;IAEE,mBAAmB;IACnB,UAAU;EAFP;AAFS;AAQhB;EACE;IACE,YAAY;EADV;AADW;AAMjB;EACE;IAEE,2BAA2B;IAC3B,qDAAqD;EAFlD;EAKL;IACE,eAAe;IACf,qDAAqD;EAFnD;AAPY;AAudpB;EAAA;IAAA;MAAA,mBAAmB;MAAnB,mBAAmB;MAAnB,mBAAmB;MAAnB,sBAAmB;MAAnB,sBAAmB;MAAnB,sBAAmB;MAAnB,oBAAmB;MAAnB,oBAAmB;MAAnB,uBAAmB;MAAnB,wBAAmB;MAAnB,wBAAmB;MAAnB,+BAAmB;MAAnB,yBAAmB;MAAnB,wBAAmB;MAAnB,uBAAmB;MAAnB,4BAAmB;MAAnB,gCAAmB;MAAnB,+BAAmB;MAAnB,+BAAmB;MAAnB,+BAAmB;MAAnB,qBAAmB;MAAnB,yBAAmB;MAAnB,sBAAmB;MAAnB,sBAAmB;MAAnB,0BAAmB;MAAnB,uBAAmB;MAAnB,4BAAmB;MAAnB,gCAAmB;MAAnB,6BAAmB;MAAnB,wBAAmB;MAAnB,2BAAmB;MAAnB,8BAAmB;MAAnB,iCAAmB;MAAnB,wBAAmB;MAAnB,2BAAmB;MAAnB,4BAAmB;MAAnB,kCAAmB;MAAnB,yBAAmB;MAAnB,kBAAmB;MAAnB,wBAAmB;MAAnB,sBAAmB;MAAnB,uBAAmB;MAAnB,wBAAmB;MAAnB,oBAAmB;MAAnB,qBAAmB;MAAnB,sBAAmB;MAAnB,mBAAmB;MAAnB,yBAAmB;MAAnB,+BAAmB;MAAnB,4BAAmB;MAAnB,8BAAmB;MAAnB,2BAAmB;MAAnB,iCAAmB;MAAnB,+BAAmB;MAAnB,gCAAmB;MAAnB,iCAAmB;MAAnB,6BAAmB;MAAnB,8BAAmB;MAAnB,+BAAmB;MAAnB,4BAAmB;MAAnB,sBAAmB;MAAnB,kBAAmB;IAAA;EAAA;AAAA","sourcesContent":[null,"@layer theme, base, components, utilities;\n\n@layer theme {\n  @theme default {\n    --font-sans:\n      ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-serif: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif;\n    --font-mono:\n      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n      \"Courier New\", monospace;\n\n    --color-red-50: oklch(97.1% 0.013 17.38);\n    --color-red-100: oklch(93.6% 0.032 17.717);\n    --color-red-200: oklch(88.5% 0.062 18.334);\n    --color-red-300: oklch(80.8% 0.114 19.571);\n    --color-red-400: oklch(70.4% 0.191 22.216);\n    --color-red-500: oklch(63.7% 0.237 25.331);\n    --color-red-600: oklch(57.7% 0.245 27.325);\n    --color-red-700: oklch(50.5% 0.213 27.518);\n    --color-red-800: oklch(44.4% 0.177 26.899);\n    --color-red-900: oklch(39.6% 0.141 25.723);\n    --color-red-950: oklch(25.8% 0.092 26.042);\n\n    --color-orange-50: oklch(98% 0.016 73.684);\n    --color-orange-100: oklch(95.4% 0.038 75.164);\n    --color-orange-200: oklch(90.1% 0.076 70.697);\n    --color-orange-300: oklch(83.7% 0.128 66.29);\n    --color-orange-400: oklch(75% 0.183 55.934);\n    --color-orange-500: oklch(70.5% 0.213 47.604);\n    --color-orange-600: oklch(64.6% 0.222 41.116);\n    --color-orange-700: oklch(55.3% 0.195 38.402);\n    --color-orange-800: oklch(47% 0.157 37.304);\n    --color-orange-900: oklch(40.8% 0.123 38.172);\n    --color-orange-950: oklch(26.6% 0.079 36.259);\n\n    --color-amber-50: oklch(98.7% 0.022 95.277);\n    --color-amber-100: oklch(96.2% 0.059 95.617);\n    --color-amber-200: oklch(92.4% 0.12 95.746);\n    --color-amber-300: oklch(87.9% 0.169 91.605);\n    --color-amber-400: oklch(82.8% 0.189 84.429);\n    --color-amber-500: oklch(76.9% 0.188 70.08);\n    --color-amber-600: oklch(66.6% 0.179 58.318);\n    --color-amber-700: oklch(55.5% 0.163 48.998);\n    --color-amber-800: oklch(47.3% 0.137 46.201);\n    --color-amber-900: oklch(41.4% 0.112 45.904);\n    --color-amber-950: oklch(27.9% 0.077 45.635);\n\n    --color-yellow-50: oklch(98.7% 0.026 102.212);\n    --color-yellow-100: oklch(97.3% 0.071 103.193);\n    --color-yellow-200: oklch(94.5% 0.129 101.54);\n    --color-yellow-300: oklch(90.5% 0.182 98.111);\n    --color-yellow-400: oklch(85.2% 0.199 91.936);\n    --color-yellow-500: oklch(79.5% 0.184 86.047);\n    --color-yellow-600: oklch(68.1% 0.162 75.834);\n    --color-yellow-700: oklch(55.4% 0.135 66.442);\n    --color-yellow-800: oklch(47.6% 0.114 61.907);\n    --color-yellow-900: oklch(42.1% 0.095 57.708);\n    --color-yellow-950: oklch(28.6% 0.066 53.813);\n\n    --color-lime-50: oklch(98.6% 0.031 120.757);\n    --color-lime-100: oklch(96.7% 0.067 122.328);\n    --color-lime-200: oklch(93.8% 0.127 124.321);\n    --color-lime-300: oklch(89.7% 0.196 126.665);\n    --color-lime-400: oklch(84.1% 0.238 128.85);\n    --color-lime-500: oklch(76.8% 0.233 130.85);\n    --color-lime-600: oklch(64.8% 0.2 131.684);\n    --color-lime-700: oklch(53.2% 0.157 131.589);\n    --color-lime-800: oklch(45.3% 0.124 130.933);\n    --color-lime-900: oklch(40.5% 0.101 131.063);\n    --color-lime-950: oklch(27.4% 0.072 132.109);\n\n    --color-green-50: oklch(98.2% 0.018 155.826);\n    --color-green-100: oklch(96.2% 0.044 156.743);\n    --color-green-200: oklch(92.5% 0.084 155.995);\n    --color-green-300: oklch(87.1% 0.15 154.449);\n    --color-green-400: oklch(79.2% 0.209 151.711);\n    --color-green-500: oklch(72.3% 0.219 149.579);\n    --color-green-600: oklch(62.7% 0.194 149.214);\n    --color-green-700: oklch(52.7% 0.154 150.069);\n    --color-green-800: oklch(44.8% 0.119 151.328);\n    --color-green-900: oklch(39.3% 0.095 152.535);\n    --color-green-950: oklch(26.6% 0.065 152.934);\n\n    --color-emerald-50: oklch(97.9% 0.021 166.113);\n    --color-emerald-100: oklch(95% 0.052 163.051);\n    --color-emerald-200: oklch(90.5% 0.093 164.15);\n    --color-emerald-300: oklch(84.5% 0.143 164.978);\n    --color-emerald-400: oklch(76.5% 0.177 163.223);\n    --color-emerald-500: oklch(69.6% 0.17 162.48);\n    --color-emerald-600: oklch(59.6% 0.145 163.225);\n    --color-emerald-700: oklch(50.8% 0.118 165.612);\n    --color-emerald-800: oklch(43.2% 0.095 166.913);\n    --color-emerald-900: oklch(37.8% 0.077 168.94);\n    --color-emerald-950: oklch(26.2% 0.051 172.552);\n\n    --color-teal-50: oklch(98.4% 0.014 180.72);\n    --color-teal-100: oklch(95.3% 0.051 180.801);\n    --color-teal-200: oklch(91% 0.096 180.426);\n    --color-teal-300: oklch(85.5% 0.138 181.071);\n    --color-teal-400: oklch(77.7% 0.152 181.912);\n    --color-teal-500: oklch(70.4% 0.14 182.503);\n    --color-teal-600: oklch(60% 0.118 184.704);\n    --color-teal-700: oklch(51.1% 0.096 186.391);\n    --color-teal-800: oklch(43.7% 0.078 188.216);\n    --color-teal-900: oklch(38.6% 0.063 188.416);\n    --color-teal-950: oklch(27.7% 0.046 192.524);\n\n    --color-cyan-50: oklch(98.4% 0.019 200.873);\n    --color-cyan-100: oklch(95.6% 0.045 203.388);\n    --color-cyan-200: oklch(91.7% 0.08 205.041);\n    --color-cyan-300: oklch(86.5% 0.127 207.078);\n    --color-cyan-400: oklch(78.9% 0.154 211.53);\n    --color-cyan-500: oklch(71.5% 0.143 215.221);\n    --color-cyan-600: oklch(60.9% 0.126 221.723);\n    --color-cyan-700: oklch(52% 0.105 223.128);\n    --color-cyan-800: oklch(45% 0.085 224.283);\n    --color-cyan-900: oklch(39.8% 0.07 227.392);\n    --color-cyan-950: oklch(30.2% 0.056 229.695);\n\n    --color-sky-50: oklch(97.7% 0.013 236.62);\n    --color-sky-100: oklch(95.1% 0.026 236.824);\n    --color-sky-200: oklch(90.1% 0.058 230.902);\n    --color-sky-300: oklch(82.8% 0.111 230.318);\n    --color-sky-400: oklch(74.6% 0.16 232.661);\n    --color-sky-500: oklch(68.5% 0.169 237.323);\n    --color-sky-600: oklch(58.8% 0.158 241.966);\n    --color-sky-700: oklch(50% 0.134 242.749);\n    --color-sky-800: oklch(44.3% 0.11 240.79);\n    --color-sky-900: oklch(39.1% 0.09 240.876);\n    --color-sky-950: oklch(29.3% 0.066 243.157);\n\n    --color-blue-50: oklch(97% 0.014 254.604);\n    --color-blue-100: oklch(93.2% 0.032 255.585);\n    --color-blue-200: oklch(88.2% 0.059 254.128);\n    --color-blue-300: oklch(80.9% 0.105 251.813);\n    --color-blue-400: oklch(70.7% 0.165 254.624);\n    --color-blue-500: oklch(62.3% 0.214 259.815);\n    --color-blue-600: oklch(54.6% 0.245 262.881);\n    --color-blue-700: oklch(48.8% 0.243 264.376);\n    --color-blue-800: oklch(42.4% 0.199 265.638);\n    --color-blue-900: oklch(37.9% 0.146 265.522);\n    --color-blue-950: oklch(28.2% 0.091 267.935);\n\n    --color-indigo-50: oklch(96.2% 0.018 272.314);\n    --color-indigo-100: oklch(93% 0.034 272.788);\n    --color-indigo-200: oklch(87% 0.065 274.039);\n    --color-indigo-300: oklch(78.5% 0.115 274.713);\n    --color-indigo-400: oklch(67.3% 0.182 276.935);\n    --color-indigo-500: oklch(58.5% 0.233 277.117);\n    --color-indigo-600: oklch(51.1% 0.262 276.966);\n    --color-indigo-700: oklch(45.7% 0.24 277.023);\n    --color-indigo-800: oklch(39.8% 0.195 277.366);\n    --color-indigo-900: oklch(35.9% 0.144 278.697);\n    --color-indigo-950: oklch(25.7% 0.09 281.288);\n\n    --color-violet-50: oklch(96.9% 0.016 293.756);\n    --color-violet-100: oklch(94.3% 0.029 294.588);\n    --color-violet-200: oklch(89.4% 0.057 293.283);\n    --color-violet-300: oklch(81.1% 0.111 293.571);\n    --color-violet-400: oklch(70.2% 0.183 293.541);\n    --color-violet-500: oklch(60.6% 0.25 292.717);\n    --color-violet-600: oklch(54.1% 0.281 293.009);\n    --color-violet-700: oklch(49.1% 0.27 292.581);\n    --color-violet-800: oklch(43.2% 0.232 292.759);\n    --color-violet-900: oklch(38% 0.189 293.745);\n    --color-violet-950: oklch(28.3% 0.141 291.089);\n\n    --color-purple-50: oklch(97.7% 0.014 308.299);\n    --color-purple-100: oklch(94.6% 0.033 307.174);\n    --color-purple-200: oklch(90.2% 0.063 306.703);\n    --color-purple-300: oklch(82.7% 0.119 306.383);\n    --color-purple-400: oklch(71.4% 0.203 305.504);\n    --color-purple-500: oklch(62.7% 0.265 303.9);\n    --color-purple-600: oklch(55.8% 0.288 302.321);\n    --color-purple-700: oklch(49.6% 0.265 301.924);\n    --color-purple-800: oklch(43.8% 0.218 303.724);\n    --color-purple-900: oklch(38.1% 0.176 304.987);\n    --color-purple-950: oklch(29.1% 0.149 302.717);\n\n    --color-fuchsia-50: oklch(97.7% 0.017 320.058);\n    --color-fuchsia-100: oklch(95.2% 0.037 318.852);\n    --color-fuchsia-200: oklch(90.3% 0.076 319.62);\n    --color-fuchsia-300: oklch(83.3% 0.145 321.434);\n    --color-fuchsia-400: oklch(74% 0.238 322.16);\n    --color-fuchsia-500: oklch(66.7% 0.295 322.15);\n    --color-fuchsia-600: oklch(59.1% 0.293 322.896);\n    --color-fuchsia-700: oklch(51.8% 0.253 323.949);\n    --color-fuchsia-800: oklch(45.2% 0.211 324.591);\n    --color-fuchsia-900: oklch(40.1% 0.17 325.612);\n    --color-fuchsia-950: oklch(29.3% 0.136 325.661);\n\n    --color-pink-50: oklch(97.1% 0.014 343.198);\n    --color-pink-100: oklch(94.8% 0.028 342.258);\n    --color-pink-200: oklch(89.9% 0.061 343.231);\n    --color-pink-300: oklch(82.3% 0.12 346.018);\n    --color-pink-400: oklch(71.8% 0.202 349.761);\n    --color-pink-500: oklch(65.6% 0.241 354.308);\n    --color-pink-600: oklch(59.2% 0.249 0.584);\n    --color-pink-700: oklch(52.5% 0.223 3.958);\n    --color-pink-800: oklch(45.9% 0.187 3.815);\n    --color-pink-900: oklch(40.8% 0.153 2.432);\n    --color-pink-950: oklch(28.4% 0.109 3.907);\n\n    --color-rose-50: oklch(96.9% 0.015 12.422);\n    --color-rose-100: oklch(94.1% 0.03 12.58);\n    --color-rose-200: oklch(89.2% 0.058 10.001);\n    --color-rose-300: oklch(81% 0.117 11.638);\n    --color-rose-400: oklch(71.2% 0.194 13.428);\n    --color-rose-500: oklch(64.5% 0.246 16.439);\n    --color-rose-600: oklch(58.6% 0.253 17.585);\n    --color-rose-700: oklch(51.4% 0.222 16.935);\n    --color-rose-800: oklch(45.5% 0.188 13.697);\n    --color-rose-900: oklch(41% 0.159 10.272);\n    --color-rose-950: oklch(27.1% 0.105 12.094);\n\n    --color-slate-50: oklch(98.4% 0.003 247.858);\n    --color-slate-100: oklch(96.8% 0.007 247.896);\n    --color-slate-200: oklch(92.9% 0.013 255.508);\n    --color-slate-300: oklch(86.9% 0.022 252.894);\n    --color-slate-400: oklch(70.4% 0.04 256.788);\n    --color-slate-500: oklch(55.4% 0.046 257.417);\n    --color-slate-600: oklch(44.6% 0.043 257.281);\n    --color-slate-700: oklch(37.2% 0.044 257.287);\n    --color-slate-800: oklch(27.9% 0.041 260.031);\n    --color-slate-900: oklch(20.8% 0.042 265.755);\n    --color-slate-950: oklch(12.9% 0.042 264.695);\n\n    --color-gray-50: oklch(98.5% 0.002 247.839);\n    --color-gray-100: oklch(96.7% 0.003 264.542);\n    --color-gray-200: oklch(92.8% 0.006 264.531);\n    --color-gray-300: oklch(87.2% 0.01 258.338);\n    --color-gray-400: oklch(70.7% 0.022 261.325);\n    --color-gray-500: oklch(55.1% 0.027 264.364);\n    --color-gray-600: oklch(44.6% 0.03 256.802);\n    --color-gray-700: oklch(37.3% 0.034 259.733);\n    --color-gray-800: oklch(27.8% 0.033 256.848);\n    --color-gray-900: oklch(21% 0.034 264.665);\n    --color-gray-950: oklch(13% 0.028 261.692);\n\n    --color-zinc-50: oklch(98.5% 0 0);\n    --color-zinc-100: oklch(96.7% 0.001 286.375);\n    --color-zinc-200: oklch(92% 0.004 286.32);\n    --color-zinc-300: oklch(87.1% 0.006 286.286);\n    --color-zinc-400: oklch(70.5% 0.015 286.067);\n    --color-zinc-500: oklch(55.2% 0.016 285.938);\n    --color-zinc-600: oklch(44.2% 0.017 285.786);\n    --color-zinc-700: oklch(37% 0.013 285.805);\n    --color-zinc-800: oklch(27.4% 0.006 286.033);\n    --color-zinc-900: oklch(21% 0.006 285.885);\n    --color-zinc-950: oklch(14.1% 0.005 285.823);\n\n    --color-neutral-50: oklch(98.5% 0 0);\n    --color-neutral-100: oklch(97% 0 0);\n    --color-neutral-200: oklch(92.2% 0 0);\n    --color-neutral-300: oklch(87% 0 0);\n    --color-neutral-400: oklch(70.8% 0 0);\n    --color-neutral-500: oklch(55.6% 0 0);\n    --color-neutral-600: oklch(43.9% 0 0);\n    --color-neutral-700: oklch(37.1% 0 0);\n    --color-neutral-800: oklch(26.9% 0 0);\n    --color-neutral-900: oklch(20.5% 0 0);\n    --color-neutral-950: oklch(14.5% 0 0);\n\n    --color-stone-50: oklch(98.5% 0.001 106.423);\n    --color-stone-100: oklch(97% 0.001 106.424);\n    --color-stone-200: oklch(92.3% 0.003 48.717);\n    --color-stone-300: oklch(86.9% 0.005 56.366);\n    --color-stone-400: oklch(70.9% 0.01 56.259);\n    --color-stone-500: oklch(55.3% 0.013 58.071);\n    --color-stone-600: oklch(44.4% 0.011 73.639);\n    --color-stone-700: oklch(37.4% 0.01 67.558);\n    --color-stone-800: oklch(26.8% 0.007 34.298);\n    --color-stone-900: oklch(21.6% 0.006 56.043);\n    --color-stone-950: oklch(14.7% 0.004 49.25);\n\n    --color-black: #000;\n    --color-white: #fff;\n\n    --spacing: 0.25rem;\n\n    --breakpoint-sm: 40rem;\n    --breakpoint-md: 48rem;\n    --breakpoint-lg: 64rem;\n    --breakpoint-xl: 80rem;\n    --breakpoint-2xl: 96rem;\n\n    --container-3xs: 16rem;\n    --container-2xs: 18rem;\n    --container-xs: 20rem;\n    --container-sm: 24rem;\n    --container-md: 28rem;\n    --container-lg: 32rem;\n    --container-xl: 36rem;\n    --container-2xl: 42rem;\n    --container-3xl: 48rem;\n    --container-4xl: 56rem;\n    --container-5xl: 64rem;\n    --container-6xl: 72rem;\n    --container-7xl: 80rem;\n\n    --text-xs: 0.75rem;\n    --text-xs--line-height: calc(1 / 0.75);\n    --text-sm: 0.875rem;\n    --text-sm--line-height: calc(1.25 / 0.875);\n    --text-base: 1rem;\n    --text-base--line-height: calc(1.5 / 1);\n    --text-lg: 1.125rem;\n    --text-lg--line-height: calc(1.75 / 1.125);\n    --text-xl: 1.25rem;\n    --text-xl--line-height: calc(1.75 / 1.25);\n    --text-2xl: 1.5rem;\n    --text-2xl--line-height: calc(2 / 1.5);\n    --text-3xl: 1.875rem;\n    --text-3xl--line-height: calc(2.25 / 1.875);\n    --text-4xl: 2.25rem;\n    --text-4xl--line-height: calc(2.5 / 2.25);\n    --text-5xl: 3rem;\n    --text-5xl--line-height: 1;\n    --text-6xl: 3.75rem;\n    --text-6xl--line-height: 1;\n    --text-7xl: 4.5rem;\n    --text-7xl--line-height: 1;\n    --text-8xl: 6rem;\n    --text-8xl--line-height: 1;\n    --text-9xl: 8rem;\n    --text-9xl--line-height: 1;\n\n    --font-weight-thin: 100;\n    --font-weight-extralight: 200;\n    --font-weight-light: 300;\n    --font-weight-normal: 400;\n    --font-weight-medium: 500;\n    --font-weight-semibold: 600;\n    --font-weight-bold: 700;\n    --font-weight-extrabold: 800;\n    --font-weight-black: 900;\n\n    --tracking-tighter: -0.05em;\n    --tracking-tight: -0.025em;\n    --tracking-normal: 0em;\n    --tracking-wide: 0.025em;\n    --tracking-wider: 0.05em;\n    --tracking-widest: 0.1em;\n\n    --leading-tight: 1.25;\n    --leading-snug: 1.375;\n    --leading-normal: 1.5;\n    --leading-relaxed: 1.625;\n    --leading-loose: 2;\n\n    --radius-xs: 0.125rem;\n    --radius-sm: 0.25rem;\n    --radius-md: 0.375rem;\n    --radius-lg: 0.5rem;\n    --radius-xl: 0.75rem;\n    --radius-2xl: 1rem;\n    --radius-3xl: 1.5rem;\n    --radius-4xl: 2rem;\n\n    --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);\n    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-md:\n      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --shadow-lg:\n      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --shadow-xl:\n      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n\n    --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);\n\n    --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);\n    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);\n    --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);\n    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);\n    --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);\n    --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);\n\n    --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);\n    --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);\n    --text-shadow-sm:\n      0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),\n      0px 2px 2px rgb(0 0 0 / 0.075);\n    --text-shadow-md:\n      0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),\n      0px 2px 4px rgb(0 0 0 / 0.1);\n    --text-shadow-lg:\n      0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),\n      0px 4px 8px rgb(0 0 0 / 0.1);\n\n    --ease-in: cubic-bezier(0.4, 0, 1, 1);\n    --ease-out: cubic-bezier(0, 0, 0.2, 1);\n    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);\n\n    --animate-spin: spin 1s linear infinite;\n    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;\n    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n    --animate-bounce: bounce 1s infinite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @keyframes ping {\n      75%,\n      100% {\n        transform: scale(2);\n        opacity: 0;\n      }\n    }\n\n    @keyframes pulse {\n      50% {\n        opacity: 0.5;\n      }\n    }\n\n    @keyframes bounce {\n      0%,\n      100% {\n        transform: translateY(-25%);\n        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);\n      }\n\n      50% {\n        transform: none;\n        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg: 16px;\n    --blur-xl: 24px;\n    --blur-2xl: 40px;\n    --blur-3xl: 64px;\n\n    --perspective-dramatic: 100px;\n    --perspective-near: 300px;\n    --perspective-normal: 500px;\n    --perspective-midrange: 800px;\n    --perspective-distant: 1200px;\n\n    --aspect-video: 16 / 9;\n\n    --default-transition-duration: 150ms;\n    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    --default-font-family: --theme(--font-sans, initial);\n    --default-font-feature-settings: --theme(\n      --font-sans--font-feature-settings,\n      initial\n    );\n    --default-font-variation-settings: --theme(\n      --font-sans--font-variation-settings,\n      initial\n    );\n    --default-mono-font-family: --theme(--font-mono, initial);\n    --default-mono-font-feature-settings: --theme(\n      --font-mono--font-feature-settings,\n      initial\n    );\n    --default-mono-font-variation-settings: --theme(\n      --font-mono--font-variation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n    --blur: 8px;\n    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);\n    --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);\n    --radius: 0.25rem;\n    --max-width-prose: 65ch;\n  }\n}\n\n@layer base {\n  /*\n  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n  2. Remove default margins and padding\n  3. Reset all borders.\n*/\n\n  *,\n  ::after,\n  ::before,\n  ::backdrop,\n  ::file-selector-button {\n    box-sizing: border-box; /* 1 */\n    margin: 0; /* 2 */\n    padding: 0; /* 2 */\n    border: 0 solid; /* 3 */\n  }\n\n  /*\n  1. Use a consistent sensible line-height in all browsers.\n  2. Prevent adjustments of font size after orientation changes in iOS.\n  3. Use a more readable tab size.\n  4. Use the user's configured `sans` font-family by default.\n  5. Use the user's configured `sans` font-feature-settings by default.\n  6. Use the user's configured `sans` font-variation-settings by default.\n  7. Disable tap highlights on iOS.\n*/\n\n  html,\n  :host {\n    line-height: 1.5; /* 1 */\n    -webkit-text-size-adjust: 100%; /* 2 */\n    tab-size: 4; /* 3 */\n    font-family: --theme(\n      --default-font-family,\n      ui-sans-serif,\n      system-ui,\n      sans-serif,\n      \"Apple Color Emoji\",\n      \"Segoe UI Emoji\",\n      \"Segoe UI Symbol\",\n      \"Noto Color Emoji\"\n    ); /* 4 */\n    font-feature-settings: --theme(\n      --default-font-feature-settings,\n      normal\n    ); /* 5 */\n    font-variation-settings: --theme(\n      --default-font-variation-settings,\n      normal\n    ); /* 6 */\n    -webkit-tap-highlight-color: transparent; /* 7 */\n  }\n\n  /*\n  1. Add the correct height in Firefox.\n  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n  3. Reset the default border style to a 1px solid border.\n*/\n\n  hr {\n    height: 0; /* 1 */\n    color: inherit; /* 2 */\n    border-top-width: 1px; /* 3 */\n  }\n\n  /*\n  Add the correct text decoration in Chrome, Edge, and Safari.\n*/\n\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n\n  /*\n  Remove the default font size and weight for headings.\n*/\n\n  h1,\n  h2,\n  h3,\n  h4,\n  h5,\n  h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n\n  /*\n  Reset links to optimize for opt-in styling instead of opt-out.\n*/\n\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n\n  /*\n  Add the correct font weight in Edge and Safari.\n*/\n\n  b,\n  strong {\n    font-weight: bolder;\n  }\n\n  /*\n  1. Use the user's configured `mono` font-family by default.\n  2. Use the user's configured `mono` font-feature-settings by default.\n  3. Use the user's configured `mono` font-variation-settings by default.\n  4. Correct the odd `em` font sizing in all browsers.\n*/\n\n  code,\n  kbd,\n  samp,\n  pre {\n    font-family: --theme(\n      --default-mono-font-family,\n      ui-monospace,\n      SFMono-Regular,\n      Menlo,\n      Monaco,\n      Consolas,\n      \"Liberation Mono\",\n      \"Courier New\",\n      monospace\n    ); /* 1 */\n    font-feature-settings: --theme(\n      --default-mono-font-feature-settings,\n      normal\n    ); /* 2 */\n    font-variation-settings: --theme(\n      --default-mono-font-variation-settings,\n      normal\n    ); /* 3 */\n    font-size: 1em; /* 4 */\n  }\n\n  /*\n  Add the correct font size in all browsers.\n*/\n\n  small {\n    font-size: 80%;\n  }\n\n  /*\n  Prevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\n  sub,\n  sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n\n  sub {\n    bottom: -0.25em;\n  }\n\n  sup {\n    top: -0.5em;\n  }\n\n  /*\n  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n  3. Remove gaps between table borders by default.\n*/\n\n  table {\n    text-indent: 0; /* 1 */\n    border-color: inherit; /* 2 */\n    border-collapse: collapse; /* 3 */\n  }\n\n  /*\n  Use the modern Firefox focus style for all focusable elements.\n*/\n\n  :-moz-focusring {\n    outline: auto;\n  }\n\n  /*\n  Add the correct vertical alignment in Chrome and Firefox.\n*/\n\n  progress {\n    vertical-align: baseline;\n  }\n\n  /*\n  Add the correct display in Chrome and Safari.\n*/\n\n  summary {\n    display: list-item;\n  }\n\n  /*\n  Make lists unstyled by default.\n*/\n\n  ol,\n  ul,\n  menu {\n    list-style: none;\n  }\n\n  /*\n  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n      This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\n  img,\n  svg,\n  video,\n  canvas,\n  audio,\n  iframe,\n  embed,\n  object {\n    display: block; /* 1 */\n    vertical-align: middle; /* 2 */\n  }\n\n  /*\n  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\n  img,\n  video {\n    max-width: 100%;\n    height: auto;\n  }\n\n  /*\n  1. Inherit font styles in all browsers.\n  2. Remove border radius in all browsers.\n  3. Remove background color in all browsers.\n  4. Ensure consistent opacity for disabled states in all browsers.\n*/\n\n  button,\n  input,\n  select,\n  optgroup,\n  textarea,\n  ::file-selector-button {\n    font: inherit; /* 1 */\n    font-feature-settings: inherit; /* 1 */\n    font-variation-settings: inherit; /* 1 */\n    letter-spacing: inherit; /* 1 */\n    color: inherit; /* 1 */\n    border-radius: 0; /* 2 */\n    background-color: transparent; /* 3 */\n    opacity: 1; /* 4 */\n  }\n\n  /*\n  Restore default font weight.\n*/\n\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n\n  /*\n  Restore indentation.\n*/\n\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n\n  /*\n  Restore space after button.\n*/\n\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n\n  /*\n  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n*/\n\n  ::placeholder {\n    opacity: 1;\n  }\n\n  /*\n  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not\n  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or\n    (contain-intrinsic-size: 1px) /* Safari 17+ */ {\n    ::placeholder {\n      color: color-mix(in oklab, currentcolor 50%, transparent);\n    }\n  }\n\n  /*\n  Prevent resizing textareas horizontally by default.\n*/\n\n  textarea {\n    resize: vertical;\n  }\n\n  /*\n  Remove the inner padding in Chrome and Safari on macOS.\n*/\n\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n\n  /*\n  1. Ensure date/time inputs have the same height when empty in iOS Safari.\n  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.\n*/\n\n  ::-webkit-date-and-time-value {\n    min-height: 1lh; /* 1 */\n    text-align: inherit; /* 2 */\n  }\n\n  /*\n  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.\n*/\n\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n\n  /*\n  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.\n*/\n\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n\n  ::-webkit-datetime-edit,\n  ::-webkit-datetime-edit-year-field,\n  ::-webkit-datetime-edit-month-field,\n  ::-webkit-datetime-edit-day-field,\n  ::-webkit-datetime-edit-hour-field,\n  ::-webkit-datetime-edit-minute-field,\n  ::-webkit-datetime-edit-second-field,\n  ::-webkit-datetime-edit-millisecond-field,\n  ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n\n  /*\n  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)\n*/\n\n  ::-webkit-calendar-picker-indicator {\n    line-height: 1;\n  }\n\n  /*\n  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n\n  /*\n  Correct the inability to style the border radius in iOS Safari.\n*/\n\n  button,\n  input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]),\n  ::file-selector-button {\n    appearance: button;\n  }\n\n  /*\n  Correct the cursor style of increment and decrement buttons in Safari.\n*/\n\n  ::-webkit-inner-spin-button,\n  ::-webkit-outer-spin-button {\n    height: auto;\n  }\n\n  /*\n  Make elements with the HTML hidden attribute stay hidden by default.\n*/\n\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n\n@layer utilities {\n  @tailwind utilities;\n}\n","@import \"tailwindcss\";\n\n/* Custom base styles */\n@layer base {\n\tbody {\n\t\t@apply bg-gray-50;\n\t}\n}\n\n/* WordPress admin overrides for the app container */\n#poststation-app {\n\tmargin-left: -20px;\n\tmargin-right: 0;\n\tmargin-top: -10px;\n\toverflow: visible;\n\t--poststation-top-offset: 32px;\n\tfont-family: ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\tcolor: #111827;\n\tbackground: #f9fafb;\n}\n\n#poststation-app *,\n#poststation-app *::before,\n#poststation-app *::after {\n\tbox-sizing: border-box;\n}\n\n#poststation-app h1,\n#poststation-app h2,\n#poststation-app h3,\n#poststation-app h4,\n#poststation-app h5,\n#poststation-app h6,\n#poststation-app p,\n#poststation-app ul,\n#poststation-app ol,\n#poststation-app li,\n#poststation-app figure,\n#poststation-app blockquote {\n\tmargin: 0;\n\tpadding: 0;\n}\n\n#poststation-app button,\n#poststation-app input,\n#poststation-app select,\n#poststation-app textarea {\n\tfont: inherit;\n\tcolor: inherit;\n}\n\n#poststation-app button {\n\tcursor: pointer;\n}\n\n#poststation-app button:disabled {\n\tcursor: not-allowed;\n}\n\n/* App-scoped form controls to avoid WordPress admin style bleed */\n#poststation-app .poststation-field {\n\t@apply block w-full max-w-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-none transition;\n\t@apply placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500;\n\t@apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;\n}\n\n#poststation-app .poststation-field-error {\n\t@apply border-red-300 focus:border-red-500 focus:ring-red-500;\n}\n\n#poststation-app select.poststation-field {\n\t@apply pr-8;\n}\n\n#poststation-app textarea.poststation-field {\n\t@apply min-h-10 field-sizing-content resize-y;\n}\n\n/* Switch-style checkbox: wrap in label.poststation-switch and add span.poststation-switch-track after input */\n#poststation-app .poststation-switch {\n\t@apply inline-flex items-center gap-3 cursor-pointer;\n}\n#poststation-app .poststation-switch input.poststation-field-checkbox {\n\t@apply sr-only;\n}\n#poststation-app .poststation-switch .poststation-switch-track {\n\t@apply relative inline-flex h-6 w-11 shrink-0 rounded-full bg-gray-200 transition-colors duration-200;\n}\n#poststation-app .poststation-switch .poststation-switch-track::after {\n\tcontent: \"\";\n\t@apply absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition duration-200;\n}\n#poststation-app .poststation-switch input:focus-visible + .poststation-switch-track {\n\t@apply ring-2 ring-indigo-500 ring-offset-2;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track {\n\t@apply bg-indigo-600;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track::after {\n\t@apply translate-x-5;\n}\n#poststation-app .poststation-switch input:disabled + .poststation-switch-track {\n\t@apply opacity-50 cursor-not-allowed;\n}\n\n#poststation-app .poststation-field-color {\n\t@apply h-10 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1;\n}\n\n#poststation-app .poststation-icon-btn {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app a {\n\tcolor: inherit;\n\ttext-decoration: none;\n}\n\n@media (min-width: 783px) {\n\t#poststation-app {\n\t\tmargin-left: -20px;\n\t}\n}\n\n@media (min-width: 1024px) {\n\t#poststation-app .poststation-desktop-sidebar {\n\t\tposition: sticky;\n\t\talign-self: flex-start;\n\t\ttop: var(--poststation-top-offset, 32px);\n\t\theight: calc(100vh - var(--poststation-top-offset, 32px));\n\t\tleft: auto;\n\t\tbottom: auto;\n\t\ttransform: none;\n\t}\n}\n\n/* Sticky header on Campaign edit - below WP admin bar */\n.poststation-sticky-header {\n\tposition: sticky;\n\ttop: var(--poststation-top-offset, 32px);\n\tz-index: 99990;\n\twidth: 100%;\n}\n\n@media screen and (max-width: 782px) {\n\t.poststation-sticky-header {\n\t\ttop: 0;\n\t}\n}\n\nbody.admin-bar .poststation-mobile-overlay,\nbody.admin-bar .poststation-mobile-sidebar {\n\ttop: 32px;\n\theight: calc(100vh - 32px);\n}\n\n@media screen and (max-width: 782px) {\n\tbody.admin-bar .poststation-mobile-overlay,\n\tbody.admin-bar .poststation-mobile-sidebar {\n\t\ttop: 46px;\n\t\theight: calc(100vh - 46px);\n\t}\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["<no source>","webpack://./node_modules/tailwindcss/index.css","webpack://./src/index.css"],"names":[],"mappings":"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","sourcesContent":[null,"@layer theme, base, components, utilities;\n\n@layer theme {\n  @theme default {\n    --font-sans:\n      ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-serif: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif;\n    --font-mono:\n      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n      \"Courier New\", monospace;\n\n    --color-red-50: oklch(97.1% 0.013 17.38);\n    --color-red-100: oklch(93.6% 0.032 17.717);\n    --color-red-200: oklch(88.5% 0.062 18.334);\n    --color-red-300: oklch(80.8% 0.114 19.571);\n    --color-red-400: oklch(70.4% 0.191 22.216);\n    --color-red-500: oklch(63.7% 0.237 25.331);\n    --color-red-600: oklch(57.7% 0.245 27.325);\n    --color-red-700: oklch(50.5% 0.213 27.518);\n    --color-red-800: oklch(44.4% 0.177 26.899);\n    --color-red-900: oklch(39.6% 0.141 25.723);\n    --color-red-950: oklch(25.8% 0.092 26.042);\n\n    --color-orange-50: oklch(98% 0.016 73.684);\n    --color-orange-100: oklch(95.4% 0.038 75.164);\n    --color-orange-200: oklch(90.1% 0.076 70.697);\n    --color-orange-300: oklch(83.7% 0.128 66.29);\n    --color-orange-400: oklch(75% 0.183 55.934);\n    --color-orange-500: oklch(70.5% 0.213 47.604);\n    --color-orange-600: oklch(64.6% 0.222 41.116);\n    --color-orange-700: oklch(55.3% 0.195 38.402);\n    --color-orange-800: oklch(47% 0.157 37.304);\n    --color-orange-900: oklch(40.8% 0.123 38.172);\n    --color-orange-950: oklch(26.6% 0.079 36.259);\n\n    --color-amber-50: oklch(98.7% 0.022 95.277);\n    --color-amber-100: oklch(96.2% 0.059 95.617);\n    --color-amber-200: oklch(92.4% 0.12 95.746);\n    --color-amber-300: oklch(87.9% 0.169 91.605);\n    --color-amber-400: oklch(82.8% 0.189 84.429);\n    --color-amber-500: oklch(76.9% 0.188 70.08);\n    --color-amber-600: oklch(66.6% 0.179 58.318);\n    --color-amber-700: oklch(55.5% 0.163 48.998);\n    --color-amber-800: oklch(47.3% 0.137 46.201);\n    --color-amber-900: oklch(41.4% 0.112 45.904);\n    --color-amber-950: oklch(27.9% 0.077 45.635);\n\n    --color-yellow-50: oklch(98.7% 0.026 102.212);\n    --color-yellow-100: oklch(97.3% 0.071 103.193);\n    --color-yellow-200: oklch(94.5% 0.129 101.54);\n    --color-yellow-300: oklch(90.5% 0.182 98.111);\n    --color-yellow-400: oklch(85.2% 0.199 91.936);\n    --color-yellow-500: oklch(79.5% 0.184 86.047);\n    --color-yellow-600: oklch(68.1% 0.162 75.834);\n    --color-yellow-700: oklch(55.4% 0.135 66.442);\n    --color-yellow-800: oklch(47.6% 0.114 61.907);\n    --color-yellow-900: oklch(42.1% 0.095 57.708);\n    --color-yellow-950: oklch(28.6% 0.066 53.813);\n\n    --color-lime-50: oklch(98.6% 0.031 120.757);\n    --color-lime-100: oklch(96.7% 0.067 122.328);\n    --color-lime-200: oklch(93.8% 0.127 124.321);\n    --color-lime-300: oklch(89.7% 0.196 126.665);\n    --color-lime-400: oklch(84.1% 0.238 128.85);\n    --color-lime-500: oklch(76.8% 0.233 130.85);\n    --color-lime-600: oklch(64.8% 0.2 131.684);\n    --color-lime-700: oklch(53.2% 0.157 131.589);\n    --color-lime-800: oklch(45.3% 0.124 130.933);\n    --color-lime-900: oklch(40.5% 0.101 131.063);\n    --color-lime-950: oklch(27.4% 0.072 132.109);\n\n    --color-green-50: oklch(98.2% 0.018 155.826);\n    --color-green-100: oklch(96.2% 0.044 156.743);\n    --color-green-200: oklch(92.5% 0.084 155.995);\n    --color-green-300: oklch(87.1% 0.15 154.449);\n    --color-green-400: oklch(79.2% 0.209 151.711);\n    --color-green-500: oklch(72.3% 0.219 149.579);\n    --color-green-600: oklch(62.7% 0.194 149.214);\n    --color-green-700: oklch(52.7% 0.154 150.069);\n    --color-green-800: oklch(44.8% 0.119 151.328);\n    --color-green-900: oklch(39.3% 0.095 152.535);\n    --color-green-950: oklch(26.6% 0.065 152.934);\n\n    --color-emerald-50: oklch(97.9% 0.021 166.113);\n    --color-emerald-100: oklch(95% 0.052 163.051);\n    --color-emerald-200: oklch(90.5% 0.093 164.15);\n    --color-emerald-300: oklch(84.5% 0.143 164.978);\n    --color-emerald-400: oklch(76.5% 0.177 163.223);\n    --color-emerald-500: oklch(69.6% 0.17 162.48);\n    --color-emerald-600: oklch(59.6% 0.145 163.225);\n    --color-emerald-700: oklch(50.8% 0.118 165.612);\n    --color-emerald-800: oklch(43.2% 0.095 166.913);\n    --color-emerald-900: oklch(37.8% 0.077 168.94);\n    --color-emerald-950: oklch(26.2% 0.051 172.552);\n\n    --color-teal-50: oklch(98.4% 0.014 180.72);\n    --color-teal-100: oklch(95.3% 0.051 180.801);\n    --color-teal-200: oklch(91% 0.096 180.426);\n    --color-teal-300: oklch(85.5% 0.138 181.071);\n    --color-teal-400: oklch(77.7% 0.152 181.912);\n    --color-teal-500: oklch(70.4% 0.14 182.503);\n    --color-teal-600: oklch(60% 0.118 184.704);\n    --color-teal-700: oklch(51.1% 0.096 186.391);\n    --color-teal-800: oklch(43.7% 0.078 188.216);\n    --color-teal-900: oklch(38.6% 0.063 188.416);\n    --color-teal-950: oklch(27.7% 0.046 192.524);\n\n    --color-cyan-50: oklch(98.4% 0.019 200.873);\n    --color-cyan-100: oklch(95.6% 0.045 203.388);\n    --color-cyan-200: oklch(91.7% 0.08 205.041);\n    --color-cyan-300: oklch(86.5% 0.127 207.078);\n    --color-cyan-400: oklch(78.9% 0.154 211.53);\n    --color-cyan-500: oklch(71.5% 0.143 215.221);\n    --color-cyan-600: oklch(60.9% 0.126 221.723);\n    --color-cyan-700: oklch(52% 0.105 223.128);\n    --color-cyan-800: oklch(45% 0.085 224.283);\n    --color-cyan-900: oklch(39.8% 0.07 227.392);\n    --color-cyan-950: oklch(30.2% 0.056 229.695);\n\n    --color-sky-50: oklch(97.7% 0.013 236.62);\n    --color-sky-100: oklch(95.1% 0.026 236.824);\n    --color-sky-200: oklch(90.1% 0.058 230.902);\n    --color-sky-300: oklch(82.8% 0.111 230.318);\n    --color-sky-400: oklch(74.6% 0.16 232.661);\n    --color-sky-500: oklch(68.5% 0.169 237.323);\n    --color-sky-600: oklch(58.8% 0.158 241.966);\n    --color-sky-700: oklch(50% 0.134 242.749);\n    --color-sky-800: oklch(44.3% 0.11 240.79);\n    --color-sky-900: oklch(39.1% 0.09 240.876);\n    --color-sky-950: oklch(29.3% 0.066 243.157);\n\n    --color-blue-50: oklch(97% 0.014 254.604);\n    --color-blue-100: oklch(93.2% 0.032 255.585);\n    --color-blue-200: oklch(88.2% 0.059 254.128);\n    --color-blue-300: oklch(80.9% 0.105 251.813);\n    --color-blue-400: oklch(70.7% 0.165 254.624);\n    --color-blue-500: oklch(62.3% 0.214 259.815);\n    --color-blue-600: oklch(54.6% 0.245 262.881);\n    --color-blue-700: oklch(48.8% 0.243 264.376);\n    --color-blue-800: oklch(42.4% 0.199 265.638);\n    --color-blue-900: oklch(37.9% 0.146 265.522);\n    --color-blue-950: oklch(28.2% 0.091 267.935);\n\n    --color-indigo-50: oklch(96.2% 0.018 272.314);\n    --color-indigo-100: oklch(93% 0.034 272.788);\n    --color-indigo-200: oklch(87% 0.065 274.039);\n    --color-indigo-300: oklch(78.5% 0.115 274.713);\n    --color-indigo-400: oklch(67.3% 0.182 276.935);\n    --color-indigo-500: oklch(58.5% 0.233 277.117);\n    --color-indigo-600: oklch(51.1% 0.262 276.966);\n    --color-indigo-700: oklch(45.7% 0.24 277.023);\n    --color-indigo-800: oklch(39.8% 0.195 277.366);\n    --color-indigo-900: oklch(35.9% 0.144 278.697);\n    --color-indigo-950: oklch(25.7% 0.09 281.288);\n\n    --color-violet-50: oklch(96.9% 0.016 293.756);\n    --color-violet-100: oklch(94.3% 0.029 294.588);\n    --color-violet-200: oklch(89.4% 0.057 293.283);\n    --color-violet-300: oklch(81.1% 0.111 293.571);\n    --color-violet-400: oklch(70.2% 0.183 293.541);\n    --color-violet-500: oklch(60.6% 0.25 292.717);\n    --color-violet-600: oklch(54.1% 0.281 293.009);\n    --color-violet-700: oklch(49.1% 0.27 292.581);\n    --color-violet-800: oklch(43.2% 0.232 292.759);\n    --color-violet-900: oklch(38% 0.189 293.745);\n    --color-violet-950: oklch(28.3% 0.141 291.089);\n\n    --color-purple-50: oklch(97.7% 0.014 308.299);\n    --color-purple-100: oklch(94.6% 0.033 307.174);\n    --color-purple-200: oklch(90.2% 0.063 306.703);\n    --color-purple-300: oklch(82.7% 0.119 306.383);\n    --color-purple-400: oklch(71.4% 0.203 305.504);\n    --color-purple-500: oklch(62.7% 0.265 303.9);\n    --color-purple-600: oklch(55.8% 0.288 302.321);\n    --color-purple-700: oklch(49.6% 0.265 301.924);\n    --color-purple-800: oklch(43.8% 0.218 303.724);\n    --color-purple-900: oklch(38.1% 0.176 304.987);\n    --color-purple-950: oklch(29.1% 0.149 302.717);\n\n    --color-fuchsia-50: oklch(97.7% 0.017 320.058);\n    --color-fuchsia-100: oklch(95.2% 0.037 318.852);\n    --color-fuchsia-200: oklch(90.3% 0.076 319.62);\n    --color-fuchsia-300: oklch(83.3% 0.145 321.434);\n    --color-fuchsia-400: oklch(74% 0.238 322.16);\n    --color-fuchsia-500: oklch(66.7% 0.295 322.15);\n    --color-fuchsia-600: oklch(59.1% 0.293 322.896);\n    --color-fuchsia-700: oklch(51.8% 0.253 323.949);\n    --color-fuchsia-800: oklch(45.2% 0.211 324.591);\n    --color-fuchsia-900: oklch(40.1% 0.17 325.612);\n    --color-fuchsia-950: oklch(29.3% 0.136 325.661);\n\n    --color-pink-50: oklch(97.1% 0.014 343.198);\n    --color-pink-100: oklch(94.8% 0.028 342.258);\n    --color-pink-200: oklch(89.9% 0.061 343.231);\n    --color-pink-300: oklch(82.3% 0.12 346.018);\n    --color-pink-400: oklch(71.8% 0.202 349.761);\n    --color-pink-500: oklch(65.6% 0.241 354.308);\n    --color-pink-600: oklch(59.2% 0.249 0.584);\n    --color-pink-700: oklch(52.5% 0.223 3.958);\n    --color-pink-800: oklch(45.9% 0.187 3.815);\n    --color-pink-900: oklch(40.8% 0.153 2.432);\n    --color-pink-950: oklch(28.4% 0.109 3.907);\n\n    --color-rose-50: oklch(96.9% 0.015 12.422);\n    --color-rose-100: oklch(94.1% 0.03 12.58);\n    --color-rose-200: oklch(89.2% 0.058 10.001);\n    --color-rose-300: oklch(81% 0.117 11.638);\n    --color-rose-400: oklch(71.2% 0.194 13.428);\n    --color-rose-500: oklch(64.5% 0.246 16.439);\n    --color-rose-600: oklch(58.6% 0.253 17.585);\n    --color-rose-700: oklch(51.4% 0.222 16.935);\n    --color-rose-800: oklch(45.5% 0.188 13.697);\n    --color-rose-900: oklch(41% 0.159 10.272);\n    --color-rose-950: oklch(27.1% 0.105 12.094);\n\n    --color-slate-50: oklch(98.4% 0.003 247.858);\n    --color-slate-100: oklch(96.8% 0.007 247.896);\n    --color-slate-200: oklch(92.9% 0.013 255.508);\n    --color-slate-300: oklch(86.9% 0.022 252.894);\n    --color-slate-400: oklch(70.4% 0.04 256.788);\n    --color-slate-500: oklch(55.4% 0.046 257.417);\n    --color-slate-600: oklch(44.6% 0.043 257.281);\n    --color-slate-700: oklch(37.2% 0.044 257.287);\n    --color-slate-800: oklch(27.9% 0.041 260.031);\n    --color-slate-900: oklch(20.8% 0.042 265.755);\n    --color-slate-950: oklch(12.9% 0.042 264.695);\n\n    --color-gray-50: oklch(98.5% 0.002 247.839);\n    --color-gray-100: oklch(96.7% 0.003 264.542);\n    --color-gray-200: oklch(92.8% 0.006 264.531);\n    --color-gray-300: oklch(87.2% 0.01 258.338);\n    --color-gray-400: oklch(70.7% 0.022 261.325);\n    --color-gray-500: oklch(55.1% 0.027 264.364);\n    --color-gray-600: oklch(44.6% 0.03 256.802);\n    --color-gray-700: oklch(37.3% 0.034 259.733);\n    --color-gray-800: oklch(27.8% 0.033 256.848);\n    --color-gray-900: oklch(21% 0.034 264.665);\n    --color-gray-950: oklch(13% 0.028 261.692);\n\n    --color-zinc-50: oklch(98.5% 0 0);\n    --color-zinc-100: oklch(96.7% 0.001 286.375);\n    --color-zinc-200: oklch(92% 0.004 286.32);\n    --color-zinc-300: oklch(87.1% 0.006 286.286);\n    --color-zinc-400: oklch(70.5% 0.015 286.067);\n    --color-zinc-500: oklch(55.2% 0.016 285.938);\n    --color-zinc-600: oklch(44.2% 0.017 285.786);\n    --color-zinc-700: oklch(37% 0.013 285.805);\n    --color-zinc-800: oklch(27.4% 0.006 286.033);\n    --color-zinc-900: oklch(21% 0.006 285.885);\n    --color-zinc-950: oklch(14.1% 0.005 285.823);\n\n    --color-neutral-50: oklch(98.5% 0 0);\n    --color-neutral-100: oklch(97% 0 0);\n    --color-neutral-200: oklch(92.2% 0 0);\n    --color-neutral-300: oklch(87% 0 0);\n    --color-neutral-400: oklch(70.8% 0 0);\n    --color-neutral-500: oklch(55.6% 0 0);\n    --color-neutral-600: oklch(43.9% 0 0);\n    --color-neutral-700: oklch(37.1% 0 0);\n    --color-neutral-800: oklch(26.9% 0 0);\n    --color-neutral-900: oklch(20.5% 0 0);\n    --color-neutral-950: oklch(14.5% 0 0);\n\n    --color-stone-50: oklch(98.5% 0.001 106.423);\n    --color-stone-100: oklch(97% 0.001 106.424);\n    --color-stone-200: oklch(92.3% 0.003 48.717);\n    --color-stone-300: oklch(86.9% 0.005 56.366);\n    --color-stone-400: oklch(70.9% 0.01 56.259);\n    --color-stone-500: oklch(55.3% 0.013 58.071);\n    --color-stone-600: oklch(44.4% 0.011 73.639);\n    --color-stone-700: oklch(37.4% 0.01 67.558);\n    --color-stone-800: oklch(26.8% 0.007 34.298);\n    --color-stone-900: oklch(21.6% 0.006 56.043);\n    --color-stone-950: oklch(14.7% 0.004 49.25);\n\n    --color-black: #000;\n    --color-white: #fff;\n\n    --spacing: 0.25rem;\n\n    --breakpoint-sm: 40rem;\n    --breakpoint-md: 48rem;\n    --breakpoint-lg: 64rem;\n    --breakpoint-xl: 80rem;\n    --breakpoint-2xl: 96rem;\n\n    --container-3xs: 16rem;\n    --container-2xs: 18rem;\n    --container-xs: 20rem;\n    --container-sm: 24rem;\n    --container-md: 28rem;\n    --container-lg: 32rem;\n    --container-xl: 36rem;\n    --container-2xl: 42rem;\n    --container-3xl: 48rem;\n    --container-4xl: 56rem;\n    --container-5xl: 64rem;\n    --container-6xl: 72rem;\n    --container-7xl: 80rem;\n\n    --text-xs: 0.75rem;\n    --text-xs--line-height: calc(1 / 0.75);\n    --text-sm: 0.875rem;\n    --text-sm--line-height: calc(1.25 / 0.875);\n    --text-base: 1rem;\n    --text-base--line-height: calc(1.5 / 1);\n    --text-lg: 1.125rem;\n    --text-lg--line-height: calc(1.75 / 1.125);\n    --text-xl: 1.25rem;\n    --text-xl--line-height: calc(1.75 / 1.25);\n    --text-2xl: 1.5rem;\n    --text-2xl--line-height: calc(2 / 1.5);\n    --text-3xl: 1.875rem;\n    --text-3xl--line-height: calc(2.25 / 1.875);\n    --text-4xl: 2.25rem;\n    --text-4xl--line-height: calc(2.5 / 2.25);\n    --text-5xl: 3rem;\n    --text-5xl--line-height: 1;\n    --text-6xl: 3.75rem;\n    --text-6xl--line-height: 1;\n    --text-7xl: 4.5rem;\n    --text-7xl--line-height: 1;\n    --text-8xl: 6rem;\n    --text-8xl--line-height: 1;\n    --text-9xl: 8rem;\n    --text-9xl--line-height: 1;\n\n    --font-weight-thin: 100;\n    --font-weight-extralight: 200;\n    --font-weight-light: 300;\n    --font-weight-normal: 400;\n    --font-weight-medium: 500;\n    --font-weight-semibold: 600;\n    --font-weight-bold: 700;\n    --font-weight-extrabold: 800;\n    --font-weight-black: 900;\n\n    --tracking-tighter: -0.05em;\n    --tracking-tight: -0.025em;\n    --tracking-normal: 0em;\n    --tracking-wide: 0.025em;\n    --tracking-wider: 0.05em;\n    --tracking-widest: 0.1em;\n\n    --leading-tight: 1.25;\n    --leading-snug: 1.375;\n    --leading-normal: 1.5;\n    --leading-relaxed: 1.625;\n    --leading-loose: 2;\n\n    --radius-xs: 0.125rem;\n    --radius-sm: 0.25rem;\n    --radius-md: 0.375rem;\n    --radius-lg: 0.5rem;\n    --radius-xl: 0.75rem;\n    --radius-2xl: 1rem;\n    --radius-3xl: 1.5rem;\n    --radius-4xl: 2rem;\n\n    --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);\n    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-md:\n      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --shadow-lg:\n      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --shadow-xl:\n      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n\n    --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);\n\n    --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);\n    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);\n    --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);\n    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);\n    --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);\n    --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);\n\n    --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);\n    --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);\n    --text-shadow-sm:\n      0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),\n      0px 2px 2px rgb(0 0 0 / 0.075);\n    --text-shadow-md:\n      0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),\n      0px 2px 4px rgb(0 0 0 / 0.1);\n    --text-shadow-lg:\n      0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),\n      0px 4px 8px rgb(0 0 0 / 0.1);\n\n    --ease-in: cubic-bezier(0.4, 0, 1, 1);\n    --ease-out: cubic-bezier(0, 0, 0.2, 1);\n    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);\n\n    --animate-spin: spin 1s linear infinite;\n    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;\n    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n    --animate-bounce: bounce 1s infinite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @keyframes ping {\n      75%,\n      100% {\n        transform: scale(2);\n        opacity: 0;\n      }\n    }\n\n    @keyframes pulse {\n      50% {\n        opacity: 0.5;\n      }\n    }\n\n    @keyframes bounce {\n      0%,\n      100% {\n        transform: translateY(-25%);\n        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);\n      }\n\n      50% {\n        transform: none;\n        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg: 16px;\n    --blur-xl: 24px;\n    --blur-2xl: 40px;\n    --blur-3xl: 64px;\n\n    --perspective-dramatic: 100px;\n    --perspective-near: 300px;\n    --perspective-normal: 500px;\n    --perspective-midrange: 800px;\n    --perspective-distant: 1200px;\n\n    --aspect-video: 16 / 9;\n\n    --default-transition-duration: 150ms;\n    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    --default-font-family: --theme(--font-sans, initial);\n    --default-font-feature-settings: --theme(\n      --font-sans--font-feature-settings,\n      initial\n    );\n    --default-font-variation-settings: --theme(\n      --font-sans--font-variation-settings,\n      initial\n    );\n    --default-mono-font-family: --theme(--font-mono, initial);\n    --default-mono-font-feature-settings: --theme(\n      --font-mono--font-feature-settings,\n      initial\n    );\n    --default-mono-font-variation-settings: --theme(\n      --font-mono--font-variation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n    --blur: 8px;\n    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);\n    --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);\n    --radius: 0.25rem;\n    --max-width-prose: 65ch;\n  }\n}\n\n@layer base {\n  /*\n  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n  2. Remove default margins and padding\n  3. Reset all borders.\n*/\n\n  *,\n  ::after,\n  ::before,\n  ::backdrop,\n  ::file-selector-button {\n    box-sizing: border-box; /* 1 */\n    margin: 0; /* 2 */\n    padding: 0; /* 2 */\n    border: 0 solid; /* 3 */\n  }\n\n  /*\n  1. Use a consistent sensible line-height in all browsers.\n  2. Prevent adjustments of font size after orientation changes in iOS.\n  3. Use a more readable tab size.\n  4. Use the user's configured `sans` font-family by default.\n  5. Use the user's configured `sans` font-feature-settings by default.\n  6. Use the user's configured `sans` font-variation-settings by default.\n  7. Disable tap highlights on iOS.\n*/\n\n  html,\n  :host {\n    line-height: 1.5; /* 1 */\n    -webkit-text-size-adjust: 100%; /* 2 */\n    tab-size: 4; /* 3 */\n    font-family: --theme(\n      --default-font-family,\n      ui-sans-serif,\n      system-ui,\n      sans-serif,\n      \"Apple Color Emoji\",\n      \"Segoe UI Emoji\",\n      \"Segoe UI Symbol\",\n      \"Noto Color Emoji\"\n    ); /* 4 */\n    font-feature-settings: --theme(\n      --default-font-feature-settings,\n      normal\n    ); /* 5 */\n    font-variation-settings: --theme(\n      --default-font-variation-settings,\n      normal\n    ); /* 6 */\n    -webkit-tap-highlight-color: transparent; /* 7 */\n  }\n\n  /*\n  1. Add the correct height in Firefox.\n  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n  3. Reset the default border style to a 1px solid border.\n*/\n\n  hr {\n    height: 0; /* 1 */\n    color: inherit; /* 2 */\n    border-top-width: 1px; /* 3 */\n  }\n\n  /*\n  Add the correct text decoration in Chrome, Edge, and Safari.\n*/\n\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n\n  /*\n  Remove the default font size and weight for headings.\n*/\n\n  h1,\n  h2,\n  h3,\n  h4,\n  h5,\n  h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n\n  /*\n  Reset links to optimize for opt-in styling instead of opt-out.\n*/\n\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n\n  /*\n  Add the correct font weight in Edge and Safari.\n*/\n\n  b,\n  strong {\n    font-weight: bolder;\n  }\n\n  /*\n  1. Use the user's configured `mono` font-family by default.\n  2. Use the user's configured `mono` font-feature-settings by default.\n  3. Use the user's configured `mono` font-variation-settings by default.\n  4. Correct the odd `em` font sizing in all browsers.\n*/\n\n  code,\n  kbd,\n  samp,\n  pre {\n    font-family: --theme(\n      --default-mono-font-family,\n      ui-monospace,\n      SFMono-Regular,\n      Menlo,\n      Monaco,\n      Consolas,\n      \"Liberation Mono\",\n      \"Courier New\",\n      monospace\n    ); /* 1 */\n    font-feature-settings: --theme(\n      --default-mono-font-feature-settings,\n      normal\n    ); /* 2 */\n    font-variation-settings: --theme(\n      --default-mono-font-variation-settings,\n      normal\n    ); /* 3 */\n    font-size: 1em; /* 4 */\n  }\n\n  /*\n  Add the correct font size in all browsers.\n*/\n\n  small {\n    font-size: 80%;\n  }\n\n  /*\n  Prevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\n  sub,\n  sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n\n  sub {\n    bottom: -0.25em;\n  }\n\n  sup {\n    top: -0.5em;\n  }\n\n  /*\n  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n  3. Remove gaps between table borders by default.\n*/\n\n  table {\n    text-indent: 0; /* 1 */\n    border-color: inherit; /* 2 */\n    border-collapse: collapse; /* 3 */\n  }\n\n  /*\n  Use the modern Firefox focus style for all focusable elements.\n*/\n\n  :-moz-focusring {\n    outline: auto;\n  }\n\n  /*\n  Add the correct vertical alignment in Chrome and Firefox.\n*/\n\n  progress {\n    vertical-align: baseline;\n  }\n\n  /*\n  Add the correct display in Chrome and Safari.\n*/\n\n  summary {\n    display: list-item;\n  }\n\n  /*\n  Make lists unstyled by default.\n*/\n\n  ol,\n  ul,\n  menu {\n    list-style: none;\n  }\n\n  /*\n  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n      This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\n  img,\n  svg,\n  video,\n  canvas,\n  audio,\n  iframe,\n  embed,\n  object {\n    display: block; /* 1 */\n    vertical-align: middle; /* 2 */\n  }\n\n  /*\n  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\n  img,\n  video {\n    max-width: 100%;\n    height: auto;\n  }\n\n  /*\n  1. Inherit font styles in all browsers.\n  2. Remove border radius in all browsers.\n  3. Remove background color in all browsers.\n  4. Ensure consistent opacity for disabled states in all browsers.\n*/\n\n  button,\n  input,\n  select,\n  optgroup,\n  textarea,\n  ::file-selector-button {\n    font: inherit; /* 1 */\n    font-feature-settings: inherit; /* 1 */\n    font-variation-settings: inherit; /* 1 */\n    letter-spacing: inherit; /* 1 */\n    color: inherit; /* 1 */\n    border-radius: 0; /* 2 */\n    background-color: transparent; /* 3 */\n    opacity: 1; /* 4 */\n  }\n\n  /*\n  Restore default font weight.\n*/\n\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n\n  /*\n  Restore indentation.\n*/\n\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n\n  /*\n  Restore space after button.\n*/\n\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n\n  /*\n  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n*/\n\n  ::placeholder {\n    opacity: 1;\n  }\n\n  /*\n  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not\n  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or\n    (contain-intrinsic-size: 1px) /* Safari 17+ */ {\n    ::placeholder {\n      color: color-mix(in oklab, currentcolor 50%, transparent);\n    }\n  }\n\n  /*\n  Prevent resizing textareas horizontally by default.\n*/\n\n  textarea {\n    resize: vertical;\n  }\n\n  /*\n  Remove the inner padding in Chrome and Safari on macOS.\n*/\n\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n\n  /*\n  1. Ensure date/time inputs have the same height when empty in iOS Safari.\n  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.\n*/\n\n  ::-webkit-date-and-time-value {\n    min-height: 1lh; /* 1 */\n    text-align: inherit; /* 2 */\n  }\n\n  /*\n  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.\n*/\n\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n\n  /*\n  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.\n*/\n\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n\n  ::-webkit-datetime-edit,\n  ::-webkit-datetime-edit-year-field,\n  ::-webkit-datetime-edit-month-field,\n  ::-webkit-datetime-edit-day-field,\n  ::-webkit-datetime-edit-hour-field,\n  ::-webkit-datetime-edit-minute-field,\n  ::-webkit-datetime-edit-second-field,\n  ::-webkit-datetime-edit-millisecond-field,\n  ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n\n  /*\n  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)\n*/\n\n  ::-webkit-calendar-picker-indicator {\n    line-height: 1;\n  }\n\n  /*\n  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n\n  /*\n  Correct the inability to style the border radius in iOS Safari.\n*/\n\n  button,\n  input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]),\n  ::file-selector-button {\n    appearance: button;\n  }\n\n  /*\n  Correct the cursor style of increment and decrement buttons in Safari.\n*/\n\n  ::-webkit-inner-spin-button,\n  ::-webkit-outer-spin-button {\n    height: auto;\n  }\n\n  /*\n  Make elements with the HTML hidden attribute stay hidden by default.\n*/\n\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n\n@layer utilities {\n  @tailwind utilities;\n}\n","@import \"tailwindcss\";\n\n/* Custom base styles */\n@layer base {\n\tbody {\n\t\t@apply bg-gray-50;\n\t}\n}\n\n/* WordPress admin overrides for the app container */\n#poststation-app {\n\tmargin-left: -20px;\n\tmargin-right: 0;\n\tmargin-top: -10px;\n\toverflow: visible;\n\t--poststation-top-offset: 32px;\n\tfont-family: ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\tcolor: #111827;\n\tbackground: #f9fafb;\n}\n\n#poststation-app *,\n#poststation-app *::before,\n#poststation-app *::after {\n\tbox-sizing: border-box;\n}\n\n#poststation-app h1,\n#poststation-app h2,\n#poststation-app h3,\n#poststation-app h4,\n#poststation-app h5,\n#poststation-app h6,\n#poststation-app p,\n#poststation-app ul,\n#poststation-app ol,\n#poststation-app li,\n#poststation-app figure,\n#poststation-app blockquote {\n\tmargin: 0;\n\tpadding: 0;\n}\n\n#poststation-app button,\n#poststation-app input,\n#poststation-app select,\n#poststation-app textarea {\n\tfont: inherit;\n\tcolor: inherit;\n}\n\n#poststation-app button {\n\tcursor: pointer;\n}\n\n#poststation-app button:disabled {\n\tcursor: not-allowed;\n}\n\n/* App-scoped form controls to avoid WordPress admin style bleed */\n#poststation-app .poststation-field {\n\t@apply block w-full max-w-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-none transition;\n\t@apply placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500;\n\t@apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;\n}\n\n#poststation-app .poststation-field-error {\n\t@apply border-red-300 focus:border-red-500 focus:ring-red-500;\n}\n\n#poststation-app select.poststation-field {\n\t@apply pr-8;\n}\n\n#poststation-app textarea.poststation-field {\n\t@apply min-h-10 max-h-60 field-sizing-content resize-y overflow-y-auto;\n}\n\n/* Switch-style checkbox: wrap in label.poststation-switch and add span.poststation-switch-track after input */\n#poststation-app .poststation-switch {\n\t@apply inline-flex items-center gap-3 cursor-pointer;\n}\n#poststation-app .poststation-switch input.poststation-field-checkbox {\n\t@apply sr-only;\n}\n#poststation-app .poststation-switch .poststation-switch-track {\n\t@apply relative inline-flex h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors duration-200;\n}\n#poststation-app .poststation-switch .poststation-switch-track::after {\n\tcontent: \"\";\n\t@apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition duration-200;\n}\n#poststation-app .poststation-switch input:focus-visible + .poststation-switch-track {\n\t@apply ring-2 ring-indigo-500 ring-offset-2;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track {\n\t@apply bg-indigo-600;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track::after {\n\t@apply translate-x-4;\n}\n#poststation-app .poststation-switch input:disabled + .poststation-switch-track {\n\t@apply opacity-50 cursor-not-allowed;\n}\n\n#poststation-app .poststation-field-color {\n\t@apply h-10 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1;\n}\n\n#poststation-app .poststation-icon-btn {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app a {\n\tcolor: inherit;\n\ttext-decoration: none;\n}\n\n@media (min-width: 783px) {\n\t#poststation-app {\n\t\tmargin-left: -20px;\n\t}\n}\n\n@media (min-width: 1024px) {\n\t#poststation-app .poststation-desktop-sidebar {\n\t\tposition: sticky;\n\t\talign-self: flex-start;\n\t\ttop: var(--poststation-top-offset, 32px);\n\t\theight: calc(100vh - var(--poststation-top-offset, 32px));\n\t\tleft: auto;\n\t\tbottom: auto;\n\t\ttransform: none;\n\t}\n}\n\n/* Sticky header on Campaign edit - below WP admin bar */\n.poststation-sticky-header {\n\tposition: sticky;\n\ttop: var(--poststation-top-offset, 32px);\n\tz-index: 99990;\n\twidth: 100%;\n}\n\n@media screen and (max-width: 782px) {\n\t.poststation-sticky-header {\n\t\ttop: 0;\n\t}\n}\n\nbody.admin-bar .poststation-mobile-overlay,\nbody.admin-bar .poststation-mobile-sidebar {\n\ttop: 32px;\n\theight: calc(100vh - 32px);\n}\n\n@media screen and (max-width: 782px) {\n\tbody.admin-bar .poststation-mobile-overlay,\n\tbody.admin-bar .poststation-mobile-sidebar {\n\t\ttop: 46px;\n\t\theight: calc(100vh - 46px);\n\t}\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

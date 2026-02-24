@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Button, Select, StatusBadge, ConfirmModal } from '../common';
+import { Button, Select, StatusBadge } from '../common';
 import PostTaskForm from './PostTaskForm';
 import { getAdminUrl } from '../../api/client';
 
@@ -27,11 +27,10 @@ export default function PostTaskList({
 	loading = false,
 	importLoading = false,
 	clearCompletedLoading = false,
+	deletingTaskIds = [],
 }) {
 	const [filter, setFilter] = useState('');
 	const [expandedId, setExpandedId] = useState(null);
-	const [deleteId, setDeleteId] = useState(null);
-	const [isDeleting, setIsDeleting] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
 	const importRef = useRef(null);
 	const menuRef = useRef(null);
@@ -46,21 +45,6 @@ export default function PostTaskList({
 			onImportTasks(file);
 		}
 		e.target.value = '';
-	};
-
-	const handleDelete = async () => {
-		if (deleteId) {
-			setIsDeleting(true);
-			try {
-				await onDeleteTask(deleteId);
-				if (expandedId === deleteId) {
-					setExpandedId(null);
-				}
-				setDeleteId(null);
-			} finally {
-				setIsDeleting(false);
-			}
-		}
 	};
 
 	useEffect(() => {
@@ -166,23 +150,14 @@ export default function PostTaskList({
 							isExpanded={expandedId === task.id}
 							onToggle={() => setExpandedId(expandedId === task.id ? null : task.id)}
 							onUpdate={(data) => onUpdateTask(task.id, data)}
-							onDelete={() => setDeleteId(task.id)}
+							onDelete={() => onDeleteTask(task.id)}
 							onDuplicate={() => onDuplicateTask(task.id)}
 							onRun={() => onRunTask(task.id)}
+							isDeleting={deletingTaskIds.some((id) => String(id) === String(task.id))}
 						/>
 					))}
 				</div>
 			)}
-
-			<ConfirmModal
-				isOpen={deleteId !== null}
-				onClose={() => setDeleteId(null)}
-				onConfirm={handleDelete}
-				loading={isDeleting}
-				title="Delete Post Task"
-				message="Are you sure you want to delete this post task?"
-				confirmText="Delete"
-			/>
 		</div>
 	);
 }
@@ -197,16 +172,23 @@ function TaskItem({
 	onDelete,
 	onDuplicate,
 	onRun,
+	isDeleting = false,
 }) {
 	const adminUrl = getAdminUrl();
 	const topicValue = task.topic ?? '';
-	const articleType = task.article_type || campaign?.article_type || 'default';
-	const showUrl = articleType === 'rewrite_blog_post' && !!task.research_url;
-	const articleTypeLabel = {
+	const researchUrl = task.research_url ?? '';
+	const campaignType = task.campaign_type || campaign?.campaign_type || 'default';
+	const isRewrite = campaignType === 'rewrite_blog_post';
+	const isPublished = !!(task.post_id);
+	const primaryLabel = isRewrite
+		? (researchUrl || '').replace(/^https?:\/\//i, '')
+		: (topicValue || 'No Topic');
+	const showSubRow = isPublished ? (task.title_override || topicValue || 'Post') : false;
+	const campaignTypeLabel = {
 		default: 'Default',
 		listicle: 'Listicle',
 		rewrite_blog_post: 'Rewrite',
-	}[articleType] || 'Default';
+	}[campaignType] || 'Default';
 
 	return (
 		<div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -227,87 +209,99 @@ function TaskItem({
 					</button>
 
 					<div className="flex flex-col min-w-0 flex-1">
-						<div className="flex items-center gap-2 flex-wrap">
-							<span className="text-xs font-medium text-gray-400 shrink-0">#{task.id}</span>
-							{articleType !== 'rewrite_blog_post' && (
-								<span className="font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-md">
-									{topicValue || 'No Topic'}
-								</span>
-							)}
-							<span className="text-[10px] text-gray-600 font-medium bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
-								{articleTypeLabel}
+						<div className="text-[10px] font-medium text-gray-400 shrink-0">
+							#{task.id}
+							<span className="mx-2 text-gray-600 font-medium">·</span>
+							<span className=" text-gray-600 ">
+								{campaignTypeLabel}
 							</span>
+							<span className="mx-2 text-gray-600 font-medium">·</span>
 							<StatusBadge status={task.status} />
+						</div>
+						<div className="flex items-center gap-2 mt-0.5">
+							<span className="text-[14px] font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-md">
+								{primaryLabel}
+							</span>
 							{task.progress !== null && task.progress !== undefined && task.status !== 'completed' && (
 								<span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic truncate max-w-[120px]">
 									{String(task.progress)}
 								</span>
 							)}
 						</div>
-						{showUrl && (
+						{showSubRow && (
 							<div className="flex items-center gap-1 text-[11px] text-gray-500 truncate mt-0.5">
 								<svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.827a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
 								</svg>
-								<span className="truncate">{task.research_url}</span>
+								<span className="truncate">{showSubRow}</span>
 							</div>
 						)}
 					</div>
 				</div>
 
-				<div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-7 sm:ml-0" onClick={(e) => e.stopPropagation()}>
-					{task.status === 'completed' && task.post_id && (
-						<div className="flex items-center gap-1.5 mr-1 sm:mr-2">
-							<a
-								href={`${adminUrl}post.php?post=${task.post_id}&action=edit`}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+				<div className="flex flex-col items-end gap-1 shrink-0 ml-7 sm:ml-0" onClick={(e) => e.stopPropagation()}>
+					<div className="flex items-center gap-1.5 sm:gap-2">
+						{task.status === 'completed' && task.post_id && (
+							<>
+								<a
+									href={`${adminUrl}post.php?post=${task.post_id}&action=edit`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+								>
+									Edit
+								</a>
+								<a
+									href={`/?p=${task.post_id}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+								>
+									View
+								</a>
+							</>
+						)}
+						{task.status === 'failed' && (
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={onRun}
+								className="h-7 text-[11px] px-2"
+								loading={String(retryingTaskId) === String(task.id)}
+								disabled={String(retryingTaskId) === String(task.id)}
 							>
-								Edit
-							</a>
-							<a
-								href={`/?p=${task.post_id}`}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
-							>
-								View
-							</a>
-						</div>
-					)}
-					{task.status === 'failed' && (
-						<Button
-							variant="secondary"
-							size="sm"
-							onClick={onRun}
-							className="h-7 text-[11px] px-2"
-							loading={String(retryingTaskId) === String(task.id)}
-							disabled={String(retryingTaskId) === String(task.id)}
-						>
-							Retry
-						</Button>
-					)}
-					<button
-						onClick={onDuplicate}
-						className="p-1.5 text-gray-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
-						title="Duplicate"
-					>
-						<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-						</svg>
-					</button>
-					{task.status !== 'processing' && (
+								Retry
+							</Button>
+						)}
 						<button
-							onClick={onDelete}
-							className="p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
-							title="Delete"
+							onClick={onDuplicate}
+							className="p-1.5 text-gray-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
+							title="Duplicate"
 						>
 							<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
 							</svg>
 						</button>
-					)}
+						{task.status !== 'processing' && (
+							<button
+								onClick={onDelete}
+								disabled={isDeleting}
+								className="p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								title="Delete"
+							>
+								{isDeleting ? (
+									<svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+									</svg>
+								) : (
+									<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+									</svg>
+								)}
+							</button>
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -318,11 +312,35 @@ function TaskItem({
 							<p className="text-sm text-red-700">{task.error_message}</p>
 						</div>
 					)}
-					<PostTaskForm
-						task={task}
-						campaign={campaign}
-						onChange={onUpdate}
-					/>
+					{task.status === 'completed' ? (
+						<div className="text-sm text-gray-700 space-y-1">
+							<p><span className="font-medium text-gray-600">Campaign Type:</span> {campaignTypeLabel}</p>
+							{isRewrite ? (
+								<p><span className="font-medium text-gray-600">Research URL:</span> {researchUrl || '—'}</p>
+							) : (
+								<p><span className="font-medium text-gray-600">Topic:</span> {topicValue || '—'}</p>
+							)}
+							<p><span className="font-medium text-gray-600">Keywords:</span> {(task.keywords ?? '').trim() || '—'}</p>
+							{(task.title_override ?? '').trim() && (
+								<p><span className="font-medium text-gray-600">Title Override:</span> {task.title_override}</p>
+							)}
+							{(task.slug_override ?? '').trim() && (
+								<p><span className="font-medium text-gray-600">Slug Override:</span> {task.slug_override}</p>
+							)}
+							{task.feature_image_id && (
+								<p><span className="font-medium text-gray-600">Featured Image:</span> ID {task.feature_image_id}</p>
+							)}
+							{((task.feature_image_title ?? '').trim() && task.feature_image_title !== '{{title}}') && (
+								<p><span className="font-medium text-gray-600">Featured Image Title:</span> {task.feature_image_title}</p>
+							)}
+						</div>
+					) : (
+						<PostTaskForm
+							task={task}
+							campaign={campaign}
+							onChange={onUpdate}
+						/>
+					)}
 				</div>
 			)}
 		</div>

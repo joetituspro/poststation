@@ -1,6 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Button, Input, Modal, Card, CardHeader, CardBody, PageHeader, PageLoader, ModelSelect } from '../components/common';
-import { settings, getBootstrapSettings, refreshBootstrap } from '../api/client';
+import { Button, Input, Modal, ConfirmModal, Card, CardHeader, CardBody, PageHeader, PageLoader, ModelSelect } from '../components/common';
+import InstructionModal from '../components/instructions/InstructionModal';
+import { settings, getBootstrapSettings, getBootstrapInstructions, refreshBootstrap, instructions } from '../api/client';
+
+const DEFAULT_INSTRUCTION_KEYS = ['listicle', 'news', 'guide', 'howto'];
+const isDefaultPreset = (key) => key && DEFAULT_INSTRUCTION_KEYS.includes(key);
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function SettingsPage() {
@@ -10,6 +14,15 @@ export default function SettingsPage() {
 	const [defaultTextModel, setDefaultTextModel] = useState('');
 	const [defaultImageModel, setDefaultImageModel] = useState('');
 	const [copied, setCopied] = useState(false);
+
+	const [instructionModal, setInstructionModal] = useState({ open: false, mode: 'add', instruction: null });
+	const [deleteInstruction, setDeleteInstruction] = useState(null);
+	const [deleting, setDeleting] = useState(false);
+	const [instructionsList, setInstructionsList] = useState(() => getBootstrapInstructions());
+	const fetchInstructions = useCallback(async () => {
+		await refreshBootstrap();
+		setInstructionsList(getBootstrapInstructions());
+	}, []);
 
 	const bootstrapSettings = getBootstrapSettings();
 	const fetchSettings = useCallback(() => settings.get(), []);
@@ -59,6 +72,32 @@ export default function SettingsPage() {
 		} catch (err) {
 			console.error('Failed to save OpenRouter settings:', err);
 			refetch();
+		}
+	};
+
+	const openInstructionModal = (mode, instruction = null) => {
+		setInstructionModal({ open: true, mode, instruction });
+	};
+	const closeInstructionModal = () => {
+		setInstructionModal((prev) => ({ ...prev, open: false }));
+	};
+	const handleInstructionSaved = () => {
+		// Modal already called refreshBootstrap() before onSaved; use current bootstrap so list updates immediately
+		setInstructionsList(getBootstrapInstructions());
+	};
+
+	const handleConfirmDelete = async () => {
+		if (!deleteInstruction?.id) return;
+		setDeleting(true);
+		try {
+			await instructions.delete(deleteInstruction.id);
+			await refreshBootstrap();
+			setInstructionsList(getBootstrapInstructions());
+			setDeleteInstruction(null);
+		} catch (err) {
+			console.error('Failed to delete instruction:', err);
+		} finally {
+			setDeleting(false);
 		}
 	};
 
@@ -160,6 +199,67 @@ export default function SettingsPage() {
 					</CardBody>
 				</Card>
 
+				{/* Instruction presets */}
+				<Card>
+					<CardHeader>
+						<div className="flex items-center justify-between">
+							<div>
+								<h3 className="text-lg font-medium text-gray-900">Instruction presets</h3>
+								<p className="text-sm text-gray-500">Manage instruction sets used for title, body, and section generation</p>
+							</div>
+							<Button variant="primary" onClick={() => openInstructionModal('add')}>
+								Add new
+							</Button>
+						</div>
+					</CardHeader>
+					<CardBody>
+						<div className="space-y-2">
+							{instructionsList.length === 0 ? (
+								<p className="text-sm text-gray-500">No instruction presets. Add one to get started.</p>
+							) : (
+								<ul className="divide-y divide-gray-200">
+									{instructionsList.map((inst) => (
+										<li key={inst.id} className="py-3 flex items-center justify-between gap-4">
+											<div className="min-w-0 flex-1">
+												<div className="font-medium text-gray-900">{inst.name}</div>
+												<div className="text-xs text-gray-500">{inst.key}</div>
+												{inst.description && (
+													<p className="text-sm text-gray-600 mt-1 truncate">{inst.description}</p>
+												)}
+											</div>
+											<div className="flex items-center gap-2 shrink-0">
+												<Button
+													variant="secondary"
+													size="sm"
+													onClick={() => openInstructionModal('edit', inst)}
+												>
+													Edit
+												</Button>
+												<Button
+													variant="secondary"
+													size="sm"
+													onClick={() => openInstructionModal('duplicate', inst)}
+												>
+													Duplicate
+												</Button>
+												{!isDefaultPreset(inst.key) && (
+													<Button
+														variant="danger"
+														size="sm"
+														onClick={() => setDeleteInstruction(inst)}
+													>
+														Delete
+													</Button>
+												)}
+											</div>
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+					</CardBody>
+				</Card>
+
 				{/* General Info Card */}
 				<Card>
 					<CardHeader>
@@ -240,6 +340,25 @@ export default function SettingsPage() {
 					</section>
 				</div>
 			</Modal>
+
+			<InstructionModal
+				isOpen={instructionModal.open}
+				onClose={closeInstructionModal}
+				mode={instructionModal.mode}
+				instruction={instructionModal.instruction}
+				onSaved={handleInstructionSaved}
+			/>
+
+			<ConfirmModal
+				isOpen={Boolean(deleteInstruction)}
+				onClose={() => setDeleteInstruction(null)}
+				onConfirm={handleConfirmDelete}
+				title="Delete instruction preset"
+				message={deleteInstruction ? `Delete "${deleteInstruction.name}"? This cannot be undone.` : ''}
+				confirmText="Delete"
+				variant="danger"
+				loading={deleting}
+			/>
 		</div>
 	);
 }

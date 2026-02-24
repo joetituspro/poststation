@@ -2,104 +2,51 @@
 
 namespace PostStation\Services;
 
+use PostStation\Models\Campaign;
 use PostStation\Models\PostTask;
 
 class BackgroundRunner
 {
-	public const ACTION_CHECK_TASK_STATUS = 'poststation_check_posttask_status';
-	private const CHECK_INTERVAL = 30;
-	private const TIMEOUT_SECONDS = 65;
+	private const TIMEOUT_SECONDS = 30 * 5; // 5 minutes
+	private const MAX_DISPATCH_ATTEMPTS = 50;
 
 	public function init(): void
 	{
-		add_action(self::ACTION_CHECK_TASK_STATUS, [$this, 'handle_check_task_status'], 10, 4);
 	}
 
-	public function schedule_status_check(int $campaign_id, int $task_id, int $webhook_id, int $attempt = 0): void
+	/**
+	 * Dispatch one task. Used by manual Run and by start_run_if_pending.
+	 */
+	public function start_run_for_task(int $campaign_id, int $task_id, int $webhook_id): bool
 	{
-		if (!function_exists('as_schedule_single_action')) {
-			return;
+		$result = TaskRunner::dispatch_task($campaign_id, $task_id, $webhook_id);
+		if (empty($result['success'])) {
+			return false;
 		}
-
-		$args = [
-			'campaign_id' => $campaign_id,
-			'task_id' => $task_id,
-			'webhook_id' => $webhook_id,
-			'attempt' => $attempt,
-		];
-
-		$already_scheduled = function_exists('as_has_scheduled_action')
-			? as_has_scheduled_action(self::ACTION_CHECK_TASK_STATUS, $args, $this->get_group($campaign_id))
-			: false;
-
-		if ($already_scheduled) {
-			return;
-		}
-
-		as_schedule_single_action(
-			time() + self::CHECK_INTERVAL,
-			self::ACTION_CHECK_TASK_STATUS,
-			$args,
-			$this->get_group($campaign_id)
-		);
+		return true;
 	}
 
-	public function handle_check_task_status(int $campaign_id, int $task_id, int $webhook_id, int $attempt = 0): void
+	/**
+	 * If campaign is active and has pending tasks with no run in progress, start the first pending task.
+	 */
+	public function start_run_if_pending(int $campaign_id): bool
 	{
-		$task = PostTask::get_by_id($task_id);
+		$campaign = Campaign::get_by_id($campaign_id);
+		if (!$campaign || empty($campaign['webhook_id']) || ($campaign['status'] ?? '') !== 'active') {
+			return false;
+		}
+		if ($this->has_processing_task_only($campaign_id)) {
+			return false;
+		}
+		$task = $this->get_next_task($campaign_id);
 		if (!$task) {
-			return;
+			return false;
 		}
-
-		if ($task['status'] === 'completed') {
-			$this->start_next_task($campaign_id, $webhook_id);
-			return;
-		}
-
-		if ($task['status'] === 'failed') {
-			$this->start_next_task($campaign_id, $webhook_id);
-			return;
-		}
-
-		if ($task['status'] === 'processing' && !empty($task['error_message'])) {
-			PostTask::update($task_id, [
-				'status' => 'failed',
-				'error_message' => $task['error_message'],
-			]);
-			$this->start_next_task($campaign_id, $webhook_id);
-			return;
-		}
-
-		if ($task && $this->is_timed_out($task)) {
-			PostTask::update($task_id, [
-				'status' => 'failed',
-				'error_message' => __('Status check timed out.', 'poststation'),
-			]);
-
-			$this->start_next_task($campaign_id, $webhook_id);
-			return;
-		}
-
-		if ($task['status'] === 'processing') {
-			$this->schedule_status_check($campaign_id, $task_id, $webhook_id, $attempt + 1);
-			return;
-		}
-
-		if ($task['status'] === 'pending') {
-			return;
-		}
-
-		$this->start_next_task($campaign_id, $webhook_id);
+		return $this->start_run_for_task($campaign_id, (int) $task['id'], (int) $campaign['webhook_id']);
 	}
 
 	public function cancel_run(int $campaign_id): bool
 	{
-		if (!function_exists('as_unschedule_all_actions')) {
-			return false;
-		}
-
-		as_unschedule_all_actions(self::ACTION_CHECK_TASK_STATUS, [], $this->get_group($campaign_id));
-
 		// Update any processing tasks to pending
 		global $wpdb;
 		$table_name = $wpdb->prefix . PostTask::get_table_name();
@@ -115,65 +62,126 @@ class BackgroundRunner
 		return true;
 	}
 
-	private function start_next_task(int $campaign_id, int $webhook_id): void
+	/**
+	 * Global live update handler, called from GlobalUpdateService on each poststation_update tick.
+	 * For each active campaign with a webhook:
+	 * - If there is a processing task, check for timeout and, if timed out, mark failed and dispatch next.
+	 * - If there is no processing task but there is a pending task, dispatch one pending task.
+	 */
+	public function handle_live_update(): void
 	{
-		if ($this->has_processing_task_only($campaign_id)) {
+		global $wpdb;
+
+		$campaign_table = $wpdb->prefix . Campaign::get_table_name();
+		$campaigns = $wpdb->get_results(
+			"SELECT id, webhook_id FROM {$campaign_table} WHERE status = 'active' AND webhook_id IS NOT NULL",
+			ARRAY_A
+		);
+
+		if (empty($campaigns)) {
 			return;
 		}
 
-		$task = $this->get_next_task($campaign_id);
-		if (!$task) {
-			if (function_exists('as_unschedule_all_actions')) {
-				as_unschedule_all_actions(self::ACTION_CHECK_TASK_STATUS, [], $this->get_group($campaign_id));
+		foreach ($campaigns as $campaign) {
+			$campaign_id = (int) $campaign['id'];
+			$webhook_id = (int) $campaign['webhook_id'];
+			if ($campaign_id <= 0 || $webhook_id <= 0) {
+				continue;
 			}
+
+			$this->handle_live_update_for_campaign($campaign_id, $webhook_id);
+		}
+	}
+
+	private function handle_live_update_for_campaign(int $campaign_id, int $webhook_id): void
+	{
+		$tasks = PostTask::get_by_campaign($campaign_id);
+		if (empty($tasks)) {
 			return;
 		}
 
-		$result = TaskRunner::dispatch_task($campaign_id, (int) $task['id'], $webhook_id);
-		if (!$result['success']) {
+		$processing_task = null;
+		foreach ($tasks as $task) {
+			if (($task['status'] ?? '') === 'processing') {
+				$processing_task = $task;
+				break;
+			}
+		}
+
+		if ($processing_task) {
+			// If processing task has an explicit error or is timed out, mark failed and move on to next.
+			if (!empty($processing_task['error_message']) || $this->is_timed_out($processing_task)) {
+				PostTask::update((int) $processing_task['id'], [
+					'status' => 'failed',
+					'error_message' => !empty($processing_task['error_message'])
+						? $processing_task['error_message']
+						: __('Status check timed out.', 'poststation'),
+				]);
+
+				$this->start_next_task($campaign_id, $webhook_id, $tasks);
+			}
+
+			// If still processing and not timed out, do nothing for this campaign this tick.
 			return;
 		}
 
-		$this->schedule_status_check($campaign_id, (int) $task['id'], $webhook_id, 0);
+		// No processing task; try to start the next pending one.
+		$this->start_next_task($campaign_id, $webhook_id, $tasks);
+	}
+
+	private function start_next_task(int $campaign_id, int $webhook_id, ?array $preloaded_tasks = null): void
+	{
+		$tasks = $preloaded_tasks ?? PostTask::get_by_campaign($campaign_id);
+		$attempts = 0;
+		foreach ($tasks as $task) {
+			if ($attempts >= self::MAX_DISPATCH_ATTEMPTS) {
+				break;
+			}
+			if (($task['status'] ?? '') !== 'pending') {
+				continue;
+			}
+			if (!$this->task_has_required_data($task)) {
+				continue;
+			}
+			$attempts++;
+			$result = TaskRunner::dispatch_task($campaign_id, (int) $task['id'], $webhook_id);
+			if (!empty($result['success'])) {
+				return;
+			}
+		}
 	}
 
 	private function get_next_task(int $campaign_id): ?array
 	{
 		$tasks = PostTask::get_by_campaign($campaign_id);
 		foreach ($tasks as $task) {
-			if ($task['status'] === 'pending') {
+			if (($task['status'] ?? '') !== 'pending') {
+				continue;
+			}
+			if ($this->task_has_required_data($task)) {
 				return $task;
 			}
 		}
 		return null;
 	}
 
+	/**
+	 * Whether a task has the minimum required field data for dispatch (rewrite needs research_url, others need topic).
+	 */
+	private function task_has_required_data(array $task): bool
+	{
+		$task_type = $task['campaign_type'] ?? 'default';
+		if ($task_type === 'rewrite_blog_post') {
+			return trim((string) ($task['research_url'] ?? '')) !== '';
+		}
+		return trim((string) ($task['topic'] ?? '')) !== '';
+	}
+
 	private function has_processing_task(int $campaign_id): bool
 	{
 		$tasks = PostTask::get_by_campaign($campaign_id);
 		foreach ($tasks as $task) {
-			if ($task['status'] === 'processing') {
-				return true;
-			}
-		}
-		if (function_exists('as_get_scheduled_actions')) {
-			$group = $this->get_group($campaign_id);
-			$pending = as_get_scheduled_actions([
-				'hook' => self::ACTION_CHECK_TASK_STATUS,
-				'group' => $group,
-				'status' => 'pending',
-				'per_page' => 1,
-			]);
-			if (!empty($pending)) {
-				return true;
-			}
-			$in_progress = as_get_scheduled_actions([
-				'hook' => self::ACTION_CHECK_TASK_STATUS,
-				'group' => $group,
-				'status' => 'in-progress',
-				'per_page' => 1,
-			]);
-			if (!empty($in_progress)) {
+			if (($task['status'] ?? '') === 'processing') {
 				return true;
 			}
 		}
@@ -184,7 +192,7 @@ class BackgroundRunner
 	{
 		$tasks = PostTask::get_by_campaign($campaign_id);
 		foreach ($tasks as $task) {
-			if ($task['status'] === 'processing') {
+			if (($task['status'] ?? '') === 'processing') {
 				return true;
 			}
 		}
@@ -205,10 +213,5 @@ class BackgroundRunner
 
 		$now = current_time('timestamp');
 		return ($now - $started_ts) > self::TIMEOUT_SECONDS;
-	}
-
-	private function get_group(int $campaign_id): string
-	{
-		return 'poststation_campaign_' . $campaign_id;
 	}
 }

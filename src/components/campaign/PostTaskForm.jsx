@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Input, Select, Tooltip } from '../common';
 
-const ARTICLE_TYPE_OPTIONS = [
+// Cache attachment ID -> preview URL so image doesn't refetch when task block is expanded again
+const attachmentUrlCache = new Map();
+
+const CAMPAIGN_TYPE_OPTIONS = [
 	{ value: 'default', label: 'Default' },
 	{ value: 'listicle', label: 'Listicle' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
@@ -9,7 +12,11 @@ const ARTICLE_TYPE_OPTIONS = [
 
 export default function PostTaskForm({ task, campaign, onChange }) {
 	const isProcessing = task.status === 'processing';
-	const [featuredImageUrl, setFeaturedImageUrl] = useState('');
+	const [featuredImageUrl, setFeaturedImageUrl] = useState(() => {
+		const id = Number(task?.feature_image_id);
+		return id ? (attachmentUrlCache.get(id) || '') : '';
+	});
+	const [featureImageLoading, setFeatureImageLoading] = useState(false);
 
 	const [isSlugSynced, setIsSlugSynced] = useState(!task.slug_override || task.slug_override.trim() === '');
 
@@ -44,7 +51,7 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 		onChange(updates);
 	};
 
-	const resolvedArticleType = task.article_type || campaign?.article_type || 'default';
+	const resolvedCampaignType = task.campaign_type || campaign?.campaign_type || 'default';
 	const contentFields = campaign?.content_fields
 		? (typeof campaign.content_fields === 'string'
 			? JSON.parse(campaign.content_fields)
@@ -56,34 +63,41 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 
 	useEffect(() => {
 		let mounted = true;
+		const attachmentId = Number(task.feature_image_id);
 
-		const resolveAttachment = async () => {
-			const attachmentId = Number(task.feature_image_id);
-			if (!attachmentId || !window.wp?.media?.attachment) {
-				if (mounted) setFeaturedImageUrl('');
-				return;
+		if (!attachmentId || !window.wp?.media?.attachment) {
+			setFeaturedImageUrl('');
+			setFeatureImageLoading(false);
+			return;
+		}
+
+		const cached = attachmentUrlCache.get(attachmentId);
+		if (cached) {
+			setFeaturedImageUrl(cached);
+			setFeatureImageLoading(false);
+			return;
+		}
+
+		setFeatureImageLoading(true);
+		const attachment = window.wp.media.attachment(attachmentId);
+		attachment.fetch().then(() => {
+			if (!mounted) return;
+			const attrs = attachment.attributes || {};
+			const resolvedUrl =
+				attrs?.sizes?.thumbnail?.url ||
+				attrs?.sizes?.medium?.url ||
+				attrs?.url ||
+				'';
+			attachmentUrlCache.set(attachmentId, resolvedUrl);
+			setFeaturedImageUrl(resolvedUrl);
+			setFeatureImageLoading(false);
+		}).catch(() => {
+			if (mounted) {
+				setFeaturedImageUrl('');
+				setFeatureImageLoading(false);
 			}
+		});
 
-			try {
-				const attachment = window.wp.media.attachment(attachmentId);
-				await attachment.fetch();
-				const attrs = attachment.attributes || {};
-				const resolvedUrl =
-					attrs?.sizes?.thumbnail?.url ||
-					attrs?.sizes?.medium?.url ||
-					attrs?.url ||
-					'';
-				if (mounted) {
-					setFeaturedImageUrl(resolvedUrl);
-				}
-			} catch {
-				if (mounted) {
-					setFeaturedImageUrl('');
-				}
-			}
-		};
-
-		resolveAttachment();
 		return () => {
 			mounted = false;
 		};
@@ -95,18 +109,18 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 
 	return (
 		<div className={`space-y-4 ${isProcessing ? 'opacity-75' : ''}`}>
-			{/* Article Type Selector */}
+			{/* Campaign Type Selector */}
 			<div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-3">
 				<Select
-					label="Article Type"
-					tooltip="Overrides the campaign article type for this post task only."
-					options={ARTICLE_TYPE_OPTIONS}
-					value={resolvedArticleType}
-					onChange={(e) => handleChange('article_type', e.target.value)}
+					label="Campaign Type"
+					tooltip="Overrides the campaign type for this post task only."
+					options={CAMPAIGN_TYPE_OPTIONS}
+					value={resolvedCampaignType}
+					onChange={(e) => handleChange('campaign_type', e.target.value)}
 					className="min-w-0"
 					disabled={isProcessing}
 				/>
-				{resolvedArticleType !== 'rewrite_blog_post' ? (
+				{resolvedCampaignType !== 'rewrite_blog_post' ? (
 					<Input
 						label="Topic / Keyword"
 						tooltip="Topic or keyword you want to write about."
@@ -128,6 +142,15 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 					/>
 				)}
 			</div>
+
+			<Input
+				label="Keywords"
+				tooltip="Comma-separated keywords for this task (e.g. for generation or SEO)."
+				value={task.keywords ?? ''}
+				onChange={(e) => handleChange('keywords', e.target.value)}
+				placeholder="e.g. coffee, london, guide"
+				disabled={isProcessing}
+			/>
 
 			{/* Title + Slug Overrides */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -174,6 +197,13 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 									alt="Featured override preview"
 									className="w-12 h-12 rounded object-cover border border-gray-200"
 								/>
+							) : featureImageLoading ? (
+								<div className="w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center">
+									<svg className="w-5 h-5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+									</svg>
+								</div>
 							) : (
 								<div className="w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-500">
 									#{task.feature_image_id}
@@ -204,6 +234,13 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 									});
 									frame.on('select', () => {
 										const attachment = frame.state().get('selection').first().toJSON();
+										const url =
+											attachment.sizes?.thumbnail?.url ||
+											attachment.sizes?.medium?.url ||
+											attachment.url ||
+											'';
+										if (url) attachmentUrlCache.set(attachment.id, url);
+										setFeaturedImageUrl(url);
 										handleChange('feature_image_id', attachment.id);
 									});
 									frame.open();
