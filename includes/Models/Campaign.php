@@ -158,7 +158,6 @@ class Campaign
 				'external_linking' => 'yes',
 				'list_numbering_format' => 'none',
 				'use_descending_order' => false,
-				'list_section_prompt' => '',
 				'number_of_list' => '',
 				'enable_media' => 'no',
 				'number_of_images' => 'random',

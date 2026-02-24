@@ -173,6 +173,39 @@ class CampaignAjaxHandler
 		wp_send_json_success();
 	}
 
+	public function update_campaign_status(): void
+	{
+		if (!NonceVerifier::verify()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$campaign_id = (int) ($_POST['id'] ?? 0);
+		$status = $this->sanitize_campaign_status($_POST['status'] ?? 'paused');
+		if ($campaign_id <= 0) {
+			wp_send_json_error(['message' => 'Invalid campaign ID']);
+		}
+
+		$existing = Campaign::get_by_id($campaign_id);
+		if (!$existing) {
+			wp_send_json_error(['message' => 'Campaign not found']);
+		}
+
+		$success = Campaign::update($campaign_id, ['status' => $status]);
+		if (!$success) {
+			wp_send_json_error(['message' => 'Failed to update status']);
+		}
+
+		if ($status === 'active' && !empty((int) ($existing['webhook_id'] ?? 0))) {
+			$runner = new BackgroundRunner();
+			$runner->start_run_if_pending($campaign_id);
+		}
+
+		wp_send_json_success();
+	}
+
 	private function sanitize_campaign_status(string $status): string
 	{
 		return in_array($status, ['active', 'paused'], true) ? $status : 'paused';

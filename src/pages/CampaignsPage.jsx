@@ -19,6 +19,29 @@ import { useQuery, useMutation } from '../hooks/useApi';
 const DELETE_CONFIRM_MESSAGE =
 	'Are you sure you want to delete this Campaign and all its post tasks? This action cannot be undone.';
 
+const RSS_FREQUENCY_LABELS = {
+	15: 'Every 15 min',
+	60: 'Hourly',
+	360: 'Every 6 hours',
+	1440: 'Daily',
+};
+
+function rssSummary(campaign) {
+	if (!campaign.rss_enabled || campaign.rss_enabled !== 'yes') return null;
+	const count = campaign.rss_sources_count ?? 0;
+	const interval = campaign.rss_frequency_interval ?? 60;
+	const label = RSS_FREQUENCY_LABELS[interval] ?? `Every ${interval} min`;
+	return { count, label };
+}
+
+function RssIcon({ className = 'w-4 h-4' }) {
+	return (
+		<svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+			<path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z" />
+		</svg>
+	);
+}
+
 export default function CampaignsPage() {
 	const navigate = useNavigate();
 	const [deletedIds, setDeletedIds] = useState([]);
@@ -32,10 +55,17 @@ export default function CampaignsPage() {
 	const { mutate: deleteCampaign } = useMutation(campaigns.delete, {
 		onSuccess: refreshBootstrap,
 	});
+	const { mutate: updateStatus } = useMutation(campaigns.updateStatus, {
+		onSuccess: () => {
+			refetch();
+			refreshBootstrap();
+		},
+	});
 	const { mutate: importCampaign, loading: importing } = useMutation(campaigns.import, {
 		onSuccess: refreshBootstrap,
 	});
 	const { mutate: exportCampaign } = useMutation(campaigns.export);
+	const [togglingStatusIds, setTogglingStatusIds] = useState([]);
 
 	const postTypes = getPostTypes();
 
@@ -96,6 +126,19 @@ export default function CampaignsPage() {
 		}
 	};
 
+	const handleLiveToggle = async (campaign) => {
+		const currentStatus = campaign.status ?? 'paused';
+		const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+		setTogglingStatusIds((prev) => [...prev, campaign.id]);
+		try {
+			await updateStatus(campaign.id, newStatus);
+		} catch (err) {
+			console.error('Failed to update campaign status:', err);
+		} finally {
+			setTogglingStatusIds((prev) => prev.filter((id) => id !== campaign.id));
+		}
+	};
+
 	if (loading) return <PageLoader />;
 
 	const campaignsList = (data?.campaigns || []).filter((c) => !deletedIds.includes(c.id));
@@ -147,16 +190,20 @@ export default function CampaignsPage() {
 							<TableHeader>Post Type</TableHeader>
 							<TableHeader>Blocks</TableHeader>
 							<TableHeader>Created</TableHeader>
-							<TableHeader className="w-32">Actions</TableHeader>
+							<TableHeader className="w-20 text-center">Live</TableHeader>
+							<TableHeader>RSS</TableHeader>
+							<TableHeader className="w-24">Actions</TableHeader>
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{campaignsList.map((campaign) => (
+						{campaignsList.map((campaign) => {
+							const rss = rssSummary(campaign);
+							return (
 							<TableRow key={campaign.id}>
 								<TableCell>
 									<button
 										onClick={() => navigate(`/campaigns/${campaign.id}`)}
-										className="font-medium text-indigo-600 hover:text-indigo-900"
+										className="font-semibold text-indigo-600 hover:text-indigo-900"
 									>
 										{campaign.title || `Campaign #${campaign.id}`}
 									</button>
@@ -175,36 +222,79 @@ export default function CampaignsPage() {
 								<TableCell>
 									{new Date(campaign.created_at).toLocaleDateString()}
 								</TableCell>
+								<TableCell className="text-center">
+									<label
+										className="poststation-switch inline-flex items-center justify-center gap-2 cursor-pointer"
+										title={(campaign.status ?? 'paused') === 'active' ? 'Live: tasks run automatically' : 'Paused: turn on to run tasks automatically'}
+									>
+										<input
+											type="checkbox"
+											className="poststation-field-checkbox"
+											checked={(campaign.status ?? 'paused') === 'active'}
+											disabled={togglingStatusIds.includes(campaign.id)}
+											onChange={() => handleLiveToggle(campaign)}
+										/>
+										<span className="poststation-switch-track" />
+									</label>
+								</TableCell>
 								<TableCell>
-									<div className="flex items-center gap-2">
-										<Button
-											variant="ghost"
-											size="sm"
+									{rss ? (
+										<span className="inline-flex items-center gap-0.5 text-sm text-gray-700" title="RSS feed sources and check frequency">
+											<RssIcon className="w-4 h-4 text-orange-500 shrink-0" />
+											<span>{rss.count}, {rss.label}</span>
+										</span>
+									) : (
+										<span className="text-gray-400 text-sm">—</span>
+									)}
+								</TableCell>
+								<TableCell>
+									<div className="flex items-center gap-1">
+										<button
+											type="button"
+											className="poststation-icon-btn"
 											onClick={() => navigate(`/campaigns/${campaign.id}`)}
-											className="text-indigo-600 hover:text-indigo-900"
+											title="Open"
+											aria-label="Open"
 										>
-											Edit
-										</Button>
-										<Button
-											variant="ghost"
-											size="sm"
+											<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+												<path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+											</svg>
+										</button>
+										<button
+											type="button"
+											className="poststation-icon-btn"
 											onClick={() => handleExport(campaign.id)}
-											className="text-gray-600 hover:text-gray-900"
+											title="Export"
+											aria-label="Export"
 										>
-											Export
-										</Button>
-										<Button
-											variant="danger"
-											size="sm"
+											<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+												<path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+											</svg>
+										</button>
+										<button
+											type="button"
+											className="poststation-icon-btn-danger"
 											onClick={() => handleDeleteClick(campaign.id)}
-											loading={deletingIds.includes(campaign.id)}
+											disabled={deletingIds.includes(campaign.id)}
+											title="Delete"
+											aria-label="Delete"
 										>
-											Delete
-										</Button>
+											{deletingIds.includes(campaign.id) ? (
+												<svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+													<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+													<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+												</svg>
+											) : (
+												<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+													<path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+												</svg>
+											)}
+										</button>
 									</div>
 								</TableCell>
 							</TableRow>
-						))}
+							);
+						})}
 					</TableBody>
 				</Table>
 			)}

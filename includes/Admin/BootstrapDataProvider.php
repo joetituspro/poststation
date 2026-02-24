@@ -3,6 +3,7 @@
 namespace PostStation\Admin;
 
 use PostStation\Models\Campaign;
+use PostStation\Models\CampaignRss;
 use PostStation\Models\Instruction;
 use PostStation\Models\PostTask;
 use PostStation\Models\Webhook;
@@ -123,6 +124,16 @@ class BootstrapDataProvider
 				'failed' => $counts['failed'],
 			];
 			$campaign['tasks_total'] = $counts['total'];
+
+			if (!empty($campaign['rss_enabled']) && $campaign['rss_enabled'] === 'yes') {
+				$rss = CampaignRss::get_by_campaign($cid);
+				$sources = $rss['sources'] ?? [];
+				$campaign['rss_sources_count'] = is_array($sources) ? count($sources) : 0;
+				$campaign['rss_frequency_interval'] = isset($rss['frequency_interval']) ? (int) $rss['frequency_interval'] : 60;
+			} else {
+				$campaign['rss_sources_count'] = 0;
+				$campaign['rss_frequency_interval'] = null;
+			}
 		}
 		return $campaigns;
 	}

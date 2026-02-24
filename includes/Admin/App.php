@@ -37,6 +37,7 @@ class App
 		add_action('wp_ajax_poststation_get_campaign', [$this->campaign_handler, 'get_campaign']);
 		add_action('wp_ajax_poststation_create_campaign', [$this->campaign_handler, 'create_campaign']);
 		add_action('wp_ajax_poststation_update_campaign', [$this->campaign_handler, 'update_campaign']);
+		add_action('wp_ajax_poststation_update_campaign_status', [$this->campaign_handler, 'update_campaign_status']);
 		add_action('wp_ajax_poststation_delete_campaign', [$this->campaign_handler, 'delete_campaign']);
 		add_action('wp_ajax_poststation_run_campaign', [$this->campaign_handler, 'run_campaign']);
 		add_action('wp_ajax_poststation_stop_campaign_run', [$this->campaign_handler, 'stop_campaign_run']);
@@ -58,6 +59,7 @@ class App
 
 		add_action('wp_ajax_poststation_get_settings', [$this->settings_handler, 'get_settings']);
 		add_action('wp_ajax_poststation_save_api_key', [$this->settings_handler, 'save_api_key']);
+		add_action('wp_ajax_poststation_regenerate_api_key', [$this->settings_handler, 'regenerate_api_key']);
 		add_action('wp_ajax_poststation_save_openrouter_api_key', [$this->settings_handler, 'save_openrouter_api_key']);
 		add_action('wp_ajax_poststation_save_openrouter_defaults', [$this->settings_handler, 'save_openrouter_defaults']);
 		add_action('wp_ajax_poststation_get_openrouter_models', [$this->settings_handler, 'get_openrouter_models']);

@@ -111,6 +111,7 @@ export const campaigns = {
 	getById: (id) => ajax('poststation_get_campaign', { id }),
 	create: (title = 'New Campaign') => ajax('poststation_create_campaign', { title }),
 	update: (id, data) => ajax('poststation_update_campaign', { id, ...data }),
+	updateStatus: (id, status) => ajax('poststation_update_campaign_status', { id, status }),
 	delete: (id) => ajax('poststation_delete_campaign', { id }),
 	run: (id, taskId, webhookId) => ajax('poststation_run_campaign', { id, task_id: taskId, webhook_id: webhookId }),
 	stopRun: (id) => ajax('poststation_stop_campaign_run', { id }),
@@ -197,7 +198,7 @@ export const instructions = {
 // Settings API
 export const settings = {
 	get: () => ajax('poststation_get_settings'),
-	saveApiKey: (apiKey) => ajax('poststation_save_api_key', { api_key: apiKey }),
+	regenerateApiKey: () => ajax('poststation_regenerate_api_key'),
 	saveOpenRouterApiKey: (apiKey) => ajax('poststation_save_openrouter_api_key', { api_key: apiKey }),
 	saveOpenRouterDefaults: (defaultTextModel, defaultImageModel) =>
 		ajax('poststation_save_openrouter_defaults', {

@@ -108,7 +108,7 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 	};
 
 	return (
-		<div className={`space-y-4 ${isProcessing ? 'opacity-75' : ''}`}>
+		<div className={`space-y-3 ${isProcessing ? 'opacity-75' : ''}`}>
 			{/* Campaign Type Selector */}
 			<div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-3">
 				<Select
@@ -119,6 +119,7 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 					onChange={(e) => handleChange('campaign_type', e.target.value)}
 					className="min-w-0"
 					disabled={isProcessing}
+					variant="floating"
 				/>
 				{resolvedCampaignType !== 'rewrite_blog_post' ? (
 					<Input
@@ -126,9 +127,9 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 						tooltip="Topic or keyword you want to write about."
 						value={task.topic ?? ''}
 						onChange={(e) => handleTopicChange(e.target.value)}
-						placeholder="e.g. best coffee shops in london"
 						required
 						disabled={isProcessing}
+						variant="floating"
 					/>
 				) : (
 					<Input
@@ -136,9 +137,9 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 						tooltip="Source URL for rewrite mode. Content is based on this article."
 						value={task.research_url || ''}
 						onChange={(e) => handleChange('research_url', e.target.value)}
-						placeholder="https://example.com/article"
 						required
 						disabled={isProcessing}
+						variant="floating"
 					/>
 				)}
 			</div>
@@ -146,10 +147,11 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 			<Input
 				label="Keywords"
 				tooltip="Comma-separated keywords for this task (e.g. for generation or SEO)."
+				placeholder="e.g. coffee, london, guide"
 				value={task.keywords ?? ''}
 				onChange={(e) => handleChange('keywords', e.target.value)}
-				placeholder="e.g. coffee, london, guide"
 				disabled={isProcessing}
+				variant="floating"
 			/>
 
 			{/* Title + Slug Overrides */}
@@ -159,16 +161,16 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 					tooltip="If set, campaign title generation is disabled for this task and this value is sent to the webhook."
 					value={task.title_override ?? ''}
 					onChange={(e) => handleChange('title_override', e.target.value)}
-					placeholder="Manual title for this post task"
 					disabled={isProcessing}
+					variant="floating"
 				/>
 				<Input
 					label="Slug Override (Optional)"
 					tooltip="If set, campaign slug generation is disabled for this task and this value is sent to the webhook."
 					value={task.slug_override ?? ''}
 					onChange={(e) => handleChange('slug_override', e.target.value)}
-					placeholder="manual-post-slug"
 					disabled={isProcessing}
+					variant="floating"
 				/>
 			</div>
 
@@ -180,8 +182,8 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 						tooltip="Overrides the title used when generating the featured image."
 						value={task.feature_image_title || ''}
 						onChange={(e) => handleChange('feature_image_title', e.target.value)}
-						placeholder="Leave empty to use generated title"
 						disabled={isProcessing}
+						variant="floating"
 					/>
 				)}
 				<div>

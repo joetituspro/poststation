@@ -56,7 +56,7 @@ app.post("/webhook", async (req, res) => {
     const response = await axiosInstance.post(callback_url, processedContent, {
       headers: {
         "Content-Type": "application/json",
-        "X-API-Key": api_key,
+        "Authorization": `Bearer ${api_key}`,
       },
     });
 

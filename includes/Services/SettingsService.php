@@ -30,6 +30,14 @@ class SettingsService
 		update_option('poststation_api_key', sanitize_text_field($api_key));
 	}
 
+	/** Generate a new API key, save it, and return the new key. */
+	public function regenerate_api_key(): string
+	{
+		$new_key = wp_generate_password(32, false);
+		$this->save_api_key($new_key);
+		return $new_key;
+	}
+
 	public function save_openrouter_api_key(string $api_key): bool
 	{
 		return $this->openrouter_service->save_api_key(sanitize_text_field($api_key));

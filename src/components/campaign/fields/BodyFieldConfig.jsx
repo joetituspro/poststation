@@ -165,15 +165,6 @@ export default function BodyFieldConfig({ config, onChange, campaignType }) {
 							<span>Use Descending Order</span>
 							<Tooltip content="If enabled, list items will be ordered from highest to lowest." />
 						</label>
-
-						<Textarea
-							label="List Section Instruction"
-							tooltip="Instruction applied to each list item/section."
-							value={config.list_section_prompt || ''}
-							onChange={(e) => handleChange('list_section_prompt', e.target.value)}
-							placeholder="Add guidance for each list item section"
-							rows={2}
-						/>
 					</div>
 				)}
 

@@ -39,6 +39,19 @@ class SettingsAjaxHandler
 		wp_send_json_success(['message' => 'API key saved']);
 	}
 
+	public function regenerate_api_key(): void
+	{
+		if (!NonceVerifier::verify()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$new_key = $this->settings_service->regenerate_api_key();
+		wp_send_json_success(['api_key' => $new_key]);
+	}
+
 	public function save_openrouter_api_key(): void
 	{
 		if (!NonceVerifier::verify()) {
