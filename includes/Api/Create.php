@@ -719,11 +719,73 @@ class Create
 			throw new Exception('Random publish range does not contain a valid future date/time.');
 		}
 
-		$selected_ts = random_int($start_ts, $to_ts);
+		$selected_datetime = $this->resolve_sequential_random_publication_datetime($task, $from_raw, $to_raw);
 		return [
 			'post_status' => 'future',
-			'post_date' => wp_date('Y-m-d H:i:s', $selected_ts),
+			'post_date' => $selected_datetime,
 		];
+	}
+
+	private function resolve_sequential_random_publication_datetime(array $task, string $from_date, string $to_date): string
+	{
+		$campaign_id = (int) ($task['campaign_id'] ?? 0);
+		$current_task_id = (int) ($task['id'] ?? 0);
+		if ($campaign_id <= 0) {
+			throw new Exception('Invalid campaign for random publication sequencing.');
+		}
+
+		$from_ts = strtotime($from_date . ' 00:00:00');
+		$to_ts = strtotime($to_date . ' 00:00:00');
+		if (!$from_ts || !$to_ts || $to_ts < $from_ts) {
+			throw new Exception('Invalid random publish date range.');
+		}
+
+		$total_days = (int) floor(($to_ts - $from_ts) / DAY_IN_SECONDS) + 1;
+		$completed_count = $this->count_completed_random_tasks_in_range(
+			$campaign_id,
+			$current_task_id,
+			$from_date,
+			$to_date
+		);
+
+		$day_offset = $completed_count % $total_days;
+		$selected_date_ts = strtotime('+' . $day_offset . ' days', $from_ts);
+		$selected_date = wp_date('Y-m-d', $selected_date_ts);
+
+		// Use a stable daytime schedule by default; if selected day is today and time already passed,
+		// push to a near-future time to keep it scheduled.
+		$selected_ts = strtotime($selected_date . ' 09:00:00');
+		$now_ts = current_time('timestamp');
+		$today = wp_date('Y-m-d', $now_ts);
+		if ($selected_date === $today && $selected_ts <= $now_ts) {
+			$selected_ts = $now_ts + 120;
+		}
+
+		return wp_date('Y-m-d H:i:s', $selected_ts);
+	}
+
+	private function count_completed_random_tasks_in_range(int $campaign_id, int $current_task_id, string $from_date, string $to_date): int
+	{
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . PostTask::get_table_name();
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table_name}
+				WHERE campaign_id = %d
+				AND id <> %d
+				AND status = 'completed'
+				AND publication_mode = 'publish_randomly'
+				AND scheduled_publication_date IS NOT NULL
+				AND DATE(scheduled_publication_date) BETWEEN %s AND %s",
+				$campaign_id,
+				$current_task_id,
+				$from_date,
+				$to_date
+			)
+		);
+
+		return max(0, (int) $count);
 	}
 
 	private function sanitize_publication_mode($mode): string

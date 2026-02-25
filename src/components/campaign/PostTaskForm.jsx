@@ -248,11 +248,11 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 							disabled={isProcessing}
 							variant="floating"
 						/>
-						<p className="md:col-span-2 text-xs text-gray-500">
-							Post will randomly select a publish date within the set range.
-						</p>
-					</div>
-				)}
+					<p className="md:col-span-2 text-xs text-gray-500">
+						Tasks are scheduled one per day across the selected range, then cycle back to the start date.
+					</p>
+				</div>
+			)}
 			</div>
 
 			{/* Featured Image Override */}

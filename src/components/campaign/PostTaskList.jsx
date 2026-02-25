@@ -179,7 +179,13 @@ function TaskItem({
 		if (!value) return '';
 		const date = new Date(String(value).replace(' ', 'T'));
 		if (Number.isNaN(date.getTime())) return String(value);
-		return date.toLocaleString();
+		return date.toLocaleString([], {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit',
+		});
 	};
 
 	const adminUrl = getAdminUrl();
@@ -221,7 +227,7 @@ function TaskItem({
 						</svg>
 					</button>
 
-					<div className="flex flex-col min-w-0 flex-1">
+					<div className="flex flex-col min-w-0 flex-1 space-y-0.5">
 						<div className="text-[10px] font-medium text-gray-400 shrink-0">
 							#{task.id}
 							<span className="mx-2 text-gray-600 font-medium">·</span>
@@ -400,4 +406,3 @@ function TaskItem({
 		</div>
 	);
 }
-
