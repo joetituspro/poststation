@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostTask
 {
-	public const DB_VERSION = '3.9';
+	public const DB_VERSION = '4.0';
 	protected const TABLE_NAME = 'poststation_posttasks';
 
 	public static function get_table_name(): string
@@ -77,6 +77,21 @@ class PostTask
 	}
 
 	/**
+	 * Whether a task has the minimum required data for webhook dispatch.
+	 * Rewrite type needs research_url; other types need topic.
+	 *
+	 * @param array<string, mixed> $task
+	 */
+	public static function has_required_data_for_dispatch(array $task): bool
+	{
+		$task_type = $task['campaign_type'] ?? 'default';
+		if ($task_type === 'rewrite_blog_post') {
+			return trim((string) ($task['research_url'] ?? '')) !== '';
+		}
+		return trim((string) ($task['topic'] ?? '')) !== '';
+	}
+
+	/**
 	 * Get task counts per campaign in a single query (avoids N+1).
 	 *
 	 * @return array<int, array{pending: int, processing: int, completed: int, failed: int, total: int}>
@@ -114,20 +129,42 @@ class PostTask
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		return $wpdb->get_results(
+		$tasks = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM {$table_name} WHERE campaign_id = %d ORDER BY FIELD(status, 'processing', 'pending', 'failed', 'completed') ASC, created_at DESC",
 				$campaign_id
 			),
 			ARRAY_A
 		);
+		return self::enrich_with_post_titles($tasks);
+	}
+
+	/**
+	 * Add post_title to each task that has a post_id (from WordPress post).
+	 *
+	 * @param array<int, array<string, mixed>> $tasks
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function enrich_with_post_titles(array $tasks): array
+	{
+		foreach ($tasks as &$task) {
+			$task['post_title'] = null;
+			$post_id = isset($task['post_id']) ? (int) $task['post_id'] : 0;
+			if ($post_id > 0) {
+				$post = get_post($post_id);
+				$task['post_title'] = $post ? $post->post_title : null;
+			}
+		}
+		unset($task);
+		return $tasks;
 	}
 
 	public static function get_by_id(int $id): ?array
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $id), ARRAY_A);
+		$task = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $id), ARRAY_A);
+		return $task ? self::enrich_with_post_titles([$task])[0] : null;
 	}
 
 	/**
@@ -189,10 +226,26 @@ class PostTask
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
 	}
 
+	/** Columns that may be updated (excludes id and virtual/response-only fields like post_title). */
+	protected static function get_update_columns(): array
+	{
+		return [
+			'campaign_id', 'article_url', 'research_url', 'topic', 'keywords',
+			'campaign_type', 'title_override', 'slug_override', 'feature_image_id', 'feature_image_title',
+			'run_started_at', 'status', 'progress', 'post_id', 'error_message', 'execution_id',
+			'created_at', 'updated_at',
+		];
+	}
+
 	public static function update(int $id, array $data): bool
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		$allowed = array_fill_keys(self::get_update_columns(), true);
+		$data = array_intersect_key($data, $allowed);
+		if (empty($data)) {
+			return true;
+		}
 		return (bool) $wpdb->update($table_name, $data, ['id' => $id]);
 	}
 

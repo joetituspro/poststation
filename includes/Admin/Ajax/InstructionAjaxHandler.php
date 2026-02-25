@@ -6,6 +6,8 @@ use PostStation\Models\Instruction;
 
 class InstructionAjaxHandler
 {
+	private const DESCRIPTION_MAX_LENGTH = 80;
+
 	public function create_instruction(): void
 	{
 		if (!NonceVerifier::verify()) {
@@ -17,7 +19,7 @@ class InstructionAjaxHandler
 
 		$key = sanitize_key((string) ($_POST['key'] ?? ''));
 		$name = sanitize_text_field((string) ($_POST['name'] ?? ''));
-		$description = sanitize_textarea_field((string) ($_POST['description'] ?? ''));
+		$description = $this->normalize_description((string) ($_POST['description'] ?? ''));
 		$instructions = json_decode(stripslashes((string) ($_POST['instructions'] ?? '{}')), true);
 		if (!is_array($instructions)) {
 			$instructions = ['title' => '', 'body' => ''];
@@ -60,7 +62,7 @@ class InstructionAjaxHandler
 			wp_send_json_error(['message' => 'Instruction not found']);
 		}
 
-		$description = sanitize_textarea_field((string) ($_POST['description'] ?? ''));
+		$description = $this->normalize_description((string) ($_POST['description'] ?? ''));
 		$instructions = json_decode(stripslashes((string) ($_POST['instructions'] ?? '{}')), true);
 		if (!is_array($instructions)) {
 			$instructions = ['title' => '', 'body' => ''];
@@ -103,7 +105,7 @@ class InstructionAjaxHandler
 		$new_id = Instruction::create([
 			'key' => $new_key,
 			'name' => $new_name,
-			'description' => $source['description'] ?? '',
+			'description' => $this->normalize_description((string) ($source['description'] ?? '')),
 			'instructions' => $source['instructions'] ?? ['title' => '', 'body' => ''],
 		]);
 		if ($new_id) {
@@ -152,5 +154,14 @@ class InstructionAjaxHandler
 			wp_send_json_success(['message' => 'Instruction deleted']);
 		}
 		wp_send_json_error(['message' => 'Cannot delete default presets (Listicle, News, Guide, How-to)']);
+	}
+
+	private function normalize_description(string $description): string
+	{
+		$description = sanitize_textarea_field($description);
+		if (function_exists('mb_substr')) {
+			return (string) mb_substr($description, 0, self::DESCRIPTION_MAX_LENGTH);
+		}
+		return substr($description, 0, self::DESCRIPTION_MAX_LENGTH);
 	}
 }

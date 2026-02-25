@@ -1020,6 +1020,7 @@ export default function CampaignEditPage() {
 							)}
 							{/* Content Fields inside same section */}
 							<div className="border-t border-gray-200 pt-6">
+								<div className="mb-4">
 								<RichSelect
 									label="Instruction set"
 									tooltip="Optional preset instructions for title, body, and section generation."
@@ -1043,7 +1044,7 @@ export default function CampaignEditPage() {
 									onChange={(id) => handleCampaignChange({ ...campaign, instruction_id: id ?? null })}
 									placeholder="None"
 								/>
-								<h4 className="text-lg font-medium text-gray-900 mt-6">Content Fields</h4>
+								</div>
 								<ContentFieldsEditor
 									campaign={campaign}
 									onChange={handleCampaignChange}

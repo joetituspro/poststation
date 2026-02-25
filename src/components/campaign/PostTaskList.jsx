@@ -183,7 +183,7 @@ function TaskItem({
 	const primaryLabel = isRewrite
 		? (researchUrl || '').replace(/^https?:\/\//i, '')
 		: (topicValue || 'No Topic');
-	const showSubRow = isPublished ? (task.title_override || topicValue || 'Post') : false;
+	const showSubRow = isPublished ? (task.post_title || task.title_override || topicValue || 'Post') : false;
 	const campaignTypeLabel = {
 		default: 'Default',
 		listicle: 'Listicle',

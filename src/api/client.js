@@ -236,6 +236,6 @@ export const openrouter = {
 };
 
 export const ai = {
-	generateInstructionPreset: ({ prompt, provider = 'openrouter' }) =>
-		ajax('poststation_generate_instruction_preset', { prompt, provider }),
+	generateInstructionPreset: ({ prompt, provider = 'openrouter', model = '' }) =>
+		ajax('poststation_generate_instruction_preset', { prompt, provider, model }),
 };

@@ -24,11 +24,14 @@ class AiAjaxHandler
 
 		$provider = sanitize_key((string) ($_POST['provider'] ?? 'openrouter'));
 		$prompt = sanitize_textarea_field((string) ($_POST['prompt'] ?? ''));
+		$model = sanitize_text_field((string) ($_POST['model'] ?? ''));
 		if (trim($prompt) === '') {
 			wp_send_json_error(['message' => 'Prompt is required']);
 		}
 
-		$result = $this->ai_service->generate_instruction_preset($prompt, $provider);
+		$result = $this->ai_service->generate_instruction_preset($prompt, $provider, [
+			'model' => $model,
+		]);
 		if (is_wp_error($result)) {
 			wp_send_json_error(['message' => $result->get_error_message()]);
 		}
@@ -39,4 +42,3 @@ class AiAjaxHandler
 		]);
 	}
 }
-

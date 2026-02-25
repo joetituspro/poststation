@@ -14,8 +14,8 @@ interface AiProviderInterface
 	 *
 	 * @param string $brief   User prompt.
 	 * @param array  $context Optional context (for example article URL/content).
+	 * @param array  $options Provider options (for example model override).
 	 * @return array|\WP_Error
 	 */
-	public function generate_instruction_preset(string $brief, array $context = []);
+	public function generate_instruction_preset(string $brief, array $context = [], array $options = []);
 }
-

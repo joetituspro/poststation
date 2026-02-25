@@ -140,7 +140,7 @@ class BackgroundRunner
 			if (($task['status'] ?? '') !== 'pending') {
 				continue;
 			}
-			if (!$this->task_has_required_data($task)) {
+			if (!PostTask::has_required_data_for_dispatch($task)) {
 				continue;
 			}
 			$attempts++;
@@ -158,23 +158,11 @@ class BackgroundRunner
 			if (($task['status'] ?? '') !== 'pending') {
 				continue;
 			}
-			if ($this->task_has_required_data($task)) {
+			if (PostTask::has_required_data_for_dispatch($task)) {
 				return $task;
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Whether a task has the minimum required field data for dispatch (rewrite needs research_url, others need topic).
-	 */
-	private function task_has_required_data(array $task): bool
-	{
-		$task_type = $task['campaign_type'] ?? 'default';
-		if ($task_type === 'rewrite_blog_post') {
-			return trim((string) ($task['research_url'] ?? '')) !== '';
-		}
-		return trim((string) ($task['topic'] ?? '')) !== '';
 	}
 
 	private function has_processing_task(int $campaign_id): bool

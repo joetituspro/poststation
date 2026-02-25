@@ -24,6 +24,12 @@ class TaskRunner
 			return ['success' => false, 'message' => __('Post task not found.', 'poststation')];
 		}
 
+		if (!PostTask::has_required_data_for_dispatch($task)) {
+			$task_type = $task['campaign_type'] ?? 'default';
+			$required = $task_type === 'rewrite_blog_post' ? __('research URL', 'poststation') : __('topic', 'poststation');
+			return ['success' => false, 'message' => sprintf(__('Task cannot be sent: %s is required.', 'poststation'), $required)];
+		}
+
 		$webhook = Webhook::get_by_id($webhook_id);
 		if (!$webhook) {
 			return ['success' => false, 'message' => __('Webhook not found.', 'poststation')];

@@ -254,25 +254,27 @@ export default function SettingsPage() {
 							<p className="text-sm text-gray-400">No instruction presets. Add one to get started.</p>
 							</div>
 						) : (
-							<div className="flex flex-col gap-1.5">
+							<div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
 							{instructionsList.map((inst) => (
 								<div
 								key={inst.id}
 								className="group flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-all hover:border-gray-300 hover:bg-gray-50"
 								>
 								{/* Info */}
-								<div className="min-w-0 flex-1 flex items-center gap-2">
-									<span className="font-medium text-sm text-gray-900 truncate">
-									{inst.name}
-									</span>
-									{inst.key && (
-									<span className="shrink-0 inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-500">
-										{inst.key}
-									</span>
-									)}
+								<div className="min-w-0 flex-1 flex flex-col gap-0.5">
+									<div className="flex items-center gap-2">
+										<span className="font-medium text-sm text-gray-900 truncate">
+										{inst.name}
+										</span>
+										{inst.key && (
+										<span className="shrink-0 inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-500">
+											{inst.key}
+										</span>
+										)}
+									</div>
 									{inst.description && (
 									<span className="text-xs text-gray-400 truncate">
-										— {inst.description}
+										{inst.description}
 									</span>
 									)}
 								</div>

@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Button, Input, Textarea, Modal } from '../common';
-import { ai, instructions, refreshBootstrap } from '../../api/client';
+import { Button, Input, ModelSelect, Textarea, Modal } from '../common';
+import { ai, getBootstrapSettings, instructions, refreshBootstrap } from '../../api/client';
 
 const DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
+const DESCRIPTION_MAX_LENGTH = 80;
 const isDefaultPreset = (key) => key && DEFAULT_KEYS.includes(key);
+const KEY_FORMAT = /^[a-z0-9_-]+$/;
+
+const normalizeKey = (value = '') =>
+	String(value)
+		.toLowerCase()
+		.replace(/[^a-z0-9_\s-]/g, '')
+		.replace(/\s+/g, '_')
+		.replace(/-+/g, '-')
+		.replace(/_+/g, '_');
+
+const limitDescription = (value = '') =>
+	String(value ?? '').slice(0, DESCRIPTION_MAX_LENGTH);
 
 export default function InstructionModal({
 	isOpen,
@@ -12,6 +25,8 @@ export default function InstructionModal({
 	instruction = null,
 	onSaved,
 }) {
+	const bootstrapSettings = getBootstrapSettings() || {};
+	const defaultAiModel = bootstrapSettings?.openrouter_default_text_model || '';
 	const [key, setKey] = useState('');
 	const [name, setName] = useState('');
 	const [description, setDescription] = useState('');
@@ -21,6 +36,7 @@ export default function InstructionModal({
 	const [resetting, setResetting] = useState(false);
 	const [aiOpen, setAiOpen] = useState(false);
 	const [aiPrompt, setAiPrompt] = useState('');
+	const [aiModel, setAiModel] = useState(defaultAiModel);
 	const [aiGenerating, setAiGenerating] = useState(false);
 	const [error, setError] = useState('');
 
@@ -37,6 +53,7 @@ export default function InstructionModal({
 			setTitleInstruction('');
 			setBodyInstruction('');
 			setAiPrompt('');
+			setAiModel(defaultAiModel);
 			setAiOpen(false);
 			return;
 		}
@@ -45,13 +62,14 @@ export default function InstructionModal({
 			const instr = inst.instructions || {};
 			setKey(mode === 'duplicate' ? '' : (inst.key ?? ''));
 			setName(mode === 'duplicate' ? '' : (inst.name ?? ''));
-			setDescription(inst.description ?? '');
+			setDescription(limitDescription(inst.description ?? ''));
 			setTitleInstruction(instr.title ?? '');
 			setBodyInstruction(instr.body ?? '');
 			setAiPrompt('');
+			setAiModel(defaultAiModel);
 			setAiOpen(false);
 		}
-	}, [isOpen, mode, instruction]);
+	}, [isOpen, mode, instruction, defaultAiModel]);
 
 	const handleAiGenerate = async () => {
 		setError('');
@@ -65,12 +83,13 @@ export default function InstructionModal({
 			const result = await ai.generateInstructionPreset({
 				prompt: String(aiPrompt ?? '').trim(),
 				provider: 'openrouter',
+				model: String(aiModel ?? '').trim(),
 			});
 			const preset = result?.preset || {};
 			const generatedInstructions = preset?.instructions || {};
-			setKey(preset?.key ?? '');
+			setKey(normalizeKey(preset?.key ?? ''));
 			setName(preset?.name ?? '');
-			setDescription(preset?.description ?? '');
+			setDescription(limitDescription(preset?.description ?? ''));
 			setTitleInstruction(generatedInstructions?.title ?? '');
 			setBodyInstruction(generatedInstructions?.body ?? '');
 		} catch (err) {
@@ -83,14 +102,18 @@ export default function InstructionModal({
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
-		const keyTrim = String(key ?? '').trim().toLowerCase().replace(/\s+/g, '_');
+		const keyTrim = normalizeKey(String(key ?? '').trim());
 		const nameTrim = String(name ?? '').trim();
 		if (!keyTrim || !nameTrim) {
 			setError('Key and name are required.');
 			return;
 		}
+		if (!KEY_FORMAT.test(keyTrim)) {
+			setError('Key must use lowercase letters, numbers, underscores, and hyphens only.');
+			return;
+		}
 		const payload = {
-			description: String(description ?? '').trim(),
+			description: limitDescription(String(description ?? '').trim()),
 			instructions: {
 				title: String(titleInstruction ?? '').trim(),
 				body: String(bodyInstruction ?? '').trim(),
@@ -148,6 +171,7 @@ export default function InstructionModal({
 				: 'Edit instruction preset';
 
 	const showAiTools = mode === 'add';
+	const keyHasInvalidFormat = !!key && !KEY_FORMAT.test(key);
 	const modalTitle = (
 		<span className="inline-flex items-center gap-2">
 			<span>{title}</span>
@@ -176,6 +200,15 @@ export default function InstructionModal({
 				)}
 				{showAiTools && aiOpen && (
 					<div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 space-y-3">
+						<ModelSelect
+							label="AI model"
+							tooltip="OpenRouter text model used to generate the instruction preset."
+							value={aiModel}
+							onChange={(e) => setAiModel(e.target.value)}
+							filter="text"
+							placeholder="Use default model"
+							disabled={aiGenerating || saving || resetting}
+						/>
 						<Textarea
 							label="Describe the preset you want"
 							value={aiPrompt}
@@ -212,9 +245,10 @@ export default function InstructionModal({
 							<Input
 								label="Key"
 								value={key}
-								onChange={(e) => setKey(e.target.value)}
+								onChange={(e) => setKey(normalizeKey(e.target.value))}
 								placeholder="e.g. my_preset"
 								disabled={lockKeyAndName || aiGenerating}
+								error={keyHasInvalidFormat ? 'Use lowercase letters, numbers, underscores, and hyphens only.' : ''}
 								required
 							/>
 							<Input
@@ -226,16 +260,26 @@ export default function InstructionModal({
 								required
 							/>
 						</div>
-						<Textarea
-							label="Description"
-							value={description}
-							onChange={(e) => setDescription(e.target.value)}
-							placeholder="Short description for the preset"
-							rows={2}
-							disabled={aiGenerating}
-						/>
+						<div>
+							<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+								<span>Description</span>
+							</label>
+							<div className="relative">
+								<textarea
+									value={description}
+									onChange={(e) => setDescription(limitDescription(e.target.value))}
+									placeholder="Short description for the preset"
+									rows={2}
+									maxLength={DESCRIPTION_MAX_LENGTH}
+									disabled={aiGenerating}
+									className="poststation-field pr-16 pb-6"
+								/>
+								<span className="pointer-events-none absolute bottom-2 right-3 text-xs text-gray-500">
+									{description.length}/{DESCRIPTION_MAX_LENGTH}
+								</span>
+							</div>
+						</div>
 						<div className="border-t border-gray-200 pt-4 space-y-4">
-							<h4 className="text-sm font-medium text-gray-900">Instructions</h4>
 							<Textarea
 								label="Title instruction"
 								value={titleInstruction}
@@ -271,7 +315,7 @@ export default function InstructionModal({
 					<Button type="button" variant="secondary" onClick={onClose} disabled={saving || aiGenerating}>
 						Cancel
 					</Button>
-					<Button type="submit" loading={saving} disabled={aiGenerating}>
+					<Button type="submit" loading={saving} disabled={aiGenerating || keyHasInvalidFormat}>
 						{mode === 'add' || mode === 'duplicate' ? 'Create' : 'Save'}
 					</Button>
 				</div>
