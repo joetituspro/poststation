@@ -137,9 +137,9 @@ export default function RichSelect({
 	return (
 		<div className={`w-full ${className}`.trim()} ref={containerRef}>
 			{(label || labelAction) && (
-				<div className="flex items-center justify-between gap-2">
+				<div className="flex items-end justify-between gap-2 mb-1">
 					{label && (
-						<label className="flex items-center text-sm font-medium text-gray-700">
+						<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
 							<span>{label}</span>
 							{tooltip && <Tooltip content={tooltip} />}
 						</label>

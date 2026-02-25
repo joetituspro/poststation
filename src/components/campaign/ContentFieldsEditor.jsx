@@ -264,7 +264,7 @@ export default function ContentFieldsEditor({ campaign, onChange, taxonomies: ta
 
 	return (
 		<div className="space-y-4 mt-4">
-			<h4 className="text-lg font-medium text-gray-900 mb-2">Content Fields</h4>
+			<h4 className="text-lg font-medium text-gray-900 mb-3">Content Fields</h4>
 			{/* Add Field Controls */}
 			<div className="flex flex-col sm:flex-row gap-2">
 				<Select

@@ -6415,7 +6415,7 @@ function ContentFieldsEditor(_ref) {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
     className: "space-y-4 mt-4",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("h4", {
-      className: "text-lg font-medium text-gray-900 mb-2",
+      className: "text-lg font-medium text-gray-900 mb-3",
       children: "Content Fields"
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
       className: "flex flex-col sm:flex-row gap-2",
@@ -10137,9 +10137,9 @@ function RichSelect(_ref) {
     className: "w-full ".concat(className).trim(),
     ref: containerRef,
     children: [(label || labelAction) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-      className: "flex items-center justify-between gap-2",
+      className: "flex items-end justify-between gap-2 mb-1",
       children: [label && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-        className: "flex items-center text-sm font-medium text-gray-700",
+        className: "flex items-center text-sm font-medium text-gray-700 mb-1",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
           children: label
         }), tooltip && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_Tooltip__WEBPACK_IMPORTED_MODULE_2__["default"], {
