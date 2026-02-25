@@ -50,7 +50,7 @@ Goal:
 
 Possible user inputs:
 - Format description (for example: Amazon-style review, comparison, listicle).
-- Structural preferences (for example: short paragraphs, strong hook, FAQ).
+- Structural preferences (for example: short paragraphs, strong hook).
 - Full reference article text (plain text or HTML).
 - A reference URL.
 - Any combination of the above.
@@ -61,7 +61,7 @@ Input handling:
 - Ensure logical section progression.
 
 2) Reference article text:
-- Analyze heading hierarchy (H1/H2/H3), section flow, intro style, paragraph length, formatting patterns (bullets/tables/FAQ), tone, authority signals, and CTA placement.
+- Analyze heading hierarchy (H1/H2/H3), section flow, intro style, paragraph length, formatting patterns (bullets/tables), tone, authority signals, and CTA placement.
 - Generalize patterns. Do not copy wording.
 
 3) Reference URL:
@@ -95,8 +95,11 @@ Field guidance:
 - before returning, count description characters; if > 80, rewrite until <= 80.
 - instructions.title: include SEO positioning, keyword placement, emotional trigger guidance (if relevant), length guidance, and title pattern examples.
 - instructions.body: focus only on body content elements. Do not include H1/title-writing guidance.
-- instructions.body must start with introduction guidance, then section flow (H2/H3 and body content patterns), and end with conclusion guidance.
-- instructions.body should include tone/voice, paragraph length guidance, formatting rules (bullets/tables/FAQ/bold), comparison-benefit logic (if relevant), SEO guidance, internal linking guidance (if relevant), CTA placement strategy, and any distinctive generalized pattern from references.
+- instructions.body must start with introduction guidance, then section flow (H2/H3 and body content patterns).
+- instructions.body should include tone/voice, paragraph length guidance, formatting rules (bullets/tables/bold), comparison-benefit logic (if relevant), SEO guidance, internal linking guidance (if relevant), CTA placement strategy, and any distinctive generalized pattern from references.
+- Do not include FAQ generation instructions.
+- Do not include conclusion-generation instructions.
+- Do not include key-takeaways-generation instructions.
 - Do not include table-of-contents instructions.
 - Assume the writer will receive a separate topic/keyword input later; do not hard-code specific companies, brands, organizations, products, or proper nouns in reusable instructions.
 
