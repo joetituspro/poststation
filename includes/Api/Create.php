@@ -50,12 +50,16 @@ class Create
 
 			// Update task status to completed
 			if ($task_id && $task) {
-				PostTask::update($task_id, [
+				$task_update = [
 					'status' => 'completed',
 					'post_id' => $result['post_id'],
 					'error_message' => null,
 					'progress' => null,
-				]);
+				];
+				if (!empty($result['scheduled_publication_date'])) {
+					$task_update['scheduled_publication_date'] = $result['scheduled_publication_date'];
+				}
+				PostTask::update($task_id, $task_update);
 			}
 
 			// Return standardized response
@@ -120,7 +124,10 @@ class Create
 		}
 
 		return [
-			'post_id' => $post_id
+			'post_id' => $post_id,
+			'scheduled_publication_date' => $post_data['post_status'] === 'future'
+				? ($post_data['post_date'] ?? null)
+				: null,
 		];
 	}
 
@@ -627,11 +634,16 @@ class Create
 	 */
 	private function prepare_post_data(array $data, array $task, array $campaign): array
 	{
+		$publication = $this->resolve_publication_details($task, $campaign);
 		$post_data = [
 			'post_type' => $campaign['post_type'] ?? 'post',
-			'post_status' => $campaign['post_status'] ?? 'pending',
+			'post_status' => $publication['post_status'],
 			'post_author' => $campaign['default_author_id'] ?? get_current_user_id(),
 		];
+		if (!empty($publication['post_date'])) {
+			$post_data['post_date'] = $publication['post_date'];
+			$post_data['post_date_gmt'] = get_gmt_from_date($publication['post_date']);
+		}
 
 		$title = $data['title'] ?? null;
 		$content = $data['content'] ?? null;
@@ -656,5 +668,77 @@ class Create
 		}
 
 		return $post_data;
+	}
+
+	private function resolve_publication_details(array $task, array $campaign): array
+	{
+		$mode = $this->sanitize_publication_mode(
+			$task['publication_mode']
+				?? ($campaign['publication_mode'] ?? ($campaign['post_status'] ?? 'pending'))
+		);
+
+		if ($mode === 'pending_review') {
+			return ['post_status' => 'pending', 'post_date' => null];
+		}
+		if ($mode === 'publish_instantly') {
+			return ['post_status' => 'publish', 'post_date' => null];
+		}
+
+		if ($mode === 'schedule_date') {
+			$date_value = $task['publication_date'] ?? null;
+			$date_ts = strtotime((string) $date_value);
+			$now_ts = current_time('timestamp');
+			if (!$date_ts || $date_ts < $now_ts) {
+				throw new Exception('Publication Date cannot be in the past.');
+			}
+			return [
+				'post_status' => 'future',
+				'post_date' => wp_date('Y-m-d H:i:s', $date_ts),
+			];
+		}
+
+		$from_raw = trim((string) ($task['publication_random_from'] ?? ''));
+		$to_raw = trim((string) ($task['publication_random_to'] ?? ''));
+		if ($from_raw === '' || $to_raw === '') {
+			throw new Exception('Random publish range is required when Publication is Publish Randomly.');
+		}
+
+		$today = wp_date('Y-m-d', current_time('timestamp'));
+		if ($from_raw < $today) {
+			throw new Exception('Random publish start date cannot be in the past.');
+		}
+		if ($to_raw < $from_raw) {
+			throw new Exception('Random publish end date must be on or after the start date.');
+		}
+
+		$from_ts = strtotime($from_raw . ' 00:00:00');
+		$to_ts = strtotime($to_raw . ' 23:59:59');
+		$now_ts = current_time('timestamp');
+		$start_ts = max($from_ts, $now_ts);
+		if (!$from_ts || !$to_ts || $start_ts > $to_ts) {
+			throw new Exception('Random publish range does not contain a valid future date/time.');
+		}
+
+		$selected_ts = random_int($start_ts, $to_ts);
+		return [
+			'post_status' => 'future',
+			'post_date' => wp_date('Y-m-d H:i:s', $selected_ts),
+		];
+	}
+
+	private function sanitize_publication_mode($mode): string
+	{
+		$raw = sanitize_text_field((string) ($mode ?? 'pending_review'));
+		if ($raw === 'pending') {
+			$raw = 'pending_review';
+		}
+		if ($raw === 'publish') {
+			$raw = 'publish_instantly';
+		}
+		if ($raw === 'future') {
+			$raw = 'schedule_date';
+		}
+		$allowed = ['pending_review', 'publish_instantly', 'schedule_date', 'publish_randomly'];
+		return in_array($raw, $allowed, true) ? $raw : 'pending_review';
 	}
 }

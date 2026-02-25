@@ -18,8 +18,22 @@ import RssResultsModal from '../components/campaign/RssResultsModal';
 import { campaigns, postTasks, webhooks, generateTaskId, getTaxonomies, getPendingProcessingPostTasks, getBootstrapWebhooks, getBootstrapInstructions } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useUnsavedChanges } from '../context/UnsavedChangesContext';
+import {
+	getTodayDateValue,
+	normalizeCampaignPublication,
+	normalizeTaskPublication,
+} from '../utils/publication';
 
 const isBlank = (value) => String(value ?? '').trim() === '';
+const isPastDateTime = (value) => {
+	if (!value) return false;
+	const parsed = new Date(String(value).replace(' ', 'T'));
+	return !Number.isNaN(parsed.getTime()) && parsed.getTime() < Date.now();
+};
+const isDateBeforeToday = (value) => {
+	if (!value) return false;
+	return String(value) < getTodayDateValue();
+};
 
 
 // Icons for instruction set options (by key)
@@ -219,7 +233,7 @@ export default function CampaignEditPage() {
 			const toneOfVoice = data.campaign?.tone_of_voice || 'none';
 			const pointOfView = data.campaign?.point_of_view || 'none';
 			const readability = data.campaign?.readability || 'grade_8';
-			setCampaign({
+			const normalizedCampaign = normalizeCampaignPublication({
 				...data.campaign,
 				campaign_type: campaignType,
 				language,
@@ -228,9 +242,10 @@ export default function CampaignEditPage() {
 				point_of_view: pointOfView,
 				readability,
 			});
+			setCampaign(normalizedCampaign);
 			setTaskItems(
 				(data.tasks || []).map((task) => ({
-					...task,
+					...normalizeTaskPublication(task, normalizedCampaign),
 					campaign_type: task.campaign_type || campaignType,
 					topic: task.topic ?? '',
 					keywords: task.keywords ?? '',
@@ -306,7 +321,10 @@ export default function CampaignEditPage() {
 					task.status === newStatus &&
 					task.progress === match.progress &&
 					task.post_id === match.post_id &&
-					task.error_message === match.error_message
+					task.error_message === match.error_message &&
+					task.scheduled_publication_date === match.scheduled_publication_date &&
+					task.post_date === match.post_date &&
+					task.wp_post_status === match.wp_post_status
 				) {
 					return task;
 				}
@@ -316,6 +334,9 @@ export default function CampaignEditPage() {
 					progress: match.progress,
 					post_id: match.post_id,
 					error_message: match.error_message,
+					scheduled_publication_date: match.scheduled_publication_date,
+					post_date: match.post_date,
+					wp_post_status: match.wp_post_status,
 				};
 			})
 		);
@@ -377,7 +398,7 @@ export default function CampaignEditPage() {
 						const toAdd = data.full_tasks
 							.filter((t) => !prevIds.has(getTaskIdKey(t.id)))
 							.map((task) => ({
-								...task,
+								...normalizeTaskPublication(task, campaignData || {}),
 								campaign_type: task.campaign_type || campaignType,
 								topic: task.topic ?? '',
 								keywords: task.keywords ?? '',
@@ -439,14 +460,15 @@ export default function CampaignEditPage() {
 	// Add new post task (optimistic: show row with client-generated id, server stores it)
 	const applyCurrentDefaults = useCallback(
 		(task) => ({
-			...task,
+			...normalizeTaskPublication(task, campaign || {}),
+			publication_mode: campaign?.publication_mode || task?.publication_mode || 'pending_review',
 			campaign_type: campaign?.campaign_type || 'default',
 			topic: task.topic ?? '',
 			keywords: task.keywords ?? '',
 			title_override: task.title_override ?? '',
 			slug_override: task.slug_override ?? '',
 		}),
-		[campaign?.campaign_type]
+		[campaign]
 	);
 
 	const handleAddTask = () => {
@@ -457,6 +479,7 @@ export default function CampaignEditPage() {
 			topic: '',
 			keywords: '',
 			campaign_type: campaign?.campaign_type || 'default',
+			publication_mode: campaign?.publication_mode || 'pending_review',
 			article_url: '',
 			research_url: '',
 			feature_image_id: null,
@@ -505,6 +528,7 @@ export default function CampaignEditPage() {
 			...copyData,
 			id: newId,
 			status: 'pending',
+			...normalizeTaskPublication(copyData, campaign || {}),
 			campaign_type: copyData.campaign_type || campaign?.campaign_type || 'default',
 			topic: copyData.topic ?? '',
 			keywords: copyData.keywords ?? '',
@@ -522,6 +546,7 @@ export default function CampaignEditPage() {
 							...copyData,
 							id: newId,
 							status: result.task.status ?? 'pending',
+							...normalizeTaskPublication(copyData, campaign || {}),
 							campaign_type: copyData.campaign_type || campaign?.campaign_type || 'default',
 							topic: copyData.topic ?? '',
 							keywords: copyData.keywords ?? '',
@@ -532,6 +557,7 @@ export default function CampaignEditPage() {
 							...copyData,
 							id: newId,
 							status: 'pending',
+							...normalizeTaskPublication(copyData, campaign || {}),
 							campaign_type: copyData.campaign_type || campaign?.campaign_type || 'default',
 							topic: copyData.topic ?? '',
 							keywords: copyData.keywords ?? '',
@@ -666,8 +692,8 @@ export default function CampaignEditPage() {
 		if (isBlank(campaign?.post_type)) {
 			validationErrors.push('Campaign Post Type is required.');
 		}
-		if (isBlank(campaign?.post_status)) {
-			validationErrors.push('Campaign Default Post Status is required.');
+		if (isBlank(campaign?.publication_mode)) {
+			validationErrors.push('Campaign Publication is required.');
 		}
 		if (isBlank(campaign?.default_author_id)) {
 			validationErrors.push('Campaign Default Author is required.');
@@ -714,6 +740,24 @@ export default function CampaignEditPage() {
 			if (!isBlank(task.title_override) && isBlank(task.slug_override)) {
 				validationErrors.push(`Task #${task.id}: Slug Override is required when a Title Override is provided.`);
 			}
+
+			const taskPublicationMode = task.publication_mode || campaign?.publication_mode || 'pending_review';
+			if (taskPublicationMode === 'schedule_date') {
+				if (isBlank(task.publication_date)) {
+					validationErrors.push(`Task #${task.id}: Publication Date is required when Publication is Schedule Date.`);
+				} else if (isPastDateTime(task.publication_date)) {
+					validationErrors.push(`Task #${task.id}: Publication Date cannot be in the past.`);
+				}
+			}
+			if (taskPublicationMode === 'publish_randomly') {
+				if (isBlank(task.publication_random_from) || isBlank(task.publication_random_to)) {
+					validationErrors.push(`Task #${task.id}: Random publish range is required when Publication is Publish Randomly.`);
+				} else if (isDateBeforeToday(task.publication_random_from)) {
+					validationErrors.push(`Task #${task.id}: Random publish start date cannot be in the past.`);
+				} else if (task.publication_random_to < task.publication_random_from) {
+					validationErrors.push(`Task #${task.id}: Random publish end date must be on or after the start date.`);
+				}
+			}
 		});
 
 		if (validationErrors.length > 0) {
@@ -728,7 +772,7 @@ export default function CampaignEditPage() {
 		const payload = {
 			title: campaign.title,
 			post_type: campaign.post_type,
-			post_status: campaign.post_status,
+			publication_mode: campaign.publication_mode,
 			default_author_id: campaign.default_author_id,
 			webhook_id: campaign.webhook_id,
 			campaign_type: campaign.campaign_type,
@@ -1115,7 +1159,7 @@ export default function CampaignEditPage() {
 					if (!Array.isArray(newTasks) || newTasks.length === 0) return;
 					const campaignType = campaign?.campaign_type ?? 'default';
 					const normalized = newTasks.map((task) => ({
-						...task,
+						...normalizeTaskPublication(task, campaign || {}),
 						campaign_type: task.campaign_type || campaignType,
 						topic: task.topic ?? '',
 						keywords: task.keywords ?? '',

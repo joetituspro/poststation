@@ -31,6 +31,7 @@ class Campaign
 			target_country varchar(20) NOT NULL DEFAULT 'international',
             post_type varchar(20) NOT NULL DEFAULT 'post',
             post_status varchar(20) NOT NULL DEFAULT 'pending',
+			publication_mode varchar(30) NOT NULL DEFAULT 'pending_review',
             default_author_id bigint(20) unsigned DEFAULT NULL,
 			instruction_id bigint(20) unsigned DEFAULT NULL,
 			content_fields text DEFAULT NULL,
@@ -47,7 +48,28 @@ class Campaign
 		self::migrate_article_type_to_campaign_type($table_name);
 		self::migrate_add_rss_enabled($table_name);
 		self::migrate_add_status($table_name);
+		self::migrate_add_publication_fields($table_name);
 		return (bool) $tables_created_or_updated;
+	}
+
+	private static function migrate_add_publication_fields(string $table_name): void
+	{
+		global $wpdb;
+
+		$mode_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_mode'", ARRAY_A);
+		if (empty($mode_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_mode varchar(30) NOT NULL DEFAULT 'pending_review' AFTER post_status");
+			$wpdb->query(
+				"UPDATE `{$table_name}`
+				SET publication_mode = CASE
+					WHEN post_status = 'publish' THEN 'publish_instantly'
+					WHEN post_status = 'future' THEN 'schedule_date'
+					ELSE 'pending_review'
+				END
+				WHERE publication_mode = '' OR publication_mode IS NULL"
+			);
+		}
+
 	}
 
 	private static function migrate_add_status(string $table_name): void
@@ -118,6 +140,7 @@ class Campaign
 			'target_country' => 'international',
 			'post_type' => 'post',
 			'post_status' => 'pending',
+			'publication_mode' => 'pending_review',
 			'default_author_id' => get_current_user_id(),
 			'instruction_id' => null,
 			'content_fields' => json_encode($default_content_fields),
@@ -207,7 +230,24 @@ class Campaign
 		$update_data = [];
 		$format = [];
 
-		foreach (['title' => '%s', 'webhook_id' => '%d', 'campaign_type' => '%s', 'tone_of_voice' => '%s', 'point_of_view' => '%s', 'readability' => '%s', 'language' => '%s', 'target_country' => '%s', 'post_type' => '%s', 'post_status' => '%s', 'default_author_id' => '%d', 'instruction_id' => '%d', 'content_fields' => '%s', 'rss_enabled' => '%s', 'status' => '%s'] as $key => $type) {
+		foreach ([
+			'title' => '%s',
+			'webhook_id' => '%d',
+			'campaign_type' => '%s',
+			'tone_of_voice' => '%s',
+			'point_of_view' => '%s',
+			'readability' => '%s',
+			'language' => '%s',
+			'target_country' => '%s',
+			'post_type' => '%s',
+			'post_status' => '%s',
+			'publication_mode' => '%s',
+			'default_author_id' => '%d',
+			'instruction_id' => '%d',
+			'content_fields' => '%s',
+			'rss_enabled' => '%s',
+			'status' => '%s',
+		] as $key => $type) {
 			if (isset($data[$key])) {
 				$update_data[$key] = $data[$key];
 				$format[] = $type;

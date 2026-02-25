@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import { Button, Select, StatusBadge } from '../common';
 import PostTaskForm from './PostTaskForm';
 import { getAdminUrl } from '../../api/client';
+import { PUBLICATION_MODE_LABELS } from '../../utils/publication';
 
 const STATUS_FILTERS = [
 	{ value: '', label: 'All Statuses' },
@@ -174,6 +175,13 @@ function TaskItem({
 	onRun,
 	isDeleting = false,
 }) {
+	const formatDateTime = (value) => {
+		if (!value) return '';
+		const date = new Date(String(value).replace(' ', 'T'));
+		if (Number.isNaN(date.getTime())) return String(value);
+		return date.toLocaleString();
+	};
+
 	const adminUrl = getAdminUrl();
 	const topicValue = task.topic ?? '';
 	const researchUrl = task.research_url ?? '';
@@ -189,6 +197,11 @@ function TaskItem({
 		listicle: 'Listicle',
 		rewrite_blog_post: 'Rewrite',
 	}[campaignType] || 'Default';
+	const publicationMode = task.publication_mode || campaign?.publication_mode || 'pending_review';
+	const publicationModeLabel = PUBLICATION_MODE_LABELS[publicationMode] || 'Pending Review';
+	const isScheduledPost = task.wp_post_status === 'future' || publicationMode === 'schedule_date' || publicationMode === 'publish_randomly';
+	const completedDateTimeLabel = isScheduledPost ? 'Scheduled for' : 'Published on';
+	const completedDateTimeValue = task.scheduled_publication_date || task.post_date || '';
 
 	return (
 		<div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -212,13 +225,39 @@ function TaskItem({
 						<div className="text-[10px] font-medium text-gray-400 shrink-0">
 							#{task.id}
 							<span className="mx-2 text-gray-600 font-medium">·</span>
-							<span className=" text-gray-600 ">
-								{campaignTypeLabel}
-							</span>
+							<span className="text-gray-600">{campaignTypeLabel}</span>
+							{task.status !== 'completed' && (
+								<>
+									<span className="mx-2 text-gray-600 font-medium">·</span>
+									<span className="text-gray-600">{publicationModeLabel}</span>
+								</>
+							)}
+							{task.status === 'completed' && completedDateTimeValue && (
+								<>
+									<span className="mx-2 text-gray-600 font-medium">·</span>
+									<span
+										className={`inline-flex items-center gap-1 leading-none m-0 p-0 font-medium ${
+											isScheduledPost ? 'text-amber-700' : 'text-gray-900'
+										}`}
+									>
+										{isScheduledPost && (
+											<svg className="w-3 h-2 leading-none m-0 p-0 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Scheduled post date/time">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
+											</svg>
+										)}
+										{!isScheduledPost && (
+											<svg className="w-3 h-2 leading-none m-0 p-0 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Published post date/time">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+											</svg>
+										)}
+										<span className="truncate">{formatDateTime(completedDateTimeValue)}</span>
+									</span>
+								</>
+							)}
 							<span className="mx-2 text-gray-600 font-medium">·</span>
 							<StatusBadge status={task.status} />
 						</div>
-						<div className="flex items-center gap-2 mt-0.5">
+						<div className="flex items-center gap-2 mt-0.5 min-w-0">
 							<span className="text-[14px] font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-md">
 								{primaryLabel}
 							</span>
@@ -315,12 +354,27 @@ function TaskItem({
 					{task.status === 'completed' ? (
 						<div className="text-sm text-gray-700 space-y-1">
 							<p><span className="font-medium text-gray-600">Campaign Type:</span> {campaignTypeLabel}</p>
-							{isRewrite ? (
-								<p><span className="font-medium text-gray-600">Research URL:</span> {researchUrl || '—'}</p>
-							) : (
-								<p><span className="font-medium text-gray-600">Topic:</span> {topicValue || '—'}</p>
+							<p><span className="font-medium text-gray-600">Publication:</span> {publicationModeLabel}</p>
+							{completedDateTimeValue && (
+								<p className="inline-flex items-center gap-1">
+									{isScheduledPost ? (
+										<svg className="w-3.5 h-3.5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Scheduled post date/time">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
+										</svg>
+									) : (
+										<svg className="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Published post date/time">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+										</svg>
+									)}
+									<span>{completedDateTimeLabel}: {formatDateTime(completedDateTimeValue)}</span>
+								</p>
 							)}
-							<p><span className="font-medium text-gray-600">Keywords:</span> {(task.keywords ?? '').trim() || '—'}</p>
+							{isRewrite ? (
+								<p><span className="font-medium text-gray-600">Research URL:</span> {researchUrl || '-'}</p>
+							) : (
+								<p><span className="font-medium text-gray-600">Topic:</span> {topicValue || '-'}</p>
+							)}
+							<p><span className="font-medium text-gray-600">Keywords:</span> {(task.keywords ?? '').trim() || '-'}</p>
 							{(task.title_override ?? '').trim() && (
 								<p><span className="font-medium text-gray-600">Title Override:</span> {task.title_override}</p>
 							)}
@@ -346,3 +400,4 @@ function TaskItem({
 		</div>
 	);
 }
+

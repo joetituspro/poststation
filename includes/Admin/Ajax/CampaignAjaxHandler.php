@@ -49,6 +49,9 @@ class CampaignAjaxHandler
 		if (!isset($campaign['status']) || $campaign['status'] === '') {
 			$campaign['status'] = 'paused';
 		}
+		if (!isset($campaign['publication_mode']) || $campaign['publication_mode'] === '') {
+			$campaign['publication_mode'] = $this->sanitize_publication_mode($campaign['post_status'] ?? 'pending');
+		}
 		$rss_config = CampaignRss::get_by_campaign($id);
 		if ($rss_config) {
 			$campaign['rss_config'] = [
@@ -122,13 +125,14 @@ class CampaignAjaxHandler
 			'language' => sanitize_text_field($_POST['language'] ?? 'en'),
 			'target_country' => sanitize_text_field($_POST['target_country'] ?? 'international'),
 			'post_type' => sanitize_text_field($_POST['post_type'] ?? 'post'),
-			'post_status' => sanitize_text_field($_POST['post_status'] ?? 'pending'),
+			'publication_mode' => $this->sanitize_publication_mode($_POST['publication_mode'] ?? ($_POST['post_status'] ?? 'pending')),
 			'default_author_id' => (int) ($_POST['default_author_id'] ?? 0) ?: get_current_user_id(),
 			'instruction_id' => (int) ($_POST['instruction_id'] ?? 0) ?: null,
 			'content_fields' => wp_unslash($_POST['content_fields'] ?? '{}'),
 			'rss_enabled' => $rss_enabled,
 			'status' => $this->sanitize_campaign_status($_POST['status'] ?? $current_status),
 		];
+		$campaign_payload['post_status'] = $this->map_publication_mode_to_legacy_post_status($campaign_payload['publication_mode']);
 
 		$validation_error = $this->validate_campaign_payload($campaign_payload);
 		if ($validation_error !== null) {
@@ -222,7 +226,7 @@ class CampaignAjaxHandler
 			'language' => 'Campaign Language is required.',
 			'target_country' => 'Campaign Target Country is required.',
 			'post_type' => 'Campaign Post Type is required.',
-			'post_status' => 'Campaign Default Post Status is required.',
+			'publication_mode' => 'Campaign Publication is required.',
 			'default_author_id' => 'Campaign Default Author is required.',
 			'webhook_id' => 'Campaign Webhook is required.',
 		];
@@ -276,6 +280,35 @@ class CampaignAjaxHandler
 	private function is_blank($value): bool
 	{
 		return trim((string) ($value ?? '')) === '';
+	}
+
+	private function sanitize_publication_mode($mode): string
+	{
+		$raw = sanitize_text_field((string) ($mode ?? 'pending_review'));
+
+		if ($raw === 'pending') {
+			$raw = 'pending_review';
+		}
+		if ($raw === 'publish') {
+			$raw = 'publish_instantly';
+		}
+		if ($raw === 'future') {
+			$raw = 'schedule_date';
+		}
+
+		$allowed = ['pending_review', 'publish_instantly', 'schedule_date', 'publish_randomly'];
+		return in_array($raw, $allowed, true) ? $raw : 'pending_review';
+	}
+
+	private function map_publication_mode_to_legacy_post_status(string $mode): string
+	{
+		if ($mode === 'publish_instantly') {
+			return 'publish';
+		}
+		if ($mode === 'schedule_date' || $mode === 'publish_randomly') {
+			return 'future';
+		}
+		return 'pending';
 	}
 
 	public function delete_campaign(): void

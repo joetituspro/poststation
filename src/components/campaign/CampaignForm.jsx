@@ -1,12 +1,8 @@
 import { Select } from '../common';
 import { getPostTypes, getLanguages, getCountries } from '../../api/client';
-
-const STATUS_OPTIONS = [
-	{ value: 'draft', label: 'Draft' },
-	{ value: 'pending', label: 'Pending Review' },
-	{ value: 'publish', label: 'Published' },
-	{ value: 'private', label: 'Private' },
-];
+import {
+	PUBLICATION_MODE_OPTIONS,
+} from '../../utils/publication';
 
 const CAMPAIGN_TYPE_OPTIONS = [
 	{ value: 'default', label: 'Default' },
@@ -128,11 +124,11 @@ export default function CampaignForm({ campaign, onChange, webhooks = [], users 
 				/>
 
 				<Select
-					label="Default Post Status"
-					tooltip="Status applied when publishing (Draft, Pending, Published, or Private)."
-					options={STATUS_OPTIONS}
-					value={campaign.post_status || 'pending'}
-					onChange={(e) => handleChange('post_status', e.target.value)}
+					label="Publication"
+					tooltip="Default publication behavior applied to new tasks."
+					options={PUBLICATION_MODE_OPTIONS}
+					value={campaign.publication_mode || 'pending_review'}
+					onChange={(e) => handleChange('publication_mode', e.target.value)}
 					required
 				/>
 

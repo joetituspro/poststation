@@ -401,6 +401,9 @@ class ApiHandler
 					'progress' => $task['progress'] ?? null,
 					'post_id' => $task['post_id'] ?? null,
 					'error_message' => $task['error_message'] ?? null,
+					'scheduled_publication_date' => $task['scheduled_publication_date'] ?? null,
+					'post_date' => $task['post_date'] ?? null,
+					'wp_post_status' => $task['wp_post_status'] ?? null,
 				];
 			}
 		}

@@ -20,7 +20,7 @@ function buildCampaignPayload(campaign, frequency_interval, validSources) {
 	return {
 		title: campaign.title || 'Campaign',
 		post_type: campaign.post_type ?? 'post',
-		post_status: campaign.post_status ?? 'pending',
+		publication_mode: campaign.publication_mode ?? 'pending_review',
 		default_author_id: campaign.default_author_id,
 		webhook_id: campaign.webhook_id ?? null,
 		campaign_type: campaign.campaign_type ?? 'default',

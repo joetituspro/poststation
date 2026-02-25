@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Input, Select, Tooltip } from '../common';
+import {
+	PUBLICATION_MODE_OPTIONS,
+	getDatePlusDaysValue,
+	getNowDateTimeLocalValue,
+	getTodayDateValue,
+	normalizeDateTimeLocalValue,
+} from '../../utils/publication';
 
 // Cache attachment ID -> preview URL so image doesn't refetch when task block is expanded again
 const attachmentUrlCache = new Map();
@@ -46,6 +53,19 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 				.replace(/\s+/g, '-') // Replace spaces with -
 				.replace(/-+/g, '-') // Replace multiple - with single -
 				.trim();
+		}
+
+		if (field === 'publication_mode') {
+			const today = getTodayDateValue();
+			if (value === 'schedule_date' && !(task.publication_date ?? '').trim()) {
+				updates.publication_date = getNowDateTimeLocalValue();
+			}
+			if (value === 'publish_randomly') {
+				const from = task.publication_random_from || today;
+				updates.publication_random_from = from;
+				updates.publication_random_to =
+					task.publication_random_to || getDatePlusDaysValue(30, from);
+			}
 		}
 
 		onChange(updates);
@@ -172,6 +192,67 @@ export default function PostTaskForm({ task, campaign, onChange }) {
 					disabled={isProcessing}
 					variant="floating"
 				/>
+			</div>
+
+			<div className="space-y-3">
+				<Select
+					label="Publication"
+					tooltip="Overrides campaign publication behavior for this task."
+					options={PUBLICATION_MODE_OPTIONS}
+					value={task.publication_mode || campaign?.publication_mode || 'pending_review'}
+					onChange={(e) => handleChange('publication_mode', e.target.value)}
+					disabled={isProcessing}
+					variant="floating"
+				/>
+
+				{(task.publication_mode || campaign?.publication_mode || 'pending_review') === 'schedule_date' && (
+					<Input
+						label="Publication Date & Time"
+						type="datetime-local"
+						value={normalizeDateTimeLocalValue(task.publication_date || getNowDateTimeLocalValue())}
+						onChange={(e) => handleChange('publication_date', e.target.value)}
+						min={getNowDateTimeLocalValue()}
+						required
+						disabled={isProcessing}
+						variant="floating"
+					/>
+				)}
+
+				{(task.publication_mode || campaign?.publication_mode || 'pending_review') === 'publish_randomly' && (
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+						<Input
+							label="Random Publish From"
+							type="date"
+							value={task.publication_random_from || getTodayDateValue()}
+							onChange={(e) => {
+								const from = e.target.value;
+								const updates = { publication_random_from: from };
+								const currentTo = task.publication_random_to || '';
+								if (!currentTo || currentTo < from) {
+									updates.publication_random_to = getDatePlusDaysValue(30, from);
+								}
+								onChange(updates);
+							}}
+							min={getTodayDateValue()}
+							required
+							disabled={isProcessing}
+							variant="floating"
+						/>
+						<Input
+							label="Random Publish To"
+							type="date"
+							value={task.publication_random_to || getDatePlusDaysValue(30, task.publication_random_from || getTodayDateValue())}
+							onChange={(e) => handleChange('publication_random_to', e.target.value)}
+							min={task.publication_random_from || getTodayDateValue()}
+							required
+							disabled={isProcessing}
+							variant="floating"
+						/>
+						<p className="md:col-span-2 text-xs text-gray-500">
+							Post will randomly select a publish date within the set range.
+						</p>
+					</div>
+				)}
 			</div>
 
 			{/* Featured Image Override */}

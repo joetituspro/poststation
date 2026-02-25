@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostTask
 {
-	public const DB_VERSION = '4.0';
+	public const DB_VERSION = '4.2';
 	protected const TABLE_NAME = 'poststation_posttasks';
 
 	public static function get_table_name(): string
@@ -29,6 +29,11 @@ class PostTask
 			campaign_type varchar(50) NOT NULL DEFAULT 'default',
 			title_override text DEFAULT NULL,
 			slug_override text DEFAULT NULL,
+			publication_mode varchar(30) NOT NULL DEFAULT 'pending_review',
+			publication_date datetime DEFAULT NULL,
+			publication_random_from date DEFAULT NULL,
+			publication_random_to date DEFAULT NULL,
+			scheduled_publication_date datetime DEFAULT NULL,
 			feature_image_id bigint(20) unsigned DEFAULT NULL,
 			feature_image_title text DEFAULT NULL,
 			run_started_at datetime DEFAULT NULL,
@@ -48,7 +53,38 @@ class PostTask
 		) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
 		self::migrate_article_type_to_campaign_type($table_name);
+		self::migrate_add_publication_fields($table_name);
 		return (bool) $tables_created_or_updated;
+	}
+
+	private static function migrate_add_publication_fields(string $table_name): void
+	{
+		global $wpdb;
+
+		$mode_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_mode'", ARRAY_A);
+		if (empty($mode_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_mode varchar(30) NOT NULL DEFAULT 'pending_review' AFTER slug_override");
+		}
+
+		$date_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_date'", ARRAY_A);
+		if (empty($date_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_date datetime DEFAULT NULL AFTER publication_mode");
+		}
+
+		$from_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_random_from'", ARRAY_A);
+		if (empty($from_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_random_from date DEFAULT NULL AFTER publication_date");
+		}
+
+		$to_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_random_to'", ARRAY_A);
+		if (empty($to_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_random_to date DEFAULT NULL AFTER publication_random_from");
+		}
+
+		$scheduled_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'scheduled_publication_date'", ARRAY_A);
+		if (empty($scheduled_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN scheduled_publication_date datetime DEFAULT NULL AFTER publication_random_to");
+		}
 	}
 
 	private static function check_and_create_table($table_name, $sql): bool
@@ -149,10 +185,16 @@ class PostTask
 	{
 		foreach ($tasks as &$task) {
 			$task['post_title'] = null;
+			$task['post_date'] = null;
+			$task['wp_post_status'] = null;
 			$post_id = isset($task['post_id']) ? (int) $task['post_id'] : 0;
 			if ($post_id > 0) {
 				$post = get_post($post_id);
-				$task['post_title'] = $post ? $post->post_title : null;
+				if ($post) {
+					$task['post_title'] = $post->post_title;
+					$task['post_date'] = $post->post_date;
+					$task['wp_post_status'] = $post->post_status;
+				}
 			}
 		}
 		unset($task);
@@ -212,6 +254,11 @@ class PostTask
 			'campaign_type' => 'default',
 			'title_override' => '',
 			'slug_override' => '',
+			'publication_mode' => 'pending_review',
+			'publication_date' => null,
+			'publication_random_from' => null,
+			'publication_random_to' => null,
+			'scheduled_publication_date' => null,
 			'feature_image_id' => null,
 			'feature_image_title' => '{{title}}',
 			'status' => 'pending',
@@ -231,7 +278,9 @@ class PostTask
 	{
 		return [
 			'campaign_id', 'article_url', 'research_url', 'topic', 'keywords',
-			'campaign_type', 'title_override', 'slug_override', 'feature_image_id', 'feature_image_title',
+			'campaign_type', 'title_override', 'slug_override',
+			'publication_mode', 'publication_date', 'publication_random_from', 'publication_random_to', 'scheduled_publication_date',
+			'feature_image_id', 'feature_image_title',
 			'run_started_at', 'status', 'progress', 'post_id', 'error_message', 'execution_id',
 			'created_at', 'updated_at',
 		];
