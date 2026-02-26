@@ -8,7 +8,7 @@ use PostStation\Models\Webhook;
 use PostStation\Models\Campaign;
 use PostStation\Models\CampaignRss;
 use PostStation\Models\PostTask;
-use PostStation\Models\Instruction;
+use PostStation\Models\WritingPreset;
 use PostStation\Models\RssHistory;
 use PostStation\Admin\App;
 use PostStation\Services\Sitemap;
@@ -82,10 +82,10 @@ class Bootstrap
 				// throw new Exception('Failed to create/update PostTask tables');
 			}
 
-			if (!Instruction::update_tables()) {
-				// throw new Exception('Failed to create/update Instruction table');
+			if (!WritingPreset::update_tables()) {
+				// throw new Exception('Failed to create/update WritingPreset table');
 			}
-			Instruction::seed_defaults();
+			WritingPreset::seed_defaults();
 
 			if (!CampaignRss::update_tables()) {
 				// continue
@@ -128,7 +128,7 @@ class Bootstrap
 		CampaignRss::drop_table();
 		RssHistory::drop_table();
 		PostTask::drop_table();
-		Instruction::drop_table();
+		WritingPreset::drop_table();
 
 		// Remove options
 		delete_option('poststation_api_key');

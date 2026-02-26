@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Button, Input, Modal, ConfirmModal, Card, CardHeader, CardBody, PageHeader, PageLoader, ModelSelect } from '../components/common';
-import InstructionModal from '../components/instructions/InstructionModal';
-import { settings, getBootstrapSettings, getBootstrapInstructions, refreshBootstrap, instructions } from '../api/client';
+import WritingPresetModal from '../components/writing-presets/WritingPresetModal';
+import { settings, getBootstrapSettings, getBootstrapWritingPresets, refreshBootstrap, writingPresets } from '../api/client';
 
-const DEFAULT_INSTRUCTION_KEYS = ['listicle', 'news', 'guide', 'howto'];
-const isDefaultPreset = (key) => key && DEFAULT_INSTRUCTION_KEYS.includes(key);
+const DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
+const isDefaultPreset = (key) => key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function SettingsPage() {
@@ -15,13 +15,13 @@ export default function SettingsPage() {
 	const [defaultImageModel, setDefaultImageModel] = useState('');
 	const [copied, setCopied] = useState(false);
 
-	const [instructionModal, setInstructionModal] = useState({ open: false, mode: 'add', instruction: null });
-	const [deleteInstruction, setDeleteInstruction] = useState(null);
+	const [writingPresetModal, setWritingPresetModal] = useState({ open: false, mode: 'add', writingPreset: null });
+	const [deleteWritingPreset, setDeleteWritingPreset] = useState(null);
 	const [deleting, setDeleting] = useState(false);
-	const [instructionsList, setInstructionsList] = useState(() => getBootstrapInstructions());
-	const fetchInstructions = useCallback(async () => {
+	const [writingPresetsList, setWritingPresetsList] = useState(() => getBootstrapWritingPresets());
+	const fetchWritingPresets = useCallback(async () => {
 		await refreshBootstrap();
-		setInstructionsList(getBootstrapInstructions());
+		setWritingPresetsList(getBootstrapWritingPresets());
 	}, []);
 
 	const bootstrapSettings = getBootstrapSettings();
@@ -83,27 +83,27 @@ export default function SettingsPage() {
 		}
 	};
 
-	const openInstructionModal = (mode, instruction = null) => {
-		setInstructionModal({ open: true, mode, instruction });
+	const openWritingPresetModal = (mode, writingPreset = null) => {
+		setWritingPresetModal({ open: true, mode, writingPreset });
 	};
-	const closeInstructionModal = () => {
-		setInstructionModal((prev) => ({ ...prev, open: false }));
+	const closeWritingPresetModal = () => {
+		setWritingPresetModal((prev) => ({ ...prev, open: false }));
 	};
-	const handleInstructionSaved = () => {
+	const handleWritingPresetSaved = () => {
 		// Modal already called refreshBootstrap() before onSaved; use current bootstrap so list updates immediately
-		setInstructionsList(getBootstrapInstructions());
+		setWritingPresetsList(getBootstrapWritingPresets());
 	};
 
-	const handleConfirmDelete = async () => {
-		if (!deleteInstruction?.id) return;
+	const handleConfirmDeleteWritingPreset = async () => {
+		if (!deleteWritingPreset?.id) return;
 		setDeleting(true);
 		try {
-			await instructions.delete(deleteInstruction.id);
+			await writingPresets.delete(deleteWritingPreset.id);
 			await refreshBootstrap();
-			setInstructionsList(getBootstrapInstructions());
-			setDeleteInstruction(null);
+			setWritingPresetsList(getBootstrapWritingPresets());
+			setDeleteWritingPreset(null);
 		} catch (err) {
-			console.error('Failed to delete instruction:', err);
+			console.error('Failed to delete writing preset:', err);
 		} finally {
 			setDeleting(false);
 		}
@@ -234,28 +234,28 @@ export default function SettingsPage() {
 					</CardBody>
 				</Card>
 
-				{/* Instruction presets */}
+				{/* Writing presets */}
 				<Card className="col-span-2">
 					<CardHeader>
 						<div className="flex items-center justify-between">
 							<div>
-								<h3 className="text-lg font-medium text-gray-900">Instruction presets</h3>
-								<p className="text-sm text-gray-500">Manage instruction sets used for title, body, and section generation</p>
+								<h3 className="text-lg font-medium text-gray-900">Writing presets</h3>
+								<p className="text-sm text-gray-500">Manage writing presets used for title, body, and section generation</p>
 							</div>
-							<Button variant="primary" onClick={() => openInstructionModal('add')}>
+							<Button variant="primary" onClick={() => openWritingPresetModal('add')}>
 								Add new
 							</Button>
 						</div>
 					</CardHeader>
 					<CardBody>
 						<div className="space-y-4">
-						{instructionsList.length === 0 ? (
+						{writingPresetsList.length === 0 ? (
 							<div className="flex items-center justify-center py-10 px-6 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50">
-							<p className="text-sm text-gray-400">No instruction presets. Add one to get started.</p>
+							<p className="text-sm text-gray-400">No writing presets. Add one to get started.</p>
 							</div>
 						) : (
 							<div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
-							{instructionsList.map((inst) => (
+							{writingPresetsList.map((inst) => (
 								<div
 								key={inst.id}
 								className="group flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-all hover:border-gray-300 hover:bg-gray-50"
@@ -284,7 +284,7 @@ export default function SettingsPage() {
 									<button
 										type="button"
 										className="poststation-icon-btn"
-										onClick={() => openInstructionModal('edit', inst)}
+										onClick={() => openWritingPresetModal('edit', inst)}
 										title="Edit"
 										aria-label="Edit"
 									>
@@ -295,7 +295,7 @@ export default function SettingsPage() {
 									<button
 										type="button"
 										className="poststation-icon-btn"
-										onClick={() => openInstructionModal('duplicate', inst)}
+										onClick={() => openWritingPresetModal('duplicate', inst)}
 										title="Duplicate"
 										aria-label="Duplicate"
 									>
@@ -307,7 +307,7 @@ export default function SettingsPage() {
 										<button
 											type="button"
 											className="poststation-icon-btn-danger"
-											onClick={() => setDeleteInstruction(inst)}
+											onClick={() => setDeleteWritingPreset(inst)}
 											title="Delete"
 											aria-label="Delete"
 										>
@@ -461,20 +461,20 @@ export default function SettingsPage() {
 				</div>
 			</Modal>
 
-			<InstructionModal
-				isOpen={instructionModal.open}
-				onClose={closeInstructionModal}
-				mode={instructionModal.mode}
-				instruction={instructionModal.instruction}
-				onSaved={handleInstructionSaved}
+			<WritingPresetModal
+				isOpen={writingPresetModal.open}
+				onClose={closeWritingPresetModal}
+				mode={writingPresetModal.mode}
+				writingPreset={writingPresetModal.writingPreset}
+				onSaved={handleWritingPresetSaved}
 			/>
 
 			<ConfirmModal
-				isOpen={Boolean(deleteInstruction)}
-				onClose={() => setDeleteInstruction(null)}
-				onConfirm={handleConfirmDelete}
-				title="Delete instruction preset"
-				message={deleteInstruction ? `Delete "${deleteInstruction.name}"? This cannot be undone.` : ''}
+				isOpen={Boolean(deleteWritingPreset)}
+				onClose={() => setDeleteWritingPreset(null)}
+				onConfirm={handleConfirmDeleteWritingPreset}
+				title="Delete writing preset"
+				message={deleteWritingPreset ? `Delete "${deleteWritingPreset.name}"? This cannot be undone.` : ''}
 				confirmText="Delete"
 				variant="danger"
 				loading={deleting}

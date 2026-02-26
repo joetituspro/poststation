@@ -29,7 +29,7 @@ class AiService
 	/**
 	 * @return array|\WP_Error
 	 */
-	public function generate_instruction_preset(string $brief, string $provider_key = 'openrouter', array $options = [])
+	public function generate_writing_preset(string $brief, string $provider_key = 'openrouter', array $options = [])
 	{
 		$brief = trim($brief);
 		if ($brief === '') {
@@ -42,7 +42,7 @@ class AiService
 		}
 
 		$context = $this->build_context_from_prompt($brief);
-		return $provider->generate_instruction_preset($brief, $context, $options);
+		return $provider->generate_writing_preset($brief, $context, $options);
 	}
 
 	private function build_context_from_prompt(string $brief): array

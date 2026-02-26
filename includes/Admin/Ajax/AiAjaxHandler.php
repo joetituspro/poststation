@@ -13,7 +13,7 @@ class AiAjaxHandler
 		$this->ai_service = $ai_service ?? new AiService();
 	}
 
-	public function generate_instruction_preset(): void
+	public function generate_writing_preset(): void
 	{
 		if (!NonceVerifier::verify()) {
 			wp_send_json_error(['message' => 'Invalid nonce']);
@@ -29,7 +29,7 @@ class AiAjaxHandler
 			wp_send_json_error(['message' => 'Prompt is required']);
 		}
 
-		$result = $this->ai_service->generate_instruction_preset($prompt, $provider, [
+		$result = $this->ai_service->generate_writing_preset($prompt, $provider, [
 			'model' => $model,
 		]);
 		if (is_wp_error($result)) {
@@ -37,7 +37,7 @@ class AiAjaxHandler
 		}
 
 		wp_send_json_success([
-			'message' => 'Instruction preset generated',
+			'message' => 'Writing preset generated',
 			'preset' => $result,
 		]);
 	}

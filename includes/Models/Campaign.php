@@ -33,7 +33,7 @@ class Campaign
             post_status varchar(20) NOT NULL DEFAULT 'pending',
 			publication_mode varchar(30) NOT NULL DEFAULT 'pending_review',
             default_author_id bigint(20) unsigned DEFAULT NULL,
-			instruction_id bigint(20) unsigned DEFAULT NULL,
+			writing_preset_id bigint(20) unsigned DEFAULT NULL,
 			content_fields text DEFAULT NULL,
 			rss_enabled varchar(3) NOT NULL DEFAULT 'no',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,14 +42,31 @@ class Campaign
             KEY author_id (author_id),
             KEY webhook_id (webhook_id),
             KEY default_author_id (default_author_id),
-            KEY instruction_id (instruction_id)
+            KEY writing_preset_id (writing_preset_id)
             ) $charset_collate;";
 		$tables_created_or_updated |= self::check_and_create_table($table_name, $sql);
 		self::migrate_article_type_to_campaign_type($table_name);
 		self::migrate_add_rss_enabled($table_name);
 		self::migrate_add_status($table_name);
 		self::migrate_add_publication_fields($table_name);
+		self::migrate_legacy_writing_preset_column($table_name);
 		return (bool) $tables_created_or_updated;
+	}
+
+	private static function migrate_legacy_writing_preset_column(string $table_name): void
+	{
+		global $wpdb;
+		$new_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'writing_preset_id'", ARRAY_A);
+		$old_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'instruction_id'", ARRAY_A);
+
+		if (empty($new_col) && !empty($old_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` CHANGE COLUMN `instruction_id` `writing_preset_id` bigint(20) unsigned DEFAULT NULL");
+			return;
+		}
+
+		if (empty($new_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN writing_preset_id bigint(20) unsigned DEFAULT NULL AFTER default_author_id");
+		}
 	}
 
 	private static function migrate_add_publication_fields(string $table_name): void
@@ -142,7 +159,7 @@ class Campaign
 			'post_status' => 'pending',
 			'publication_mode' => 'pending_review',
 			'default_author_id' => get_current_user_id(),
-			'instruction_id' => null,
+			'writing_preset_id' => null,
 			'content_fields' => json_encode($default_content_fields),
 			'rss_enabled' => 'no',
 			'status' => 'paused',
@@ -243,7 +260,7 @@ class Campaign
 			'post_status' => '%s',
 			'publication_mode' => '%s',
 			'default_author_id' => '%d',
-			'instruction_id' => '%d',
+			'writing_preset_id' => '%d',
 			'content_fields' => '%s',
 			'rss_enabled' => '%s',
 			'status' => '%s',

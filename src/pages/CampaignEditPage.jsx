@@ -12,10 +12,10 @@ import CampaignForm from '../components/campaign/CampaignForm';
 import ContentFieldsEditor from '../components/campaign/ContentFieldsEditor';
 import PostTaskList from '../components/campaign/PostTaskList';
 import InfoSidebar from '../components/layout/InfoSidebar';
-import InstructionModal from '../components/instructions/InstructionModal';
+import WritingPresetModal from '../components/writing-presets/WritingPresetModal';
 import RssFeedConfigModal from '../components/campaign/RssFeedConfigModal';
 import RssResultsModal from '../components/campaign/RssResultsModal';
-import { campaigns, postTasks, webhooks, generateTaskId, getTaxonomies, getPendingProcessingPostTasks, getBootstrapWebhooks, getBootstrapInstructions } from '../api/client';
+import { campaigns, postTasks, webhooks, generateTaskId, getTaxonomies, getPendingProcessingPostTasks, getBootstrapWebhooks, getBootstrapWritingPresets } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useUnsavedChanges } from '../context/UnsavedChangesContext';
 import {
@@ -36,7 +36,7 @@ const isDateBeforeToday = (value) => {
 };
 
 
-// Icons for instruction set options (by key)
+// Icons for writing preset options (by key)
 const InstructionIcon = ({ type, className = 'w-4 h-4' }) => {
 	const c = className;
 	if (type === 'listicle') {
@@ -68,7 +68,7 @@ const InstructionIcon = ({ type, className = 'w-4 h-4' }) => {
 			</svg>
 		);
 	}
-	// Default icon for custom instruction presets
+	// Default icon for custom writing presets
 	return (
 		<svg className={c} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 			<path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -158,7 +158,7 @@ export default function CampaignEditPage() {
 	const [isDirty, setIsDirty] = useState(false);
 	const [retryingTaskId, setRetryingTaskId] = useState(null);
 	const [retryFailedLoading, setRetryFailedLoading] = useState(false);
-	const [instructionModalOpen, setInstructionModalOpen] = useState(false);
+	const [writingPresetModalOpen, setWritingPresetModalOpen] = useState(false);
 	const [rssConfigModalOpen, setRssConfigModalOpen] = useState(false);
 	const [rssResultsModalOpen, setRssResultsModalOpen] = useState(false);
 	const [rssResultsData, setRssResultsData] = useState(null);
@@ -781,7 +781,7 @@ export default function CampaignEditPage() {
 			readability: campaign.readability,
 			language: campaign.language,
 			target_country: campaign.target_country,
-			instruction_id: campaign.instruction_id ?? null,
+			writing_preset_id: campaign.writing_preset_id ?? null,
 			content_fields: campaign.content_fields,
 			rss_enabled: rssOverride ? 'yes' : (campaign.rss_enabled ?? 'no'),
 			rss_config: overrides?.rss_config ?? campaign.rss_config ?? null,
@@ -1011,7 +1011,7 @@ export default function CampaignEditPage() {
 								webhooks={webhooksList}
 								users={users}
 							/>
-							{/* RSS Feeds section - above Instruction set */}
+							{/* RSS Feeds section - above Writing preset */}
 							{campaign?.rss_enabled === 'yes' && (
 								<div className="border-t border-gray-200 pt-6">
 									<div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3">
@@ -1066,26 +1066,26 @@ export default function CampaignEditPage() {
 							<div className="border-t border-gray-200 pt-6">
 								<div className="mb-4">
 								<RichSelect
-									label="Instruction set"
-									tooltip="Optional preset instructions for title, body, and section generation."
+									label="Writing preset"
+									tooltip="Optional writing preset for title, body, and section generation."
 									labelAction={
 										<Button
 											type="button"
 											variant="secondary"
 											size="sm"
-											onClick={() => setInstructionModalOpen(true)}
+											onClick={() => setWritingPresetModalOpen(true)}
 										>
 											Add new preset
 										</Button>
 									}
-									options={getBootstrapInstructions().map((i) => ({
+									options={getBootstrapWritingPresets().map((i) => ({
 										value: Number(i.id),
 										label: i.name,
 										description: i.description || '',
 										icon: <InstructionIcon type={i.key} className="w-4 h-4" />,
 									}))}
-									value={campaign?.instruction_id ?? null}
-									onChange={(id) => handleCampaignChange({ ...campaign, instruction_id: id ?? null })}
+									value={campaign?.writing_preset_id ?? null}
+									onChange={(id) => handleCampaignChange({ ...campaign, writing_preset_id: id ?? null })}
 									placeholder="None"
 								/>
 								</div>
@@ -1126,13 +1126,13 @@ export default function CampaignEditPage() {
 
 			<InfoSidebar />
 
-			<InstructionModal
-				isOpen={instructionModalOpen}
-				onClose={() => setInstructionModalOpen(false)}
+			<WritingPresetModal
+				isOpen={writingPresetModalOpen}
+				onClose={() => setWritingPresetModalOpen(false)}
 				mode="add"
 				onSaved={(newId) => {
 					if (newId != null) {
-						handleCampaignChange({ ...campaign, instruction_id: newId });
+						handleCampaignChange({ ...campaign, writing_preset_id: newId });
 					}
 				}}
 			/>

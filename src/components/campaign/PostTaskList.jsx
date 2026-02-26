@@ -215,7 +215,7 @@ function TaskItem({
 				className="flex flex-col sm:flex-row sm:items-center justify-between px-3 py-2 sm:px-4 sm:py-3 bg-white hover:bg-gray-50 cursor-pointer gap-2"
 				onClick={onToggle}
 			>
-				<div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+				<div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
 					<button className="text-gray-400 shrink-0">
 						<svg
 							className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
@@ -264,7 +264,7 @@ function TaskItem({
 							<StatusBadge status={task.status} />
 						</div>
 						<div className="flex items-center gap-2 mt-0.5 min-w-0">
-							<span className="text-[14px] font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-md">
+							<span className="text-[14px] font-semibold text-gray-900 truncate">
 								{primaryLabel}
 							</span>
 							{task.progress !== null && task.progress !== undefined && task.status !== 'completed' && (

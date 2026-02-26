@@ -127,7 +127,7 @@ class CampaignAjaxHandler
 			'post_type' => sanitize_text_field($_POST['post_type'] ?? 'post'),
 			'publication_mode' => $this->sanitize_publication_mode($_POST['publication_mode'] ?? ($_POST['post_status'] ?? 'pending')),
 			'default_author_id' => (int) ($_POST['default_author_id'] ?? 0) ?: get_current_user_id(),
-			'instruction_id' => (int) ($_POST['instruction_id'] ?? 0) ?: null,
+			'writing_preset_id' => (int) ($_POST['writing_preset_id'] ?? 0) ?: null,
 			'content_fields' => wp_unslash($_POST['content_fields'] ?? '{}'),
 			'rss_enabled' => $rss_enabled,
 			'status' => $this->sanitize_campaign_status($_POST['status'] ?? $current_status),

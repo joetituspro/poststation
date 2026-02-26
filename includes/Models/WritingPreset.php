@@ -2,9 +2,9 @@
 
 namespace PostStation\Models;
 
-class Instruction
+class WritingPreset
 {
-	private const TABLE_NAME = 'poststation_instructions';
+	private const TABLE_NAME = 'poststation_writing_presets';
 
 	/** Keys that are seeded by default; key and name cannot be modified for these. */
 	public const DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
@@ -30,12 +30,32 @@ class Instruction
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY instruction_key (`key`)
+            UNIQUE KEY writing_preset_key (`key`)
             ) $charset_collate;";
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		$result = dbDelta($sql);
 		$tables_created_or_updated = !is_wp_error($result) && !empty($result);
+		self::migrate_instructions_table($table_name);
 		return (bool) $tables_created_or_updated;
+	}
+
+	private static function migrate_instructions_table(string $table_name): void
+	{
+		global $wpdb;
+		$old_table = $wpdb->prefix . 'poststation_instructions';
+		if ($old_table === $table_name) {
+			return;
+		}
+		$exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $old_table));
+		if (!$exists) {
+			return;
+		}
+		$rows = $wpdb->get_results("SELECT id, `key`, name, description, instructions, created_at, updated_at FROM {$old_table}", ARRAY_A);
+		if (!empty($rows)) {
+			foreach ($rows as $row) {
+				$wpdb->replace($table_name, $row);
+			}
+		}
 	}
 
 	public static function get_all(): array
@@ -103,10 +123,6 @@ class Instruction
 		return $row;
 	}
 
-	/**
-	 * Default preset rows (key, name, description, instructions). Used for seed and reset.
-	 * @return list<array{key: string, name: string, description: string, instructions: array}>
-	 */
 	public static function get_default_rows(): array
 	{
 		return [
@@ -240,7 +256,6 @@ class Instruction
 		return $wpdb->update($table_name, $update_data, ['id' => $id], $format, ['%d']) !== false;
 	}
 
-	/** Restore description and instructions to default for a preset whose key is in DEFAULT_KEYS. */
 	public static function reset_to_default(int $id): bool
 	{
 		$existing = self::get_by_id($id);
@@ -263,7 +278,6 @@ class Instruction
 		return false;
 	}
 
-	/** Delete an instruction by id. Returns false for default presets. */
 	public static function delete(int $id): bool
 	{
 		$existing = self::get_by_id($id);
@@ -282,3 +296,4 @@ class Instruction
 		$wpdb->query("DROP TABLE IF EXISTS {$table_name}");
 	}
 }
+

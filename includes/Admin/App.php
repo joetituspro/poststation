@@ -4,7 +4,7 @@ namespace PostStation\Admin;
 
 use PostStation\Admin\Ajax\AiAjaxHandler;
 use PostStation\Admin\Ajax\CampaignAjaxHandler;
-use PostStation\Admin\Ajax\InstructionAjaxHandler;
+use PostStation\Admin\Ajax\WritingPresetAjaxHandler;
 use PostStation\Admin\Ajax\PostTaskAjaxHandler;
 use PostStation\Admin\Ajax\RssAjaxHandler;
 use PostStation\Admin\Ajax\SettingsAjaxHandler;
@@ -17,7 +17,7 @@ class App
 	private PostTaskAjaxHandler $posttask_handler;
 	private WebhookAjaxHandler $webhook_handler;
 	private SettingsAjaxHandler $settings_handler;
-	private InstructionAjaxHandler $instruction_handler;
+	private WritingPresetAjaxHandler $writing_preset_handler;
 	private RssAjaxHandler $rss_handler;
 	private AiAjaxHandler $ai_handler;
 
@@ -28,7 +28,7 @@ class App
 		$this->posttask_handler = new PostTaskAjaxHandler();
 		$this->webhook_handler = new WebhookAjaxHandler();
 		$this->settings_handler = new SettingsAjaxHandler();
-		$this->instruction_handler = new InstructionAjaxHandler();
+		$this->writing_preset_handler = new WritingPresetAjaxHandler();
 		$this->rss_handler = new RssAjaxHandler();
 		$this->ai_handler = new AiAjaxHandler();
 
@@ -69,12 +69,12 @@ class App
 
 		add_action('wp_ajax_poststation_get_bootstrap', [$this, 'ajax_get_bootstrap']);
 
-		add_action('wp_ajax_poststation_create_instruction', [$this->instruction_handler, 'create_instruction']);
-		add_action('wp_ajax_poststation_update_instruction', [$this->instruction_handler, 'update_instruction']);
-		add_action('wp_ajax_poststation_duplicate_instruction', [$this->instruction_handler, 'duplicate_instruction']);
-		add_action('wp_ajax_poststation_reset_instruction', [$this->instruction_handler, 'reset_instruction']);
-		add_action('wp_ajax_poststation_delete_instruction', [$this->instruction_handler, 'delete_instruction']);
-		add_action('wp_ajax_poststation_generate_instruction_preset', [$this->ai_handler, 'generate_instruction_preset']);
+		add_action('wp_ajax_poststation_create_writing_preset', [$this->writing_preset_handler, 'create_writing_preset']);
+		add_action('wp_ajax_poststation_update_writing_preset', [$this->writing_preset_handler, 'update_writing_preset']);
+		add_action('wp_ajax_poststation_duplicate_writing_preset', [$this->writing_preset_handler, 'duplicate_writing_preset']);
+		add_action('wp_ajax_poststation_reset_writing_preset', [$this->writing_preset_handler, 'reset_writing_preset']);
+		add_action('wp_ajax_poststation_delete_writing_preset', [$this->writing_preset_handler, 'delete_writing_preset']);
+		add_action('wp_ajax_poststation_generate_writing_preset', [$this->ai_handler, 'generate_writing_preset']);
 
 		// Clear static bootstrap cache when terms or users change
 		add_action('created_term', [BootstrapDataProvider::class, 'clear_static_cache']);

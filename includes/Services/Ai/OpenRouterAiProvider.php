@@ -22,7 +22,7 @@ class OpenRouterAiProvider implements AiProviderInterface
 	/**
 	 * @return array|\WP_Error
 	 */
-	public function generate_instruction_preset(string $brief, array $context = [], array $options = [])
+	public function generate_writing_preset(string $brief, array $context = [], array $options = [])
 	{
 		$api_key = $this->openrouter_service->resolve_api_key();
 		if ($api_key === '') {

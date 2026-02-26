@@ -5,7 +5,7 @@ namespace PostStation\Services;
 use PostStation\Models\PostTask;
 use PostStation\Models\Campaign;
 use PostStation\Models\Webhook;
-use PostStation\Models\Instruction;
+use PostStation\Models\WritingPreset;
 use PostStation\Utils\Languages;
 use PostStation\Utils\Countries;
 use Exception;
@@ -198,16 +198,16 @@ class TaskRunner
 			$language_key = $campaign['language'] ?? 'en';
 			$country_key = $campaign['target_country'] ?? 'international';
 
-			$instruction_set = null;
-			$instruction_id = isset($campaign['instruction_id']) ? (int) $campaign['instruction_id'] : 0;
-			if ($instruction_id > 0) {
-				$instruction = Instruction::get_by_id($instruction_id);
-				if ($instruction) {
-					$instruction_set = [
-						'key' => $instruction['key'] ?? '',
-						'name' => $instruction['name'] ?? '',
-						'description' => $instruction['description'] ?? '',
-						'instructions' => $instruction['instructions'] ?? ['title' => '', 'body' => ''],
+			$writing_preset = null;
+			$writing_preset_id = isset($campaign['writing_preset_id']) ? (int) $campaign['writing_preset_id'] : 0;
+			if ($writing_preset_id > 0) {
+				$preset = WritingPreset::get_by_id($writing_preset_id);
+				if ($preset) {
+					$writing_preset = [
+						'key' => $preset['key'] ?? '',
+						'name' => $preset['name'] ?? '',
+						'description' => $preset['description'] ?? '',
+						'instructions' => $preset['instructions'] ?? ['title' => '', 'body' => ''],
 					];
 				}
 			}
@@ -233,7 +233,7 @@ class TaskRunner
 				'point_of_view' => (string) ($campaign['point_of_view'] ?? 'none'),
 				'readability' => (string) ($campaign['readability'] ?? 'grade_8'),
 				'content_fields' => $content_fields,
-				'instruction_set' => $instruction_set,
+				'writing_preset' => $writing_preset,
 				'sitemap' => $sitemap_csv,
 				'callback_url' => get_site_url() . '/ps-api',
 				'api_key' => get_option('poststation_api_key'),

@@ -5202,23 +5202,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getAdminUrl: () => (/* binding */ getAdminUrl),
 /* harmony export */   getBootstrap: () => (/* binding */ getBootstrap),
 /* harmony export */   getBootstrapCampaigns: () => (/* binding */ getBootstrapCampaigns),
-/* harmony export */   getBootstrapInstructions: () => (/* binding */ getBootstrapInstructions),
 /* harmony export */   getBootstrapOpenRouterModels: () => (/* binding */ getBootstrapOpenRouterModels),
 /* harmony export */   getBootstrapSettings: () => (/* binding */ getBootstrapSettings),
 /* harmony export */   getBootstrapWebhooks: () => (/* binding */ getBootstrapWebhooks),
+/* harmony export */   getBootstrapWritingPresets: () => (/* binding */ getBootstrapWritingPresets),
 /* harmony export */   getCountries: () => (/* binding */ getCountries),
 /* harmony export */   getLanguages: () => (/* binding */ getLanguages),
 /* harmony export */   getPendingProcessingPostTasks: () => (/* binding */ getPendingProcessingPostTasks),
 /* harmony export */   getPostTypes: () => (/* binding */ getPostTypes),
 /* harmony export */   getTaxonomies: () => (/* binding */ getTaxonomies),
-/* harmony export */   instructions: () => (/* binding */ instructions),
 /* harmony export */   openrouter: () => (/* binding */ openrouter),
 /* harmony export */   postTasks: () => (/* binding */ postTasks),
 /* harmony export */   psApi: () => (/* binding */ psApi),
 /* harmony export */   refreshBootstrap: () => (/* binding */ refreshBootstrap),
 /* harmony export */   setBootstrap: () => (/* binding */ setBootstrap),
 /* harmony export */   settings: () => (/* binding */ settings),
-/* harmony export */   webhooks: () => (/* binding */ webhooks)
+/* harmony export */   webhooks: () => (/* binding */ webhooks),
+/* harmony export */   writingPresets: () => (/* binding */ writingPresets)
 /* harmony export */ });
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -5252,7 +5252,7 @@ var setBootstrap = function setBootstrap() {
     window.poststation = {};
   }
   window.poststation.bootstrap = bootstrap;
-  var mirrorKeys = ['post_types', 'taxonomies', 'languages', 'countries', 'users', 'current_user_id', 'settings', 'webhooks', 'campaigns', 'instructions', 'openrouter_models'];
+  var mirrorKeys = ['post_types', 'taxonomies', 'languages', 'countries', 'users', 'current_user_id', 'settings', 'webhooks', 'campaigns', 'writing_presets', 'openrouter_models'];
   mirrorKeys.forEach(function (key) {
     if (bootstrap[key] !== undefined) {
       window.poststation[key] = bootstrap[key];
@@ -5545,11 +5545,11 @@ var webhooks = {
   }
 };
 
-// Instruction presets API
-var instructions = {
+// Writing presets API
+var writingPresets = {
   create: function create(data) {
     var _data$description, _data$instructions;
-    return ajax('poststation_create_instruction', {
+    return ajax('poststation_create_writing_preset', {
       key: data.key,
       name: data.name,
       description: (_data$description = data.description) !== null && _data$description !== void 0 ? _data$description : '',
@@ -5561,7 +5561,7 @@ var instructions = {
   },
   update: function update(id, data) {
     var _data$description2, _data$instructions2;
-    return ajax('poststation_update_instruction', {
+    return ajax('poststation_update_writing_preset', {
       id: id,
       description: (_data$description2 = data.description) !== null && _data$description2 !== void 0 ? _data$description2 : '',
       instructions: JSON.stringify((_data$instructions2 = data.instructions) !== null && _data$instructions2 !== void 0 ? _data$instructions2 : {
@@ -5571,19 +5571,19 @@ var instructions = {
     });
   },
   duplicate: function duplicate(id, newKey, newName) {
-    return ajax('poststation_duplicate_instruction', {
+    return ajax('poststation_duplicate_writing_preset', {
       id: id,
       new_key: newKey,
       new_name: newName
     });
   },
   reset: function reset(id) {
-    return ajax('poststation_reset_instruction', {
+    return ajax('poststation_reset_writing_preset', {
       id: id
     });
   },
   "delete": function _delete(id) {
-    return ajax('poststation_delete_instruction', {
+    return ajax('poststation_delete_writing_preset', {
       id: id
     });
   }
@@ -5650,8 +5650,8 @@ var getBootstrapWebhooks = function getBootstrapWebhooks() {
 var getBootstrapCampaigns = function getBootstrapCampaigns() {
   return getBootstrap().campaigns || null;
 };
-var getBootstrapInstructions = function getBootstrapInstructions() {
-  return getBootstrap().instructions || [];
+var getBootstrapWritingPresets = function getBootstrapWritingPresets() {
+  return getBootstrap().writing_presets || [];
 };
 var getBootstrapOpenRouterModels = function getBootstrapOpenRouterModels() {
   return getBootstrap().openrouter_models || [];
@@ -5667,13 +5667,13 @@ var openrouter = {
   }
 };
 var ai = {
-  generateInstructionPreset: function generateInstructionPreset(_ref2) {
+  generateWritingPreset: function generateWritingPreset(_ref2) {
     var prompt = _ref2.prompt,
       _ref2$provider = _ref2.provider,
       provider = _ref2$provider === void 0 ? 'openrouter' : _ref2$provider,
       _ref2$model = _ref2.model,
       model = _ref2$model === void 0 ? '' : _ref2$model;
-    return ajax('poststation_generate_instruction_preset', {
+    return ajax('poststation_generate_writing_preset', {
       prompt: prompt,
       provider: provider,
       model: model
@@ -6650,26 +6650,40 @@ var CAMPAIGN_TYPE_OPTIONS = [{
   label: 'Rewrite Blog Post'
 }];
 function PostTaskForm(_ref) {
-  var _task$topic, _task$keywords, _task$title_override, _task$slug_override;
+  var _contentFields, _task$topic, _task$keywords3, _task$title_override3, _task$slug_override3;
   var task = _ref.task,
     campaign = _ref.campaign,
     _onChange = _ref.onChange;
   var isProcessing = task.status === 'processing';
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
+      var _task$keywords;
+      return Boolean(((_task$keywords = task.keywords) !== null && _task$keywords !== void 0 ? _task$keywords : '').trim());
+    }),
+    _useState2 = _slicedToArray(_useState, 2),
+    showKeywordsOverride = _useState2[0],
+    setShowKeywordsOverride = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
+      var _task$title_override, _task$slug_override, _task$feature_image_t;
+      return Boolean(((_task$title_override = task.title_override) !== null && _task$title_override !== void 0 ? _task$title_override : '').trim() || ((_task$slug_override = task.slug_override) !== null && _task$slug_override !== void 0 ? _task$slug_override : '').trim() || task.feature_image_id || ((_task$feature_image_t = task.feature_image_title) !== null && _task$feature_image_t !== void 0 ? _task$feature_image_t : '').trim());
+    }),
+    _useState4 = _slicedToArray(_useState3, 2),
+    showManualOverrides = _useState4[0],
+    setShowManualOverrides = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
       var id = Number(task === null || task === void 0 ? void 0 : task.feature_image_id);
       return id ? attachmentUrlCache.get(id) || '' : '';
     }),
-    _useState2 = _slicedToArray(_useState, 2),
-    featuredImageUrl = _useState2[0],
-    setFeaturedImageUrl = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    featureImageLoading = _useState4[0],
-    setFeatureImageLoading = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(!task.slug_override || task.slug_override.trim() === ''),
     _useState6 = _slicedToArray(_useState5, 2),
-    isSlugSynced = _useState6[0],
-    setIsSlugSynced = _useState6[1];
+    featuredImageUrl = _useState6[0],
+    setFeaturedImageUrl = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    featureImageLoading = _useState8[0],
+    setFeatureImageLoading = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(!task.slug_override || task.slug_override.trim() === ''),
+    _useState10 = _slicedToArray(_useState9, 2),
+    isSlugSynced = _useState10[0],
+    setIsSlugSynced = _useState10[1];
   var handleChange = function handleChange(field, value) {
     if (isProcessing) return;
     var updates = _defineProperty({}, field, value);
@@ -6708,10 +6722,18 @@ function PostTaskForm(_ref) {
     _onChange(updates);
   };
   var resolvedCampaignType = task.campaign_type || (campaign === null || campaign === void 0 ? void 0 : campaign.campaign_type) || 'default';
-  var contentFields = campaign !== null && campaign !== void 0 && campaign.content_fields ? typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields : {};
-  var imageConfig = (contentFields === null || contentFields === void 0 ? void 0 : contentFields.image) || null;
+  var contentFields = {};
+  if (campaign !== null && campaign !== void 0 && campaign.content_fields) {
+    contentFields = typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields;
+  }
+  var imageConfig = ((_contentFields = contentFields) === null || _contentFields === void 0 ? void 0 : _contentFields.image) || null;
   var imageMode = (imageConfig === null || imageConfig === void 0 ? void 0 : imageConfig.mode) || 'generate_from_article';
   var showImageTitleOverride = Boolean((imageConfig === null || imageConfig === void 0 ? void 0 : imageConfig.enabled) && imageMode === 'generate_from_dt');
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var _task$keywords2, _task$title_override2, _task$slug_override2, _task$feature_image_t2;
+    setShowKeywordsOverride(Boolean(((_task$keywords2 = task.keywords) !== null && _task$keywords2 !== void 0 ? _task$keywords2 : '').trim()));
+    setShowManualOverrides(Boolean(((_task$title_override2 = task.title_override) !== null && _task$title_override2 !== void 0 ? _task$title_override2 : '').trim() || ((_task$slug_override2 = task.slug_override) !== null && _task$slug_override2 !== void 0 ? _task$slug_override2 : '').trim() || task.feature_image_id || ((_task$feature_image_t2 = task.feature_image_title) !== null && _task$feature_image_t2 !== void 0 ? _task$feature_image_t2 : '').trim()));
+  }, [task.id, task.keywords, task.title_override, task.slug_override, task.feature_image_id, task.feature_image_title]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var _window$wp;
     var mounted = true;
@@ -6750,6 +6772,41 @@ function PostTaskForm(_ref) {
   var handleTopicChange = function handleTopicChange(value) {
     handleChange('topic', value);
   };
+  var renderFeaturedImagePreview = function renderFeaturedImagePreview() {
+    if (featuredImageUrl) {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("img", {
+        src: featuredImageUrl,
+        alt: "Featured override preview",
+        className: "w-12 h-12 rounded object-cover border border-gray-200"
+      });
+    }
+    if (featureImageLoading) {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+        className: "w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+          className: "w-5 h-5 animate-spin text-gray-400",
+          fill: "none",
+          viewBox: "0 0 24 24",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+            className: "opacity-25",
+            cx: "12",
+            cy: "12",
+            r: "10",
+            stroke: "currentColor",
+            strokeWidth: "4"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+            className: "opacity-75",
+            fill: "currentColor",
+            d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          })]
+        })
+      });
+    }
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      className: "w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-500",
+      children: ["#", task.feature_image_id]
+    });
+  };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
     className: "space-y-3 ".concat(isProcessing ? 'opacity-75' : ''),
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
@@ -6786,22 +6843,57 @@ function PostTaskForm(_ref) {
         disabled: isProcessing,
         variant: "floating"
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      className: "grid grid-cols-1 sm:grid-cols-2 gap-3",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        className: "poststation-switch text-sm font-medium text-gray-700",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          type: "checkbox",
+          checked: showKeywordsOverride,
+          onChange: function onChange(e) {
+            return setShowKeywordsOverride(e.target.checked);
+          },
+          className: "poststation-field-checkbox",
+          disabled: isProcessing
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          className: "poststation-switch-track",
+          "aria-hidden": true
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          children: "Keywords"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        className: "poststation-switch text-sm font-medium text-gray-700",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          type: "checkbox",
+          checked: showManualOverrides,
+          onChange: function onChange(e) {
+            return setShowManualOverrides(e.target.checked);
+          },
+          className: "poststation-field-checkbox",
+          disabled: isProcessing
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          className: "poststation-switch-track",
+          "aria-hidden": true
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          children: "Manual Overrides"
+        })]
+      })]
+    }), showKeywordsOverride && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
       label: "Keywords",
       tooltip: "Comma-separated keywords for this task (e.g. for generation or SEO).",
       placeholder: "e.g. coffee, london, guide",
-      value: (_task$keywords = task.keywords) !== null && _task$keywords !== void 0 ? _task$keywords : '',
+      value: (_task$keywords3 = task.keywords) !== null && _task$keywords3 !== void 0 ? _task$keywords3 : '',
       onChange: function onChange(e) {
         return handleChange('keywords', e.target.value);
       },
       disabled: isProcessing,
       variant: "floating"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), showManualOverrides && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "grid grid-cols-1 md:grid-cols-2 gap-3",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
         label: "Title Override (Optional)",
         tooltip: "If set, campaign title generation is disabled for this task and this value is sent to the webhook.",
-        value: (_task$title_override = task.title_override) !== null && _task$title_override !== void 0 ? _task$title_override : '',
+        value: (_task$title_override3 = task.title_override) !== null && _task$title_override3 !== void 0 ? _task$title_override3 : '',
         onChange: function onChange(e) {
           return handleChange('title_override', e.target.value);
         },
@@ -6810,7 +6902,7 @@ function PostTaskForm(_ref) {
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
         label: "Slug Override (Optional)",
         tooltip: "If set, campaign slug generation is disabled for this task and this value is sent to the webhook.",
-        value: (_task$slug_override = task.slug_override) !== null && _task$slug_override !== void 0 ? _task$slug_override : '',
+        value: (_task$slug_override3 = task.slug_override) !== null && _task$slug_override3 !== void 0 ? _task$slug_override3 : '',
         onChange: function onChange(e) {
           return handleChange('slug_override', e.target.value);
         },
@@ -6877,7 +6969,7 @@ function PostTaskForm(_ref) {
           children: "Tasks are scheduled one per day across the selected range, then cycle back to the start date."
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), showManualOverrides && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "grid grid-cols-1 md:grid-cols-2 gap-3",
       children: [showImageTitleOverride && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
         label: "Featured Image Title (Override)",
@@ -6889,7 +6981,7 @@ function PostTaskForm(_ref) {
         disabled: isProcessing,
         variant: "floating"
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "flex items-center text-sm font-medium text-gray-700 mb-1",
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
             children: "Featured Image (Override)"
@@ -6898,33 +6990,7 @@ function PostTaskForm(_ref) {
           })]
         }), task.feature_image_id ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "flex items-center gap-3",
-          children: [featuredImageUrl ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("img", {
-            src: featuredImageUrl,
-            alt: "Featured override preview",
-            className: "w-12 h-12 rounded object-cover border border-gray-200"
-          }) : featureImageLoading ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-            className: "w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
-              className: "w-5 h-5 animate-spin text-gray-400",
-              fill: "none",
-              viewBox: "0 0 24 24",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
-                className: "opacity-25",
-                cx: "12",
-                cy: "12",
-                r: "10",
-                stroke: "currentColor",
-                strokeWidth: "4"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
-                className: "opacity-75",
-                fill: "currentColor",
-                d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              })]
-            })
-          }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            className: "w-12 h-12 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-500",
-            children: ["#", task.feature_image_id]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+          children: [renderFeaturedImagePreview(), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
             className: "text-sm text-gray-600",
             children: ["Image ID: ", task.feature_image_id]
           }), !isProcessing && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -7253,7 +7319,7 @@ function TaskItem(_ref2) {
       className: "flex flex-col sm:flex-row sm:items-center justify-between px-3 py-2 sm:px-4 sm:py-3 bg-white hover:bg-gray-50 cursor-pointer gap-2",
       onClick: onToggle,
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-        className: "flex items-center gap-2 sm:gap-3 min-w-0 flex-1",
+        className: "flex items-center gap-3 sm:gap-4 min-w-0 flex-1",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
           className: "text-gray-400 shrink-0",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
@@ -7330,7 +7396,7 @@ function TaskItem(_ref2) {
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "flex items-center gap-2 mt-0.5 min-w-0",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-              className: "text-[14px] font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-md",
+              className: "text-[14px] font-semibold text-gray-900 truncate",
               children: primaryLabel
             }), task.progress !== null && task.progress !== undefined && task.status !== 'completed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
               className: "text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic truncate max-w-[120px]",
@@ -7589,7 +7655,7 @@ function generateSourceId() {
 
 /** Build full campaign payload so backend does not overwrite other fields with defaults. */
 function buildCampaignPayload(campaign, frequency_interval, validSources) {
-  var _campaign$post_type, _campaign$publication, _campaign$webhook_id, _campaign$campaign_ty, _campaign$tone_of_voi, _campaign$point_of_vi, _campaign$readability, _campaign$language, _campaign$target_coun, _campaign$instruction;
+  var _campaign$post_type, _campaign$publication, _campaign$webhook_id, _campaign$campaign_ty, _campaign$tone_of_voi, _campaign$point_of_vi, _campaign$readability, _campaign$language, _campaign$target_coun, _campaign$writing_pre;
   return {
     title: campaign.title || 'Campaign',
     post_type: (_campaign$post_type = campaign.post_type) !== null && _campaign$post_type !== void 0 ? _campaign$post_type : 'post',
@@ -7602,7 +7668,7 @@ function buildCampaignPayload(campaign, frequency_interval, validSources) {
     readability: (_campaign$readability = campaign.readability) !== null && _campaign$readability !== void 0 ? _campaign$readability : 'grade_8',
     language: (_campaign$language = campaign.language) !== null && _campaign$language !== void 0 ? _campaign$language : 'en',
     target_country: (_campaign$target_coun = campaign.target_country) !== null && _campaign$target_coun !== void 0 ? _campaign$target_coun : 'international',
-    instruction_id: (_campaign$instruction = campaign.instruction_id) !== null && _campaign$instruction !== void 0 ? _campaign$instruction : null,
+    writing_preset_id: (_campaign$writing_pre = campaign.writing_preset_id) !== null && _campaign$writing_pre !== void 0 ? _campaign$writing_pre : null,
     content_fields: campaign.content_fields,
     rss_enabled: 'yes',
     rss_config: {
@@ -11200,511 +11266,6 @@ function PageHeader(_ref5) {
 
 /***/ }),
 
-/***/ "./src/components/instructions/InstructionModal.jsx":
-/*!**********************************************************!*\
-  !*** ./src/components/instructions/InstructionModal.jsx ***!
-  \**********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ InstructionModal)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common */ "./src/components/common/index.js");
-/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-
-
-
-
-var DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
-var DESCRIPTION_MAX_LENGTH = 80;
-var isDefaultPreset = function isDefaultPreset(key) {
-  return key && DEFAULT_KEYS.includes(key);
-};
-var KEY_FORMAT = /^[a-z0-9_-]+$/;
-var normalizeKey = function normalizeKey() {
-  var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-  return String(value).toLowerCase().replace(/[^a-z0-9_\s-]/g, '').replace(/\s+/g, '_').replace(/-+/g, '-').replace(/_+/g, '_');
-};
-var limitDescription = function limitDescription() {
-  var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-  return String(value !== null && value !== void 0 ? value : '').slice(0, DESCRIPTION_MAX_LENGTH);
-};
-function InstructionModal(_ref) {
-  var isOpen = _ref.isOpen,
-    onClose = _ref.onClose,
-    _ref$mode = _ref.mode,
-    mode = _ref$mode === void 0 ? 'add' : _ref$mode,
-    _ref$instruction = _ref.instruction,
-    instruction = _ref$instruction === void 0 ? null : _ref$instruction,
-    onSaved = _ref.onSaved;
-  var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSettings)() || {};
-  var defaultAiModel = (bootstrapSettings === null || bootstrapSettings === void 0 ? void 0 : bootstrapSettings.openrouter_default_text_model) || '';
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState2 = _slicedToArray(_useState, 2),
-    key = _useState2[0],
-    setKey = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState4 = _slicedToArray(_useState3, 2),
-    name = _useState4[0],
-    setName = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState6 = _slicedToArray(_useState5, 2),
-    description = _useState6[0],
-    setDescription = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState8 = _slicedToArray(_useState7, 2),
-    titleInstruction = _useState8[0],
-    setTitleInstruction = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState10 = _slicedToArray(_useState9, 2),
-    bodyInstruction = _useState10[0],
-    setBodyInstruction = _useState10[1];
-  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState12 = _slicedToArray(_useState11, 2),
-    saving = _useState12[0],
-    setSaving = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState14 = _slicedToArray(_useState13, 2),
-    resetting = _useState14[0],
-    setResetting = _useState14[1];
-  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState16 = _slicedToArray(_useState15, 2),
-    aiOpen = _useState16[0],
-    setAiOpen = _useState16[1];
-  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState18 = _slicedToArray(_useState17, 2),
-    aiPrompt = _useState18[0],
-    setAiPrompt = _useState18[1];
-  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(defaultAiModel),
-    _useState20 = _slicedToArray(_useState19, 2),
-    aiModel = _useState20[0],
-    setAiModel = _useState20[1];
-  var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState22 = _slicedToArray(_useState21, 2),
-    aiGenerating = _useState22[0],
-    setAiGenerating = _useState22[1];
-  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState24 = _slicedToArray(_useState23, 2),
-    error = _useState24[0],
-    setError = _useState24[1];
-  var lockKeyAndName = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
-  var showResetButton = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    if (!isOpen) return;
-    setError('');
-    if (mode === 'add' && !instruction) {
-      setKey('');
-      setName('');
-      setDescription('');
-      setTitleInstruction('');
-      setBodyInstruction('');
-      setAiPrompt('');
-      setAiModel(defaultAiModel);
-      setAiOpen(false);
-      return;
-    }
-    if (mode === 'duplicate' || mode === 'edit') {
-      var _inst$key, _inst$name, _inst$description, _instr$title, _instr$body;
-      var inst = instruction || {};
-      var instr = inst.instructions || {};
-      setKey(mode === 'duplicate' ? '' : (_inst$key = inst.key) !== null && _inst$key !== void 0 ? _inst$key : '');
-      setName(mode === 'duplicate' ? '' : (_inst$name = inst.name) !== null && _inst$name !== void 0 ? _inst$name : '');
-      setDescription(limitDescription((_inst$description = inst.description) !== null && _inst$description !== void 0 ? _inst$description : ''));
-      setTitleInstruction((_instr$title = instr.title) !== null && _instr$title !== void 0 ? _instr$title : '');
-      setBodyInstruction((_instr$body = instr.body) !== null && _instr$body !== void 0 ? _instr$body : '');
-      setAiPrompt('');
-      setAiModel(defaultAiModel);
-      setAiOpen(false);
-    }
-  }, [isOpen, mode, instruction, defaultAiModel]);
-  var handleAiGenerate = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-      var _preset$key, _preset$name, _preset$description, _generatedInstruction, _generatedInstruction2, result, preset, generatedInstructions;
-      return _regeneratorRuntime().wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            setError('');
-            if (String(aiPrompt !== null && aiPrompt !== void 0 ? aiPrompt : '').trim()) {
-              _context.next = 4;
-              break;
-            }
-            setError('Describe the preset or provide an article URL first.');
-            return _context.abrupt("return");
-          case 4:
-            setAiGenerating(true);
-            _context.prev = 5;
-            _context.next = 8;
-            return _api_client__WEBPACK_IMPORTED_MODULE_2__.ai.generateInstructionPreset({
-              prompt: String(aiPrompt !== null && aiPrompt !== void 0 ? aiPrompt : '').trim(),
-              provider: 'openrouter',
-              model: String(aiModel !== null && aiModel !== void 0 ? aiModel : '').trim()
-            });
-          case 8:
-            result = _context.sent;
-            preset = (result === null || result === void 0 ? void 0 : result.preset) || {};
-            generatedInstructions = (preset === null || preset === void 0 ? void 0 : preset.instructions) || {};
-            setKey(normalizeKey((_preset$key = preset === null || preset === void 0 ? void 0 : preset.key) !== null && _preset$key !== void 0 ? _preset$key : ''));
-            setName((_preset$name = preset === null || preset === void 0 ? void 0 : preset.name) !== null && _preset$name !== void 0 ? _preset$name : '');
-            setDescription(limitDescription((_preset$description = preset === null || preset === void 0 ? void 0 : preset.description) !== null && _preset$description !== void 0 ? _preset$description : ''));
-            setTitleInstruction((_generatedInstruction = generatedInstructions === null || generatedInstructions === void 0 ? void 0 : generatedInstructions.title) !== null && _generatedInstruction !== void 0 ? _generatedInstruction : '');
-            setBodyInstruction((_generatedInstruction2 = generatedInstructions === null || generatedInstructions === void 0 ? void 0 : generatedInstructions.body) !== null && _generatedInstruction2 !== void 0 ? _generatedInstruction2 : '');
-            _context.next = 21;
-            break;
-          case 18:
-            _context.prev = 18;
-            _context.t0 = _context["catch"](5);
-            setError((_context.t0 === null || _context.t0 === void 0 ? void 0 : _context.t0.message) || 'Failed to generate preset with AI.');
-          case 21:
-            _context.prev = 21;
-            setAiGenerating(false);
-            return _context.finish(21);
-          case 24:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, null, [[5, 18, 21, 24]]);
-    }));
-    return function handleAiGenerate() {
-      return _ref2.apply(this, arguments);
-    };
-  }();
-  var handleSubmit = /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(e) {
-      var keyTrim, nameTrim, payload, _result$id, _result$instruction, result;
-      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            e.preventDefault();
-            setError('');
-            keyTrim = normalizeKey(String(key !== null && key !== void 0 ? key : '').trim());
-            nameTrim = String(name !== null && name !== void 0 ? name : '').trim();
-            if (!(!keyTrim || !nameTrim)) {
-              _context2.next = 7;
-              break;
-            }
-            setError('Key and name are required.');
-            return _context2.abrupt("return");
-          case 7:
-            if (KEY_FORMAT.test(keyTrim)) {
-              _context2.next = 10;
-              break;
-            }
-            setError('Key must use lowercase letters, numbers, underscores, and hyphens only.');
-            return _context2.abrupt("return");
-          case 10:
-            payload = {
-              description: limitDescription(String(description !== null && description !== void 0 ? description : '').trim()),
-              instructions: {
-                title: String(titleInstruction !== null && titleInstruction !== void 0 ? titleInstruction : '').trim(),
-                body: String(bodyInstruction !== null && bodyInstruction !== void 0 ? bodyInstruction : '').trim()
-              }
-            };
-            setSaving(true);
-            _context2.prev = 12;
-            if (!(mode === 'add' || mode === 'duplicate')) {
-              _context2.next = 22;
-              break;
-            }
-            _context2.next = 16;
-            return _api_client__WEBPACK_IMPORTED_MODULE_2__.instructions.create(_objectSpread({
-              key: keyTrim,
-              name: nameTrim
-            }, payload));
-          case 16:
-            result = _context2.sent;
-            _context2.next = 19;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
-          case 19:
-            onSaved === null || onSaved === void 0 || onSaved((_result$id = result === null || result === void 0 ? void 0 : result.id) !== null && _result$id !== void 0 ? _result$id : result === null || result === void 0 || (_result$instruction = result.instruction) === null || _result$instruction === void 0 ? void 0 : _result$instruction.id);
-            _context2.next = 27;
-            break;
-          case 22:
-            _context2.next = 24;
-            return _api_client__WEBPACK_IMPORTED_MODULE_2__.instructions.update(instruction.id, payload);
-          case 24:
-            _context2.next = 26;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
-          case 26:
-            onSaved === null || onSaved === void 0 || onSaved();
-          case 27:
-            onClose();
-            _context2.next = 33;
-            break;
-          case 30:
-            _context2.prev = 30;
-            _context2.t0 = _context2["catch"](12);
-            setError((_context2.t0 === null || _context2.t0 === void 0 ? void 0 : _context2.t0.message) || 'Failed to save.');
-          case 33:
-            _context2.prev = 33;
-            setSaving(false);
-            return _context2.finish(33);
-          case 36:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2, null, [[12, 30, 33, 36]]);
-    }));
-    return function handleSubmit(_x) {
-      return _ref3.apply(this, arguments);
-    };
-  }();
-  var handleReset = /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2;
-      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            if (!(!(instruction !== null && instruction !== void 0 && instruction.id) || !showResetButton)) {
-              _context3.next = 2;
-              break;
-            }
-            return _context3.abrupt("return");
-          case 2:
-            setError('');
-            setResetting(true);
-            _context3.prev = 4;
-            _context3.next = 7;
-            return _api_client__WEBPACK_IMPORTED_MODULE_2__.instructions.reset(instruction.id);
-          case 7:
-            result = _context3.sent;
-            _context3.next = 10;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
-          case 10:
-            inst = result === null || result === void 0 ? void 0 : result.instruction;
-            if (inst) {
-              setDescription((_inst$description2 = inst.description) !== null && _inst$description2 !== void 0 ? _inst$description2 : '');
-              setTitleInstruction((_inst$instructions$ti = (_inst$instructions = inst.instructions) === null || _inst$instructions === void 0 ? void 0 : _inst$instructions.title) !== null && _inst$instructions$ti !== void 0 ? _inst$instructions$ti : '');
-              setBodyInstruction((_inst$instructions$bo = (_inst$instructions2 = inst.instructions) === null || _inst$instructions2 === void 0 ? void 0 : _inst$instructions2.body) !== null && _inst$instructions$bo !== void 0 ? _inst$instructions$bo : '');
-            }
-            onSaved === null || onSaved === void 0 || onSaved();
-            _context3.next = 18;
-            break;
-          case 15:
-            _context3.prev = 15;
-            _context3.t0 = _context3["catch"](4);
-            setError((_context3.t0 === null || _context3.t0 === void 0 ? void 0 : _context3.t0.message) || 'Failed to reset.');
-          case 18:
-            _context3.prev = 18;
-            setResetting(false);
-            return _context3.finish(18);
-          case 21:
-          case "end":
-            return _context3.stop();
-        }
-      }, _callee3, null, [[4, 15, 18, 21]]);
-    }));
-    return function handleReset() {
-      return _ref4.apply(this, arguments);
-    };
-  }();
-  var title = mode === 'add' ? 'Add instruction preset' : mode === 'duplicate' ? 'Duplicate instruction preset' : 'Edit instruction preset';
-  var showAiTools = mode === 'add';
-  var keyHasInvalidFormat = !!key && !KEY_FORMAT.test(key);
-  var modalTitle = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-    className: "inline-flex items-center gap-2",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
-      children: title
-    }), showAiTools && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
-      type: "button",
-      onClick: function onClick() {
-        return setAiOpen(function (prev) {
-          return !prev;
-        });
-      },
-      title: "Generate with AI",
-      className: "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
-        className: "h-4 w-4",
-        viewBox: "0 0 24 24",
-        fill: "none",
-        stroke: "currentColor",
-        strokeWidth: "2",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
-          strokeLinecap: "round",
-          strokeLinejoin: "round",
-          d: "M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM5 16l.9 2.1L8 19l-2.1.9L5 22l-.9-2.1L2 19l2.1-.9L5 16zM19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z"
-        })
-      })
-    })]
-  });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
-    isOpen: isOpen,
-    onClose: onClose,
-    title: modalTitle,
-    size: "lg",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("form", {
-      onSubmit: handleSubmit,
-      className: "space-y-4",
-      children: [error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-        className: "p-3 rounded-lg bg-red-50 text-red-700 text-sm",
-        children: error
-      }), showAiTools && aiOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 space-y-3",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
-          label: "AI model",
-          tooltip: "OpenRouter text model used to generate the instruction preset.",
-          value: aiModel,
-          onChange: function onChange(e) {
-            return setAiModel(e.target.value);
-          },
-          filter: "text",
-          placeholder: "Use default model",
-          disabled: aiGenerating || saving || resetting
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
-          label: "Describe the preset you want",
-          value: aiPrompt,
-          onChange: function onChange(e) {
-            return setAiPrompt(e.target.value);
-          },
-          placeholder: "Example: Create a preset for product comparison reviews, or paste an article sample URL...",
-          rows: 3
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-          className: "flex justify-end",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-            type: "button",
-            onClick: handleAiGenerate,
-            loading: aiGenerating,
-            disabled: saving || resetting,
-            children: "Generate with AI"
-          })
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        className: "relative",
-        children: [aiGenerating && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-          className: "absolute inset-0 z-20 rounded-xl bg-white/80 backdrop-blur-sm border border-indigo-100 flex flex-col items-center justify-center gap-4",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-            className: "h-10 w-10 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            className: "flex gap-1",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
-              className: "h-2 w-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
-              className: "h-2 w-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
-              className: "h-2 w-2 rounded-full bg-indigo-500 animate-bounce"
-            })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
-            className: "text-sm text-indigo-900 font-medium",
-            children: "Generating preset..."
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-          className: "space-y-4",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            className: "grid grid-cols-1 sm:grid-cols-2 gap-4",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "Key",
-              value: key,
-              onChange: function onChange(e) {
-                return setKey(normalizeKey(e.target.value));
-              },
-              placeholder: "e.g. my_preset",
-              disabled: lockKeyAndName || aiGenerating,
-              error: keyHasInvalidFormat ? 'Use lowercase letters, numbers, underscores, and hyphens only.' : '',
-              required: true
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "Name",
-              value: name,
-              onChange: function onChange(e) {
-                return setName(e.target.value);
-              },
-              placeholder: "Display name",
-              disabled: lockKeyAndName || aiGenerating,
-              required: true
-            })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
-              className: "flex items-center text-sm font-medium text-gray-700 mb-1",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
-                children: "Description"
-              })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-              className: "relative",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
-                value: description,
-                onChange: function onChange(e) {
-                  return setDescription(limitDescription(e.target.value));
-                },
-                placeholder: "Short description for the preset",
-                rows: 2,
-                maxLength: DESCRIPTION_MAX_LENGTH,
-                disabled: aiGenerating,
-                className: "poststation-field pr-16 pb-6"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-                className: "pointer-events-none absolute bottom-2 right-3 text-xs text-gray-500",
-                children: [description.length, "/", DESCRIPTION_MAX_LENGTH]
-              })]
-            })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            className: "border-t border-gray-200 pt-4 space-y-4",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
-              label: "Title instruction",
-              value: titleInstruction,
-              onChange: function onChange(e) {
-                return setTitleInstruction(e.target.value);
-              },
-              placeholder: "How to write the title for this type",
-              rows: 2,
-              disabled: aiGenerating
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
-              label: "Body instruction",
-              value: bodyInstruction,
-              onChange: function onChange(e) {
-                return setBodyInstruction(e.target.value);
-              },
-              placeholder: "How to write the body",
-              rows: 3,
-              disabled: aiGenerating
-            })]
-          })]
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        className: "flex justify-end gap-2 pt-2",
-        children: [showResetButton && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-          type: "button",
-          variant: "secondary",
-          onClick: handleReset,
-          loading: resetting,
-          disabled: saving,
-          className: "mr-auto",
-          children: "Reset to default"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-          type: "button",
-          variant: "secondary",
-          onClick: onClose,
-          disabled: saving || aiGenerating,
-          children: "Cancel"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-          type: "submit",
-          loading: saving,
-          disabled: aiGenerating || keyHasInvalidFormat,
-          children: mode === 'add' || mode === 'duplicate' ? 'Create' : 'Save'
-        })]
-      })]
-    })
-  });
-}
-
-/***/ }),
-
 /***/ "./src/components/layout/AppShell.jsx":
 /*!********************************************!*\
   !*** ./src/components/layout/AppShell.jsx ***!
@@ -11940,7 +11501,7 @@ function AppShell(_ref4) {
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("main", {
       className: "flex-1 min-w-0",
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
-        className: "p-4 sm:p-8",
+        className: "p-4 sm:p-6",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "flex items-center gap-3 mb-4 lg:hidden",
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
@@ -11988,7 +11549,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function InfoSidebar() {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-    className: "w-full xl:w-80 shrink-0",
+    className: "w-full xl:w-64 shrink-0",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
       className: "bg-white rounded-lg border border-gray-200 shadow-sm mb-4",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
@@ -12091,6 +11652,511 @@ function InfoSidebar() {
         children: "Need help? View documentation"
       })
     })]
+  });
+}
+
+/***/ }),
+
+/***/ "./src/components/writing-presets/WritingPresetModal.jsx":
+/*!***************************************************************!*\
+  !*** ./src/components/writing-presets/WritingPresetModal.jsx ***!
+  \***************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ WritingPresetModal)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common */ "./src/components/common/index.js");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+
+
+
+var DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
+var DESCRIPTION_MAX_LENGTH = 80;
+var isDefaultPreset = function isDefaultPreset(key) {
+  return key && DEFAULT_KEYS.includes(key);
+};
+var KEY_FORMAT = /^[a-z0-9_-]+$/;
+var normalizeKey = function normalizeKey() {
+  var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  return String(value).toLowerCase().replace(/[^a-z0-9_\s-]/g, '').replace(/\s+/g, '_').replace(/-+/g, '-').replace(/_+/g, '_');
+};
+var limitDescription = function limitDescription() {
+  var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  return String(value !== null && value !== void 0 ? value : '').slice(0, DESCRIPTION_MAX_LENGTH);
+};
+function WritingPresetModal(_ref) {
+  var isOpen = _ref.isOpen,
+    onClose = _ref.onClose,
+    _ref$mode = _ref.mode,
+    mode = _ref$mode === void 0 ? 'add' : _ref$mode,
+    _ref$writingPreset = _ref.writingPreset,
+    writingPreset = _ref$writingPreset === void 0 ? null : _ref$writingPreset,
+    onSaved = _ref.onSaved;
+  var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSettings)() || {};
+  var defaultAiModel = (bootstrapSettings === null || bootstrapSettings === void 0 ? void 0 : bootstrapSettings.openrouter_default_text_model) || '';
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState2 = _slicedToArray(_useState, 2),
+    key = _useState2[0],
+    setKey = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState4 = _slicedToArray(_useState3, 2),
+    name = _useState4[0],
+    setName = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState6 = _slicedToArray(_useState5, 2),
+    description = _useState6[0],
+    setDescription = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState8 = _slicedToArray(_useState7, 2),
+    titleInstruction = _useState8[0],
+    setTitleInstruction = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState10 = _slicedToArray(_useState9, 2),
+    bodyInstruction = _useState10[0],
+    setBodyInstruction = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    saving = _useState12[0],
+    setSaving = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    resetting = _useState14[0],
+    setResetting = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState16 = _slicedToArray(_useState15, 2),
+    aiOpen = _useState16[0],
+    setAiOpen = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState18 = _slicedToArray(_useState17, 2),
+    aiPrompt = _useState18[0],
+    setAiPrompt = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(defaultAiModel),
+    _useState20 = _slicedToArray(_useState19, 2),
+    aiModel = _useState20[0],
+    setAiModel = _useState20[1];
+  var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState22 = _slicedToArray(_useState21, 2),
+    aiGenerating = _useState22[0],
+    setAiGenerating = _useState22[1];
+  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState24 = _slicedToArray(_useState23, 2),
+    error = _useState24[0],
+    setError = _useState24[1];
+  var lockKeyAndName = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
+  var showResetButton = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!isOpen) return;
+    setError('');
+    if (mode === 'add' && !writingPreset) {
+      setKey('');
+      setName('');
+      setDescription('');
+      setTitleInstruction('');
+      setBodyInstruction('');
+      setAiPrompt('');
+      setAiModel(defaultAiModel);
+      setAiOpen(false);
+      return;
+    }
+    if (mode === 'duplicate' || mode === 'edit') {
+      var _inst$key, _inst$name, _inst$description, _instr$title, _instr$body;
+      var inst = writingPreset || {};
+      var instr = inst.instructions || {};
+      setKey(mode === 'duplicate' ? '' : (_inst$key = inst.key) !== null && _inst$key !== void 0 ? _inst$key : '');
+      setName(mode === 'duplicate' ? '' : (_inst$name = inst.name) !== null && _inst$name !== void 0 ? _inst$name : '');
+      setDescription(limitDescription((_inst$description = inst.description) !== null && _inst$description !== void 0 ? _inst$description : ''));
+      setTitleInstruction((_instr$title = instr.title) !== null && _instr$title !== void 0 ? _instr$title : '');
+      setBodyInstruction((_instr$body = instr.body) !== null && _instr$body !== void 0 ? _instr$body : '');
+      setAiPrompt('');
+      setAiModel(defaultAiModel);
+      setAiOpen(false);
+    }
+  }, [isOpen, mode, writingPreset, defaultAiModel]);
+  var handleAiGenerate = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+      var _preset$key, _preset$name, _preset$description, _generatedInstruction, _generatedInstruction2, result, preset, generatedInstructions;
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            setError('');
+            if (String(aiPrompt !== null && aiPrompt !== void 0 ? aiPrompt : '').trim()) {
+              _context.next = 4;
+              break;
+            }
+            setError('Describe the preset or provide an article URL first.');
+            return _context.abrupt("return");
+          case 4:
+            setAiGenerating(true);
+            _context.prev = 5;
+            _context.next = 8;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.ai.generateWritingPreset({
+              prompt: String(aiPrompt !== null && aiPrompt !== void 0 ? aiPrompt : '').trim(),
+              provider: 'openrouter',
+              model: String(aiModel !== null && aiModel !== void 0 ? aiModel : '').trim()
+            });
+          case 8:
+            result = _context.sent;
+            preset = (result === null || result === void 0 ? void 0 : result.preset) || {};
+            generatedInstructions = (preset === null || preset === void 0 ? void 0 : preset.instructions) || {};
+            setKey(normalizeKey((_preset$key = preset === null || preset === void 0 ? void 0 : preset.key) !== null && _preset$key !== void 0 ? _preset$key : ''));
+            setName((_preset$name = preset === null || preset === void 0 ? void 0 : preset.name) !== null && _preset$name !== void 0 ? _preset$name : '');
+            setDescription(limitDescription((_preset$description = preset === null || preset === void 0 ? void 0 : preset.description) !== null && _preset$description !== void 0 ? _preset$description : ''));
+            setTitleInstruction((_generatedInstruction = generatedInstructions === null || generatedInstructions === void 0 ? void 0 : generatedInstructions.title) !== null && _generatedInstruction !== void 0 ? _generatedInstruction : '');
+            setBodyInstruction((_generatedInstruction2 = generatedInstructions === null || generatedInstructions === void 0 ? void 0 : generatedInstructions.body) !== null && _generatedInstruction2 !== void 0 ? _generatedInstruction2 : '');
+            _context.next = 21;
+            break;
+          case 18:
+            _context.prev = 18;
+            _context.t0 = _context["catch"](5);
+            setError((_context.t0 === null || _context.t0 === void 0 ? void 0 : _context.t0.message) || 'Failed to generate preset with AI.');
+          case 21:
+            _context.prev = 21;
+            setAiGenerating(false);
+            return _context.finish(21);
+          case 24:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee, null, [[5, 18, 21, 24]]);
+    }));
+    return function handleAiGenerate() {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var handleSubmit = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(e) {
+      var keyTrim, nameTrim, payload, _result$id, _result$writing_prese, result;
+      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            e.preventDefault();
+            setError('');
+            keyTrim = normalizeKey(String(key !== null && key !== void 0 ? key : '').trim());
+            nameTrim = String(name !== null && name !== void 0 ? name : '').trim();
+            if (!(!keyTrim || !nameTrim)) {
+              _context2.next = 7;
+              break;
+            }
+            setError('Key and name are required.');
+            return _context2.abrupt("return");
+          case 7:
+            if (KEY_FORMAT.test(keyTrim)) {
+              _context2.next = 10;
+              break;
+            }
+            setError('Key must use lowercase letters, numbers, underscores, and hyphens only.');
+            return _context2.abrupt("return");
+          case 10:
+            payload = {
+              description: limitDescription(String(description !== null && description !== void 0 ? description : '').trim()),
+              instructions: {
+                title: String(titleInstruction !== null && titleInstruction !== void 0 ? titleInstruction : '').trim(),
+                body: String(bodyInstruction !== null && bodyInstruction !== void 0 ? bodyInstruction : '').trim()
+              }
+            };
+            setSaving(true);
+            _context2.prev = 12;
+            if (!(mode === 'add' || mode === 'duplicate')) {
+              _context2.next = 22;
+              break;
+            }
+            _context2.next = 16;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.writingPresets.create(_objectSpread({
+              key: keyTrim,
+              name: nameTrim
+            }, payload));
+          case 16:
+            result = _context2.sent;
+            _context2.next = 19;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 19:
+            onSaved === null || onSaved === void 0 || onSaved((_result$id = result === null || result === void 0 ? void 0 : result.id) !== null && _result$id !== void 0 ? _result$id : result === null || result === void 0 || (_result$writing_prese = result.writing_preset) === null || _result$writing_prese === void 0 ? void 0 : _result$writing_prese.id);
+            _context2.next = 27;
+            break;
+          case 22:
+            _context2.next = 24;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.writingPresets.update(writingPreset.id, payload);
+          case 24:
+            _context2.next = 26;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 26:
+            onSaved === null || onSaved === void 0 || onSaved();
+          case 27:
+            onClose();
+            _context2.next = 33;
+            break;
+          case 30:
+            _context2.prev = 30;
+            _context2.t0 = _context2["catch"](12);
+            setError((_context2.t0 === null || _context2.t0 === void 0 ? void 0 : _context2.t0.message) || 'Failed to save.');
+          case 33:
+            _context2.prev = 33;
+            setSaving(false);
+            return _context2.finish(33);
+          case 36:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee2, null, [[12, 30, 33, 36]]);
+    }));
+    return function handleSubmit(_x) {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  var handleReset = /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2;
+      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            if (!(!(writingPreset !== null && writingPreset !== void 0 && writingPreset.id) || !showResetButton)) {
+              _context3.next = 2;
+              break;
+            }
+            return _context3.abrupt("return");
+          case 2:
+            setError('');
+            setResetting(true);
+            _context3.prev = 4;
+            _context3.next = 7;
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.writingPresets.reset(writingPreset.id);
+          case 7:
+            result = _context3.sent;
+            _context3.next = 10;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 10:
+            inst = result === null || result === void 0 ? void 0 : result.writing_preset;
+            if (inst) {
+              setDescription((_inst$description2 = inst.description) !== null && _inst$description2 !== void 0 ? _inst$description2 : '');
+              setTitleInstruction((_inst$instructions$ti = (_inst$instructions = inst.instructions) === null || _inst$instructions === void 0 ? void 0 : _inst$instructions.title) !== null && _inst$instructions$ti !== void 0 ? _inst$instructions$ti : '');
+              setBodyInstruction((_inst$instructions$bo = (_inst$instructions2 = inst.instructions) === null || _inst$instructions2 === void 0 ? void 0 : _inst$instructions2.body) !== null && _inst$instructions$bo !== void 0 ? _inst$instructions$bo : '');
+            }
+            onSaved === null || onSaved === void 0 || onSaved();
+            _context3.next = 18;
+            break;
+          case 15:
+            _context3.prev = 15;
+            _context3.t0 = _context3["catch"](4);
+            setError((_context3.t0 === null || _context3.t0 === void 0 ? void 0 : _context3.t0.message) || 'Failed to reset.');
+          case 18:
+            _context3.prev = 18;
+            setResetting(false);
+            return _context3.finish(18);
+          case 21:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3, null, [[4, 15, 18, 21]]);
+    }));
+    return function handleReset() {
+      return _ref4.apply(this, arguments);
+    };
+  }();
+  var title = mode === 'add' ? 'Add writing preset' : mode === 'duplicate' ? 'Duplicate writing preset' : 'Edit writing preset';
+  var showAiTools = mode === 'add';
+  var keyHasInvalidFormat = !!key && !KEY_FORMAT.test(key);
+  var modalTitle = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+    className: "inline-flex items-center gap-2",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+      children: title
+    }), showAiTools && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+      type: "button",
+      onClick: function onClick() {
+        return setAiOpen(function (prev) {
+          return !prev;
+        });
+      },
+      title: "Generate with AI",
+      className: "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+        className: "h-4 w-4",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "2",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          d: "M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM5 16l.9 2.1L8 19l-2.1.9L5 22l-.9-2.1L2 19l2.1-.9L5 16zM19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z"
+        })
+      })
+    })]
+  });
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
+    isOpen: isOpen,
+    onClose: onClose,
+    title: modalTitle,
+    size: "lg",
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("form", {
+      onSubmit: handleSubmit,
+      className: "space-y-4",
+      children: [error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+        className: "p-3 rounded-lg bg-red-50 text-red-700 text-sm",
+        children: error
+      }), showAiTools && aiOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 space-y-3",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
+          label: "AI model",
+          tooltip: "OpenRouter text model used to generate the writing preset.",
+          value: aiModel,
+          onChange: function onChange(e) {
+            return setAiModel(e.target.value);
+          },
+          filter: "text",
+          placeholder: "Use default model",
+          disabled: aiGenerating || saving || resetting
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+          label: "Describe the preset you want",
+          value: aiPrompt,
+          onChange: function onChange(e) {
+            return setAiPrompt(e.target.value);
+          },
+          placeholder: "Example: Create a preset for product comparison reviews, or paste an article sample URL...",
+          rows: 3
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          className: "flex justify-end",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            type: "button",
+            onClick: handleAiGenerate,
+            loading: aiGenerating,
+            disabled: saving || resetting,
+            children: "Generate with AI"
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        className: "relative",
+        children: [aiGenerating && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          className: "absolute inset-0 z-20 rounded-xl bg-white/80 backdrop-blur-sm border border-indigo-100 flex flex-col items-center justify-center gap-4",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            className: "h-10 w-10 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            className: "flex gap-1",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "h-2 w-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "h-2 w-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "h-2 w-2 rounded-full bg-indigo-500 animate-bounce"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            className: "text-sm text-indigo-900 font-medium",
+            children: "Generating preset..."
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          className: "space-y-4",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            className: "grid grid-cols-1 sm:grid-cols-2 gap-4",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+              label: "Key",
+              value: key,
+              onChange: function onChange(e) {
+                return setKey(normalizeKey(e.target.value));
+              },
+              placeholder: "e.g. my_preset",
+              disabled: lockKeyAndName || aiGenerating,
+              error: keyHasInvalidFormat ? 'Use lowercase letters, numbers, underscores, and hyphens only.' : '',
+              required: true
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+              label: "Name",
+              value: name,
+              onChange: function onChange(e) {
+                return setName(e.target.value);
+              },
+              placeholder: "Display name",
+              disabled: lockKeyAndName || aiGenerating,
+              required: true
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              className: "flex items-center text-sm font-medium text-gray-700 mb-1",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                children: "Description"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              className: "relative",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
+                value: description,
+                onChange: function onChange(e) {
+                  return setDescription(limitDescription(e.target.value));
+                },
+                placeholder: "Short description for the preset",
+                rows: 2,
+                maxLength: DESCRIPTION_MAX_LENGTH,
+                disabled: aiGenerating,
+                className: "poststation-field pr-16 pb-6"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+                className: "pointer-events-none absolute bottom-2 right-3 text-xs text-gray-500",
+                children: [description.length, "/", DESCRIPTION_MAX_LENGTH]
+              })]
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            className: "border-t border-gray-200 pt-4 space-y-4",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+              label: "Title instruction",
+              value: titleInstruction,
+              onChange: function onChange(e) {
+                return setTitleInstruction(e.target.value);
+              },
+              placeholder: "How to write the title for this type",
+              rows: 2,
+              disabled: aiGenerating
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
+              label: "Body instruction",
+              value: bodyInstruction,
+              onChange: function onChange(e) {
+                return setBodyInstruction(e.target.value);
+              },
+              placeholder: "How to write the body",
+              rows: 3,
+              disabled: aiGenerating
+            })]
+          })]
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        className: "flex justify-end gap-2 pt-2",
+        children: [showResetButton && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "secondary",
+          onClick: handleReset,
+          loading: resetting,
+          disabled: saving,
+          className: "mr-auto",
+          children: "Reset to default"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "secondary",
+          onClick: onClose,
+          disabled: saving || aiGenerating,
+          children: "Cancel"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "submit",
+          loading: saving,
+          disabled: aiGenerating || keyHasInvalidFormat,
+          children: mode === 'add' || mode === 'duplicate' ? 'Create' : 'Save'
+        })]
+      })]
+    })
   });
 }
 
@@ -12380,7 +12446,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_campaign_ContentFieldsEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/campaign/ContentFieldsEditor */ "./src/components/campaign/ContentFieldsEditor.jsx");
 /* harmony import */ var _components_campaign_PostTaskList__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/campaign/PostTaskList */ "./src/components/campaign/PostTaskList.jsx");
 /* harmony import */ var _components_layout_InfoSidebar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/layout/InfoSidebar */ "./src/components/layout/InfoSidebar.jsx");
-/* harmony import */ var _components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/instructions/InstructionModal */ "./src/components/instructions/InstructionModal.jsx");
+/* harmony import */ var _components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/writing-presets/WritingPresetModal */ "./src/components/writing-presets/WritingPresetModal.jsx");
 /* harmony import */ var _components_campaign_RssFeedConfigModal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/campaign/RssFeedConfigModal */ "./src/components/campaign/RssFeedConfigModal.jsx");
 /* harmony import */ var _components_campaign_RssResultsModal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../components/campaign/RssResultsModal */ "./src/components/campaign/RssResultsModal.jsx");
 /* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
@@ -12439,7 +12505,7 @@ var isDateBeforeToday = function isDateBeforeToday(value) {
   return String(value) < (0,_utils_publication__WEBPACK_IMPORTED_MODULE_12__.getTodayDateValue)();
 };
 
-// Icons for instruction set options (by key)
+// Icons for writing preset options (by key)
 var InstructionIcon = function InstructionIcon(_ref) {
   var type = _ref.type,
     _ref$className = _ref.className,
@@ -12505,7 +12571,7 @@ var InstructionIcon = function InstructionIcon(_ref) {
       })]
     });
   }
-  // Default icon for custom instruction presets
+  // Default icon for custom writing presets
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("svg", {
     className: c,
     fill: "none",
@@ -12600,7 +12666,7 @@ function EditableCampaignTitle(_ref2) {
   });
 }
 function CampaignEditPage() {
-  var _getTaxonomies, _campaign$rss_config, _campaign$rss_config2, _campaign$instruction2;
+  var _getTaxonomies, _campaign$rss_config, _campaign$rss_config2, _campaign$writing_pre2;
   var _useParams = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_14__.useParams)(),
     id = _useParams.id;
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
@@ -12633,8 +12699,8 @@ function CampaignEditPage() {
     setRetryFailedLoading = _useState18[1];
   var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState20 = _slicedToArray(_useState19, 2),
-    instructionModalOpen = _useState20[0],
-    setInstructionModalOpen = _useState20[1];
+    writingPresetModalOpen = _useState20[0],
+    setWritingPresetModalOpen = _useState20[1];
   var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
     rssConfigModalOpen = _useState22[0],
@@ -13382,7 +13448,7 @@ function CampaignEditPage() {
   // Save everything
   var handleSave = /*#__PURE__*/function () {
     var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
-      var _contentFields, _ref10, _overrides$status, _campaign$instruction, _campaign$rss_enabled, _ref11, _overrides$rss_config;
+      var _contentFields, _ref10, _overrides$status, _campaign$writing_pre, _campaign$rss_enabled, _ref11, _overrides$rss_config;
       var overrides,
         validationErrors,
         contentFields,
@@ -13507,7 +13573,7 @@ function CampaignEditPage() {
               readability: campaign.readability,
               language: campaign.language,
               target_country: campaign.target_country,
-              instruction_id: (_campaign$instruction = campaign.instruction_id) !== null && _campaign$instruction !== void 0 ? _campaign$instruction : null,
+              writing_preset_id: (_campaign$writing_pre = campaign.writing_preset_id) !== null && _campaign$writing_pre !== void 0 ? _campaign$writing_pre : null,
               content_fields: campaign.content_fields,
               rss_enabled: rssOverride ? 'yes' : (_campaign$rss_enabled = campaign.rss_enabled) !== null && _campaign$rss_enabled !== void 0 ? _campaign$rss_enabled : 'no',
               rss_config: (_ref11 = (_overrides$rss_config = overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) !== null && _overrides$rss_config !== void 0 ? _overrides$rss_config : campaign.rss_config) !== null && _ref11 !== void 0 ? _ref11 : null,
@@ -13933,18 +13999,18 @@ function CampaignEditPage() {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("div", {
               className: "mb-4",
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.RichSelect, {
-                label: "Instruction set",
-                tooltip: "Optional preset instructions for title, body, and section generation.",
+                label: "Writing preset",
+                tooltip: "Optional writing preset for title, body, and section generation.",
                 labelAction: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
                   type: "button",
                   variant: "secondary",
                   size: "sm",
                   onClick: function onClick() {
-                    return setInstructionModalOpen(true);
+                    return setWritingPresetModalOpen(true);
                   },
                   children: "Add new preset"
                 }),
-                options: (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapInstructions)().map(function (i) {
+                options: (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapWritingPresets)().map(function (i) {
                   return {
                     value: Number(i.id),
                     label: i.name,
@@ -13955,10 +14021,10 @@ function CampaignEditPage() {
                     })
                   };
                 }),
-                value: (_campaign$instruction2 = campaign === null || campaign === void 0 ? void 0 : campaign.instruction_id) !== null && _campaign$instruction2 !== void 0 ? _campaign$instruction2 : null,
+                value: (_campaign$writing_pre2 = campaign === null || campaign === void 0 ? void 0 : campaign.writing_preset_id) !== null && _campaign$writing_pre2 !== void 0 ? _campaign$writing_pre2 : null,
                 onChange: function onChange(id) {
                   return handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
-                    instruction_id: id !== null && id !== void 0 ? id : null
+                    writing_preset_id: id !== null && id !== void 0 ? id : null
                   }));
                 },
                 placeholder: "None"
@@ -13992,16 +14058,16 @@ function CampaignEditPage() {
           })
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_layout_InfoSidebar__WEBPACK_IMPORTED_MODULE_5__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_6__["default"], {
-      isOpen: instructionModalOpen,
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_layout_InfoSidebar__WEBPACK_IMPORTED_MODULE_5__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      isOpen: writingPresetModalOpen,
       onClose: function onClose() {
-        return setInstructionModalOpen(false);
+        return setWritingPresetModalOpen(false);
       },
       mode: "add",
       onSaved: function onSaved(newId) {
         if (newId != null) {
           handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
-            instruction_id: newId
+            writing_preset_id: newId
           }));
         }
       }
@@ -14601,7 +14667,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/common */ "./src/components/common/index.js");
-/* harmony import */ var _components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/instructions/InstructionModal */ "./src/components/instructions/InstructionModal.jsx");
+/* harmony import */ var _components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/writing-presets/WritingPresetModal */ "./src/components/writing-presets/WritingPresetModal.jsx");
 /* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
 /* harmony import */ var _hooks_useApi__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../hooks/useApi */ "./src/hooks/useApi.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
@@ -14624,9 +14690,9 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var DEFAULT_INSTRUCTION_KEYS = ['listicle', 'news', 'guide', 'howto'];
+var DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
 var isDefaultPreset = function isDefaultPreset(key) {
-  return key && DEFAULT_INSTRUCTION_KEYS.includes(key);
+  return key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
 };
 
 
@@ -14658,33 +14724,33 @@ function SettingsPage() {
   var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
       open: false,
       mode: 'add',
-      instruction: null
+      writingPreset: null
     }),
     _useState14 = _slicedToArray(_useState13, 2),
-    instructionModal = _useState14[0],
-    setInstructionModal = _useState14[1];
+    writingPresetModal = _useState14[0],
+    setWritingPresetModal = _useState14[1];
   var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState16 = _slicedToArray(_useState15, 2),
-    deleteInstruction = _useState16[0],
-    setDeleteInstruction = _useState16[1];
+    deleteWritingPreset = _useState16[0],
+    setDeleteWritingPreset = _useState16[1];
   var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState18 = _slicedToArray(_useState17, 2),
     deleting = _useState18[0],
     setDeleting = _useState18[1];
   var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
-      return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)();
+      return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)();
     }),
     _useState20 = _slicedToArray(_useState19, 2),
-    instructionsList = _useState20[0],
-    setInstructionsList = _useState20[1];
-  var fetchInstructions = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+    writingPresetsList = _useState20[0],
+    setWritingPresetsList = _useState20[1];
+  var fetchWritingPresets = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
           return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
         case 2:
-          setInstructionsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)());
+          setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
         case 3:
         case "end":
           return _context.stop();
@@ -14807,31 +14873,31 @@ function SettingsPage() {
       return _ref3.apply(this, arguments);
     };
   }();
-  var openInstructionModal = function openInstructionModal(mode) {
-    var instruction = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    setInstructionModal({
+  var openWritingPresetModal = function openWritingPresetModal(mode) {
+    var writingPreset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    setWritingPresetModal({
       open: true,
       mode: mode,
-      instruction: instruction
+      writingPreset: writingPreset
     });
   };
-  var closeInstructionModal = function closeInstructionModal() {
-    setInstructionModal(function (prev) {
+  var closeWritingPresetModal = function closeWritingPresetModal() {
+    setWritingPresetModal(function (prev) {
       return _objectSpread(_objectSpread({}, prev), {}, {
         open: false
       });
     });
   };
-  var handleInstructionSaved = function handleInstructionSaved() {
+  var handleWritingPresetSaved = function handleWritingPresetSaved() {
     // Modal already called refreshBootstrap() before onSaved; use current bootstrap so list updates immediately
-    setInstructionsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)());
+    setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
   };
-  var handleConfirmDelete = /*#__PURE__*/function () {
+  var handleConfirmDeleteWritingPreset = /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) switch (_context4.prev = _context4.next) {
           case 0:
-            if (deleteInstruction !== null && deleteInstruction !== void 0 && deleteInstruction.id) {
+            if (deleteWritingPreset !== null && deleteWritingPreset !== void 0 && deleteWritingPreset.id) {
               _context4.next = 2;
               break;
             }
@@ -14840,19 +14906,19 @@ function SettingsPage() {
             setDeleting(true);
             _context4.prev = 3;
             _context4.next = 6;
-            return _api_client__WEBPACK_IMPORTED_MODULE_3__.instructions["delete"](deleteInstruction.id);
+            return _api_client__WEBPACK_IMPORTED_MODULE_3__.writingPresets["delete"](deleteWritingPreset.id);
           case 6:
             _context4.next = 8;
             return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
           case 8:
-            setInstructionsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapInstructions)());
-            setDeleteInstruction(null);
+            setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
+            setDeleteWritingPreset(null);
             _context4.next = 15;
             break;
           case 12:
             _context4.prev = 12;
             _context4.t0 = _context4["catch"](3);
-            console.error('Failed to delete instruction:', _context4.t0);
+            console.error('Failed to delete writing preset:', _context4.t0);
           case 15:
             _context4.prev = 15;
             setDeleting(false);
@@ -14863,7 +14929,7 @@ function SettingsPage() {
         }
       }, _callee4, null, [[3, 12, 15, 18]]);
     }));
-    return function handleConfirmDelete() {
+    return function handleConfirmDeleteWritingPreset() {
       return _ref4.apply(this, arguments);
     };
   }();
@@ -15037,15 +15103,15 @@ function SettingsPage() {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
                 className: "text-lg font-medium text-gray-900",
-                children: "Instruction presets"
+                children: "Writing presets"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
                 className: "text-sm text-gray-500",
-                children: "Manage instruction sets used for title, body, and section generation"
+                children: "Manage writing presets used for title, body, and section generation"
               })]
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
               variant: "primary",
               onClick: function onClick() {
-                return openInstructionModal('add');
+                return openWritingPresetModal('add');
               },
               children: "Add new"
             })]
@@ -15053,15 +15119,15 @@ function SettingsPage() {
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
             className: "space-y-4",
-            children: instructionsList.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+            children: writingPresetsList.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "flex items-center justify-center py-10 px-6 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50",
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
                 className: "text-sm text-gray-400",
-                children: "No instruction presets. Add one to get started."
+                children: "No writing presets. Add one to get started."
               })
             }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1",
-              children: instructionsList.map(function (inst) {
+              children: writingPresetsList.map(function (inst) {
                 return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
                   className: "group flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-all hover:border-gray-300 hover:bg-gray-50",
                   children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
@@ -15085,7 +15151,7 @@ function SettingsPage() {
                       type: "button",
                       className: "poststation-icon-btn",
                       onClick: function onClick() {
-                        return openInstructionModal('edit', inst);
+                        return openWritingPresetModal('edit', inst);
                       },
                       title: "Edit",
                       "aria-label": "Edit",
@@ -15105,7 +15171,7 @@ function SettingsPage() {
                       type: "button",
                       className: "poststation-icon-btn",
                       onClick: function onClick() {
-                        return openInstructionModal('duplicate', inst);
+                        return openWritingPresetModal('duplicate', inst);
                       },
                       title: "Duplicate",
                       "aria-label": "Duplicate",
@@ -15125,7 +15191,7 @@ function SettingsPage() {
                       type: "button",
                       className: "poststation-icon-btn-danger",
                       onClick: function onClick() {
-                        return setDeleteInstruction(inst);
+                        return setDeleteWritingPreset(inst);
                       },
                       title: "Delete",
                       "aria-label": "Delete",
@@ -15340,20 +15406,20 @@ function SettingsPage() {
           })]
         })]
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_instructions_InstructionModal__WEBPACK_IMPORTED_MODULE_2__["default"], {
-      isOpen: instructionModal.open,
-      onClose: closeInstructionModal,
-      mode: instructionModal.mode,
-      instruction: instructionModal.instruction,
-      onSaved: handleInstructionSaved
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      isOpen: writingPresetModal.open,
+      onClose: closeWritingPresetModal,
+      mode: writingPresetModal.mode,
+      writingPreset: writingPresetModal.writingPreset,
+      onSaved: handleWritingPresetSaved
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ConfirmModal, {
-      isOpen: Boolean(deleteInstruction),
+      isOpen: Boolean(deleteWritingPreset),
       onClose: function onClose() {
-        return setDeleteInstruction(null);
+        return setDeleteWritingPreset(null);
       },
-      onConfirm: handleConfirmDelete,
-      title: "Delete instruction preset",
-      message: deleteInstruction ? "Delete \"".concat(deleteInstruction.name, "\"? This cannot be undone.") : '',
+      onConfirm: handleConfirmDeleteWritingPreset,
+      title: "Delete writing preset",
+      message: deleteWritingPreset ? "Delete \"".concat(deleteWritingPreset.name, "\"? This cannot be undone.") : '',
       confirmText: "Delete",
       variant: "danger",
       loading: deleting
@@ -18054,6 +18120,11 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+  .sm\\:grid-cols-3 {
+    @media (width >= 40rem) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
   .sm\\:grid-cols-\\[220px_1fr\\] {
     @media (width >= 40rem) {
       grid-template-columns: 220px 1fr;
@@ -18092,6 +18163,16 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .sm\\:gap-3 {
     @media (width >= 40rem) {
       gap: calc(var(--spacing) * 3);
+    }
+  }
+  .sm\\:gap-4 {
+    @media (width >= 40rem) {
+      gap: calc(var(--spacing) * 4);
+    }
+  }
+  .sm\\:p-6 {
+    @media (width >= 40rem) {
+      padding: calc(var(--spacing) * 6);
     }
   }
   .sm\\:p-8 {
@@ -18143,6 +18224,11 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .lg\\:gap-6 {
     @media (width >= 64rem) {
       gap: calc(var(--spacing) * 6);
+    }
+  }
+  .xl\\:w-64 {
+    @media (width >= 80rem) {
+      width: calc(var(--spacing) * 64);
     }
   }
   .xl\\:w-80 {
@@ -18870,7 +18956,7 @@ body.admin-bar .poststation-mobile-sidebar {
     }
   }
 }
-`, "",{"version":3,"sources":["<no source>","webpack://./node_modules/tailwindcss/index.css","webpack://./src/index.css"],"names":[],"mappings":"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","sourcesContent":[null,"@layer theme, base, components, utilities;\n\n@layer theme {\n  @theme default {\n    --font-sans:\n      ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-serif: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif;\n    --font-mono:\n      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n      \"Courier New\", monospace;\n\n    --color-red-50: oklch(97.1% 0.013 17.38);\n    --color-red-100: oklch(93.6% 0.032 17.717);\n    --color-red-200: oklch(88.5% 0.062 18.334);\n    --color-red-300: oklch(80.8% 0.114 19.571);\n    --color-red-400: oklch(70.4% 0.191 22.216);\n    --color-red-500: oklch(63.7% 0.237 25.331);\n    --color-red-600: oklch(57.7% 0.245 27.325);\n    --color-red-700: oklch(50.5% 0.213 27.518);\n    --color-red-800: oklch(44.4% 0.177 26.899);\n    --color-red-900: oklch(39.6% 0.141 25.723);\n    --color-red-950: oklch(25.8% 0.092 26.042);\n\n    --color-orange-50: oklch(98% 0.016 73.684);\n    --color-orange-100: oklch(95.4% 0.038 75.164);\n    --color-orange-200: oklch(90.1% 0.076 70.697);\n    --color-orange-300: oklch(83.7% 0.128 66.29);\n    --color-orange-400: oklch(75% 0.183 55.934);\n    --color-orange-500: oklch(70.5% 0.213 47.604);\n    --color-orange-600: oklch(64.6% 0.222 41.116);\n    --color-orange-700: oklch(55.3% 0.195 38.402);\n    --color-orange-800: oklch(47% 0.157 37.304);\n    --color-orange-900: oklch(40.8% 0.123 38.172);\n    --color-orange-950: oklch(26.6% 0.079 36.259);\n\n    --color-amber-50: oklch(98.7% 0.022 95.277);\n    --color-amber-100: oklch(96.2% 0.059 95.617);\n    --color-amber-200: oklch(92.4% 0.12 95.746);\n    --color-amber-300: oklch(87.9% 0.169 91.605);\n    --color-amber-400: oklch(82.8% 0.189 84.429);\n    --color-amber-500: oklch(76.9% 0.188 70.08);\n    --color-amber-600: oklch(66.6% 0.179 58.318);\n    --color-amber-700: oklch(55.5% 0.163 48.998);\n    --color-amber-800: oklch(47.3% 0.137 46.201);\n    --color-amber-900: oklch(41.4% 0.112 45.904);\n    --color-amber-950: oklch(27.9% 0.077 45.635);\n\n    --color-yellow-50: oklch(98.7% 0.026 102.212);\n    --color-yellow-100: oklch(97.3% 0.071 103.193);\n    --color-yellow-200: oklch(94.5% 0.129 101.54);\n    --color-yellow-300: oklch(90.5% 0.182 98.111);\n    --color-yellow-400: oklch(85.2% 0.199 91.936);\n    --color-yellow-500: oklch(79.5% 0.184 86.047);\n    --color-yellow-600: oklch(68.1% 0.162 75.834);\n    --color-yellow-700: oklch(55.4% 0.135 66.442);\n    --color-yellow-800: oklch(47.6% 0.114 61.907);\n    --color-yellow-900: oklch(42.1% 0.095 57.708);\n    --color-yellow-950: oklch(28.6% 0.066 53.813);\n\n    --color-lime-50: oklch(98.6% 0.031 120.757);\n    --color-lime-100: oklch(96.7% 0.067 122.328);\n    --color-lime-200: oklch(93.8% 0.127 124.321);\n    --color-lime-300: oklch(89.7% 0.196 126.665);\n    --color-lime-400: oklch(84.1% 0.238 128.85);\n    --color-lime-500: oklch(76.8% 0.233 130.85);\n    --color-lime-600: oklch(64.8% 0.2 131.684);\n    --color-lime-700: oklch(53.2% 0.157 131.589);\n    --color-lime-800: oklch(45.3% 0.124 130.933);\n    --color-lime-900: oklch(40.5% 0.101 131.063);\n    --color-lime-950: oklch(27.4% 0.072 132.109);\n\n    --color-green-50: oklch(98.2% 0.018 155.826);\n    --color-green-100: oklch(96.2% 0.044 156.743);\n    --color-green-200: oklch(92.5% 0.084 155.995);\n    --color-green-300: oklch(87.1% 0.15 154.449);\n    --color-green-400: oklch(79.2% 0.209 151.711);\n    --color-green-500: oklch(72.3% 0.219 149.579);\n    --color-green-600: oklch(62.7% 0.194 149.214);\n    --color-green-700: oklch(52.7% 0.154 150.069);\n    --color-green-800: oklch(44.8% 0.119 151.328);\n    --color-green-900: oklch(39.3% 0.095 152.535);\n    --color-green-950: oklch(26.6% 0.065 152.934);\n\n    --color-emerald-50: oklch(97.9% 0.021 166.113);\n    --color-emerald-100: oklch(95% 0.052 163.051);\n    --color-emerald-200: oklch(90.5% 0.093 164.15);\n    --color-emerald-300: oklch(84.5% 0.143 164.978);\n    --color-emerald-400: oklch(76.5% 0.177 163.223);\n    --color-emerald-500: oklch(69.6% 0.17 162.48);\n    --color-emerald-600: oklch(59.6% 0.145 163.225);\n    --color-emerald-700: oklch(50.8% 0.118 165.612);\n    --color-emerald-800: oklch(43.2% 0.095 166.913);\n    --color-emerald-900: oklch(37.8% 0.077 168.94);\n    --color-emerald-950: oklch(26.2% 0.051 172.552);\n\n    --color-teal-50: oklch(98.4% 0.014 180.72);\n    --color-teal-100: oklch(95.3% 0.051 180.801);\n    --color-teal-200: oklch(91% 0.096 180.426);\n    --color-teal-300: oklch(85.5% 0.138 181.071);\n    --color-teal-400: oklch(77.7% 0.152 181.912);\n    --color-teal-500: oklch(70.4% 0.14 182.503);\n    --color-teal-600: oklch(60% 0.118 184.704);\n    --color-teal-700: oklch(51.1% 0.096 186.391);\n    --color-teal-800: oklch(43.7% 0.078 188.216);\n    --color-teal-900: oklch(38.6% 0.063 188.416);\n    --color-teal-950: oklch(27.7% 0.046 192.524);\n\n    --color-cyan-50: oklch(98.4% 0.019 200.873);\n    --color-cyan-100: oklch(95.6% 0.045 203.388);\n    --color-cyan-200: oklch(91.7% 0.08 205.041);\n    --color-cyan-300: oklch(86.5% 0.127 207.078);\n    --color-cyan-400: oklch(78.9% 0.154 211.53);\n    --color-cyan-500: oklch(71.5% 0.143 215.221);\n    --color-cyan-600: oklch(60.9% 0.126 221.723);\n    --color-cyan-700: oklch(52% 0.105 223.128);\n    --color-cyan-800: oklch(45% 0.085 224.283);\n    --color-cyan-900: oklch(39.8% 0.07 227.392);\n    --color-cyan-950: oklch(30.2% 0.056 229.695);\n\n    --color-sky-50: oklch(97.7% 0.013 236.62);\n    --color-sky-100: oklch(95.1% 0.026 236.824);\n    --color-sky-200: oklch(90.1% 0.058 230.902);\n    --color-sky-300: oklch(82.8% 0.111 230.318);\n    --color-sky-400: oklch(74.6% 0.16 232.661);\n    --color-sky-500: oklch(68.5% 0.169 237.323);\n    --color-sky-600: oklch(58.8% 0.158 241.966);\n    --color-sky-700: oklch(50% 0.134 242.749);\n    --color-sky-800: oklch(44.3% 0.11 240.79);\n    --color-sky-900: oklch(39.1% 0.09 240.876);\n    --color-sky-950: oklch(29.3% 0.066 243.157);\n\n    --color-blue-50: oklch(97% 0.014 254.604);\n    --color-blue-100: oklch(93.2% 0.032 255.585);\n    --color-blue-200: oklch(88.2% 0.059 254.128);\n    --color-blue-300: oklch(80.9% 0.105 251.813);\n    --color-blue-400: oklch(70.7% 0.165 254.624);\n    --color-blue-500: oklch(62.3% 0.214 259.815);\n    --color-blue-600: oklch(54.6% 0.245 262.881);\n    --color-blue-700: oklch(48.8% 0.243 264.376);\n    --color-blue-800: oklch(42.4% 0.199 265.638);\n    --color-blue-900: oklch(37.9% 0.146 265.522);\n    --color-blue-950: oklch(28.2% 0.091 267.935);\n\n    --color-indigo-50: oklch(96.2% 0.018 272.314);\n    --color-indigo-100: oklch(93% 0.034 272.788);\n    --color-indigo-200: oklch(87% 0.065 274.039);\n    --color-indigo-300: oklch(78.5% 0.115 274.713);\n    --color-indigo-400: oklch(67.3% 0.182 276.935);\n    --color-indigo-500: oklch(58.5% 0.233 277.117);\n    --color-indigo-600: oklch(51.1% 0.262 276.966);\n    --color-indigo-700: oklch(45.7% 0.24 277.023);\n    --color-indigo-800: oklch(39.8% 0.195 277.366);\n    --color-indigo-900: oklch(35.9% 0.144 278.697);\n    --color-indigo-950: oklch(25.7% 0.09 281.288);\n\n    --color-violet-50: oklch(96.9% 0.016 293.756);\n    --color-violet-100: oklch(94.3% 0.029 294.588);\n    --color-violet-200: oklch(89.4% 0.057 293.283);\n    --color-violet-300: oklch(81.1% 0.111 293.571);\n    --color-violet-400: oklch(70.2% 0.183 293.541);\n    --color-violet-500: oklch(60.6% 0.25 292.717);\n    --color-violet-600: oklch(54.1% 0.281 293.009);\n    --color-violet-700: oklch(49.1% 0.27 292.581);\n    --color-violet-800: oklch(43.2% 0.232 292.759);\n    --color-violet-900: oklch(38% 0.189 293.745);\n    --color-violet-950: oklch(28.3% 0.141 291.089);\n\n    --color-purple-50: oklch(97.7% 0.014 308.299);\n    --color-purple-100: oklch(94.6% 0.033 307.174);\n    --color-purple-200: oklch(90.2% 0.063 306.703);\n    --color-purple-300: oklch(82.7% 0.119 306.383);\n    --color-purple-400: oklch(71.4% 0.203 305.504);\n    --color-purple-500: oklch(62.7% 0.265 303.9);\n    --color-purple-600: oklch(55.8% 0.288 302.321);\n    --color-purple-700: oklch(49.6% 0.265 301.924);\n    --color-purple-800: oklch(43.8% 0.218 303.724);\n    --color-purple-900: oklch(38.1% 0.176 304.987);\n    --color-purple-950: oklch(29.1% 0.149 302.717);\n\n    --color-fuchsia-50: oklch(97.7% 0.017 320.058);\n    --color-fuchsia-100: oklch(95.2% 0.037 318.852);\n    --color-fuchsia-200: oklch(90.3% 0.076 319.62);\n    --color-fuchsia-300: oklch(83.3% 0.145 321.434);\n    --color-fuchsia-400: oklch(74% 0.238 322.16);\n    --color-fuchsia-500: oklch(66.7% 0.295 322.15);\n    --color-fuchsia-600: oklch(59.1% 0.293 322.896);\n    --color-fuchsia-700: oklch(51.8% 0.253 323.949);\n    --color-fuchsia-800: oklch(45.2% 0.211 324.591);\n    --color-fuchsia-900: oklch(40.1% 0.17 325.612);\n    --color-fuchsia-950: oklch(29.3% 0.136 325.661);\n\n    --color-pink-50: oklch(97.1% 0.014 343.198);\n    --color-pink-100: oklch(94.8% 0.028 342.258);\n    --color-pink-200: oklch(89.9% 0.061 343.231);\n    --color-pink-300: oklch(82.3% 0.12 346.018);\n    --color-pink-400: oklch(71.8% 0.202 349.761);\n    --color-pink-500: oklch(65.6% 0.241 354.308);\n    --color-pink-600: oklch(59.2% 0.249 0.584);\n    --color-pink-700: oklch(52.5% 0.223 3.958);\n    --color-pink-800: oklch(45.9% 0.187 3.815);\n    --color-pink-900: oklch(40.8% 0.153 2.432);\n    --color-pink-950: oklch(28.4% 0.109 3.907);\n\n    --color-rose-50: oklch(96.9% 0.015 12.422);\n    --color-rose-100: oklch(94.1% 0.03 12.58);\n    --color-rose-200: oklch(89.2% 0.058 10.001);\n    --color-rose-300: oklch(81% 0.117 11.638);\n    --color-rose-400: oklch(71.2% 0.194 13.428);\n    --color-rose-500: oklch(64.5% 0.246 16.439);\n    --color-rose-600: oklch(58.6% 0.253 17.585);\n    --color-rose-700: oklch(51.4% 0.222 16.935);\n    --color-rose-800: oklch(45.5% 0.188 13.697);\n    --color-rose-900: oklch(41% 0.159 10.272);\n    --color-rose-950: oklch(27.1% 0.105 12.094);\n\n    --color-slate-50: oklch(98.4% 0.003 247.858);\n    --color-slate-100: oklch(96.8% 0.007 247.896);\n    --color-slate-200: oklch(92.9% 0.013 255.508);\n    --color-slate-300: oklch(86.9% 0.022 252.894);\n    --color-slate-400: oklch(70.4% 0.04 256.788);\n    --color-slate-500: oklch(55.4% 0.046 257.417);\n    --color-slate-600: oklch(44.6% 0.043 257.281);\n    --color-slate-700: oklch(37.2% 0.044 257.287);\n    --color-slate-800: oklch(27.9% 0.041 260.031);\n    --color-slate-900: oklch(20.8% 0.042 265.755);\n    --color-slate-950: oklch(12.9% 0.042 264.695);\n\n    --color-gray-50: oklch(98.5% 0.002 247.839);\n    --color-gray-100: oklch(96.7% 0.003 264.542);\n    --color-gray-200: oklch(92.8% 0.006 264.531);\n    --color-gray-300: oklch(87.2% 0.01 258.338);\n    --color-gray-400: oklch(70.7% 0.022 261.325);\n    --color-gray-500: oklch(55.1% 0.027 264.364);\n    --color-gray-600: oklch(44.6% 0.03 256.802);\n    --color-gray-700: oklch(37.3% 0.034 259.733);\n    --color-gray-800: oklch(27.8% 0.033 256.848);\n    --color-gray-900: oklch(21% 0.034 264.665);\n    --color-gray-950: oklch(13% 0.028 261.692);\n\n    --color-zinc-50: oklch(98.5% 0 0);\n    --color-zinc-100: oklch(96.7% 0.001 286.375);\n    --color-zinc-200: oklch(92% 0.004 286.32);\n    --color-zinc-300: oklch(87.1% 0.006 286.286);\n    --color-zinc-400: oklch(70.5% 0.015 286.067);\n    --color-zinc-500: oklch(55.2% 0.016 285.938);\n    --color-zinc-600: oklch(44.2% 0.017 285.786);\n    --color-zinc-700: oklch(37% 0.013 285.805);\n    --color-zinc-800: oklch(27.4% 0.006 286.033);\n    --color-zinc-900: oklch(21% 0.006 285.885);\n    --color-zinc-950: oklch(14.1% 0.005 285.823);\n\n    --color-neutral-50: oklch(98.5% 0 0);\n    --color-neutral-100: oklch(97% 0 0);\n    --color-neutral-200: oklch(92.2% 0 0);\n    --color-neutral-300: oklch(87% 0 0);\n    --color-neutral-400: oklch(70.8% 0 0);\n    --color-neutral-500: oklch(55.6% 0 0);\n    --color-neutral-600: oklch(43.9% 0 0);\n    --color-neutral-700: oklch(37.1% 0 0);\n    --color-neutral-800: oklch(26.9% 0 0);\n    --color-neutral-900: oklch(20.5% 0 0);\n    --color-neutral-950: oklch(14.5% 0 0);\n\n    --color-stone-50: oklch(98.5% 0.001 106.423);\n    --color-stone-100: oklch(97% 0.001 106.424);\n    --color-stone-200: oklch(92.3% 0.003 48.717);\n    --color-stone-300: oklch(86.9% 0.005 56.366);\n    --color-stone-400: oklch(70.9% 0.01 56.259);\n    --color-stone-500: oklch(55.3% 0.013 58.071);\n    --color-stone-600: oklch(44.4% 0.011 73.639);\n    --color-stone-700: oklch(37.4% 0.01 67.558);\n    --color-stone-800: oklch(26.8% 0.007 34.298);\n    --color-stone-900: oklch(21.6% 0.006 56.043);\n    --color-stone-950: oklch(14.7% 0.004 49.25);\n\n    --color-black: #000;\n    --color-white: #fff;\n\n    --spacing: 0.25rem;\n\n    --breakpoint-sm: 40rem;\n    --breakpoint-md: 48rem;\n    --breakpoint-lg: 64rem;\n    --breakpoint-xl: 80rem;\n    --breakpoint-2xl: 96rem;\n\n    --container-3xs: 16rem;\n    --container-2xs: 18rem;\n    --container-xs: 20rem;\n    --container-sm: 24rem;\n    --container-md: 28rem;\n    --container-lg: 32rem;\n    --container-xl: 36rem;\n    --container-2xl: 42rem;\n    --container-3xl: 48rem;\n    --container-4xl: 56rem;\n    --container-5xl: 64rem;\n    --container-6xl: 72rem;\n    --container-7xl: 80rem;\n\n    --text-xs: 0.75rem;\n    --text-xs--line-height: calc(1 / 0.75);\n    --text-sm: 0.875rem;\n    --text-sm--line-height: calc(1.25 / 0.875);\n    --text-base: 1rem;\n    --text-base--line-height: calc(1.5 / 1);\n    --text-lg: 1.125rem;\n    --text-lg--line-height: calc(1.75 / 1.125);\n    --text-xl: 1.25rem;\n    --text-xl--line-height: calc(1.75 / 1.25);\n    --text-2xl: 1.5rem;\n    --text-2xl--line-height: calc(2 / 1.5);\n    --text-3xl: 1.875rem;\n    --text-3xl--line-height: calc(2.25 / 1.875);\n    --text-4xl: 2.25rem;\n    --text-4xl--line-height: calc(2.5 / 2.25);\n    --text-5xl: 3rem;\n    --text-5xl--line-height: 1;\n    --text-6xl: 3.75rem;\n    --text-6xl--line-height: 1;\n    --text-7xl: 4.5rem;\n    --text-7xl--line-height: 1;\n    --text-8xl: 6rem;\n    --text-8xl--line-height: 1;\n    --text-9xl: 8rem;\n    --text-9xl--line-height: 1;\n\n    --font-weight-thin: 100;\n    --font-weight-extralight: 200;\n    --font-weight-light: 300;\n    --font-weight-normal: 400;\n    --font-weight-medium: 500;\n    --font-weight-semibold: 600;\n    --font-weight-bold: 700;\n    --font-weight-extrabold: 800;\n    --font-weight-black: 900;\n\n    --tracking-tighter: -0.05em;\n    --tracking-tight: -0.025em;\n    --tracking-normal: 0em;\n    --tracking-wide: 0.025em;\n    --tracking-wider: 0.05em;\n    --tracking-widest: 0.1em;\n\n    --leading-tight: 1.25;\n    --leading-snug: 1.375;\n    --leading-normal: 1.5;\n    --leading-relaxed: 1.625;\n    --leading-loose: 2;\n\n    --radius-xs: 0.125rem;\n    --radius-sm: 0.25rem;\n    --radius-md: 0.375rem;\n    --radius-lg: 0.5rem;\n    --radius-xl: 0.75rem;\n    --radius-2xl: 1rem;\n    --radius-3xl: 1.5rem;\n    --radius-4xl: 2rem;\n\n    --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);\n    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-md:\n      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --shadow-lg:\n      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --shadow-xl:\n      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n\n    --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);\n\n    --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);\n    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);\n    --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);\n    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);\n    --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);\n    --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);\n\n    --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);\n    --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);\n    --text-shadow-sm:\n      0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),\n      0px 2px 2px rgb(0 0 0 / 0.075);\n    --text-shadow-md:\n      0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),\n      0px 2px 4px rgb(0 0 0 / 0.1);\n    --text-shadow-lg:\n      0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),\n      0px 4px 8px rgb(0 0 0 / 0.1);\n\n    --ease-in: cubic-bezier(0.4, 0, 1, 1);\n    --ease-out: cubic-bezier(0, 0, 0.2, 1);\n    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);\n\n    --animate-spin: spin 1s linear infinite;\n    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;\n    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n    --animate-bounce: bounce 1s infinite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @keyframes ping {\n      75%,\n      100% {\n        transform: scale(2);\n        opacity: 0;\n      }\n    }\n\n    @keyframes pulse {\n      50% {\n        opacity: 0.5;\n      }\n    }\n\n    @keyframes bounce {\n      0%,\n      100% {\n        transform: translateY(-25%);\n        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);\n      }\n\n      50% {\n        transform: none;\n        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg: 16px;\n    --blur-xl: 24px;\n    --blur-2xl: 40px;\n    --blur-3xl: 64px;\n\n    --perspective-dramatic: 100px;\n    --perspective-near: 300px;\n    --perspective-normal: 500px;\n    --perspective-midrange: 800px;\n    --perspective-distant: 1200px;\n\n    --aspect-video: 16 / 9;\n\n    --default-transition-duration: 150ms;\n    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    --default-font-family: --theme(--font-sans, initial);\n    --default-font-feature-settings: --theme(\n      --font-sans--font-feature-settings,\n      initial\n    );\n    --default-font-variation-settings: --theme(\n      --font-sans--font-variation-settings,\n      initial\n    );\n    --default-mono-font-family: --theme(--font-mono, initial);\n    --default-mono-font-feature-settings: --theme(\n      --font-mono--font-feature-settings,\n      initial\n    );\n    --default-mono-font-variation-settings: --theme(\n      --font-mono--font-variation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n    --blur: 8px;\n    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);\n    --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);\n    --radius: 0.25rem;\n    --max-width-prose: 65ch;\n  }\n}\n\n@layer base {\n  /*\n  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n  2. Remove default margins and padding\n  3. Reset all borders.\n*/\n\n  *,\n  ::after,\n  ::before,\n  ::backdrop,\n  ::file-selector-button {\n    box-sizing: border-box; /* 1 */\n    margin: 0; /* 2 */\n    padding: 0; /* 2 */\n    border: 0 solid; /* 3 */\n  }\n\n  /*\n  1. Use a consistent sensible line-height in all browsers.\n  2. Prevent adjustments of font size after orientation changes in iOS.\n  3. Use a more readable tab size.\n  4. Use the user's configured `sans` font-family by default.\n  5. Use the user's configured `sans` font-feature-settings by default.\n  6. Use the user's configured `sans` font-variation-settings by default.\n  7. Disable tap highlights on iOS.\n*/\n\n  html,\n  :host {\n    line-height: 1.5; /* 1 */\n    -webkit-text-size-adjust: 100%; /* 2 */\n    tab-size: 4; /* 3 */\n    font-family: --theme(\n      --default-font-family,\n      ui-sans-serif,\n      system-ui,\n      sans-serif,\n      \"Apple Color Emoji\",\n      \"Segoe UI Emoji\",\n      \"Segoe UI Symbol\",\n      \"Noto Color Emoji\"\n    ); /* 4 */\n    font-feature-settings: --theme(\n      --default-font-feature-settings,\n      normal\n    ); /* 5 */\n    font-variation-settings: --theme(\n      --default-font-variation-settings,\n      normal\n    ); /* 6 */\n    -webkit-tap-highlight-color: transparent; /* 7 */\n  }\n\n  /*\n  1. Add the correct height in Firefox.\n  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n  3. Reset the default border style to a 1px solid border.\n*/\n\n  hr {\n    height: 0; /* 1 */\n    color: inherit; /* 2 */\n    border-top-width: 1px; /* 3 */\n  }\n\n  /*\n  Add the correct text decoration in Chrome, Edge, and Safari.\n*/\n\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n\n  /*\n  Remove the default font size and weight for headings.\n*/\n\n  h1,\n  h2,\n  h3,\n  h4,\n  h5,\n  h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n\n  /*\n  Reset links to optimize for opt-in styling instead of opt-out.\n*/\n\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n\n  /*\n  Add the correct font weight in Edge and Safari.\n*/\n\n  b,\n  strong {\n    font-weight: bolder;\n  }\n\n  /*\n  1. Use the user's configured `mono` font-family by default.\n  2. Use the user's configured `mono` font-feature-settings by default.\n  3. Use the user's configured `mono` font-variation-settings by default.\n  4. Correct the odd `em` font sizing in all browsers.\n*/\n\n  code,\n  kbd,\n  samp,\n  pre {\n    font-family: --theme(\n      --default-mono-font-family,\n      ui-monospace,\n      SFMono-Regular,\n      Menlo,\n      Monaco,\n      Consolas,\n      \"Liberation Mono\",\n      \"Courier New\",\n      monospace\n    ); /* 1 */\n    font-feature-settings: --theme(\n      --default-mono-font-feature-settings,\n      normal\n    ); /* 2 */\n    font-variation-settings: --theme(\n      --default-mono-font-variation-settings,\n      normal\n    ); /* 3 */\n    font-size: 1em; /* 4 */\n  }\n\n  /*\n  Add the correct font size in all browsers.\n*/\n\n  small {\n    font-size: 80%;\n  }\n\n  /*\n  Prevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\n  sub,\n  sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n\n  sub {\n    bottom: -0.25em;\n  }\n\n  sup {\n    top: -0.5em;\n  }\n\n  /*\n  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n  3. Remove gaps between table borders by default.\n*/\n\n  table {\n    text-indent: 0; /* 1 */\n    border-color: inherit; /* 2 */\n    border-collapse: collapse; /* 3 */\n  }\n\n  /*\n  Use the modern Firefox focus style for all focusable elements.\n*/\n\n  :-moz-focusring {\n    outline: auto;\n  }\n\n  /*\n  Add the correct vertical alignment in Chrome and Firefox.\n*/\n\n  progress {\n    vertical-align: baseline;\n  }\n\n  /*\n  Add the correct display in Chrome and Safari.\n*/\n\n  summary {\n    display: list-item;\n  }\n\n  /*\n  Make lists unstyled by default.\n*/\n\n  ol,\n  ul,\n  menu {\n    list-style: none;\n  }\n\n  /*\n  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n      This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\n  img,\n  svg,\n  video,\n  canvas,\n  audio,\n  iframe,\n  embed,\n  object {\n    display: block; /* 1 */\n    vertical-align: middle; /* 2 */\n  }\n\n  /*\n  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\n  img,\n  video {\n    max-width: 100%;\n    height: auto;\n  }\n\n  /*\n  1. Inherit font styles in all browsers.\n  2. Remove border radius in all browsers.\n  3. Remove background color in all browsers.\n  4. Ensure consistent opacity for disabled states in all browsers.\n*/\n\n  button,\n  input,\n  select,\n  optgroup,\n  textarea,\n  ::file-selector-button {\n    font: inherit; /* 1 */\n    font-feature-settings: inherit; /* 1 */\n    font-variation-settings: inherit; /* 1 */\n    letter-spacing: inherit; /* 1 */\n    color: inherit; /* 1 */\n    border-radius: 0; /* 2 */\n    background-color: transparent; /* 3 */\n    opacity: 1; /* 4 */\n  }\n\n  /*\n  Restore default font weight.\n*/\n\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n\n  /*\n  Restore indentation.\n*/\n\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n\n  /*\n  Restore space after button.\n*/\n\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n\n  /*\n  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n*/\n\n  ::placeholder {\n    opacity: 1;\n  }\n\n  /*\n  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not\n  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or\n    (contain-intrinsic-size: 1px) /* Safari 17+ */ {\n    ::placeholder {\n      color: color-mix(in oklab, currentcolor 50%, transparent);\n    }\n  }\n\n  /*\n  Prevent resizing textareas horizontally by default.\n*/\n\n  textarea {\n    resize: vertical;\n  }\n\n  /*\n  Remove the inner padding in Chrome and Safari on macOS.\n*/\n\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n\n  /*\n  1. Ensure date/time inputs have the same height when empty in iOS Safari.\n  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.\n*/\n\n  ::-webkit-date-and-time-value {\n    min-height: 1lh; /* 1 */\n    text-align: inherit; /* 2 */\n  }\n\n  /*\n  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.\n*/\n\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n\n  /*\n  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.\n*/\n\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n\n  ::-webkit-datetime-edit,\n  ::-webkit-datetime-edit-year-field,\n  ::-webkit-datetime-edit-month-field,\n  ::-webkit-datetime-edit-day-field,\n  ::-webkit-datetime-edit-hour-field,\n  ::-webkit-datetime-edit-minute-field,\n  ::-webkit-datetime-edit-second-field,\n  ::-webkit-datetime-edit-millisecond-field,\n  ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n\n  /*\n  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)\n*/\n\n  ::-webkit-calendar-picker-indicator {\n    line-height: 1;\n  }\n\n  /*\n  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n\n  /*\n  Correct the inability to style the border radius in iOS Safari.\n*/\n\n  button,\n  input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]),\n  ::file-selector-button {\n    appearance: button;\n  }\n\n  /*\n  Correct the cursor style of increment and decrement buttons in Safari.\n*/\n\n  ::-webkit-inner-spin-button,\n  ::-webkit-outer-spin-button {\n    height: auto;\n  }\n\n  /*\n  Make elements with the HTML hidden attribute stay hidden by default.\n*/\n\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n\n@layer utilities {\n  @tailwind utilities;\n}\n","@import \"tailwindcss\";\n\n/* Custom base styles */\n@layer base {\n\tbody {\n\t\t@apply bg-gray-50;\n\t}\n}\n\n/* WordPress admin overrides for the app container */\n#poststation-app {\n\tmargin-left: -20px;\n\tmargin-right: 0;\n\tmargin-top: -10px;\n\toverflow: visible;\n\t--poststation-top-offset: 32px;\n\tfont-family: ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\tcolor: #111827;\n\tbackground: #f9fafb;\n}\n\n#poststation-app *,\n#poststation-app *::before,\n#poststation-app *::after {\n\tbox-sizing: border-box;\n}\n\n#poststation-app h1,\n#poststation-app h2,\n#poststation-app h3,\n#poststation-app h4,\n#poststation-app h5,\n#poststation-app h6,\n#poststation-app p,\n#poststation-app ul,\n#poststation-app ol,\n#poststation-app li,\n#poststation-app figure,\n#poststation-app blockquote {\n\tmargin: 0;\n\tpadding: 0;\n}\n\n#poststation-app button,\n#poststation-app input,\n#poststation-app select,\n#poststation-app textarea {\n\tfont: inherit;\n\tcolor: inherit;\n}\n\n#poststation-app button {\n\tcursor: pointer;\n}\n\n#poststation-app button:disabled {\n\tcursor: not-allowed;\n}\n\n/* App-scoped form controls to avoid WordPress admin style bleed */\n#poststation-app .poststation-field {\n\t@apply block w-full max-w-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-none transition;\n\t@apply placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500;\n\t@apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;\n}\n\n#poststation-app .poststation-field-error {\n\t@apply border-red-300 focus:border-red-500 focus:ring-red-500;\n}\n\n#poststation-app select.poststation-field {\n\t@apply pr-8;\n}\n\n#poststation-app textarea.poststation-field {\n\t@apply min-h-10 max-h-60 field-sizing-content resize-y overflow-y-auto;\n}\n\n/* Switch-style checkbox: wrap in label.poststation-switch and add span.poststation-switch-track after input */\n#poststation-app .poststation-switch {\n\t@apply inline-flex items-center gap-3 cursor-pointer;\n}\n#poststation-app .poststation-switch input.poststation-field-checkbox {\n\t@apply sr-only;\n}\n#poststation-app .poststation-switch .poststation-switch-track {\n\t@apply relative inline-flex h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors duration-200;\n}\n#poststation-app .poststation-switch .poststation-switch-track::after {\n\tcontent: \"\";\n\t@apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition duration-200;\n}\n#poststation-app .poststation-switch input:focus-visible + .poststation-switch-track {\n\t@apply ring-2 ring-indigo-500 ring-offset-2;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track {\n\t@apply bg-indigo-600;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track::after {\n\t@apply translate-x-4;\n}\n#poststation-app .poststation-switch input:disabled + .poststation-switch-track {\n\t@apply opacity-50 cursor-not-allowed;\n}\n\n#poststation-app .poststation-field-color {\n\t@apply h-10 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1;\n}\n\n#poststation-app .poststation-icon-btn {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app .poststation-icon-btn-danger {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-red-300 hover:bg-red-50 hover:text-red-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app a {\n\tcolor: inherit;\n\ttext-decoration: none;\n}\n\n@media (min-width: 783px) {\n\t#poststation-app {\n\t\tmargin-left: -20px;\n\t}\n}\n\n@media (min-width: 1024px) {\n\t#poststation-app .poststation-desktop-sidebar {\n\t\tposition: sticky;\n\t\talign-self: flex-start;\n\t\ttop: var(--poststation-top-offset, 32px);\n\t\theight: calc(100vh - var(--poststation-top-offset, 32px));\n\t\tleft: auto;\n\t\tbottom: auto;\n\t\ttransform: none;\n\t}\n}\n\n/* Sticky header on Campaign edit - below WP admin bar */\n.poststation-sticky-header {\n\tposition: sticky;\n\ttop: var(--poststation-top-offset, 32px);\n\tz-index: 99990;\n\twidth: 100%;\n}\n\n@media screen and (max-width: 782px) {\n\t.poststation-sticky-header {\n\t\ttop: 0;\n\t}\n}\n\nbody.admin-bar .poststation-mobile-overlay,\nbody.admin-bar .poststation-mobile-sidebar {\n\ttop: 32px;\n\theight: calc(100vh - 32px);\n}\n\n@media screen and (max-width: 782px) {\n\tbody.admin-bar .poststation-mobile-overlay,\n\tbody.admin-bar .poststation-mobile-sidebar {\n\t\ttop: 46px;\n\t\theight: calc(100vh - 46px);\n\t}\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["<no source>","webpack://./node_modules/tailwindcss/index.css","webpack://./src/index.css"],"names":[],"mappings":"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","sourcesContent":[null,"@layer theme, base, components, utilities;\n\n@layer theme {\n  @theme default {\n    --font-sans:\n      ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-serif: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif;\n    --font-mono:\n      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n      \"Courier New\", monospace;\n\n    --color-red-50: oklch(97.1% 0.013 17.38);\n    --color-red-100: oklch(93.6% 0.032 17.717);\n    --color-red-200: oklch(88.5% 0.062 18.334);\n    --color-red-300: oklch(80.8% 0.114 19.571);\n    --color-red-400: oklch(70.4% 0.191 22.216);\n    --color-red-500: oklch(63.7% 0.237 25.331);\n    --color-red-600: oklch(57.7% 0.245 27.325);\n    --color-red-700: oklch(50.5% 0.213 27.518);\n    --color-red-800: oklch(44.4% 0.177 26.899);\n    --color-red-900: oklch(39.6% 0.141 25.723);\n    --color-red-950: oklch(25.8% 0.092 26.042);\n\n    --color-orange-50: oklch(98% 0.016 73.684);\n    --color-orange-100: oklch(95.4% 0.038 75.164);\n    --color-orange-200: oklch(90.1% 0.076 70.697);\n    --color-orange-300: oklch(83.7% 0.128 66.29);\n    --color-orange-400: oklch(75% 0.183 55.934);\n    --color-orange-500: oklch(70.5% 0.213 47.604);\n    --color-orange-600: oklch(64.6% 0.222 41.116);\n    --color-orange-700: oklch(55.3% 0.195 38.402);\n    --color-orange-800: oklch(47% 0.157 37.304);\n    --color-orange-900: oklch(40.8% 0.123 38.172);\n    --color-orange-950: oklch(26.6% 0.079 36.259);\n\n    --color-amber-50: oklch(98.7% 0.022 95.277);\n    --color-amber-100: oklch(96.2% 0.059 95.617);\n    --color-amber-200: oklch(92.4% 0.12 95.746);\n    --color-amber-300: oklch(87.9% 0.169 91.605);\n    --color-amber-400: oklch(82.8% 0.189 84.429);\n    --color-amber-500: oklch(76.9% 0.188 70.08);\n    --color-amber-600: oklch(66.6% 0.179 58.318);\n    --color-amber-700: oklch(55.5% 0.163 48.998);\n    --color-amber-800: oklch(47.3% 0.137 46.201);\n    --color-amber-900: oklch(41.4% 0.112 45.904);\n    --color-amber-950: oklch(27.9% 0.077 45.635);\n\n    --color-yellow-50: oklch(98.7% 0.026 102.212);\n    --color-yellow-100: oklch(97.3% 0.071 103.193);\n    --color-yellow-200: oklch(94.5% 0.129 101.54);\n    --color-yellow-300: oklch(90.5% 0.182 98.111);\n    --color-yellow-400: oklch(85.2% 0.199 91.936);\n    --color-yellow-500: oklch(79.5% 0.184 86.047);\n    --color-yellow-600: oklch(68.1% 0.162 75.834);\n    --color-yellow-700: oklch(55.4% 0.135 66.442);\n    --color-yellow-800: oklch(47.6% 0.114 61.907);\n    --color-yellow-900: oklch(42.1% 0.095 57.708);\n    --color-yellow-950: oklch(28.6% 0.066 53.813);\n\n    --color-lime-50: oklch(98.6% 0.031 120.757);\n    --color-lime-100: oklch(96.7% 0.067 122.328);\n    --color-lime-200: oklch(93.8% 0.127 124.321);\n    --color-lime-300: oklch(89.7% 0.196 126.665);\n    --color-lime-400: oklch(84.1% 0.238 128.85);\n    --color-lime-500: oklch(76.8% 0.233 130.85);\n    --color-lime-600: oklch(64.8% 0.2 131.684);\n    --color-lime-700: oklch(53.2% 0.157 131.589);\n    --color-lime-800: oklch(45.3% 0.124 130.933);\n    --color-lime-900: oklch(40.5% 0.101 131.063);\n    --color-lime-950: oklch(27.4% 0.072 132.109);\n\n    --color-green-50: oklch(98.2% 0.018 155.826);\n    --color-green-100: oklch(96.2% 0.044 156.743);\n    --color-green-200: oklch(92.5% 0.084 155.995);\n    --color-green-300: oklch(87.1% 0.15 154.449);\n    --color-green-400: oklch(79.2% 0.209 151.711);\n    --color-green-500: oklch(72.3% 0.219 149.579);\n    --color-green-600: oklch(62.7% 0.194 149.214);\n    --color-green-700: oklch(52.7% 0.154 150.069);\n    --color-green-800: oklch(44.8% 0.119 151.328);\n    --color-green-900: oklch(39.3% 0.095 152.535);\n    --color-green-950: oklch(26.6% 0.065 152.934);\n\n    --color-emerald-50: oklch(97.9% 0.021 166.113);\n    --color-emerald-100: oklch(95% 0.052 163.051);\n    --color-emerald-200: oklch(90.5% 0.093 164.15);\n    --color-emerald-300: oklch(84.5% 0.143 164.978);\n    --color-emerald-400: oklch(76.5% 0.177 163.223);\n    --color-emerald-500: oklch(69.6% 0.17 162.48);\n    --color-emerald-600: oklch(59.6% 0.145 163.225);\n    --color-emerald-700: oklch(50.8% 0.118 165.612);\n    --color-emerald-800: oklch(43.2% 0.095 166.913);\n    --color-emerald-900: oklch(37.8% 0.077 168.94);\n    --color-emerald-950: oklch(26.2% 0.051 172.552);\n\n    --color-teal-50: oklch(98.4% 0.014 180.72);\n    --color-teal-100: oklch(95.3% 0.051 180.801);\n    --color-teal-200: oklch(91% 0.096 180.426);\n    --color-teal-300: oklch(85.5% 0.138 181.071);\n    --color-teal-400: oklch(77.7% 0.152 181.912);\n    --color-teal-500: oklch(70.4% 0.14 182.503);\n    --color-teal-600: oklch(60% 0.118 184.704);\n    --color-teal-700: oklch(51.1% 0.096 186.391);\n    --color-teal-800: oklch(43.7% 0.078 188.216);\n    --color-teal-900: oklch(38.6% 0.063 188.416);\n    --color-teal-950: oklch(27.7% 0.046 192.524);\n\n    --color-cyan-50: oklch(98.4% 0.019 200.873);\n    --color-cyan-100: oklch(95.6% 0.045 203.388);\n    --color-cyan-200: oklch(91.7% 0.08 205.041);\n    --color-cyan-300: oklch(86.5% 0.127 207.078);\n    --color-cyan-400: oklch(78.9% 0.154 211.53);\n    --color-cyan-500: oklch(71.5% 0.143 215.221);\n    --color-cyan-600: oklch(60.9% 0.126 221.723);\n    --color-cyan-700: oklch(52% 0.105 223.128);\n    --color-cyan-800: oklch(45% 0.085 224.283);\n    --color-cyan-900: oklch(39.8% 0.07 227.392);\n    --color-cyan-950: oklch(30.2% 0.056 229.695);\n\n    --color-sky-50: oklch(97.7% 0.013 236.62);\n    --color-sky-100: oklch(95.1% 0.026 236.824);\n    --color-sky-200: oklch(90.1% 0.058 230.902);\n    --color-sky-300: oklch(82.8% 0.111 230.318);\n    --color-sky-400: oklch(74.6% 0.16 232.661);\n    --color-sky-500: oklch(68.5% 0.169 237.323);\n    --color-sky-600: oklch(58.8% 0.158 241.966);\n    --color-sky-700: oklch(50% 0.134 242.749);\n    --color-sky-800: oklch(44.3% 0.11 240.79);\n    --color-sky-900: oklch(39.1% 0.09 240.876);\n    --color-sky-950: oklch(29.3% 0.066 243.157);\n\n    --color-blue-50: oklch(97% 0.014 254.604);\n    --color-blue-100: oklch(93.2% 0.032 255.585);\n    --color-blue-200: oklch(88.2% 0.059 254.128);\n    --color-blue-300: oklch(80.9% 0.105 251.813);\n    --color-blue-400: oklch(70.7% 0.165 254.624);\n    --color-blue-500: oklch(62.3% 0.214 259.815);\n    --color-blue-600: oklch(54.6% 0.245 262.881);\n    --color-blue-700: oklch(48.8% 0.243 264.376);\n    --color-blue-800: oklch(42.4% 0.199 265.638);\n    --color-blue-900: oklch(37.9% 0.146 265.522);\n    --color-blue-950: oklch(28.2% 0.091 267.935);\n\n    --color-indigo-50: oklch(96.2% 0.018 272.314);\n    --color-indigo-100: oklch(93% 0.034 272.788);\n    --color-indigo-200: oklch(87% 0.065 274.039);\n    --color-indigo-300: oklch(78.5% 0.115 274.713);\n    --color-indigo-400: oklch(67.3% 0.182 276.935);\n    --color-indigo-500: oklch(58.5% 0.233 277.117);\n    --color-indigo-600: oklch(51.1% 0.262 276.966);\n    --color-indigo-700: oklch(45.7% 0.24 277.023);\n    --color-indigo-800: oklch(39.8% 0.195 277.366);\n    --color-indigo-900: oklch(35.9% 0.144 278.697);\n    --color-indigo-950: oklch(25.7% 0.09 281.288);\n\n    --color-violet-50: oklch(96.9% 0.016 293.756);\n    --color-violet-100: oklch(94.3% 0.029 294.588);\n    --color-violet-200: oklch(89.4% 0.057 293.283);\n    --color-violet-300: oklch(81.1% 0.111 293.571);\n    --color-violet-400: oklch(70.2% 0.183 293.541);\n    --color-violet-500: oklch(60.6% 0.25 292.717);\n    --color-violet-600: oklch(54.1% 0.281 293.009);\n    --color-violet-700: oklch(49.1% 0.27 292.581);\n    --color-violet-800: oklch(43.2% 0.232 292.759);\n    --color-violet-900: oklch(38% 0.189 293.745);\n    --color-violet-950: oklch(28.3% 0.141 291.089);\n\n    --color-purple-50: oklch(97.7% 0.014 308.299);\n    --color-purple-100: oklch(94.6% 0.033 307.174);\n    --color-purple-200: oklch(90.2% 0.063 306.703);\n    --color-purple-300: oklch(82.7% 0.119 306.383);\n    --color-purple-400: oklch(71.4% 0.203 305.504);\n    --color-purple-500: oklch(62.7% 0.265 303.9);\n    --color-purple-600: oklch(55.8% 0.288 302.321);\n    --color-purple-700: oklch(49.6% 0.265 301.924);\n    --color-purple-800: oklch(43.8% 0.218 303.724);\n    --color-purple-900: oklch(38.1% 0.176 304.987);\n    --color-purple-950: oklch(29.1% 0.149 302.717);\n\n    --color-fuchsia-50: oklch(97.7% 0.017 320.058);\n    --color-fuchsia-100: oklch(95.2% 0.037 318.852);\n    --color-fuchsia-200: oklch(90.3% 0.076 319.62);\n    --color-fuchsia-300: oklch(83.3% 0.145 321.434);\n    --color-fuchsia-400: oklch(74% 0.238 322.16);\n    --color-fuchsia-500: oklch(66.7% 0.295 322.15);\n    --color-fuchsia-600: oklch(59.1% 0.293 322.896);\n    --color-fuchsia-700: oklch(51.8% 0.253 323.949);\n    --color-fuchsia-800: oklch(45.2% 0.211 324.591);\n    --color-fuchsia-900: oklch(40.1% 0.17 325.612);\n    --color-fuchsia-950: oklch(29.3% 0.136 325.661);\n\n    --color-pink-50: oklch(97.1% 0.014 343.198);\n    --color-pink-100: oklch(94.8% 0.028 342.258);\n    --color-pink-200: oklch(89.9% 0.061 343.231);\n    --color-pink-300: oklch(82.3% 0.12 346.018);\n    --color-pink-400: oklch(71.8% 0.202 349.761);\n    --color-pink-500: oklch(65.6% 0.241 354.308);\n    --color-pink-600: oklch(59.2% 0.249 0.584);\n    --color-pink-700: oklch(52.5% 0.223 3.958);\n    --color-pink-800: oklch(45.9% 0.187 3.815);\n    --color-pink-900: oklch(40.8% 0.153 2.432);\n    --color-pink-950: oklch(28.4% 0.109 3.907);\n\n    --color-rose-50: oklch(96.9% 0.015 12.422);\n    --color-rose-100: oklch(94.1% 0.03 12.58);\n    --color-rose-200: oklch(89.2% 0.058 10.001);\n    --color-rose-300: oklch(81% 0.117 11.638);\n    --color-rose-400: oklch(71.2% 0.194 13.428);\n    --color-rose-500: oklch(64.5% 0.246 16.439);\n    --color-rose-600: oklch(58.6% 0.253 17.585);\n    --color-rose-700: oklch(51.4% 0.222 16.935);\n    --color-rose-800: oklch(45.5% 0.188 13.697);\n    --color-rose-900: oklch(41% 0.159 10.272);\n    --color-rose-950: oklch(27.1% 0.105 12.094);\n\n    --color-slate-50: oklch(98.4% 0.003 247.858);\n    --color-slate-100: oklch(96.8% 0.007 247.896);\n    --color-slate-200: oklch(92.9% 0.013 255.508);\n    --color-slate-300: oklch(86.9% 0.022 252.894);\n    --color-slate-400: oklch(70.4% 0.04 256.788);\n    --color-slate-500: oklch(55.4% 0.046 257.417);\n    --color-slate-600: oklch(44.6% 0.043 257.281);\n    --color-slate-700: oklch(37.2% 0.044 257.287);\n    --color-slate-800: oklch(27.9% 0.041 260.031);\n    --color-slate-900: oklch(20.8% 0.042 265.755);\n    --color-slate-950: oklch(12.9% 0.042 264.695);\n\n    --color-gray-50: oklch(98.5% 0.002 247.839);\n    --color-gray-100: oklch(96.7% 0.003 264.542);\n    --color-gray-200: oklch(92.8% 0.006 264.531);\n    --color-gray-300: oklch(87.2% 0.01 258.338);\n    --color-gray-400: oklch(70.7% 0.022 261.325);\n    --color-gray-500: oklch(55.1% 0.027 264.364);\n    --color-gray-600: oklch(44.6% 0.03 256.802);\n    --color-gray-700: oklch(37.3% 0.034 259.733);\n    --color-gray-800: oklch(27.8% 0.033 256.848);\n    --color-gray-900: oklch(21% 0.034 264.665);\n    --color-gray-950: oklch(13% 0.028 261.692);\n\n    --color-zinc-50: oklch(98.5% 0 0);\n    --color-zinc-100: oklch(96.7% 0.001 286.375);\n    --color-zinc-200: oklch(92% 0.004 286.32);\n    --color-zinc-300: oklch(87.1% 0.006 286.286);\n    --color-zinc-400: oklch(70.5% 0.015 286.067);\n    --color-zinc-500: oklch(55.2% 0.016 285.938);\n    --color-zinc-600: oklch(44.2% 0.017 285.786);\n    --color-zinc-700: oklch(37% 0.013 285.805);\n    --color-zinc-800: oklch(27.4% 0.006 286.033);\n    --color-zinc-900: oklch(21% 0.006 285.885);\n    --color-zinc-950: oklch(14.1% 0.005 285.823);\n\n    --color-neutral-50: oklch(98.5% 0 0);\n    --color-neutral-100: oklch(97% 0 0);\n    --color-neutral-200: oklch(92.2% 0 0);\n    --color-neutral-300: oklch(87% 0 0);\n    --color-neutral-400: oklch(70.8% 0 0);\n    --color-neutral-500: oklch(55.6% 0 0);\n    --color-neutral-600: oklch(43.9% 0 0);\n    --color-neutral-700: oklch(37.1% 0 0);\n    --color-neutral-800: oklch(26.9% 0 0);\n    --color-neutral-900: oklch(20.5% 0 0);\n    --color-neutral-950: oklch(14.5% 0 0);\n\n    --color-stone-50: oklch(98.5% 0.001 106.423);\n    --color-stone-100: oklch(97% 0.001 106.424);\n    --color-stone-200: oklch(92.3% 0.003 48.717);\n    --color-stone-300: oklch(86.9% 0.005 56.366);\n    --color-stone-400: oklch(70.9% 0.01 56.259);\n    --color-stone-500: oklch(55.3% 0.013 58.071);\n    --color-stone-600: oklch(44.4% 0.011 73.639);\n    --color-stone-700: oklch(37.4% 0.01 67.558);\n    --color-stone-800: oklch(26.8% 0.007 34.298);\n    --color-stone-900: oklch(21.6% 0.006 56.043);\n    --color-stone-950: oklch(14.7% 0.004 49.25);\n\n    --color-black: #000;\n    --color-white: #fff;\n\n    --spacing: 0.25rem;\n\n    --breakpoint-sm: 40rem;\n    --breakpoint-md: 48rem;\n    --breakpoint-lg: 64rem;\n    --breakpoint-xl: 80rem;\n    --breakpoint-2xl: 96rem;\n\n    --container-3xs: 16rem;\n    --container-2xs: 18rem;\n    --container-xs: 20rem;\n    --container-sm: 24rem;\n    --container-md: 28rem;\n    --container-lg: 32rem;\n    --container-xl: 36rem;\n    --container-2xl: 42rem;\n    --container-3xl: 48rem;\n    --container-4xl: 56rem;\n    --container-5xl: 64rem;\n    --container-6xl: 72rem;\n    --container-7xl: 80rem;\n\n    --text-xs: 0.75rem;\n    --text-xs--line-height: calc(1 / 0.75);\n    --text-sm: 0.875rem;\n    --text-sm--line-height: calc(1.25 / 0.875);\n    --text-base: 1rem;\n    --text-base--line-height: calc(1.5 / 1);\n    --text-lg: 1.125rem;\n    --text-lg--line-height: calc(1.75 / 1.125);\n    --text-xl: 1.25rem;\n    --text-xl--line-height: calc(1.75 / 1.25);\n    --text-2xl: 1.5rem;\n    --text-2xl--line-height: calc(2 / 1.5);\n    --text-3xl: 1.875rem;\n    --text-3xl--line-height: calc(2.25 / 1.875);\n    --text-4xl: 2.25rem;\n    --text-4xl--line-height: calc(2.5 / 2.25);\n    --text-5xl: 3rem;\n    --text-5xl--line-height: 1;\n    --text-6xl: 3.75rem;\n    --text-6xl--line-height: 1;\n    --text-7xl: 4.5rem;\n    --text-7xl--line-height: 1;\n    --text-8xl: 6rem;\n    --text-8xl--line-height: 1;\n    --text-9xl: 8rem;\n    --text-9xl--line-height: 1;\n\n    --font-weight-thin: 100;\n    --font-weight-extralight: 200;\n    --font-weight-light: 300;\n    --font-weight-normal: 400;\n    --font-weight-medium: 500;\n    --font-weight-semibold: 600;\n    --font-weight-bold: 700;\n    --font-weight-extrabold: 800;\n    --font-weight-black: 900;\n\n    --tracking-tighter: -0.05em;\n    --tracking-tight: -0.025em;\n    --tracking-normal: 0em;\n    --tracking-wide: 0.025em;\n    --tracking-wider: 0.05em;\n    --tracking-widest: 0.1em;\n\n    --leading-tight: 1.25;\n    --leading-snug: 1.375;\n    --leading-normal: 1.5;\n    --leading-relaxed: 1.625;\n    --leading-loose: 2;\n\n    --radius-xs: 0.125rem;\n    --radius-sm: 0.25rem;\n    --radius-md: 0.375rem;\n    --radius-lg: 0.5rem;\n    --radius-xl: 0.75rem;\n    --radius-2xl: 1rem;\n    --radius-3xl: 1.5rem;\n    --radius-4xl: 2rem;\n\n    --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);\n    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-md:\n      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --shadow-lg:\n      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --shadow-xl:\n      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n\n    --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);\n\n    --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);\n    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);\n    --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);\n    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);\n    --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);\n    --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);\n\n    --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);\n    --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);\n    --text-shadow-sm:\n      0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),\n      0px 2px 2px rgb(0 0 0 / 0.075);\n    --text-shadow-md:\n      0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),\n      0px 2px 4px rgb(0 0 0 / 0.1);\n    --text-shadow-lg:\n      0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),\n      0px 4px 8px rgb(0 0 0 / 0.1);\n\n    --ease-in: cubic-bezier(0.4, 0, 1, 1);\n    --ease-out: cubic-bezier(0, 0, 0.2, 1);\n    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);\n\n    --animate-spin: spin 1s linear infinite;\n    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;\n    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n    --animate-bounce: bounce 1s infinite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @keyframes ping {\n      75%,\n      100% {\n        transform: scale(2);\n        opacity: 0;\n      }\n    }\n\n    @keyframes pulse {\n      50% {\n        opacity: 0.5;\n      }\n    }\n\n    @keyframes bounce {\n      0%,\n      100% {\n        transform: translateY(-25%);\n        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);\n      }\n\n      50% {\n        transform: none;\n        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg: 16px;\n    --blur-xl: 24px;\n    --blur-2xl: 40px;\n    --blur-3xl: 64px;\n\n    --perspective-dramatic: 100px;\n    --perspective-near: 300px;\n    --perspective-normal: 500px;\n    --perspective-midrange: 800px;\n    --perspective-distant: 1200px;\n\n    --aspect-video: 16 / 9;\n\n    --default-transition-duration: 150ms;\n    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    --default-font-family: --theme(--font-sans, initial);\n    --default-font-feature-settings: --theme(\n      --font-sans--font-feature-settings,\n      initial\n    );\n    --default-font-variation-settings: --theme(\n      --font-sans--font-variation-settings,\n      initial\n    );\n    --default-mono-font-family: --theme(--font-mono, initial);\n    --default-mono-font-feature-settings: --theme(\n      --font-mono--font-feature-settings,\n      initial\n    );\n    --default-mono-font-variation-settings: --theme(\n      --font-mono--font-variation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n    --blur: 8px;\n    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);\n    --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);\n    --radius: 0.25rem;\n    --max-width-prose: 65ch;\n  }\n}\n\n@layer base {\n  /*\n  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n  2. Remove default margins and padding\n  3. Reset all borders.\n*/\n\n  *,\n  ::after,\n  ::before,\n  ::backdrop,\n  ::file-selector-button {\n    box-sizing: border-box; /* 1 */\n    margin: 0; /* 2 */\n    padding: 0; /* 2 */\n    border: 0 solid; /* 3 */\n  }\n\n  /*\n  1. Use a consistent sensible line-height in all browsers.\n  2. Prevent adjustments of font size after orientation changes in iOS.\n  3. Use a more readable tab size.\n  4. Use the user's configured `sans` font-family by default.\n  5. Use the user's configured `sans` font-feature-settings by default.\n  6. Use the user's configured `sans` font-variation-settings by default.\n  7. Disable tap highlights on iOS.\n*/\n\n  html,\n  :host {\n    line-height: 1.5; /* 1 */\n    -webkit-text-size-adjust: 100%; /* 2 */\n    tab-size: 4; /* 3 */\n    font-family: --theme(\n      --default-font-family,\n      ui-sans-serif,\n      system-ui,\n      sans-serif,\n      \"Apple Color Emoji\",\n      \"Segoe UI Emoji\",\n      \"Segoe UI Symbol\",\n      \"Noto Color Emoji\"\n    ); /* 4 */\n    font-feature-settings: --theme(\n      --default-font-feature-settings,\n      normal\n    ); /* 5 */\n    font-variation-settings: --theme(\n      --default-font-variation-settings,\n      normal\n    ); /* 6 */\n    -webkit-tap-highlight-color: transparent; /* 7 */\n  }\n\n  /*\n  1. Add the correct height in Firefox.\n  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n  3. Reset the default border style to a 1px solid border.\n*/\n\n  hr {\n    height: 0; /* 1 */\n    color: inherit; /* 2 */\n    border-top-width: 1px; /* 3 */\n  }\n\n  /*\n  Add the correct text decoration in Chrome, Edge, and Safari.\n*/\n\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n\n  /*\n  Remove the default font size and weight for headings.\n*/\n\n  h1,\n  h2,\n  h3,\n  h4,\n  h5,\n  h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n\n  /*\n  Reset links to optimize for opt-in styling instead of opt-out.\n*/\n\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n\n  /*\n  Add the correct font weight in Edge and Safari.\n*/\n\n  b,\n  strong {\n    font-weight: bolder;\n  }\n\n  /*\n  1. Use the user's configured `mono` font-family by default.\n  2. Use the user's configured `mono` font-feature-settings by default.\n  3. Use the user's configured `mono` font-variation-settings by default.\n  4. Correct the odd `em` font sizing in all browsers.\n*/\n\n  code,\n  kbd,\n  samp,\n  pre {\n    font-family: --theme(\n      --default-mono-font-family,\n      ui-monospace,\n      SFMono-Regular,\n      Menlo,\n      Monaco,\n      Consolas,\n      \"Liberation Mono\",\n      \"Courier New\",\n      monospace\n    ); /* 1 */\n    font-feature-settings: --theme(\n      --default-mono-font-feature-settings,\n      normal\n    ); /* 2 */\n    font-variation-settings: --theme(\n      --default-mono-font-variation-settings,\n      normal\n    ); /* 3 */\n    font-size: 1em; /* 4 */\n  }\n\n  /*\n  Add the correct font size in all browsers.\n*/\n\n  small {\n    font-size: 80%;\n  }\n\n  /*\n  Prevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\n  sub,\n  sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n\n  sub {\n    bottom: -0.25em;\n  }\n\n  sup {\n    top: -0.5em;\n  }\n\n  /*\n  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n  3. Remove gaps between table borders by default.\n*/\n\n  table {\n    text-indent: 0; /* 1 */\n    border-color: inherit; /* 2 */\n    border-collapse: collapse; /* 3 */\n  }\n\n  /*\n  Use the modern Firefox focus style for all focusable elements.\n*/\n\n  :-moz-focusring {\n    outline: auto;\n  }\n\n  /*\n  Add the correct vertical alignment in Chrome and Firefox.\n*/\n\n  progress {\n    vertical-align: baseline;\n  }\n\n  /*\n  Add the correct display in Chrome and Safari.\n*/\n\n  summary {\n    display: list-item;\n  }\n\n  /*\n  Make lists unstyled by default.\n*/\n\n  ol,\n  ul,\n  menu {\n    list-style: none;\n  }\n\n  /*\n  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n      This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\n  img,\n  svg,\n  video,\n  canvas,\n  audio,\n  iframe,\n  embed,\n  object {\n    display: block; /* 1 */\n    vertical-align: middle; /* 2 */\n  }\n\n  /*\n  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\n  img,\n  video {\n    max-width: 100%;\n    height: auto;\n  }\n\n  /*\n  1. Inherit font styles in all browsers.\n  2. Remove border radius in all browsers.\n  3. Remove background color in all browsers.\n  4. Ensure consistent opacity for disabled states in all browsers.\n*/\n\n  button,\n  input,\n  select,\n  optgroup,\n  textarea,\n  ::file-selector-button {\n    font: inherit; /* 1 */\n    font-feature-settings: inherit; /* 1 */\n    font-variation-settings: inherit; /* 1 */\n    letter-spacing: inherit; /* 1 */\n    color: inherit; /* 1 */\n    border-radius: 0; /* 2 */\n    background-color: transparent; /* 3 */\n    opacity: 1; /* 4 */\n  }\n\n  /*\n  Restore default font weight.\n*/\n\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n\n  /*\n  Restore indentation.\n*/\n\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n\n  /*\n  Restore space after button.\n*/\n\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n\n  /*\n  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n*/\n\n  ::placeholder {\n    opacity: 1;\n  }\n\n  /*\n  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not\n  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or\n    (contain-intrinsic-size: 1px) /* Safari 17+ */ {\n    ::placeholder {\n      color: color-mix(in oklab, currentcolor 50%, transparent);\n    }\n  }\n\n  /*\n  Prevent resizing textareas horizontally by default.\n*/\n\n  textarea {\n    resize: vertical;\n  }\n\n  /*\n  Remove the inner padding in Chrome and Safari on macOS.\n*/\n\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n\n  /*\n  1. Ensure date/time inputs have the same height when empty in iOS Safari.\n  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.\n*/\n\n  ::-webkit-date-and-time-value {\n    min-height: 1lh; /* 1 */\n    text-align: inherit; /* 2 */\n  }\n\n  /*\n  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.\n*/\n\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n\n  /*\n  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.\n*/\n\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n\n  ::-webkit-datetime-edit,\n  ::-webkit-datetime-edit-year-field,\n  ::-webkit-datetime-edit-month-field,\n  ::-webkit-datetime-edit-day-field,\n  ::-webkit-datetime-edit-hour-field,\n  ::-webkit-datetime-edit-minute-field,\n  ::-webkit-datetime-edit-second-field,\n  ::-webkit-datetime-edit-millisecond-field,\n  ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n\n  /*\n  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)\n*/\n\n  ::-webkit-calendar-picker-indicator {\n    line-height: 1;\n  }\n\n  /*\n  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n\n  /*\n  Correct the inability to style the border radius in iOS Safari.\n*/\n\n  button,\n  input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]),\n  ::file-selector-button {\n    appearance: button;\n  }\n\n  /*\n  Correct the cursor style of increment and decrement buttons in Safari.\n*/\n\n  ::-webkit-inner-spin-button,\n  ::-webkit-outer-spin-button {\n    height: auto;\n  }\n\n  /*\n  Make elements with the HTML hidden attribute stay hidden by default.\n*/\n\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n\n@layer utilities {\n  @tailwind utilities;\n}\n","@import \"tailwindcss\";\n\n/* Custom base styles */\n@layer base {\n\tbody {\n\t\t@apply bg-gray-50;\n\t}\n}\n\n/* WordPress admin overrides for the app container */\n#poststation-app {\n\tmargin-left: -20px;\n\tmargin-right: 0;\n\tmargin-top: -10px;\n\toverflow: visible;\n\t--poststation-top-offset: 32px;\n\tfont-family: ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\tcolor: #111827;\n\tbackground: #f9fafb;\n}\n\n#poststation-app *,\n#poststation-app *::before,\n#poststation-app *::after {\n\tbox-sizing: border-box;\n}\n\n#poststation-app h1,\n#poststation-app h2,\n#poststation-app h3,\n#poststation-app h4,\n#poststation-app h5,\n#poststation-app h6,\n#poststation-app p,\n#poststation-app ul,\n#poststation-app ol,\n#poststation-app li,\n#poststation-app figure,\n#poststation-app blockquote {\n\tmargin: 0;\n\tpadding: 0;\n}\n\n#poststation-app button,\n#poststation-app input,\n#poststation-app select,\n#poststation-app textarea {\n\tfont: inherit;\n\tcolor: inherit;\n}\n\n#poststation-app button {\n\tcursor: pointer;\n}\n\n#poststation-app button:disabled {\n\tcursor: not-allowed;\n}\n\n/* App-scoped form controls to avoid WordPress admin style bleed */\n#poststation-app .poststation-field {\n\t@apply block w-full max-w-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-none transition;\n\t@apply placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500;\n\t@apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;\n}\n\n#poststation-app .poststation-field-error {\n\t@apply border-red-300 focus:border-red-500 focus:ring-red-500;\n}\n\n#poststation-app select.poststation-field {\n\t@apply pr-8;\n}\n\n#poststation-app textarea.poststation-field {\n\t@apply min-h-10 max-h-60 field-sizing-content resize-y overflow-y-auto;\n}\n\n/* Switch-style checkbox: wrap in label.poststation-switch and add span.poststation-switch-track after input */\n#poststation-app .poststation-switch {\n\t@apply inline-flex items-center gap-3 cursor-pointer;\n}\n#poststation-app .poststation-switch input.poststation-field-checkbox {\n\t@apply sr-only;\n}\n#poststation-app .poststation-switch .poststation-switch-track {\n\t@apply relative inline-flex h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors duration-200;\n}\n#poststation-app .poststation-switch .poststation-switch-track::after {\n\tcontent: \"\";\n\t@apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition duration-200;\n}\n#poststation-app .poststation-switch input:focus-visible + .poststation-switch-track {\n\t@apply ring-2 ring-indigo-500 ring-offset-2;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track {\n\t@apply bg-indigo-600;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track::after {\n\t@apply translate-x-4;\n}\n#poststation-app .poststation-switch input:disabled + .poststation-switch-track {\n\t@apply opacity-50 cursor-not-allowed;\n}\n\n#poststation-app .poststation-field-color {\n\t@apply h-10 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1;\n}\n\n#poststation-app .poststation-icon-btn {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app .poststation-icon-btn-danger {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-red-300 hover:bg-red-50 hover:text-red-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app a {\n\tcolor: inherit;\n\ttext-decoration: none;\n}\n\n@media (min-width: 783px) {\n\t#poststation-app {\n\t\tmargin-left: -20px;\n\t}\n}\n\n@media (min-width: 1024px) {\n\t#poststation-app .poststation-desktop-sidebar {\n\t\tposition: sticky;\n\t\talign-self: flex-start;\n\t\ttop: var(--poststation-top-offset, 32px);\n\t\theight: calc(100vh - var(--poststation-top-offset, 32px));\n\t\tleft: auto;\n\t\tbottom: auto;\n\t\ttransform: none;\n\t}\n}\n\n/* Sticky header on Campaign edit - below WP admin bar */\n.poststation-sticky-header {\n\tposition: sticky;\n\ttop: var(--poststation-top-offset, 32px);\n\tz-index: 99990;\n\twidth: 100%;\n}\n\n@media screen and (max-width: 782px) {\n\t.poststation-sticky-header {\n\t\ttop: 0;\n\t}\n}\n\nbody.admin-bar .poststation-mobile-overlay,\nbody.admin-bar .poststation-mobile-sidebar {\n\ttop: 32px;\n\theight: calc(100vh - 32px);\n}\n\n@media screen and (max-width: 782px) {\n\tbody.admin-bar .poststation-mobile-overlay,\n\tbody.admin-bar .poststation-mobile-sidebar {\n\t\ttop: 46px;\n\t\theight: calc(100vh - 46px);\n\t}\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

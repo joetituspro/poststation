@@ -24,7 +24,7 @@ export const setBootstrap = (bootstrap = {}) => {
 		'settings',
 		'webhooks',
 		'campaigns',
-		'instructions',
+		'writing_presets',
 		'openrouter_models',
 	];
 
@@ -174,25 +174,25 @@ export const webhooks = {
 	delete: (id) => ajax('poststation_delete_webhook', { id }),
 };
 
-// Instruction presets API
-export const instructions = {
+// Writing presets API
+export const writingPresets = {
 	create: (data) =>
-		ajax('poststation_create_instruction', {
+		ajax('poststation_create_writing_preset', {
 			key: data.key,
 			name: data.name,
 			description: data.description ?? '',
 			instructions: JSON.stringify(data.instructions ?? { title: '', body: '' }),
 		}),
 	update: (id, data) =>
-		ajax('poststation_update_instruction', {
+		ajax('poststation_update_writing_preset', {
 			id,
 			description: data.description ?? '',
 			instructions: JSON.stringify(data.instructions ?? { title: '', body: '' }),
 		}),
 	duplicate: (id, newKey, newName) =>
-		ajax('poststation_duplicate_instruction', { id, new_key: newKey, new_name: newName }),
-	reset: (id) => ajax('poststation_reset_instruction', { id }),
-	delete: (id) => ajax('poststation_delete_instruction', { id }),
+		ajax('poststation_duplicate_writing_preset', { id, new_key: newKey, new_name: newName }),
+	reset: (id) => ajax('poststation_reset_writing_preset', { id }),
+	delete: (id) => ajax('poststation_delete_writing_preset', { id }),
 };
 
 // Settings API
@@ -227,7 +227,7 @@ export const getCountries = () => getBootstrapValue('countries') || {};
 export const getBootstrapSettings = () => getBootstrap().settings || null;
 export const getBootstrapWebhooks = () => getBootstrap().webhooks || null;
 export const getBootstrapCampaigns = () => getBootstrap().campaigns || null;
-export const getBootstrapInstructions = () => getBootstrap().instructions || [];
+export const getBootstrapWritingPresets = () => getBootstrap().writing_presets || [];
 export const getBootstrapOpenRouterModels = () => getBootstrap().openrouter_models || [];
 
 export const openrouter = {
@@ -236,6 +236,6 @@ export const openrouter = {
 };
 
 export const ai = {
-	generateInstructionPreset: ({ prompt, provider = 'openrouter', model = '' }) =>
-		ajax('poststation_generate_instruction_preset', { prompt, provider, model }),
+	generateWritingPreset: ({ prompt, provider = 'openrouter', model = '' }) =>
+		ajax('poststation_generate_writing_preset', { prompt, provider, model }),
 };

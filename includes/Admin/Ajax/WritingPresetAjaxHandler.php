@@ -2,13 +2,13 @@
 
 namespace PostStation\Admin\Ajax;
 
-use PostStation\Models\Instruction;
+use PostStation\Models\WritingPreset;
 
-class InstructionAjaxHandler
+class WritingPresetAjaxHandler
 {
 	private const DESCRIPTION_MAX_LENGTH = 80;
 
-	public function create_instruction(): void
+	public function create_writing_preset(): void
 	{
 		if (!NonceVerifier::verify()) {
 			wp_send_json_error(['message' => 'Invalid nonce']);
@@ -27,24 +27,24 @@ class InstructionAjaxHandler
 		if ($key === '' || $name === '') {
 			wp_send_json_error(['message' => 'Key and name are required']);
 		}
-		if (Instruction::get_by_key($key)) {
-			wp_send_json_error(['message' => 'An instruction with this key already exists']);
+		if (WritingPreset::get_by_key($key)) {
+			wp_send_json_error(['message' => 'A writing preset with this key already exists']);
 		}
 
-		$id = Instruction::create([
+		$id = WritingPreset::create([
 			'key' => $key,
 			'name' => $name,
 			'description' => $description,
 			'instructions' => $instructions,
 		]);
 		if ($id) {
-			$instruction = Instruction::get_by_id($id);
-			wp_send_json_success(['message' => 'Instruction created', 'id' => $id, 'instruction' => $instruction]);
+			$writing_preset = WritingPreset::get_by_id($id);
+			wp_send_json_success(['message' => 'Writing preset created', 'id' => $id, 'writing_preset' => $writing_preset]);
 		}
-		wp_send_json_error(['message' => 'Failed to create instruction']);
+		wp_send_json_error(['message' => 'Failed to create writing preset']);
 	}
 
-	public function update_instruction(): void
+	public function update_writing_preset(): void
 	{
 		if (!NonceVerifier::verify()) {
 			wp_send_json_error(['message' => 'Invalid nonce']);
@@ -57,9 +57,9 @@ class InstructionAjaxHandler
 		if (!$id) {
 			wp_send_json_error(['message' => 'Invalid ID']);
 		}
-		$existing = Instruction::get_by_id($id);
+		$existing = WritingPreset::get_by_id($id);
 		if (!$existing) {
-			wp_send_json_error(['message' => 'Instruction not found']);
+			wp_send_json_error(['message' => 'Writing preset not found']);
 		}
 
 		$description = $this->normalize_description((string) ($_POST['description'] ?? ''));
@@ -68,18 +68,18 @@ class InstructionAjaxHandler
 			$instructions = ['title' => '', 'body' => ''];
 		}
 
-		$success = Instruction::update($id, [
+		$success = WritingPreset::update($id, [
 			'description' => $description,
 			'instructions' => $instructions,
 		]);
 		if ($success) {
-			$instruction = Instruction::get_by_id($id);
-			wp_send_json_success(['message' => 'Instruction updated', 'instruction' => $instruction]);
+			$writing_preset = WritingPreset::get_by_id($id);
+			wp_send_json_success(['message' => 'Writing preset updated', 'writing_preset' => $writing_preset]);
 		}
-		wp_send_json_error(['message' => 'Failed to update instruction']);
+		wp_send_json_error(['message' => 'Failed to update writing preset']);
 	}
 
-	public function duplicate_instruction(): void
+	public function duplicate_writing_preset(): void
 	{
 		if (!NonceVerifier::verify()) {
 			wp_send_json_error(['message' => 'Invalid nonce']);
@@ -94,28 +94,28 @@ class InstructionAjaxHandler
 		if (!$id || $new_key === '' || $new_name === '') {
 			wp_send_json_error(['message' => 'ID, new key and new name are required']);
 		}
-		$source = Instruction::get_by_id($id);
+		$source = WritingPreset::get_by_id($id);
 		if (!$source) {
-			wp_send_json_error(['message' => 'Instruction not found']);
+			wp_send_json_error(['message' => 'Writing preset not found']);
 		}
-		if (Instruction::get_by_key($new_key)) {
-			wp_send_json_error(['message' => 'An instruction with this key already exists']);
+		if (WritingPreset::get_by_key($new_key)) {
+			wp_send_json_error(['message' => 'A writing preset with this key already exists']);
 		}
 
-		$new_id = Instruction::create([
+		$new_id = WritingPreset::create([
 			'key' => $new_key,
 			'name' => $new_name,
 			'description' => $this->normalize_description((string) ($source['description'] ?? '')),
 			'instructions' => $source['instructions'] ?? ['title' => '', 'body' => ''],
 		]);
 		if ($new_id) {
-			$instruction = Instruction::get_by_id($new_id);
-			wp_send_json_success(['message' => 'Instruction duplicated', 'id' => $new_id, 'instruction' => $instruction]);
+			$writing_preset = WritingPreset::get_by_id($new_id);
+			wp_send_json_success(['message' => 'Writing preset duplicated', 'id' => $new_id, 'writing_preset' => $writing_preset]);
 		}
-		wp_send_json_error(['message' => 'Failed to duplicate instruction']);
+		wp_send_json_error(['message' => 'Failed to duplicate writing preset']);
 	}
 
-	public function reset_instruction(): void
+	public function reset_writing_preset(): void
 	{
 		if (!NonceVerifier::verify()) {
 			wp_send_json_error(['message' => 'Invalid nonce']);
@@ -128,15 +128,15 @@ class InstructionAjaxHandler
 		if (!$id) {
 			wp_send_json_error(['message' => 'Invalid ID']);
 		}
-		$success = Instruction::reset_to_default($id);
+		$success = WritingPreset::reset_to_default($id);
 		if ($success) {
-			$instruction = Instruction::get_by_id($id);
-			wp_send_json_success(['message' => 'Instruction reset to default', 'instruction' => $instruction]);
+			$writing_preset = WritingPreset::get_by_id($id);
+			wp_send_json_success(['message' => 'Writing preset reset to default', 'writing_preset' => $writing_preset]);
 		}
 		wp_send_json_error(['message' => 'Reset only applies to default presets (Listicle, News, Guide, How-to)']);
 	}
 
-	public function delete_instruction(): void
+	public function delete_writing_preset(): void
 	{
 		if (!NonceVerifier::verify()) {
 			wp_send_json_error(['message' => 'Invalid nonce']);
@@ -149,9 +149,9 @@ class InstructionAjaxHandler
 		if (!$id) {
 			wp_send_json_error(['message' => 'Invalid ID']);
 		}
-		$success = Instruction::delete($id);
+		$success = WritingPreset::delete($id);
 		if ($success) {
-			wp_send_json_success(['message' => 'Instruction deleted']);
+			wp_send_json_success(['message' => 'Writing preset deleted']);
 		}
 		wp_send_json_error(['message' => 'Cannot delete default presets (Listicle, News, Guide, How-to)']);
 	}

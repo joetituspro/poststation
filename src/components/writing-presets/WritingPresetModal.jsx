@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button, Input, ModelSelect, Textarea, Modal } from '../common';
-import { ai, getBootstrapSettings, instructions, refreshBootstrap } from '../../api/client';
+import { ai, getBootstrapSettings, writingPresets, refreshBootstrap } from '../../api/client';
 
 const DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
 const DESCRIPTION_MAX_LENGTH = 80;
@@ -18,11 +18,11 @@ const normalizeKey = (value = '') =>
 const limitDescription = (value = '') =>
 	String(value ?? '').slice(0, DESCRIPTION_MAX_LENGTH);
 
-export default function InstructionModal({
+export default function WritingPresetModal({
 	isOpen,
 	onClose,
 	mode = 'add',
-	instruction = null,
+	writingPreset = null,
 	onSaved,
 }) {
 	const bootstrapSettings = getBootstrapSettings() || {};
@@ -40,13 +40,13 @@ export default function InstructionModal({
 	const [aiGenerating, setAiGenerating] = useState(false);
 	const [error, setError] = useState('');
 
-	const lockKeyAndName = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
-	const showResetButton = mode === 'edit' && instruction && isDefaultPreset(instruction.key);
+	const lockKeyAndName = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
+	const showResetButton = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
 
 	useEffect(() => {
 		if (!isOpen) return;
 		setError('');
-		if (mode === 'add' && !instruction) {
+		if (mode === 'add' && !writingPreset) {
 			setKey('');
 			setName('');
 			setDescription('');
@@ -58,7 +58,7 @@ export default function InstructionModal({
 			return;
 		}
 		if (mode === 'duplicate' || mode === 'edit') {
-			const inst = instruction || {};
+			const inst = writingPreset || {};
 			const instr = inst.instructions || {};
 			setKey(mode === 'duplicate' ? '' : (inst.key ?? ''));
 			setName(mode === 'duplicate' ? '' : (inst.name ?? ''));
@@ -69,7 +69,7 @@ export default function InstructionModal({
 			setAiModel(defaultAiModel);
 			setAiOpen(false);
 		}
-	}, [isOpen, mode, instruction, defaultAiModel]);
+	}, [isOpen, mode, writingPreset, defaultAiModel]);
 
 	const handleAiGenerate = async () => {
 		setError('');
@@ -80,7 +80,7 @@ export default function InstructionModal({
 
 		setAiGenerating(true);
 		try {
-			const result = await ai.generateInstructionPreset({
+			const result = await ai.generateWritingPreset({
 				prompt: String(aiPrompt ?? '').trim(),
 				provider: 'openrouter',
 				model: String(aiModel ?? '').trim(),
@@ -122,15 +122,15 @@ export default function InstructionModal({
 		setSaving(true);
 		try {
 			if (mode === 'add' || mode === 'duplicate') {
-				const result = await instructions.create({
+				const result = await writingPresets.create({
 					key: keyTrim,
 					name: nameTrim,
 					...payload,
 				});
 				await refreshBootstrap();
-				onSaved?.(result?.id ?? result?.instruction?.id);
+				onSaved?.(result?.id ?? result?.writing_preset?.id);
 			} else {
-				await instructions.update(instruction.id, payload);
+				await writingPresets.update(writingPreset.id, payload);
 				await refreshBootstrap();
 				onSaved?.();
 			}
@@ -143,13 +143,13 @@ export default function InstructionModal({
 	};
 
 	const handleReset = async () => {
-		if (!instruction?.id || !showResetButton) return;
+		if (!writingPreset?.id || !showResetButton) return;
 		setError('');
 		setResetting(true);
 		try {
-			const result = await instructions.reset(instruction.id);
+			const result = await writingPresets.reset(writingPreset.id);
 			await refreshBootstrap();
-			const inst = result?.instruction;
+			const inst = result?.writing_preset;
 			if (inst) {
 				setDescription(inst.description ?? '');
 				setTitleInstruction(inst.instructions?.title ?? '');
@@ -165,10 +165,10 @@ export default function InstructionModal({
 
 	const title =
 		mode === 'add'
-			? 'Add instruction preset'
+			? 'Add writing preset'
 			: mode === 'duplicate'
-				? 'Duplicate instruction preset'
-				: 'Edit instruction preset';
+				? 'Duplicate writing preset'
+				: 'Edit writing preset';
 
 	const showAiTools = mode === 'add';
 	const keyHasInvalidFormat = !!key && !KEY_FORMAT.test(key);
@@ -202,7 +202,7 @@ export default function InstructionModal({
 					<div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 space-y-3">
 						<ModelSelect
 							label="AI model"
-							tooltip="OpenRouter text model used to generate the instruction preset."
+							tooltip="OpenRouter text model used to generate the writing preset."
 							value={aiModel}
 							onChange={(e) => setAiModel(e.target.value)}
 							filter="text"

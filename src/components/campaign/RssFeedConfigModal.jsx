@@ -29,7 +29,7 @@ function buildCampaignPayload(campaign, frequency_interval, validSources) {
 		readability: campaign.readability ?? 'grade_8',
 		language: campaign.language ?? 'en',
 		target_country: campaign.target_country ?? 'international',
-		instruction_id: campaign.instruction_id ?? null,
+		writing_preset_id: campaign.writing_preset_id ?? null,
 		content_fields: campaign.content_fields,
 		rss_enabled: 'yes',
 		rss_config: {

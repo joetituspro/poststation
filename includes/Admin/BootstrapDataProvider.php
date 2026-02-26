@@ -4,7 +4,7 @@ namespace PostStation\Admin;
 
 use PostStation\Models\Campaign;
 use PostStation\Models\CampaignRss;
-use PostStation\Models\Instruction;
+use PostStation\Models\WritingPreset;
 use PostStation\Models\PostTask;
 use PostStation\Models\Webhook;
 use PostStation\Services\SettingsService;
@@ -151,7 +151,7 @@ class BootstrapDataProvider
 			'settings' => $this->settings_service->get_settings_data(),
 			'webhooks' => ['webhooks' => Webhook::get_all()],
 			'campaigns' => ['campaigns' => $this->get_campaigns_with_counts()],
-			'instructions' => Instruction::get_all(),
+			'writing_presets' => WritingPreset::get_all(),
 			'post_types' => $post_type_options,
 			'taxonomies' => $taxonomy_data,
 			'languages' => Languages::all(),
