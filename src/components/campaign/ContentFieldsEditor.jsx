@@ -41,6 +41,10 @@ const getDefaultContentFields = (settings = null) => {
 		model_id: defaultTextModel,
 		media_prompt: '',
 		image_model_id: defaultImageModel,
+		internal_links_mode: 'all_post_types',
+		internal_links_count: 4,
+		internal_links_taxonomy: '',
+		internal_links_terms: [],
 		disable_intelligence_analysis: false,
 		disable_outline: false,
 	},
@@ -101,6 +105,14 @@ const normalizeContentFields = (rawFields, settings = null) => {
 		body: {
 			...defaults.body,
 			...(fields.body || {}),
+			internal_links_mode:
+				fields?.body?.internal_links_mode === 'any_post_type'
+					? 'all_post_types'
+					: (fields?.body?.internal_links_mode || 'all_post_types'),
+			internal_links_taxonomy: String(fields?.body?.internal_links_taxonomy || ''),
+			internal_links_terms: Array.isArray(fields?.body?.internal_links_terms)
+				? fields.body.internal_links_terms.map((value) => String(value))
+				: [],
 			model_id: modelOrDefault(fields?.body?.model_id, defaultTextModel),
 			image_model_id: modelOrDefault(fields?.body?.image_model_id, defaultImageModel),
 		},
@@ -324,6 +336,7 @@ export default function ContentFieldsEditor({ campaign, onChange, taxonomies: ta
 							config={contentFields.body}
 							onChange={(config) => handleFieldChange('body', config)}
 							campaignType={campaign?.campaign_type || 'default'}
+							taxonomies={taxonomies}
 						/>
 					</FieldCard>
 				)}

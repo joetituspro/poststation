@@ -65,6 +65,10 @@ class BootstrapDataProvider
 		$taxonomy_data = [];
 		$taxonomies = get_taxonomies(['public' => true], 'objects');
 		foreach ($taxonomies as $taxonomy) {
+			if (in_array($taxonomy->name, ['post_format', 'format'], true)) {
+				continue;
+			}
+
 			$terms = get_terms([
 				'taxonomy' => $taxonomy->name,
 				'hide_empty' => false,
@@ -78,13 +82,14 @@ class BootstrapDataProvider
 				$term_obj = is_object($term) ? $term : (object) $term;
 				$terms_array[] = [
 					'term_id' => $term_obj->term_id ?? 0,
-					'name' => $term_obj->name ?? '',
+					'name' => html_entity_decode((string) ($term_obj->name ?? ''), ENT_QUOTES, 'UTF-8'),
 					'slug' => $term_obj->slug ?? '',
+					'count' => isset($term_obj->count) ? (int) $term_obj->count : 0,
 				];
 			}
 
 			$taxonomy_data[$taxonomy->name] = [
-				'label' => $taxonomy->labels->name ?? $taxonomy->name,
+				'label' => html_entity_decode((string) ($taxonomy->labels->name ?? $taxonomy->name), ENT_QUOTES, 'UTF-8'),
 				'terms' => $terms_array,
 			];
 		}

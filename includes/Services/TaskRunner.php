@@ -43,15 +43,8 @@ class TaskRunner
 			$slug_override = trim((string) ($task['slug_override'] ?? ''));
 			$sitemap_service = new Sitemap();
 			$body_config = $content_fields['body'] ?? [];
-			$post_type_only = !empty($body_config['internal_links_post_type_only']);
-			$sitemap_entries = $post_type_only
-				? $sitemap_service->get_sitemap_json($campaign['post_type'])
-				: $sitemap_service->get_sitemap_json_all_public();
-			$sitemap_urls = array_values(array_filter(array_map(
-				static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
-				$sitemap_entries
-			)));
-			$sitemap_csv = implode(', ', $sitemap_urls);
+			$sitemap_entries = self::get_internal_link_sitemap_entries($sitemap_service, $campaign, $body_config);
+			$sitemap_payload = self::format_sitemap_payload($sitemap_entries);
 			
 			// Inject terms for auto_select mode in taxonomies
 			if (!empty($content_fields)) {
@@ -86,6 +79,21 @@ class TaskRunner
 					$content_fields['body']['tone_of_voice'] = (string) ($campaign['tone_of_voice'] ?? 'none');
 					$content_fields['body']['point_of_view'] = (string) ($campaign['point_of_view'] ?? 'none');
 					$content_fields['body']['readability'] = (string) ($campaign['readability'] ?? 'grade_8');
+
+					$resolved_internal_link_mode = self::resolve_internal_link_mode((array) $content_fields['body']);
+					$content_fields['body']['internal_links_mode'] = $resolved_internal_link_mode;
+					$content_fields['body']['internal_links_count'] = max(1, (int) ($content_fields['body']['internal_links_count'] ?? 4));
+
+					if ($resolved_internal_link_mode === 'specific_taxonomy') {
+						$content_fields['body']['internal_links_taxonomy'] = sanitize_key((string) ($content_fields['body']['internal_links_taxonomy'] ?? ''));
+						$content_fields['body']['internal_links_terms'] = array_values(array_unique(array_filter(
+							array_map('intval', (array) ($content_fields['body']['internal_links_terms'] ?? [])),
+							static fn($term_id) => $term_id > 0
+						)));
+					} else {
+						$content_fields['body']['internal_links_taxonomy'] = '';
+						$content_fields['body']['internal_links_terms'] = [];
+					}
 				}
 
 				// Helper to get taxonomy info and terms
@@ -234,7 +242,7 @@ class TaskRunner
 				'readability' => (string) ($campaign['readability'] ?? 'grade_8'),
 				'content_fields' => $content_fields,
 				'writing_preset' => $writing_preset,
-				'sitemap' => $sitemap_csv,
+				'sitemap' => $sitemap_payload,
 				'callback_url' => get_site_url() . '/ps-api',
 				'api_key' => get_option('poststation_api_key'),
 			];
@@ -298,15 +306,9 @@ class TaskRunner
 
 		$content_fields = !empty($campaign['content_fields']) ? json_decode($campaign['content_fields'], true) : [];
 		$body_config = is_array($content_fields) ? ($content_fields['body'] ?? []) : [];
-		$post_type_only = !empty($body_config['internal_links_post_type_only']);
 		$sitemap_service = new Sitemap();
-		$sitemap_entries = $post_type_only
-			? $sitemap_service->get_sitemap_json($campaign['post_type'])
-			: $sitemap_service->get_sitemap_json_all_public();
-		$sitemap_str = implode(', ', array_values(array_filter(array_map(
-			static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
-			$sitemap_entries
-		))));
+		$sitemap_entries = self::get_internal_link_sitemap_entries($sitemap_service, $campaign, $body_config);
+		$sitemap_str = self::format_sitemap_urls_string($sitemap_entries);
 
 		$placeholders = [
 			'{{research_url}}' => $task['research_url'] ?? '',
@@ -318,6 +320,82 @@ class TaskRunner
 		];
 
 		return str_replace(array_keys($placeholders), array_values($placeholders), $text);
+	}
+
+	private static function get_internal_link_sitemap_entries(Sitemap $sitemap_service, array $campaign, array $body_config): array
+	{
+		$mode = self::resolve_internal_link_mode($body_config);
+		if ($mode === 'none') {
+			return [];
+		}
+
+		if ($mode === 'campaign_post_type_only') {
+			$post_type = (string) ($campaign['post_type'] ?? 'post');
+			return $sitemap_service->get_sitemap_json($post_type);
+		}
+
+		if ($mode === 'specific_taxonomy') {
+			$taxonomy = sanitize_key((string) ($body_config['internal_links_taxonomy'] ?? ''));
+			if (in_array($taxonomy, ['post_format', 'format'], true)) {
+				return [];
+			}
+
+			$term_ids = array_values(array_unique(array_filter(
+				array_map('intval', (array) ($body_config['internal_links_terms'] ?? [])),
+				static fn($term_id) => $term_id > 0
+			)));
+
+			if ($taxonomy !== '' && !empty($term_ids)) {
+				return $sitemap_service->get_sitemap_json_by_taxonomy_terms($taxonomy, $term_ids);
+			}
+
+			return [];
+		}
+
+		return $sitemap_service->get_sitemap_json_all_public();
+	}
+
+	private static function resolve_internal_link_mode(array $body_config): string
+	{
+		$mode = strtolower(trim((string) ($body_config['internal_links_mode'] ?? '')));
+		if ($mode === 'any_post_type') {
+			$mode = 'all_post_types';
+		}
+
+		$allowed_modes = ['none', 'all_post_types', 'campaign_post_type_only', 'specific_taxonomy'];
+		if (in_array($mode, $allowed_modes, true)) {
+			return $mode;
+		}
+
+		return 'all_post_types';
+	}
+
+	private static function format_sitemap_payload(array $sitemap_entries): array
+	{
+		return array_values(array_filter(array_map(
+			static function ($entry) {
+				if (!is_array($entry)) {
+					return null;
+				}
+
+				$url = isset($entry['url']) ? (string) $entry['url'] : '';
+				if ($url === '') {
+					return null;
+				}
+
+				$title = isset($entry['title']) ? (string) $entry['title'] : '';
+				return [$title, $url];
+			},
+			$sitemap_entries
+		)));
+	}
+
+	private static function format_sitemap_urls_string(array $sitemap_entries): string
+	{
+		return implode(', ', array_values(array_filter(array_map(
+			static fn($entry) => is_array($entry) ? (string) ($entry['url'] ?? '') : '',
+			$sitemap_entries
+		))));
 	}
 
 	private static function sanitize_content_fields_for_webhook(array $content_fields): array

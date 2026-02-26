@@ -1,4 +1,4 @@
-import { Select, Textarea, Input, Tooltip, ModelSelect } from '../../common';
+import { Select, Textarea, Input, Tooltip, ModelSelect, MultiSelect } from '../../common';
 
 const RESEARCH_MODE_OPTIONS = [
 	{ value: 'none', label: 'None' },
@@ -6,7 +6,14 @@ const RESEARCH_MODE_OPTIONS = [
 	{ value: 'google_dataforseo', label: 'Google via DataForSEO (Coming Soon)', disabled: true },
 ];
 
-export default function BodyFieldConfig({ config, onChange, campaignType }) {
+const INTERNAL_LINK_MODE_OPTIONS = [
+	{ value: 'none', label: 'None' },
+	{ value: 'all_post_types', label: 'Yes - All Post Types' },
+	{ value: 'campaign_post_type_only', label: 'Yes - Campaign Post Type Only' },
+	{ value: 'specific_taxonomy', label: 'Yes - Specific Taxonomy' },
+];
+
+export default function BodyFieldConfig({ config, onChange, campaignType, taxonomies = {} }) {
 	const handleChange = (field, value) => {
 		onChange({ ...config, [field]: value });
 	};
@@ -59,8 +66,53 @@ export default function BodyFieldConfig({ config, onChange, campaignType }) {
 		{ value: 'comic_book', label: 'Comic Book' },
 	];
 
+	const selectedInternalLinksMode = (() => {
+		if (typeof config.internal_links_mode === 'string' && config.internal_links_mode !== '') {
+			if (config.internal_links_mode === 'any_post_type') {
+				return 'all_post_types';
+			}
+			return config.internal_links_mode;
+		}
+		return 'all_post_types';
+	})();
+
+	const selectedTaxonomy = config.internal_links_taxonomy || '';
+	const selectedTaxonomyData = selectedTaxonomy ? taxonomies?.[selectedTaxonomy] : null;
+	const selectedTaxonomyTerms = Array.isArray(selectedTaxonomyData?.terms) ? selectedTaxonomyData.terms : [];
+	const selectedTerms = Array.isArray(config.internal_links_terms) ? config.internal_links_terms : [];
+	const normalizedSelectedTerms = selectedTerms.map((value) => String(value));
+	const internalLinkTermOptions = selectedTaxonomyTerms.map((term) => ({
+		value: String(term.term_id),
+		label: `${term.name} (${term.count ?? 0})`,
+	}));
+	const taxonomyOptions = Object.entries(taxonomies || {})
+		.filter(([slug]) => slug !== 'post_format' && slug !== 'format')
+		.map(([slug, data]) => ({
+			value: slug,
+			label: data?.label || slug,
+		}));
+
+	const handleInternalLinkModeChange = (mode) => {
+		const updates = {
+			internal_links_mode: mode,
+		};
+		if (mode !== 'specific_taxonomy') {
+			updates.internal_links_taxonomy = '';
+			updates.internal_links_terms = [];
+		}
+		onChange({ ...config, ...updates });
+	};
+
 	return (
 		<div className="space-y-4">
+			<ModelSelect
+				label="Model"
+				tooltip="OpenRouter model used to generate body content."
+				value={config.model_id || ''}
+				onChange={(e) => handleChange('model_id', e.target.value)}
+				filter="text"
+			/>
+
 			{!isRewrite && (
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<Select
@@ -201,14 +253,23 @@ export default function BodyFieldConfig({ config, onChange, campaignType }) {
 							value={config.external_linking || 'yes'}
 							onChange={(e) => handleChange('external_linking', e.target.value)}
 						/>
+					</div>
+				</div>
+
+				<div className="space-y-2">
+					<div className="border-b border-gray-200 pb-1">
+						<h4 className="text-sm font-semibold text-gray-700">Internal Links</h4>
+					</div>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<Select
 							label="Internal Linking"
-							tooltip="Include internal links to related content."
-							options={yesNoOptions}
-							value={config.internal_linking || 'yes'}
-							onChange={(e) => handleChange('internal_linking', e.target.value)}
+							tooltip="Control whether internal links are added and where they can be sourced from."
+							options={INTERNAL_LINK_MODE_OPTIONS}
+							value={selectedInternalLinksMode}
+							onChange={(e) => handleInternalLinkModeChange(e.target.value)}
+							className="sm:col-span-2"
 						/>
-						{config.internal_linking === 'yes' && (
+						{selectedInternalLinksMode !== 'none' && (
 							<Input
 								label="Number of Internal Links"
 								tooltip="How many internal links to include. Default is 4."
@@ -221,29 +282,36 @@ export default function BodyFieldConfig({ config, onChange, campaignType }) {
 								}}
 							/>
 						)}
-					</div>
-					{config.internal_linking === 'yes' && (
-						<label className="poststation-switch text-sm font-medium text-gray-700">
-							<input
-								type="checkbox"
-								checked={Boolean(config.internal_links_post_type_only)}
-								onChange={(e) => handleChange('internal_links_post_type_only', e.target.checked)}
-								className="poststation-field-checkbox"
+						{selectedInternalLinksMode === 'specific_taxonomy' && (
+							<Select
+								label="Taxonomy"
+								tooltip="Only posts assigned to selected terms in this taxonomy are used for internal links."
+								options={taxonomyOptions}
+								value={selectedTaxonomy}
+								onChange={(e) =>
+									onChange({
+										...config,
+										internal_links_taxonomy: e.target.value,
+										internal_links_terms: [],
+									})
+								}
+								placeholder="Select taxonomy..."
 							/>
-							<span className="poststation-switch-track" aria-hidden />
-							<span>Use only selected post type</span>
-							<Tooltip content="When enabled, internal links will only point to posts of the campaign's selected post type." />
-						</label>
+						)}
+					</div>
+					{selectedInternalLinksMode === 'specific_taxonomy' && selectedTaxonomy && (
+						<div className="space-y-1">
+							<MultiSelect
+								label="Terms"
+								tooltip="Choose terms for internal-link sourcing. Term post counts are shown in each option."
+								options={internalLinkTermOptions}
+								value={normalizedSelectedTerms}
+								onChange={(values) => handleChange('internal_links_terms', values)}
+								placeholder="Select terms..."
+							/>
+						</div>
 					)}
 				</div>
-
-				<ModelSelect
-					label="Model"
-					tooltip="OpenRouter model used to generate body content."
-					value={config.model_id || ''}
-					onChange={(e) => handleChange('model_id', e.target.value)}
-					filter="text"
-				/>
 
 				<div className="space-y-2">
 					<div className="border-b border-gray-200 pb-1">
