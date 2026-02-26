@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input, Select, Tooltip } from '../common';
 import {
-	PUBLICATION_MODE_OPTIONS,
-	getDatePlusDaysValue,
 	getNowDateTimeLocalValue,
-	getTodayDateValue,
+	TASK_PUBLICATION_MODE_OPTIONS,
 	normalizeDateTimeLocalValue,
 } from '../../utils/publication';
 
@@ -20,14 +18,20 @@ const CAMPAIGN_TYPE_OPTIONS = [
 export default function PostTaskForm( { task, campaign, onChange } ) {
 	const isProcessing = task.status === 'processing';
 	const [ showKeywordsOverride, setShowKeywordsOverride ] = useState( () =>
-		Boolean( ( task.keywords ?? '' ).trim() )
+		Boolean(
+			task._show_keywords_override ??
+				Boolean( ( task.keywords ?? '' ).trim() )
+		)
 	);
 	const [ showManualOverrides, setShowManualOverrides ] = useState( () =>
 		Boolean(
-			( task.title_override ?? '' ).trim() ||
-				( task.slug_override ?? '' ).trim() ||
-				task.feature_image_id ||
-				( task.feature_image_title ?? '' ).trim()
+			task._show_manual_overrides ??
+				Boolean(
+					( task.title_override ?? '' ).trim() ||
+						( task.slug_override ?? '' ).trim() ||
+						task.feature_image_id ||
+						( task.feature_image_title ?? '' ).trim()
+				)
 		)
 	);
 	const [ featuredImageUrl, setFeaturedImageUrl ] = useState( () => {
@@ -35,6 +39,7 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 		return id ? attachmentUrlCache.get( id ) || '' : '';
 	} );
 	const [ featureImageLoading, setFeatureImageLoading ] = useState( false );
+	const previousTaskIdRef = useRef( task.id );
 
 	const [ isSlugSynced, setIsSlugSynced ] = useState(
 		! task.slug_override || task.slug_override.trim() === ''
@@ -69,19 +74,11 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 		}
 
 		if ( field === 'publication_mode' ) {
-			const today = getTodayDateValue();
 			if (
-				value === 'schedule_date' &&
+				value === 'set_date' &&
 				! ( task.publication_date ?? '' ).trim()
 			) {
 				updates.publication_date = getNowDateTimeLocalValue();
-			}
-			if ( value === 'publish_randomly' ) {
-				const from = task.publication_random_from || today;
-				updates.publication_random_from = from;
-				updates.publication_random_to =
-					task.publication_random_to ||
-					getDatePlusDaysValue( 30, from );
 			}
 		}
 
@@ -104,17 +101,31 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 	);
 
 	useEffect( () => {
-		setShowKeywordsOverride( Boolean( ( task.keywords ?? '' ).trim() ) );
+		if ( previousTaskIdRef.current === task.id ) {
+			return;
+		}
+		previousTaskIdRef.current = task.id;
+		setShowKeywordsOverride(
+			Boolean(
+				task._show_keywords_override ??
+					Boolean( ( task.keywords ?? '' ).trim() )
+			)
+		);
 		setShowManualOverrides(
 			Boolean(
-				( task.title_override ?? '' ).trim() ||
-					( task.slug_override ?? '' ).trim() ||
-					task.feature_image_id ||
-					( task.feature_image_title ?? '' ).trim()
+				task._show_manual_overrides ??
+					Boolean(
+						( task.title_override ?? '' ).trim() ||
+							( task.slug_override ?? '' ).trim() ||
+							task.feature_image_id ||
+							( task.feature_image_title ?? '' ).trim()
+					)
 			)
 		);
 	}, [
 		task.id,
+		task._show_keywords_override,
+		task._show_manual_overrides,
 		task.keywords,
 		task.title_override,
 		task.slug_override,
@@ -171,6 +182,17 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 		handleChange( 'topic', value );
 	};
 
+	const hasPublicationOverride =
+		task.publication_override === true ||
+		String( task.publication_override ?? '0' ) === '1';
+	const campaignPublicationMode =
+		campaign?.publication_mode || 'pending_review';
+	const taskPublicationMode =
+		task.publication_mode === 'set_date' ||
+		task.publication_mode === 'publish_instantly' ||
+		task.publication_mode === 'pending_review'
+			? task.publication_mode
+			: 'pending_review';
 	const renderFeaturedImagePreview = () => {
 		if ( featuredImageUrl ) {
 			return (
@@ -256,15 +278,17 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 				) }
 			</div>
 
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+			<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 				{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 				<label className="poststation-switch text-sm font-medium text-gray-700">
 					<input
 						type="checkbox"
 						checked={ showKeywordsOverride }
-						onChange={ ( e ) =>
-							setShowKeywordsOverride( e.target.checked )
-						}
+						onChange={ ( e ) => {
+							const checked = e.target.checked;
+							setShowKeywordsOverride( checked );
+							onChange( { _show_keywords_override: checked } );
+						} }
 						className="poststation-field-checkbox"
 						disabled={ isProcessing }
 					/>
@@ -276,14 +300,36 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 					<input
 						type="checkbox"
 						checked={ showManualOverrides }
-						onChange={ ( e ) =>
-							setShowManualOverrides( e.target.checked )
-						}
+						onChange={ ( e ) => {
+							const checked = e.target.checked;
+							setShowManualOverrides( checked );
+							onChange( { _show_manual_overrides: checked } );
+						} }
 						className="poststation-field-checkbox"
 						disabled={ isProcessing }
 					/>
 					<span className="poststation-switch-track" aria-hidden />
 					<span>Manual Overrides</span>
+				</label>
+				{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+				<label className="poststation-switch text-sm font-medium text-gray-700">
+					<input
+						type="checkbox"
+						checked={ hasPublicationOverride }
+						onChange={ ( e ) =>
+							onChange( {
+								publication_override: e.target.checked,
+								publication_mode: e.target.checked
+									? taskPublicationMode
+									: campaignPublicationMode,
+							} )
+						}
+						className="poststation-field-checkbox"
+						disabled={ isProcessing }
+					/>
+					<span className="poststation-switch-track" aria-hidden />
+					<span>Publication Override</span>
+					<Tooltip content="When enabled, this task uses its own publication mode instead of inheriting the campaign publication mode." />
 				</label>
 			</div>
 
@@ -328,100 +374,45 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 			) }
 
 			<div className="space-y-3">
-				<Select
-					label="Publication"
-					tooltip="Overrides campaign publication behavior for this task."
-					options={ PUBLICATION_MODE_OPTIONS }
-					value={
-						task.publication_mode ||
-						campaign?.publication_mode ||
-						'pending_review'
-					}
-					onChange={ ( e ) =>
-						handleChange( 'publication_mode', e.target.value )
-					}
-					disabled={ isProcessing }
-					variant="floating"
-				/>
-
-				{ ( task.publication_mode ||
-					campaign?.publication_mode ||
-					'pending_review' ) === 'schedule_date' && (
-					<Input
-						label="Publication Date & Time"
-						type="datetime-local"
-						value={ normalizeDateTimeLocalValue(
-							task.publication_date || getNowDateTimeLocalValue()
-						) }
-						onChange={ ( e ) =>
-							handleChange( 'publication_date', e.target.value )
-						}
-						min={ getNowDateTimeLocalValue() }
-						required
-						disabled={ isProcessing }
-						variant="floating"
-					/>
-				) }
-
-				{ ( task.publication_mode ||
-					campaign?.publication_mode ||
-					'pending_review' ) === 'publish_randomly' && (
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						<Input
-							label="Random Publish From"
-							type="date"
-							value={
-								task.publication_random_from ||
-								getTodayDateValue()
-							}
-							onChange={ ( e ) => {
-								const from = e.target.value;
-								const updates = {
-									publication_random_from: from,
-								};
-								const currentTo =
-									task.publication_random_to || '';
-								if ( ! currentTo || currentTo < from ) {
-									updates.publication_random_to =
-										getDatePlusDaysValue( 30, from );
-								}
-								onChange( updates );
-							} }
-							min={ getTodayDateValue() }
-							required
-							disabled={ isProcessing }
-							variant="floating"
-						/>
-						<Input
-							label="Random Publish To"
-							type="date"
-							value={
-								task.publication_random_to ||
-								getDatePlusDaysValue(
-									30,
-									task.publication_random_from ||
-										getTodayDateValue()
-								)
-							}
+				{ hasPublicationOverride && (
+					<>
+						<Select
+							label="Task Publication Mode"
+							tooltip="Override mode for this task only. Pending Review keeps the post in review, Publish Instantly publishes immediately, and Set a Date schedules at a specific date/time."
+							options={ TASK_PUBLICATION_MODE_OPTIONS }
+							value={ taskPublicationMode }
 							onChange={ ( e ) =>
 								handleChange(
-									'publication_random_to',
+									'publication_mode',
 									e.target.value
 								)
 							}
-							min={
-								task.publication_random_from ||
-								getTodayDateValue()
-							}
-							required
 							disabled={ isProcessing }
 							variant="floating"
 						/>
-						<p className="md:col-span-2 text-xs text-gray-500">
-							Tasks are scheduled one per day across the selected
-							range, then cycle back to the start date.
-						</p>
-					</div>
+
+						{ taskPublicationMode === 'set_date' && (
+							<Input
+								label="Publication Date & Time"
+								tooltip="Set the publish date/time for this task. If this time passes before the task finishes, the post is published when generation completes."
+								type="datetime-local"
+								value={ normalizeDateTimeLocalValue(
+									task.publication_date ||
+										getNowDateTimeLocalValue()
+								) }
+								onChange={ ( e ) =>
+									handleChange(
+										'publication_date',
+										e.target.value
+									)
+								}
+								min={ getNowDateTimeLocalValue() }
+								required
+								disabled={ isProcessing }
+								variant="floating"
+							/>
+						) }
+					</>
 				) }
 			</div>
 

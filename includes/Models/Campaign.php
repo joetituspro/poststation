@@ -29,9 +29,12 @@ class Campaign
 			readability varchar(50) NOT NULL DEFAULT 'grade_8',
 			language varchar(20) NOT NULL DEFAULT 'en',
 			target_country varchar(20) NOT NULL DEFAULT 'international',
-            post_type varchar(20) NOT NULL DEFAULT 'post',
+			post_type varchar(20) NOT NULL DEFAULT 'post',
             post_status varchar(20) NOT NULL DEFAULT 'pending',
 			publication_mode varchar(30) NOT NULL DEFAULT 'pending_review',
+			publication_interval_value int(11) NOT NULL DEFAULT 1,
+			publication_interval_unit varchar(10) NOT NULL DEFAULT 'hour',
+			rolling_schedule_days int(11) NOT NULL DEFAULT 30,
             default_author_id bigint(20) unsigned DEFAULT NULL,
 			writing_preset_id bigint(20) unsigned DEFAULT NULL,
 			content_fields text DEFAULT NULL,
@@ -85,6 +88,30 @@ class Campaign
 				END
 				WHERE publication_mode = '' OR publication_mode IS NULL"
 			);
+		}
+		$wpdb->query(
+			"UPDATE `{$table_name}`
+			SET publication_mode = CASE
+				WHEN publication_mode = 'schedule_date' THEN 'rolling_schedule'
+				WHEN publication_mode = 'publish_randomly' THEN 'rolling_schedule'
+				ELSE publication_mode
+			END
+			WHERE publication_mode IN ('schedule_date', 'publish_randomly')"
+		);
+
+		$interval_value_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_interval_value'", ARRAY_A);
+		if (empty($interval_value_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_interval_value int(11) NOT NULL DEFAULT 1 AFTER publication_mode");
+		}
+
+		$interval_unit_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_interval_unit'", ARRAY_A);
+		if (empty($interval_unit_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_interval_unit varchar(10) NOT NULL DEFAULT 'hour' AFTER publication_interval_value");
+		}
+
+		$rolling_days_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'rolling_schedule_days'", ARRAY_A);
+		if (empty($rolling_days_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN rolling_schedule_days int(11) NOT NULL DEFAULT 30 AFTER publication_interval_unit");
 		}
 
 	}
@@ -158,6 +185,9 @@ class Campaign
 			'post_type' => 'post',
 			'post_status' => 'pending',
 			'publication_mode' => 'pending_review',
+			'publication_interval_value' => 1,
+			'publication_interval_unit' => 'hour',
+			'rolling_schedule_days' => 30,
 			'default_author_id' => get_current_user_id(),
 			'writing_preset_id' => null,
 			'content_fields' => json_encode($default_content_fields),
@@ -259,6 +289,9 @@ class Campaign
 			'post_type' => '%s',
 			'post_status' => '%s',
 			'publication_mode' => '%s',
+			'publication_interval_value' => '%d',
+			'publication_interval_unit' => '%s',
+			'rolling_schedule_days' => '%d',
 			'default_author_id' => '%d',
 			'writing_preset_id' => '%d',
 			'content_fields' => '%s',

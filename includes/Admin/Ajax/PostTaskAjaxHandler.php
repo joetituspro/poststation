@@ -20,12 +20,13 @@ class PostTaskAjaxHandler
 		$campaign_id = (int) ($_POST['campaign_id'] ?? 0);
 		$campaign = Campaign::get_by_id($campaign_id);
 		$campaign_type = $campaign['campaign_type'] ?? 'default';
-		$publication_mode = $this->sanitize_publication_mode(
+		$publication_mode = $this->sanitize_campaign_publication_mode(
 			$campaign['publication_mode'] ?? ($campaign['post_status'] ?? 'pending')
 		);
 		$create_data = [
 			'campaign_id' => $campaign_id,
 			'campaign_type' => $campaign_type,
+			'publication_override' => 0,
 			'publication_mode' => $publication_mode,
 			'status' => 'pending',
 		];
@@ -175,7 +176,7 @@ class PostTaskAjaxHandler
 		return trim((string) ($value ?? '')) === '';
 	}
 
-	private function sanitize_publication_mode($mode): string
+	private function sanitize_campaign_publication_mode($mode): string
 	{
 		$raw = sanitize_text_field((string) ($mode ?? 'pending_review'));
 		if ($raw === 'pending') {
@@ -185,9 +186,31 @@ class PostTaskAjaxHandler
 			$raw = 'publish_instantly';
 		}
 		if ($raw === 'future') {
-			$raw = 'schedule_date';
+			$raw = 'rolling_schedule';
 		}
-		$allowed = ['pending_review', 'publish_instantly', 'schedule_date', 'publish_randomly'];
+		if ($raw === 'schedule_date' || $raw === 'publish_randomly') {
+			$raw = 'rolling_schedule';
+		}
+		$allowed = ['pending_review', 'publish_instantly', 'publish_intervals', 'rolling_schedule'];
+		return in_array($raw, $allowed, true) ? $raw : 'pending_review';
+	}
+
+	private function sanitize_task_publication_mode($mode): string
+	{
+		$raw = sanitize_text_field((string) ($mode ?? 'pending_review'));
+		if ($raw === 'pending') {
+			$raw = 'pending_review';
+		}
+		if ($raw === 'publish') {
+			$raw = 'publish_instantly';
+		}
+		if ($raw === 'future' || $raw === 'schedule_date') {
+			$raw = 'set_date';
+		}
+		if ($raw === 'publish_randomly') {
+			$raw = 'pending_review';
+		}
+		$allowed = ['pending_review', 'publish_instantly', 'set_date'];
 		return in_array($raw, $allowed, true) ? $raw : 'pending_review';
 	}
 
@@ -219,17 +242,16 @@ class PostTaskAjaxHandler
 
 	private function sanitize_task_publication_fields(array $task): array
 	{
-		$task['publication_mode'] = $this->sanitize_publication_mode($task['publication_mode'] ?? 'pending_review');
+		$task['publication_override'] = !empty($task['publication_override']) ? 1 : 0;
+		$task['publication_mode'] = $task['publication_override']
+			? $this->sanitize_task_publication_mode($task['publication_mode'] ?? 'pending_review')
+			: $this->sanitize_campaign_publication_mode($task['publication_mode'] ?? 'pending_review');
 		$task['publication_date'] = $this->sanitize_datetime_value($task['publication_date'] ?? null);
-		$task['publication_random_from'] = $this->sanitize_date_value($task['publication_random_from'] ?? null);
-		$task['publication_random_to'] = $this->sanitize_date_value($task['publication_random_to'] ?? null);
+		$task['publication_random_from'] = null;
+		$task['publication_random_to'] = null;
 
-		if ($task['publication_mode'] !== 'schedule_date') {
+		if (!$task['publication_override'] || $task['publication_mode'] !== 'set_date') {
 			$task['publication_date'] = null;
-		}
-		if ($task['publication_mode'] !== 'publish_randomly') {
-			$task['publication_random_from'] = null;
-			$task['publication_random_to'] = null;
 		}
 
 		return $task;
@@ -238,31 +260,12 @@ class PostTaskAjaxHandler
 	private function validate_task_publication_fields(array $task, int $task_id): ?string
 	{
 		$mode = $task['publication_mode'] ?? 'pending_review';
-		$now_ts = current_time('timestamp');
-		$today = wp_date('Y-m-d', $now_ts);
+		$has_override = !empty($task['publication_override']);
 
-		if ($mode === 'schedule_date') {
+		if ($has_override && $mode === 'set_date') {
 			$date_value = trim((string) ($task['publication_date'] ?? ''));
 			if ($date_value === '') {
-				return sprintf('Task #%d: Publication Date is required when Publication is Schedule Date.', $task_id);
-			}
-			$date_ts = strtotime($date_value);
-			if (!$date_ts || $date_ts < $now_ts) {
-				return sprintf('Task #%d: Publication Date cannot be in the past.', $task_id);
-			}
-		}
-
-		if ($mode === 'publish_randomly') {
-			$from = trim((string) ($task['publication_random_from'] ?? ''));
-			$to = trim((string) ($task['publication_random_to'] ?? ''));
-			if ($from === '' || $to === '') {
-				return sprintf('Task #%d: Random publish range is required when Publication is Publish Randomly.', $task_id);
-			}
-			if ($from < $today) {
-				return sprintf('Task #%d: Random publish start date cannot be in the past.', $task_id);
-			}
-			if ($to < $from) {
-				return sprintf('Task #%d: Random publish end date must be on or after the start date.', $task_id);
+				return sprintf('Task #%d: Publication Date is required when Task Publication Mode is Set a Date.', $task_id);
 			}
 		}
 

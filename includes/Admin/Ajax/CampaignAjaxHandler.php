@@ -52,6 +52,9 @@ class CampaignAjaxHandler
 		if (!isset($campaign['publication_mode']) || $campaign['publication_mode'] === '') {
 			$campaign['publication_mode'] = $this->sanitize_publication_mode($campaign['post_status'] ?? 'pending');
 		}
+		$campaign['publication_interval_value'] = $this->sanitize_publication_interval_value($campaign['publication_interval_value'] ?? 1);
+		$campaign['publication_interval_unit'] = $this->sanitize_publication_interval_unit($campaign['publication_interval_unit'] ?? 'hour');
+		$campaign['rolling_schedule_days'] = $this->sanitize_rolling_schedule_days($campaign['rolling_schedule_days'] ?? 30);
 		$rss_config = CampaignRss::get_by_campaign($id);
 		if ($rss_config) {
 			$campaign['rss_config'] = [
@@ -126,6 +129,9 @@ class CampaignAjaxHandler
 			'target_country' => sanitize_text_field($_POST['target_country'] ?? 'international'),
 			'post_type' => sanitize_text_field($_POST['post_type'] ?? 'post'),
 			'publication_mode' => $this->sanitize_publication_mode($_POST['publication_mode'] ?? ($_POST['post_status'] ?? 'pending')),
+			'publication_interval_value' => $this->sanitize_publication_interval_value($_POST['publication_interval_value'] ?? 1),
+			'publication_interval_unit' => $this->sanitize_publication_interval_unit($_POST['publication_interval_unit'] ?? 'hour'),
+			'rolling_schedule_days' => $this->sanitize_rolling_schedule_days($_POST['rolling_schedule_days'] ?? 30),
 			'default_author_id' => (int) ($_POST['default_author_id'] ?? 0) ?: get_current_user_id(),
 			'writing_preset_id' => (int) ($_POST['writing_preset_id'] ?? 0) ?: null,
 			'content_fields' => wp_unslash($_POST['content_fields'] ?? '{}'),
@@ -236,6 +242,23 @@ class CampaignAjaxHandler
 				return $message;
 			}
 		}
+		$mode = (string) ($payload['publication_mode'] ?? 'pending_review');
+		if ($mode === 'publish_intervals') {
+			$interval_value = (int) ($payload['publication_interval_value'] ?? 0);
+			$interval_unit = (string) ($payload['publication_interval_unit'] ?? '');
+			if ($interval_value < 1) {
+				return 'Campaign Interval Value must be at least 1.';
+			}
+			if (!in_array($interval_unit, ['minute', 'hour'], true)) {
+				return 'Campaign Interval Period must be minute or hour.';
+			}
+		}
+		if ($mode === 'rolling_schedule') {
+			$days = (int) ($payload['rolling_schedule_days'] ?? 0);
+			if (!in_array($days, [7, 14, 30, 60], true)) {
+				return 'Campaign Rolling Schedule range must be 7, 14, 30, or 60 days.';
+			}
+		}
 
 		$content_fields = json_decode((string) ($payload['content_fields'] ?? '{}'), true);
 		if (!is_array($content_fields)) {
@@ -293,11 +316,31 @@ class CampaignAjaxHandler
 			$raw = 'publish_instantly';
 		}
 		if ($raw === 'future') {
-			$raw = 'schedule_date';
+			$raw = 'rolling_schedule';
 		}
-
-		$allowed = ['pending_review', 'publish_instantly', 'schedule_date', 'publish_randomly'];
+		if ($raw === 'schedule_date' || $raw === 'publish_randomly') {
+			$raw = 'rolling_schedule';
+		}
+		$allowed = ['pending_review', 'publish_instantly', 'publish_intervals', 'rolling_schedule'];
 		return in_array($raw, $allowed, true) ? $raw : 'pending_review';
+	}
+
+	private function sanitize_publication_interval_value($value): int
+	{
+		$value = (int) $value;
+		return $value > 0 ? $value : 1;
+	}
+
+	private function sanitize_publication_interval_unit($value): string
+	{
+		$value = sanitize_text_field((string) $value);
+		return in_array($value, ['minute', 'hour'], true) ? $value : 'hour';
+	}
+
+	private function sanitize_rolling_schedule_days($value): int
+	{
+		$value = (int) $value;
+		return in_array($value, [7, 14, 30, 60], true) ? $value : 30;
 	}
 
 	private function map_publication_mode_to_legacy_post_status(string $mode): string
@@ -305,7 +348,7 @@ class CampaignAjaxHandler
 		if ($mode === 'publish_instantly') {
 			return 'publish';
 		}
-		if ($mode === 'schedule_date' || $mode === 'publish_randomly') {
+		if ($mode === 'publish_intervals' || $mode === 'rolling_schedule') {
 			return 'future';
 		}
 		return 'pending';

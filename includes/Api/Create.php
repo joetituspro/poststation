@@ -672,11 +672,21 @@ class Create
 
 	private function resolve_publication_details(array $task, array $campaign): array
 	{
-		$mode = $this->sanitize_publication_mode(
+		$has_override = !empty($task['publication_override']);
+		if ($has_override) {
+			$mode = $this->sanitize_task_publication_mode($task['publication_mode'] ?? 'pending_review');
+			return $this->resolve_task_override_publication_details($mode, $task);
+		}
+
+		$mode = $this->sanitize_campaign_publication_mode(
 			$task['publication_mode']
 				?? ($campaign['publication_mode'] ?? ($campaign['post_status'] ?? 'pending'))
 		);
+		return $this->resolve_campaign_publication_details($mode, $task, $campaign);
+	}
 
+	private function resolve_task_override_publication_details(string $mode, array $task): array
+	{
 		if ($mode === 'pending_review') {
 			return ['post_status' => 'pending', 'post_date' => null];
 		}
@@ -684,87 +694,79 @@ class Create
 			return ['post_status' => 'publish', 'post_date' => null];
 		}
 
-		if ($mode === 'schedule_date') {
-			$date_value = $task['publication_date'] ?? null;
-			$date_ts = strtotime((string) $date_value);
-			$now_ts = current_time('timestamp');
-			if (!$date_ts || $date_ts < $now_ts) {
-				throw new Exception('Publication Date cannot be in the past.');
-			}
+		$date_value = trim((string) ($task['publication_date'] ?? ''));
+		if ($date_value === '') {
+			throw new Exception('Publication Date is required when Task Publication Mode is Set a Date.');
+		}
+		$date_ts = strtotime($date_value);
+		if (!$date_ts) {
+			throw new Exception('Invalid Publication Date.');
+		}
+		$now_ts = current_time('timestamp');
+		if ($date_ts <= $now_ts) {
+			return ['post_status' => 'publish', 'post_date' => null];
+		}
+
+		return [
+			'post_status' => 'future',
+			'post_date' => wp_date('Y-m-d H:i:s', $date_ts),
+		];
+	}
+
+	private function resolve_campaign_publication_details(string $mode, array $task, array $campaign): array
+	{
+		if ($mode === 'pending_review') {
+			return ['post_status' => 'pending', 'post_date' => null];
+		}
+		if ($mode === 'publish_instantly') {
+			return ['post_status' => 'publish', 'post_date' => null];
+		}
+		if ($mode === 'publish_intervals') {
+			$interval_value = max(1, (int) ($campaign['publication_interval_value'] ?? 1));
+			$interval_unit = $this->sanitize_publication_interval_unit($campaign['publication_interval_unit'] ?? 'hour');
+			$seconds = $interval_unit === 'minute'
+				? ($interval_value * MINUTE_IN_SECONDS)
+				: ($interval_value * HOUR_IN_SECONDS);
+			$publish_ts = current_time('timestamp') + $seconds;
+
 			return [
 				'post_status' => 'future',
-				'post_date' => wp_date('Y-m-d H:i:s', $date_ts),
+				'post_date' => wp_date('Y-m-d H:i:s', $publish_ts),
 			];
 		}
 
-		$from_raw = trim((string) ($task['publication_random_from'] ?? ''));
-		$to_raw = trim((string) ($task['publication_random_to'] ?? ''));
-		if ($from_raw === '' || $to_raw === '') {
-			throw new Exception('Random publish range is required when Publication is Publish Randomly.');
-		}
-
-		$today = wp_date('Y-m-d', current_time('timestamp'));
-		if ($from_raw < $today) {
-			throw new Exception('Random publish start date cannot be in the past.');
-		}
-		if ($to_raw < $from_raw) {
-			throw new Exception('Random publish end date must be on or after the start date.');
-		}
-
-		$from_ts = strtotime($from_raw . ' 00:00:00');
-		$to_ts = strtotime($to_raw . ' 23:59:59');
-		$now_ts = current_time('timestamp');
-		$start_ts = max($from_ts, $now_ts);
-		if (!$from_ts || !$to_ts || $start_ts > $to_ts) {
-			throw new Exception('Random publish range does not contain a valid future date/time.');
-		}
-
-		$selected_datetime = $this->resolve_sequential_random_publication_datetime($task, $from_raw, $to_raw);
+		$rolling_days = $this->sanitize_rolling_schedule_days($campaign['rolling_schedule_days'] ?? 30);
+		$selected_datetime = $this->resolve_rolling_schedule_publication_datetime($task, $rolling_days);
 		return [
 			'post_status' => 'future',
 			'post_date' => $selected_datetime,
 		];
 	}
 
-	private function resolve_sequential_random_publication_datetime(array $task, string $from_date, string $to_date): string
+	private function resolve_rolling_schedule_publication_datetime(array $task, int $days): string
 	{
 		$campaign_id = (int) ($task['campaign_id'] ?? 0);
 		$current_task_id = (int) ($task['id'] ?? 0);
 		if ($campaign_id <= 0) {
-			throw new Exception('Invalid campaign for random publication sequencing.');
+			throw new Exception('Invalid campaign for rolling schedule.');
 		}
 
-		$from_ts = strtotime($from_date . ' 00:00:00');
-		$to_ts = strtotime($to_date . ' 00:00:00');
-		if (!$from_ts || !$to_ts || $to_ts < $from_ts) {
-			throw new Exception('Invalid random publish date range.');
-		}
-
-		$total_days = (int) floor(($to_ts - $from_ts) / DAY_IN_SECONDS) + 1;
-		$completed_count = $this->count_completed_random_tasks_in_range(
-			$campaign_id,
-			$current_task_id,
-			$from_date,
-			$to_date
-		);
-
-		$day_offset = $completed_count % $total_days;
-		$selected_date_ts = strtotime('+' . $day_offset . ' days', $from_ts);
+		$completed_count = $this->count_completed_rolling_schedule_tasks($campaign_id, $current_task_id);
+		$day_offset = $completed_count % $days;
+		$today = wp_date('Y-m-d', current_time('timestamp'));
+		$selected_date_ts = strtotime($today . ' 00:00:00');
+		$selected_date_ts = strtotime('+' . $day_offset . ' days', $selected_date_ts);
 		$selected_date = wp_date('Y-m-d', $selected_date_ts);
-
-		// Use a stable daytime schedule by default; if selected day is today and time already passed,
-		// push to a near-future time to keep it scheduled.
 		$selected_ts = strtotime($selected_date . ' 09:00:00');
 		$now_ts = current_time('timestamp');
-		$today = wp_date('Y-m-d', $now_ts);
-		if ($selected_date === $today && $selected_ts <= $now_ts) {
+		if ($selected_ts <= $now_ts) {
 			$selected_ts = $now_ts + 120;
 		}
 
 		return wp_date('Y-m-d H:i:s', $selected_ts);
 	}
 
-	private function count_completed_random_tasks_in_range(int $campaign_id, int $current_task_id, string $from_date, string $to_date): int
+	private function count_completed_rolling_schedule_tasks(int $campaign_id, int $current_task_id): int
 	{
 		global $wpdb;
 
@@ -775,20 +777,18 @@ class Create
 				WHERE campaign_id = %d
 				AND id <> %d
 				AND status = 'completed'
-				AND publication_mode = 'publish_randomly'
-				AND scheduled_publication_date IS NOT NULL
-				AND DATE(scheduled_publication_date) BETWEEN %s AND %s",
+				AND publication_override = 0
+				AND publication_mode = 'rolling_schedule'
+				AND scheduled_publication_date IS NOT NULL",
 				$campaign_id,
-				$current_task_id,
-				$from_date,
-				$to_date
+				$current_task_id
 			)
 		);
 
 		return max(0, (int) $count);
 	}
 
-	private function sanitize_publication_mode($mode): string
+	private function sanitize_campaign_publication_mode($mode): string
 	{
 		$raw = sanitize_text_field((string) ($mode ?? 'pending_review'));
 		if ($raw === 'pending') {
@@ -798,9 +798,43 @@ class Create
 			$raw = 'publish_instantly';
 		}
 		if ($raw === 'future') {
-			$raw = 'schedule_date';
+			$raw = 'rolling_schedule';
 		}
-		$allowed = ['pending_review', 'publish_instantly', 'schedule_date', 'publish_randomly'];
+		if ($raw === 'schedule_date' || $raw === 'publish_randomly') {
+			$raw = 'rolling_schedule';
+		}
+		$allowed = ['pending_review', 'publish_instantly', 'publish_intervals', 'rolling_schedule'];
 		return in_array($raw, $allowed, true) ? $raw : 'pending_review';
+	}
+
+	private function sanitize_task_publication_mode($mode): string
+	{
+		$raw = sanitize_text_field((string) ($mode ?? 'pending_review'));
+		if ($raw === 'pending') {
+			$raw = 'pending_review';
+		}
+		if ($raw === 'publish') {
+			$raw = 'publish_instantly';
+		}
+		if ($raw === 'future' || $raw === 'schedule_date') {
+			$raw = 'set_date';
+		}
+		if ($raw === 'publish_randomly') {
+			$raw = 'pending_review';
+		}
+		$allowed = ['pending_review', 'publish_instantly', 'set_date'];
+		return in_array($raw, $allowed, true) ? $raw : 'pending_review';
+	}
+
+	private function sanitize_publication_interval_unit($unit): string
+	{
+		$unit = sanitize_text_field((string) $unit);
+		return in_array($unit, ['minute', 'hour'], true) ? $unit : 'hour';
+	}
+
+	private function sanitize_rolling_schedule_days($days): int
+	{
+		$days = (int) $days;
+		return in_array($days, [7, 14, 30, 60], true) ? $days : 30;
 	}
 }

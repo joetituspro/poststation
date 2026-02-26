@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostTask
 {
-	public const DB_VERSION = '4.3';
+	public const DB_VERSION = '4.4';
 	protected const TABLE_NAME = 'poststation_posttasks';
 
 	public static function get_table_name(): string
@@ -29,6 +29,7 @@ class PostTask
 			campaign_type varchar(50) NOT NULL DEFAULT 'default',
 			title_override text DEFAULT NULL,
 			slug_override text DEFAULT NULL,
+			publication_override tinyint(1) NOT NULL DEFAULT 0,
 			publication_mode varchar(30) NOT NULL DEFAULT 'pending_review',
 			publication_date datetime DEFAULT NULL,
 			publication_random_from date DEFAULT NULL,
@@ -65,6 +66,19 @@ class PostTask
 		if (empty($mode_col)) {
 			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_mode varchar(30) NOT NULL DEFAULT 'pending_review' AFTER slug_override");
 		}
+		$override_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_override'", ARRAY_A);
+		if (empty($override_col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN publication_override tinyint(1) NOT NULL DEFAULT 0 AFTER slug_override");
+		}
+		$wpdb->query(
+			"UPDATE `{$table_name}`
+			SET publication_mode = CASE
+				WHEN publication_mode = 'schedule_date' THEN 'set_date'
+				WHEN publication_mode = 'publish_randomly' THEN 'pending_review'
+				ELSE publication_mode
+			END
+			WHERE publication_mode IN ('schedule_date', 'publish_randomly')"
+		);
 
 		$date_col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'publication_date'", ARRAY_A);
 		if (empty($date_col)) {
@@ -254,6 +268,7 @@ class PostTask
 			'campaign_type' => 'default',
 			'title_override' => '',
 			'slug_override' => '',
+			'publication_override' => 0,
 			'publication_mode' => 'pending_review',
 			'publication_date' => null,
 			'publication_random_from' => null,
@@ -279,6 +294,7 @@ class PostTask
 		return [
 			'campaign_id', 'article_url', 'research_url', 'topic', 'keywords',
 			'campaign_type', 'title_override', 'slug_override',
+			'publication_override',
 			'publication_mode', 'publication_date', 'publication_random_from', 'publication_random_to', 'scheduled_publication_date',
 			'feature_image_id', 'feature_image_title',
 			'run_started_at', 'status', 'progress', 'post_id', 'error_message', 'execution_id',
