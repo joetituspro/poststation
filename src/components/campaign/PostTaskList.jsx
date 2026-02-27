@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button, Select, StatusBadge } from '../common';
 import PostTaskForm from './PostTaskForm';
 import { getAdminUrl } from '../../api/client';
@@ -243,7 +243,6 @@ function TaskItem( {
 	const campaignTypeLabel =
 		{
 			default: 'Default',
-			listicle: 'Listicle',
 			rewrite_blog_post: 'Rewrite',
 		}[ campaignType ] || 'Default';
 	const hasPublicationOverride =

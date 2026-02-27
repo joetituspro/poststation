@@ -5,7 +5,6 @@ namespace PostStation\Services;
 use PostStation\Models\PostTask;
 use PostStation\Models\Campaign;
 use PostStation\Models\Webhook;
-use PostStation\Models\WritingPreset;
 use PostStation\Utils\Languages;
 use PostStation\Utils\Countries;
 use Exception;
@@ -206,20 +205,6 @@ class TaskRunner
 			$language_key = $campaign['language'] ?? 'en';
 			$country_key = $campaign['target_country'] ?? 'international';
 
-			$writing_preset = null;
-			$writing_preset_id = isset($campaign['writing_preset_id']) ? (int) $campaign['writing_preset_id'] : 0;
-			if ($writing_preset_id > 0) {
-				$preset = WritingPreset::get_by_id($writing_preset_id);
-				if ($preset) {
-					$writing_preset = [
-						'key' => $preset['key'] ?? '',
-						'name' => $preset['name'] ?? '',
-						'description' => $preset['description'] ?? '',
-						'instructions' => $preset['instructions'] ?? ['title' => '', 'body' => ''],
-					];
-				}
-			}
-
 			$body = [
 				'task_id' => $task['id'],
 				'research_url' => $research_url,
@@ -241,7 +226,6 @@ class TaskRunner
 				'point_of_view' => (string) ($campaign['point_of_view'] ?? 'none'),
 				'readability' => (string) ($campaign['readability'] ?? 'grade_8'),
 				'content_fields' => $content_fields,
-				'writing_preset' => $writing_preset,
 				'sitemap' => $sitemap_payload,
 				'callback_url' => get_site_url() . '/ps-api',
 				'api_key' => get_option('poststation_api_key'),

@@ -11,12 +11,18 @@ const attachmentUrlCache = new Map();
 
 const CAMPAIGN_TYPE_OPTIONS = [
 	{ value: 'default', label: 'Default' },
-	{ value: 'listicle', label: 'Listicle' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
 
 export default function PostTaskForm( { task, campaign, onChange } ) {
 	const isProcessing = task.status === 'processing';
+	const hasManualOverrideValues = Boolean(
+		( task.title_override ?? '' ).trim() ||
+			( task.slug_override ?? '' ).trim() ||
+			task.feature_image_id ||
+			( ( task.feature_image_title ?? '' ).trim() &&
+				( task.feature_image_title ?? '' ).trim() !== '{{title}}' )
+	);
 	const [ showKeywordsOverride, setShowKeywordsOverride ] = useState( () =>
 		Boolean(
 			task._show_keywords_override ??
@@ -24,15 +30,7 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 		)
 	);
 	const [ showManualOverrides, setShowManualOverrides ] = useState( () =>
-		Boolean(
-			task._show_manual_overrides ??
-				Boolean(
-					( task.title_override ?? '' ).trim() ||
-						( task.slug_override ?? '' ).trim() ||
-						task.feature_image_id ||
-						( task.feature_image_title ?? '' ).trim()
-				)
-		)
+		Boolean( task._show_manual_overrides ?? hasManualOverrideValues )
 	);
 	const [ featuredImageUrl, setFeaturedImageUrl ] = useState( () => {
 		const id = Number( task?.feature_image_id );
@@ -112,15 +110,7 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 			)
 		);
 		setShowManualOverrides(
-			Boolean(
-				task._show_manual_overrides ??
-					Boolean(
-						( task.title_override ?? '' ).trim() ||
-							( task.slug_override ?? '' ).trim() ||
-							task.feature_image_id ||
-							( task.feature_image_title ?? '' ).trim()
-					)
-			)
+			Boolean( task._show_manual_overrides ?? hasManualOverrideValues )
 		);
 	}, [
 		task.id,
@@ -131,6 +121,7 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 		task.slug_override,
 		task.feature_image_id,
 		task.feature_image_title,
+		hasManualOverrideValues,
 	] );
 
 	useEffect( () => {

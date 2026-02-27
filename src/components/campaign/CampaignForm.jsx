@@ -4,7 +4,6 @@ import { PUBLICATION_MODE_OPTIONS } from '../../utils/publication';
 
 const CAMPAIGN_TYPE_OPTIONS = [
 	{ value: 'default', label: 'Default' },
-	{ value: 'listicle', label: 'Listicle' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
 

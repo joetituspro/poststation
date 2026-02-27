@@ -1425,7 +1425,7 @@ export default function CampaignEditPage() {
 								<div className="mb-4">
 									<RichSelect
 										label="Writing preset"
-										tooltip="Optional writing preset for title, body, and section generation."
+										tooltip="Optional writing preset for title, body, and section generation. Selecting a preset can copy its instructions into the Title and Body prompts."
 										labelAction={
 											<Button
 												type="button"
@@ -1452,17 +1452,190 @@ export default function CampaignEditPage() {
 														className="w-4 h-4"
 													/>
 												),
+												instructions: i.instructions,
 											} )
 										) }
 										value={
 											campaign?.writing_preset_id ?? null
 										}
-										onChange={ ( id ) =>
+										onChange={ ( id ) => {
+											const nextPresetId =
+												id ?? null;
+
+											// Resolve selected preset (if any)
+											const presets =
+												getBootstrapWritingPresets() ||
+												[];
+											const selectedPreset =
+												nextPresetId != null
+													? presets.find(
+															( p ) =>
+																Number(
+																	p.id
+																) ===
+																Number(
+																	nextPresetId
+																)
+													  )
+													: null;
+
+											let contentFieldsRaw = {};
+											try {
+												if (
+													campaign?.content_fields
+												) {
+													contentFieldsRaw =
+														typeof campaign.content_fields ===
+														'string'
+															? JSON.parse(
+																	campaign.content_fields
+															  )
+															: campaign.content_fields;
+												}
+											} catch {
+												contentFieldsRaw = {};
+											}
+
+											let contentFields = {
+												...contentFieldsRaw,
+											};
+
+											if ( selectedPreset ) {
+												const instructions =
+													selectedPreset
+														.instructions ||
+													{};
+												const titleInstruction =
+													String(
+														instructions.title ??
+															''
+													);
+												const bodyInstruction =
+													String(
+														instructions.body ??
+															''
+													);
+
+												const existingTitlePrompt =
+													String(
+														contentFields
+															?.title
+															?.prompt ?? ''
+													).trim();
+												const existingBodyPrompt =
+													String(
+														contentFields
+															?.body?.prompt ??
+															''
+													).trim();
+
+												const willOverrideTitle =
+													titleInstruction.trim() !==
+														'' &&
+													existingTitlePrompt !==
+														'' &&
+													existingTitlePrompt !==
+														titleInstruction;
+												const willOverrideBody =
+													bodyInstruction.trim() !==
+														'' &&
+													existingBodyPrompt !==
+														'' &&
+													existingBodyPrompt !==
+														bodyInstruction;
+
+												if (
+													willOverrideTitle ||
+													willOverrideBody
+												) {
+													// Ask before overriding existing prompts
+													const ok =
+														window.confirm(
+															'Applying this preset will replace the existing campaign title and body instructions. Do you wish to proceed?'
+														);
+													if ( ! ok ) {
+														// Do not change anything if user cancels
+														return;
+													}
+												}
+
+												if (
+													titleInstruction.trim() !==
+													''
+												) {
+													contentFields.title = {
+														...(contentFields.title ||
+															{}),
+														prompt: titleInstruction,
+													};
+												}
+												if (
+													bodyInstruction.trim() !==
+													''
+												) {
+													contentFields.body = {
+														...(contentFields.body ||
+															{}),
+														prompt: bodyInstruction,
+													};
+												}
+											} else {
+												const existingTitlePrompt =
+													String(
+														contentFields
+															?.title
+															?.prompt ?? ''
+													).trim();
+												const existingBodyPrompt =
+													String(
+														contentFields
+															?.body?.prompt ??
+															''
+													).trim();
+
+												const hasAnyPrompt =
+													existingTitlePrompt !==
+														'' ||
+													existingBodyPrompt !==
+														'';
+
+												if ( hasAnyPrompt ) {
+													const ok =
+														window.confirm(
+															'Removing the writing preset will clear the existing campaign title and body instructions. Do you wish to proceed?'
+														);
+													if ( ! ok ) {
+														return;
+													}
+
+													if (
+														contentFields.title
+													) {
+														contentFields.title = {
+															...(contentFields.title ||
+																{}),
+															prompt: '',
+														};
+													}
+													if ( contentFields.body ) {
+														contentFields.body = {
+															...(contentFields.body ||
+																{}),
+															prompt: '',
+														};
+													}
+												}
+											}
+
 											handleCampaignChange( {
 												...campaign,
-												writing_preset_id: id ?? null,
-											} )
-										}
+												writing_preset_id:
+													nextPresetId,
+												content_fields: JSON.stringify(
+													contentFields
+												),
+											} );
+										} }
 										placeholder="None"
 									/>
 								</div>

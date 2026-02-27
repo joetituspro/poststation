@@ -45,8 +45,6 @@ const getDefaultContentFields = (settings = null) => {
 		internal_links_count: 4,
 		internal_links_taxonomy: '',
 		internal_links_terms: [],
-		disable_intelligence_analysis: false,
-		disable_outline: false,
 	},
 	categories: {
 		enabled: false,

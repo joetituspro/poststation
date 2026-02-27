@@ -3,7 +3,11 @@ import { Select, Textarea, Input, Tooltip, ModelSelect, MultiSelect } from '../.
 const RESEARCH_MODE_OPTIONS = [
 	{ value: 'none', label: 'None' },
 	{ value: 'perplexity', label: 'Perplexity (Default)' },
-	{ value: 'google_dataforseo', label: 'Google via DataForSEO (Coming Soon)', disabled: true },
+	{
+		value: 'dataforseo',
+		label: 'DataForSEO (Coming Soon)',
+		disabled: true,
+	},
 ];
 
 const INTERNAL_LINK_MODE_OPTIONS = [
@@ -18,19 +22,11 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 		onChange({ ...config, [field]: value });
 	};
 
-	const isListicle = campaignType === 'listicle';
 	const isRewrite = campaignType === 'rewrite_blog_post';
 
 	const yesNoOptions = [
 		{ value: 'yes', label: 'Yes' },
 		{ value: 'no', label: 'No' },
-	];
-
-	const listNumberingOptions = [
-		{ value: 'none', label: 'None' },
-		{ value: 'dot', label: '1. , 2. , 3.' },
-		{ value: 'paren', label: '1) 2) 3)' },
-		{ value: 'colon', label: '1:, 2:, 3:' },
 	];
 
 	const numImagesOptions = [
@@ -118,108 +114,58 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 					<Select
 						label="Real-Time Data"
 						tooltip="Select the source for real-time data when generating content."
-						options={RESEARCH_MODE_OPTIONS}
-						value={config.research_mode || 'perplexity'}
-						onChange={(e) => handleChange('research_mode', e.target.value)}
+						options={ RESEARCH_MODE_OPTIONS }
+						value={ config.research_mode || 'perplexity' }
+						onChange={ ( e ) =>
+							handleChange(
+								'research_mode',
+								e.target.value
+							)
+						}
 					/>
-					{config.research_mode !== 'none' && (
+					{ config.research_mode !== 'none' && (
 						<Input
 							label="Number of Sources to Use"
 							tooltip="How many sources to research. Max is 10."
 							type="number"
 							min="1"
 							max="10"
-							value={config.sources_count ?? 3}
-							onChange={(e) => {
-								const val = parseInt(e.target.value, 10);
-								handleChange('sources_count', isNaN(val) ? '' : Math.min(10, Math.max(1, val)));
-							}}
+							value={ config.sources_count ?? 5 }
+							onChange={ ( e ) => {
+								const val = parseInt(
+									e.target.value,
+									10
+								);
+								handleChange(
+									'sources_count',
+									Number.isNaN( val )
+										? ''
+										: Math.min(
+												10,
+												Math.max(
+													1,
+													val
+												)
+										  )
+								);
+							} }
 						/>
-					)}
+					) }
 				</div>
 			)}
-
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-				<label className="poststation-switch text-sm font-medium text-gray-700">
-					<input
-						type="checkbox"
-						checked={Boolean(config.disable_intelligence_analysis)}
-						onChange={(e) => handleChange('disable_intelligence_analysis', e.target.checked)}
-						className="poststation-field-checkbox"
-					/>
-					<span className="poststation-switch-track" aria-hidden />
-					<span>Disable Intelligence Analysis</span>
-					<Tooltip content="When enabled, skips AI-powered analysis of the topic or source before writing." />
-				</label>
-				<label className="poststation-switch text-sm font-medium text-gray-700">
-					<input
-						type="checkbox"
-						checked={Boolean(config.disable_outline)}
-						onChange={(e) => handleChange('disable_outline', e.target.checked)}
-						className="poststation-field-checkbox"
-					/>
-					<span className="poststation-switch-track" aria-hidden />
-					<span>Disable Outline</span>
-					<Tooltip content="When enabled, content is generated without creating an outline first." />
-				</label>
-			</div>
 
 			<Textarea
 				label="Additional Instruction"
 				tooltip="Extra guidance used when generating the body content."
-				value={config.prompt || ''}
-				onChange={(e) => handleChange('prompt', e.target.value)}
+				value={ config.prompt || '' }
+				onChange={ ( e ) =>
+					handleChange( 'prompt', e.target.value )
+				}
 				placeholder="Add specific instructions for content generation..."
 				rows={2}
 			/>
 
 			<div className="space-y-4">
-				{isListicle && (
-					<div className="space-y-3">
-						<div className="border-b border-gray-200 pb-1">
-							<h4 className="text-sm font-semibold text-gray-700">List Config</h4>
-						</div>
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-							<Select
-								label="List Numbering Format"
-								tooltip="Format used for list item numbering."
-								options={listNumberingOptions}
-								value={config.list_numbering_format || 'none'}
-								onChange={(e) => handleChange('list_numbering_format', e.target.value)}
-							/>
-
-							<Input
-								label="Number of List"
-								tooltip="How many list items to generate. Leave empty for automatic."
-								type="number"
-								min="1"
-								value={config.number_of_list ?? ''}
-								onChange={(e) => {
-									const value = e.target.value;
-									if (value === '') {
-										handleChange('number_of_list', '');
-									} else {
-										handleChange('number_of_list', Math.max(1, parseInt(value, 10) || 1));
-									}
-								}}
-								placeholder="Automatic"
-							/>
-						</div>
-
-						<label className="poststation-switch text-sm font-medium text-gray-700">
-							<input
-								type="checkbox"
-								checked={Boolean(config.use_descending_order)}
-								onChange={(e) => handleChange('use_descending_order', e.target.checked)}
-								className="poststation-field-checkbox"
-							/>
-							<span className="poststation-switch-track" aria-hidden />
-							<span>Use Descending Order</span>
-							<Tooltip content="If enabled, list items will be ordered from highest to lowest." />
-						</label>
-					</div>
-				)}
-
 				<div className="space-y-2">
 					<div className="border-b border-gray-200 pb-1">
 						<h4 className="text-sm font-semibold text-gray-700">Structure</h4>
