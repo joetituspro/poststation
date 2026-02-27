@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Plugin Name: Post Station
- * Plugin URI: https://digitenet.com/poststation
- * Description: A robust WordPress plugin to handle automated post creation via API
- * Version: 0.0.1
- * Author: Joe Titus
- * Author URI: https://digitenet.com
+ * Plugin Name: Post Station by Rankima
+ * Plugin URI: https://rankima.com/poststation
+ * Description: Post Station by Rankima connects your WordPress site to the Rankima n8n workflow, giving you full control over AI content generation, scheduling, and publishing — all from a simple dashboard interface.
+ * Version: 0.1
+ * Author: Rankima
+ * Author URI: https://rankima.com
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: poststation
@@ -23,7 +23,11 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('POSTSTATION_VERSION', '0.0.1');
+define('POSTSTATION_VERSION', '0.1');
+define('POSTSTATION_NAME', 'Post Station');
+define('POSTSTATION_SLUG', 'poststation');
+define('POSTSTATION_TEXT_DOMAIN', POSTSTATION_SLUG);
+define('POSTSTATION_APP_ID', POSTSTATION_SLUG . '-app');
 define('POSTSTATION_FILE', __FILE__);
 define('POSTSTATION_PATH', plugin_dir_path(__FILE__));
 define('POSTSTATION_URL', plugin_dir_url(__FILE__));
@@ -77,7 +81,7 @@ if (is_admin()) {
 	add_action('admin_notices', function () {
 		// Check at display time; Action Scheduler defines as_enqueue_async_action on plugins_loaded
 		if (!function_exists('as_enqueue_async_action')) {
-			echo '<div class="notice notice-error"><p>PostStation requires Action Scheduler. Please run composer install or bundle Action Scheduler.</p></div>';
+			echo '<div class="notice notice-error"><p>' . esc_html(POSTSTATION_NAME) . ' requires Action Scheduler. Please run composer install or bundle Action Scheduler.</p></div>';
 		}
 	});
 }
@@ -95,7 +99,8 @@ if (version_compare(PHP_VERSION, '7.4', '<')) {
 	deactivate_plugins(plugin_basename(__FILE__));
 	wp_die(
 		sprintf(
-			'PostStation requires PHP version 7.4 or higher. Your current PHP version is %s.',
+			'%s requires PHP version 7.4 or higher. Your current PHP version is %s.',
+			POSTSTATION_NAME,
 			PHP_VERSION
 		)
 	);
@@ -114,7 +119,8 @@ if (!empty($missing_extensions)) {
 	deactivate_plugins(plugin_basename(__FILE__));
 	wp_die(
 		sprintf(
-			'PostStation requires the following PHP extensions: %s. Please contact your hosting provider.',
+			'%s requires the following PHP extensions: %s. Please contact your hosting provider.',
+			POSTSTATION_NAME,
 			implode(', ', $missing_extensions)
 		)
 	);
@@ -155,7 +161,7 @@ final class PostStation
 	public function init_plugin(): void
 	{
 		// Load text domain
-		load_plugin_textdomain('poststation', false, dirname(plugin_basename(__FILE__)) . '/languages');
+		load_plugin_textdomain(POSTSTATION_TEXT_DOMAIN, false, dirname(plugin_basename(__FILE__)) . '/languages');
 
 		// Initialize core
 		new Core\Bootstrap();

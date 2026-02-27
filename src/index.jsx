@@ -3,7 +3,8 @@ import { HashRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 
-const container = document.getElementById('poststation-app');
+const appId = window.poststation?.plugin_app_id || 'poststation-app';
+const container = document.getElementById(appId);
 
 if (container) {
 	const root = createRoot(container);

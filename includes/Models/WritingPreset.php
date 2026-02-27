@@ -131,8 +131,8 @@ class WritingPreset
 				'name' => 'Listicle',
 				'description' => 'List-based articles with clear numbered items.',
 				'instructions' => [
-					'title' => 'Instruction on how to write a listicle-style title (curiosity, number, clarity).',
-					'body' => 'Instruction on how to write listicle body with distinct sections per list item.',
+					'title' => 'Write a clear, specific listicle title that includes an exact number, a primary keyword near the beginning, and a strong benefit. Use a direct pattern such as "X [Items/Tips/Ways] to [Outcome]". Keep it concise, avoid vague wording, and make sure the promised value is realistic and useful.',
+					'body' => 'Open with a short introduction that frames the problem and what readers will gain. Use H2 headings for each numbered item and keep each item focused on one idea. For every item, include what it is, why it matters, and how to apply it in practical terms. Keep paragraphs short, use bullets for steps or examples, and add occasional bold emphasis only for key terms. Maintain a helpful, confident tone and prioritize clarity and actionability over filler.',
 				],
 			],
 			[
@@ -140,8 +140,8 @@ class WritingPreset
 				'name' => 'News',
 				'description' => 'News-style articles with clear headline and structure.',
 				'instructions' => [
-					'title' => 'Instruction on how to write a news-style headline.',
-					'body' => 'Instruction on how to write a news article body.',
+					'title' => 'Write a factual, timely headline that prioritizes the main development first and uses plain language. Place the core keyword naturally in the first half of the title. Avoid hype, sensational phrasing, and clickbait. Keep the headline precise so readers can understand the event at a glance.',
+					'body' => 'Start with a brief lead paragraph that summarizes the key event, who is affected, and why it matters now. Follow with H2 sections that expand details in a logical sequence: confirmed facts, context/background, implications, and next expected developments. Keep tone neutral and evidence-based. Use short paragraphs, attribute claims clearly, and separate confirmed information from speculation. When relevant, include concise data points or quotes to improve credibility and readability.',
 				],
 			],
 			[
@@ -149,8 +149,8 @@ class WritingPreset
 				'name' => 'Guide',
 				'description' => 'Informational guides with logical sections.',
 				'instructions' => [
-					'title' => 'Instruction on how to write a guide-style title.',
-					'body' => 'Instruction on how to write a guide body.',
+					'title' => 'Write a practical guide title that states the topic and intended outcome clearly. Use a keyword-forward pattern such as "Complete Guide to [Topic]" or "[Topic] Guide for [Audience]". Keep it straightforward, benefit-driven, and easy to scan.',
+					'body' => 'Begin with an introduction that defines the topic, audience, and expected result. Structure the article with clear H2 sections that move from fundamentals to deeper guidance, and use H3 subsections when a section has multiple components. In each section, explain concepts in plain language, provide actionable best practices, and include examples where useful. Keep paragraphs concise, use bullets or tables for comparisons/checklists, and maintain a teaching-focused tone that builds reader confidence step by step.',
 				],
 			],
 			[
@@ -158,8 +158,8 @@ class WritingPreset
 				'name' => 'How-to',
 				'description' => 'Step-by-step how-to articles.',
 				'instructions' => [
-					'title' => 'Instruction on how to write a how-to title.',
-					'body' => 'Instruction on how to write a how-to body.',
+					'title' => 'Write a clear task-oriented title that starts with "How to" and states the exact goal. Include the main keyword naturally and, when useful, indicate scope or difficulty. Keep wording specific, direct, and outcome-focused.',
+					'body' => 'Open with a short introduction that explains who this process is for, what result they will achieve, and any prerequisites. Present the process as a numbered sequence with H2 step headings. For each step, explain the action, the expected result, and common mistakes to avoid. Use concise paragraphs and bullet sub-steps where needed for clarity. Keep tone instructional and practical, and ensure each step can be followed independently without ambiguity.',
 				],
 			],
 		];
@@ -296,4 +296,3 @@ class WritingPreset
 		$wpdb->query("DROP TABLE IF EXISTS {$table_name}");
 	}
 }
-

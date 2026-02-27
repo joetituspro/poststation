@@ -223,6 +223,10 @@ export const getTaxonomies = () => getBootstrapValue('taxonomies') || {};
 export const getAdminUrl = () => getConfig().admin_url || '';
 export const getLanguages = () => getBootstrapValue('languages') || {};
 export const getCountries = () => getBootstrapValue('countries') || {};
+export const getPluginName = () => getConfig().plugin_name || 'Post Station by Rankima';
+export const getPluginSlug = () => getConfig().plugin_slug || 'poststation';
+export const getPluginVersion = () => getConfig().plugin_version || '';
+export const getPluginAppId = () => getConfig().plugin_app_id || `${getPluginSlug()}-app`;
 
 export const getBootstrapSettings = () => getBootstrap().settings || null;
 export const getBootstrapWebhooks = () => getBootstrap().webhooks || null;

@@ -33,6 +33,9 @@ import {
 } from '../utils/publication';
 
 const isBlank = ( value ) => String( value ?? '' ).trim() === '';
+const DEFAULT_WRITING_PRESET_KEYS = [ 'listicle', 'news', 'guide', 'howto' ];
+const isDefaultWritingPreset = ( key ) =>
+	key && DEFAULT_WRITING_PRESET_KEYS.includes( key );
 
 // Icons for writing preset options (by key)
 const InstructionIcon = ( { type, className = 'w-4 h-4' } ) => {
@@ -217,8 +220,11 @@ export default function CampaignEditPage() {
 	const [ isDirty, setIsDirty ] = useState( false );
 	const [ retryingTaskId, setRetryingTaskId ] = useState( null );
 	const [ retryFailedLoading, setRetryFailedLoading ] = useState( false );
-	const [ writingPresetModalOpen, setWritingPresetModalOpen ] =
-		useState( false );
+	const [ writingPresetModal, setWritingPresetModal ] = useState( {
+		open: false,
+		mode: 'add',
+		writingPreset: null,
+	} );
 	const [ rssConfigModalOpen, setRssConfigModalOpen ] = useState( false );
 	const [ rssResultsModalOpen, setRssResultsModalOpen ] = useState( false );
 	const [ rssResultsData, setRssResultsData ] = useState( null );
@@ -578,6 +584,115 @@ export default function CampaignEditPage() {
 
 		setCampaign( newCampaign );
 		setIsDirty( true );
+	};
+
+	const handleWritingPresetSelect = ( id ) => {
+		const nextPresetId = id ?? null;
+		const presets = getBootstrapWritingPresets() || [];
+		const selectedPreset =
+			nextPresetId != null
+				? presets.find(
+						( p ) => Number( p.id ) === Number( nextPresetId )
+				  )
+				: null;
+
+		let contentFieldsRaw = {};
+		try {
+			if ( campaign?.content_fields ) {
+				contentFieldsRaw =
+					typeof campaign.content_fields === 'string'
+						? JSON.parse( campaign.content_fields )
+						: campaign.content_fields;
+			}
+		} catch {
+			contentFieldsRaw = {};
+		}
+
+		let contentFields = {
+			...contentFieldsRaw,
+		};
+
+		if ( selectedPreset ) {
+			const instructions = selectedPreset.instructions || {};
+			const titleInstruction = String( instructions.title ?? '' );
+			const bodyInstruction = String( instructions.body ?? '' );
+
+			const existingTitlePrompt = String(
+				contentFields?.title?.prompt ?? ''
+			).trim();
+			const existingBodyPrompt = String(
+				contentFields?.body?.prompt ?? ''
+			).trim();
+
+			const willOverrideTitle =
+				titleInstruction.trim() !== '' &&
+				existingTitlePrompt !== '' &&
+				existingTitlePrompt !== titleInstruction;
+			const willOverrideBody =
+				bodyInstruction.trim() !== '' &&
+				existingBodyPrompt !== '' &&
+				existingBodyPrompt !== bodyInstruction;
+
+			if ( willOverrideTitle || willOverrideBody ) {
+				const ok = window.confirm(
+					'Applying this preset will replace the existing campaign title and body instructions. Do you wish to proceed?'
+				);
+				if ( ! ok ) {
+					return;
+				}
+			}
+
+			if ( titleInstruction.trim() !== '' ) {
+				contentFields.title = {
+					...( contentFields.title || {} ),
+					prompt: titleInstruction,
+				};
+			}
+			if ( bodyInstruction.trim() !== '' ) {
+				contentFields.body = {
+					...( contentFields.body || {} ),
+					prompt: bodyInstruction,
+				};
+			}
+		} else {
+			const existingTitlePrompt = String(
+				contentFields?.title?.prompt ?? ''
+			).trim();
+			const existingBodyPrompt = String(
+				contentFields?.body?.prompt ?? ''
+			).trim();
+
+			const hasAnyPrompt =
+				existingTitlePrompt !== '' || existingBodyPrompt !== '';
+
+			if ( hasAnyPrompt ) {
+				const ok = window.confirm(
+					'Removing the writing preset will clear the existing campaign title and body instructions. Do you wish to proceed?'
+				);
+				if ( ! ok ) {
+					return;
+				}
+
+				if ( contentFields.title ) {
+					contentFields.title = {
+						...( contentFields.title || {} ),
+						prompt: '',
+					};
+				}
+				if ( contentFields.body ) {
+					contentFields.body = {
+						...( contentFields.body || {} ),
+						prompt: '',
+					};
+				}
+			}
+		}
+
+		handleCampaignChange( {
+			...campaign,
+			writing_preset_id: nextPresetId,
+			content_fields: JSON.stringify( contentFields ),
+		} );
 	};
 
 	// Handle title change from header
@@ -1019,6 +1134,66 @@ export default function CampaignEditPage() {
 		setSavingAll( true );
 		const rssOverride = overrides?.rss_config != null;
 		const statusValue = overrides?.status ?? campaign.status ?? 'paused';
+
+		// Ensure title/body prompts are filled from preset when selected but empty
+		let contentFieldsForSave = campaign.content_fields;
+		try {
+			const presetId = campaign.writing_preset_id ?? null;
+			if ( presetId ) {
+				const presets = getBootstrapWritingPresets() || [];
+				const preset = presets.find(
+					( p ) => Number( p.id ) === Number( presetId )
+				);
+				if ( preset ) {
+					const instructions = preset.instructions || {};
+					const titleInstruction = String(
+						instructions.title ?? ''
+					).trim();
+					const bodyInstruction = String(
+						instructions.body ?? ''
+					).trim();
+
+					let parsedFields = {};
+					if ( campaign.content_fields ) {
+						parsedFields =
+							typeof campaign.content_fields === 'string'
+								? JSON.parse( campaign.content_fields )
+								: campaign.content_fields;
+					}
+
+					const titlePrompt = String(
+						parsedFields?.title?.prompt ?? ''
+					).trim();
+					const bodyPrompt = String(
+						parsedFields?.body?.prompt ?? ''
+					).trim();
+
+					let changed = false;
+					if ( titlePrompt === '' && titleInstruction !== '' ) {
+						parsedFields.title = {
+							...( parsedFields.title || {} ),
+							prompt: titleInstruction,
+						};
+						changed = true;
+					}
+					if ( bodyPrompt === '' && bodyInstruction !== '' ) {
+						parsedFields.body = {
+							...( parsedFields.body || {} ),
+							prompt: bodyInstruction,
+						};
+						changed = true;
+					}
+
+					if ( changed ) {
+						contentFieldsForSave = JSON.stringify( parsedFields );
+					}
+				}
+			}
+		} catch {
+			// If anything goes wrong parsing/merging, fall back to existing content_fields
+			contentFieldsForSave = campaign.content_fields;
+		}
+
 		const payload = {
 			title: campaign.title,
 			post_type: campaign.post_type,
@@ -1035,7 +1210,7 @@ export default function CampaignEditPage() {
 			language: campaign.language,
 			target_country: campaign.target_country,
 			writing_preset_id: campaign.writing_preset_id ?? null,
-			content_fields: campaign.content_fields,
+			content_fields: contentFieldsForSave,
 			rss_enabled: rssOverride ? 'yes' : campaign.rss_enabled ?? 'no',
 			rss_config: overrides?.rss_config ?? campaign.rss_config ?? null,
 			status: statusValue,
@@ -1179,6 +1354,7 @@ export default function CampaignEditPage() {
 	if ( loading || ! campaign ) return <PageLoader />;
 
 	const webhooksList = webhooksData?.webhooks || [];
+	const writingPresets = getBootstrapWritingPresets() || [];
 	const users = data?.users || [];
 	const hasTaxonomies =
 		data?.taxonomies && Object.keys( data.taxonomies ).length > 0;
@@ -1432,15 +1608,17 @@ export default function CampaignEditPage() {
 												variant="secondary"
 												size="sm"
 												onClick={ () =>
-													setWritingPresetModalOpen(
-														true
-													)
+													setWritingPresetModal( {
+														open: true,
+														mode: 'add',
+														writingPreset: null,
+													} )
 												}
 											>
 												Add new preset
 											</Button>
 										}
-										options={ getBootstrapWritingPresets().map(
+										options={ writingPresets.map(
 											( i ) => ( {
 												value: Number( i.id ),
 												label: i.name,
@@ -1453,188 +1631,49 @@ export default function CampaignEditPage() {
 													/>
 												),
 												instructions: i.instructions,
+												sourcePreset: i,
 											} )
 										) }
 										value={
 											campaign?.writing_preset_id ?? null
 										}
-										onChange={ ( id ) => {
-											const nextPresetId =
-												id ?? null;
-
-											// Resolve selected preset (if any)
-											const presets =
-												getBootstrapWritingPresets() ||
-												[];
-											const selectedPreset =
-												nextPresetId != null
-													? presets.find(
-															( p ) =>
-																Number(
-																	p.id
-																) ===
-																Number(
-																	nextPresetId
-																)
-													  )
-													: null;
-
-											let contentFieldsRaw = {};
-											try {
-												if (
-													campaign?.content_fields
-												) {
-													contentFieldsRaw =
-														typeof campaign.content_fields ===
-														'string'
-															? JSON.parse(
-																	campaign.content_fields
-															  )
-															: campaign.content_fields;
-												}
-											} catch {
-												contentFieldsRaw = {};
+										onChange={ handleWritingPresetSelect }
+										getOptionAction={ ( option ) => {
+											const preset =
+												option.sourcePreset || null;
+											if (
+												! preset ||
+												isDefaultWritingPreset(
+													preset.key
+												)
+											) {
+												return null;
 											}
-
-											let contentFields = {
-												...contentFieldsRaw,
-											};
-
-											if ( selectedPreset ) {
-												const instructions =
-													selectedPreset
-														.instructions ||
-													{};
-												const titleInstruction =
-													String(
-														instructions.title ??
-															''
-													);
-												const bodyInstruction =
-													String(
-														instructions.body ??
-															''
-													);
-
-												const existingTitlePrompt =
-													String(
-														contentFields
-															?.title
-															?.prompt ?? ''
-													).trim();
-												const existingBodyPrompt =
-													String(
-														contentFields
-															?.body?.prompt ??
-															''
-													).trim();
-
-												const willOverrideTitle =
-													titleInstruction.trim() !==
-														'' &&
-													existingTitlePrompt !==
-														'' &&
-													existingTitlePrompt !==
-														titleInstruction;
-												const willOverrideBody =
-													bodyInstruction.trim() !==
-														'' &&
-													existingBodyPrompt !==
-														'' &&
-													existingBodyPrompt !==
-														bodyInstruction;
-
-												if (
-													willOverrideTitle ||
-													willOverrideBody
-												) {
-													// Ask before overriding existing prompts
-													const ok =
-														window.confirm(
-															'Applying this preset will replace the existing campaign title and body instructions. Do you wish to proceed?'
-														);
-													if ( ! ok ) {
-														// Do not change anything if user cancels
-														return;
-													}
-												}
-
-												if (
-													titleInstruction.trim() !==
-													''
-												) {
-													contentFields.title = {
-														...(contentFields.title ||
-															{}),
-														prompt: titleInstruction,
-													};
-												}
-												if (
-													bodyInstruction.trim() !==
-													''
-												) {
-													contentFields.body = {
-														...(contentFields.body ||
-															{}),
-														prompt: bodyInstruction,
-													};
-												}
-											} else {
-												const existingTitlePrompt =
-													String(
-														contentFields
-															?.title
-															?.prompt ?? ''
-													).trim();
-												const existingBodyPrompt =
-													String(
-														contentFields
-															?.body?.prompt ??
-															''
-													).trim();
-
-												const hasAnyPrompt =
-													existingTitlePrompt !==
-														'' ||
-													existingBodyPrompt !==
-														'';
-
-												if ( hasAnyPrompt ) {
-													const ok =
-														window.confirm(
-															'Removing the writing preset will clear the existing campaign title and body instructions. Do you wish to proceed?'
-														);
-													if ( ! ok ) {
-														return;
-													}
-
-													if (
-														contentFields.title
-													) {
-														contentFields.title = {
-															...(contentFields.title ||
-																{}),
-															prompt: '',
-														};
-													}
-													if ( contentFields.body ) {
-														contentFields.body = {
-															...(contentFields.body ||
-																{}),
-															prompt: '',
-														};
-													}
-												}
-											}
-
-											handleCampaignChange( {
-												...campaign,
-												writing_preset_id:
-													nextPresetId,
-												content_fields: JSON.stringify(
-													contentFields
+											return {
+												title: 'Edit preset',
+												ariaLabel: `Edit ${ option.label }`,
+												icon: (
+													<svg
+														className="w-4 h-4"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+														strokeWidth={ 2 }
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+														/>
+													</svg>
 												),
-											} );
+												onClick: () =>
+													setWritingPresetModal( {
+														open: true,
+														mode: 'edit',
+														writingPreset: preset,
+													} ),
+											};
 										} }
 										placeholder="None"
 									/>
@@ -1677,15 +1716,21 @@ export default function CampaignEditPage() {
 			<InfoSidebar />
 
 			<WritingPresetModal
-				isOpen={ writingPresetModalOpen }
-				onClose={ () => setWritingPresetModalOpen( false ) }
-				mode="add"
-				onSaved={ ( newId ) => {
-					if ( newId != null ) {
-						handleCampaignChange( {
-							...campaign,
-							writing_preset_id: newId,
-						} );
+				isOpen={ writingPresetModal.open }
+				onClose={ () =>
+					setWritingPresetModal( ( prev ) => ( {
+						...prev,
+						open: false,
+					} ) )
+				}
+				mode={ writingPresetModal.mode }
+				writingPreset={ writingPresetModal.writingPreset }
+				showSaveAndApply={ writingPresetModal.mode === 'edit' }
+				onSaved={ () => {} }
+				onSaveAndApply={ ( result ) => {
+					const savedId = result?.id ?? null;
+					if ( savedId != null ) {
+						handleWritingPresetSelect( savedId );
 					}
 				} }
 			/>

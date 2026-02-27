@@ -88,10 +88,10 @@ class App
 	public function register_menu(): void
 	{
 		add_menu_page(
-			__('Post Station', 'poststation'),
-			__('Post Station', 'poststation'),
+			__(POSTSTATION_NAME, POSTSTATION_TEXT_DOMAIN),
+			__(POSTSTATION_NAME, POSTSTATION_TEXT_DOMAIN),
 			'edit_posts',
-			'poststation-app',
+			POSTSTATION_APP_ID,
 			[$this, 'render_app'],
 			'dashicons-rest-api',
 			30
@@ -100,12 +100,12 @@ class App
 
 	public function render_app(): void
 	{
-		echo '<div id="poststation-app"></div>';
+		echo '<div id="' . esc_attr(POSTSTATION_APP_ID) . '"></div>';
 	}
 
 	public function enqueue_scripts(string $hook): void
 	{
-		if ($hook !== 'toplevel_page_poststation-app') {
+		if ($hook !== 'toplevel_page_' . POSTSTATION_APP_ID) {
 			return;
 		}
 
@@ -113,7 +113,7 @@ class App
 		$build_url = POSTSTATION_URL . 'build/';
 		if (!file_exists($build_path . 'poststation-admin.js')) {
 			add_action('admin_notices', static function () {
-				echo '<div class="notice notice-error"><p>PostStation React build not found. Run <code>npm run build</code> to compile.</p></div>';
+				echo '<div class="notice notice-error"><p>' . esc_html(POSTSTATION_NAME) . ' React build not found. Run <code>npm run build</code> to compile.</p></div>';
 			});
 			return;
 		}
@@ -126,9 +126,9 @@ class App
 		$dependencies = $asset['dependencies'] ?? ['react', 'react-dom'];
 		$version = $asset['version'] ?? filemtime($build_path . 'poststation-admin.js');
 
-		wp_enqueue_script('poststation-react-app', $build_url . 'poststation-admin.js', $dependencies, $version, true);
+		wp_enqueue_script(POSTSTATION_SLUG . '-react-app', $build_url . 'poststation-admin.js', $dependencies, $version, true);
 		if (file_exists($build_path . 'poststation-admin.css')) {
-			wp_enqueue_style('poststation-react-app', $build_url . 'poststation-admin.css', [], $version);
+			wp_enqueue_style(POSTSTATION_SLUG . '-react-app', $build_url . 'poststation-admin.css', [], $version);
 		}
 		wp_enqueue_media();
 
@@ -137,7 +137,7 @@ class App
 		$user_data = $this->bootstrap_provider->get_user_data();
 		$bootstrap_data = $this->bootstrap_provider->get_bootstrap_data($post_type_options, $taxonomy_data, $user_data);
 
-		wp_localize_script('poststation-react-app', 'poststation', [
+		wp_localize_script(POSTSTATION_SLUG . '-react-app', POSTSTATION_SLUG, [
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'admin_url' => admin_url(),
 			'rest_url' => rest_url(),
@@ -150,13 +150,17 @@ class App
 			'users' => $user_data,
 			'current_user_id' => get_current_user_id(),
 			'bootstrap' => $bootstrap_data,
+			'plugin_name' => POSTSTATION_NAME,
+			'plugin_slug' => POSTSTATION_SLUG,
+			'plugin_version' => POSTSTATION_VERSION,
+			'plugin_app_id' => POSTSTATION_APP_ID,
 		]);
 	}
 
 	public function hide_wp_notices(): void
 	{
 		$screen = function_exists('get_current_screen') ? get_current_screen() : null;
-		if (!$screen || $screen->id !== 'toplevel_page_poststation-app') {
+		if (!$screen || $screen->id !== 'toplevel_page_' . POSTSTATION_APP_ID) {
 			return;
 		}
 		echo '<style>

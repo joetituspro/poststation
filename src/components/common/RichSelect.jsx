@@ -13,6 +13,7 @@ export default function RichSelect({
 	options = [],
 	value,
 	onChange,
+	getOptionAction,
 	placeholder = 'Select...',
 	className = '',
 	error,
@@ -102,6 +103,10 @@ export default function RichSelect({
 					</li>
 					{options.map((option) => {
 						const isSelected = String(option.value) === String(value);
+						const optionAction =
+							typeof getOptionAction === 'function'
+								? getOptionAction(option)
+								: null;
 						return (
 							<li
 								key={option.value}
@@ -126,6 +131,22 @@ export default function RichSelect({
 										<div className="text-xs text-gray-500 mt-1">{option.description}</div>
 									)}
 								</div>
+								{optionAction && (
+									<button
+										type="button"
+										className={optionAction.className || 'poststation-icon-btn'}
+										title={optionAction.title || 'Action'}
+										aria-label={optionAction.ariaLabel || optionAction.title || 'Action'}
+										onClick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											setOpen(false);
+											optionAction.onClick?.(option);
+										}}
+									>
+										{optionAction.icon}
+									</button>
+								)}
 							</li>
 						);
 					})}

@@ -24,6 +24,8 @@ export default function WritingPresetModal({
 	mode = 'add',
 	writingPreset = null,
 	onSaved,
+	onSaveAndApply,
+	showSaveAndApply = false,
 }) {
 	const bootstrapSettings = getBootstrapSettings() || {};
 	const defaultAiModel = bootstrapSettings?.openrouter_default_text_model || '';
@@ -99,18 +101,17 @@ export default function WritingPresetModal({
 		}
 	};
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
+	const savePreset = async ({ applyAfterSave = false } = {}) => {
 		setError('');
 		const keyTrim = normalizeKey(String(key ?? '').trim());
 		const nameTrim = String(name ?? '').trim();
 		if (!keyTrim || !nameTrim) {
 			setError('Key and name are required.');
-			return;
+			return false;
 		}
 		if (!KEY_FORMAT.test(keyTrim)) {
 			setError('Key must use lowercase letters, numbers, underscores, and hyphens only.');
-			return;
+			return false;
 		}
 		const payload = {
 			description: limitDescription(String(description ?? '').trim()),
@@ -121,25 +122,56 @@ export default function WritingPresetModal({
 		};
 		setSaving(true);
 		try {
+			let result = null;
+			let savedId = null;
+			let savedPreset = null;
 			if (mode === 'add' || mode === 'duplicate') {
-				const result = await writingPresets.create({
+				result = await writingPresets.create({
 					key: keyTrim,
 					name: nameTrim,
 					...payload,
 				});
-				await refreshBootstrap();
-				onSaved?.(result?.id ?? result?.writing_preset?.id);
+				savedId = result?.id ?? result?.writing_preset?.id ?? null;
+				savedPreset = result?.writing_preset ?? null;
 			} else {
-				await writingPresets.update(writingPreset.id, payload);
-				await refreshBootstrap();
-				onSaved?.();
+				result = await writingPresets.update(writingPreset.id, payload);
+				savedId = writingPreset?.id ?? result?.writing_preset?.id ?? null;
+				savedPreset = result?.writing_preset ?? {
+					...(writingPreset || {}),
+					description: payload.description,
+					instructions: payload.instructions,
+				};
+			}
+			await refreshBootstrap();
+			onSaved?.({
+				id: savedId,
+				writingPreset: savedPreset,
+				mode,
+				applyAfterSave,
+			});
+			if (applyAfterSave) {
+				await onSaveAndApply?.({
+					id: savedId,
+					writingPreset: savedPreset,
+				});
 			}
 			onClose();
+			return true;
 		} catch (err) {
 			setError(err?.message || 'Failed to save.');
+			return false;
 		} finally {
 			setSaving(false);
 		}
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		await savePreset({ applyAfterSave: false });
+	};
+
+	const handleSaveAndApply = async () => {
+		await savePreset({ applyAfterSave: true });
 	};
 
 	const handleReset = async () => {
@@ -315,6 +347,17 @@ export default function WritingPresetModal({
 					<Button type="button" variant="secondary" onClick={onClose} disabled={saving || aiGenerating}>
 						Cancel
 					</Button>
+					{mode === 'edit' && showSaveAndApply && (
+						<Button
+							type="button"
+							variant="secondary"
+							onClick={handleSaveAndApply}
+							loading={saving}
+							disabled={aiGenerating || keyHasInvalidFormat}
+						>
+							Save and Apply
+						</Button>
+					)}
 					<Button type="submit" loading={saving} disabled={aiGenerating || keyHasInvalidFormat}>
 						{mode === 'add' || mode === 'duplicate' ? 'Create' : 'Save'}
 					</Button>

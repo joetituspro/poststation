@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUnsavedChanges } from '../../context/UnsavedChangesContext';
+import { getPluginAppId, getPluginName, getPluginVersion } from '../../api/client';
 
 const navItems = [
 	{ to: '/campaigns', label: 'Campaigns', icon: CampaignsIcon },
@@ -35,6 +36,10 @@ function SettingsIcon({ className }) {
 
 export default function AppShell({ children }) {
 	const location = useLocation();
+	const pluginName = getPluginName();
+	const pluginVersion = getPluginVersion();
+	const appId = getPluginAppId();
+	const versionLabel = pluginVersion ? `${pluginName} v${pluginVersion}` : pluginName;
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const { isDirty } = useUnsavedChanges();
 	const lastHashRef = useRef(typeof window !== 'undefined' ? window.location.hash : '');
@@ -98,7 +103,7 @@ export default function AppShell({ children }) {
 	}, [isDirty]);
 
 	useEffect(() => {
-		const appRoot = document.getElementById('poststation-app');
+		const appRoot = document.getElementById(appId);
 		if (!appRoot) return undefined;
 
 		const updateTopOffset = () => {
@@ -115,7 +120,7 @@ export default function AppShell({ children }) {
 			let noticeBottom = adminBarBottom;
 			document.querySelectorAll(noticeSelectors.join(',')).forEach((node) => {
 				if (!(node instanceof HTMLElement)) return;
-				if (node.closest('#poststation-app')) return;
+				if (node.closest(`#${appId}`)) return;
 				if (node.offsetParent === null) return;
 
 				const rect = node.getBoundingClientRect();
@@ -166,7 +171,7 @@ export default function AppShell({ children }) {
 			>
 				{/* Logo */}
 				<div className="h-16 flex items-center px-6 border-b border-gray-200">
-					<h1 className="text-xl font-semibold text-gray-900">Post Station</h1>
+					<h1 className="text-xl font-semibold text-gray-900">{pluginName}</h1>
 				</div>
 
 				{/* Navigation */}
@@ -203,7 +208,7 @@ export default function AppShell({ children }) {
 
 				{/* Footer */}
 				<div className="p-4 border-t border-gray-200">
-					<p className="text-xs text-gray-500">PostStation v1.0</p>
+					<p className="text-xs text-gray-500">{versionLabel}</p>
 				</div>
 			</aside>
 
@@ -221,7 +226,7 @@ export default function AppShell({ children }) {
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
 							</svg>
 						</button>
-						<span className="text-lg font-semibold text-gray-900">Post Station</span>
+						<span className="text-lg font-semibold text-gray-900">{pluginName}</span>
 					</div>
 					{children}
 				</div>

@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Button, Input, Modal, ConfirmModal, Card, CardHeader, CardBody, PageHeader, PageLoader, ModelSelect } from '../components/common';
 import WritingPresetModal from '../components/writing-presets/WritingPresetModal';
-import { settings, getBootstrapSettings, getBootstrapWritingPresets, refreshBootstrap, writingPresets } from '../api/client';
+import { settings, getBootstrapSettings, getBootstrapWritingPresets, refreshBootstrap, writingPresets, getPluginName } from '../api/client';
 
 const DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
 const isDefaultPreset = (key) => key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function SettingsPage() {
+	const pluginName = getPluginName();
 	const [showApiDocs, setShowApiDocs] = useState(false);
 	const [apiKey, setApiKey] = useState('');
 	const [openRouterApiKey, setOpenRouterApiKey] = useState('');
@@ -115,7 +116,7 @@ export default function SettingsPage() {
 		<div>
 			<PageHeader
 				title="Settings"
-				description="Manage your PostStation configuration"
+				description={ `Manage your ${ pluginName } configuration` }
 			/>
 
 			<div className="max-w-5xl grid grid-cols-2 gap-6">
@@ -137,7 +138,7 @@ export default function SettingsPage() {
 							<div className="flex gap-2 items-end">
 								<Input
 									label="API Key"
-									tooltip="Used to authenticate requests to the PostStation API."
+									tooltip={ `Used to authenticate requests to the ${ pluginName } API.` }
 									type="text"
 									value={apiKey || data?.api_key || ''}
 									readOnly
@@ -322,19 +323,6 @@ export default function SettingsPage() {
 							</div>
 						)}
 						</div>
-					</CardBody>
-				</Card>
-
-				{/* General Info Card - full width below 2-col cards */}
-				<Card className="col-span-2">
-					<CardHeader>
-						<h3 className="text-lg font-medium text-gray-900">About PostStation</h3>
-					</CardHeader>
-					<CardBody>
-						<p className="text-sm text-gray-600">
-							PostStation is a WordPress plugin that enables automated post creation through webhooks and API endpoints. 
-							Configure Campaigns to define post templates, then trigger content generation via webhooks.
-						</p>
 					</CardBody>
 				</Card>
 			</div>

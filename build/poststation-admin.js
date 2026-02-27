@@ -5209,6 +5209,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getCountries: () => (/* binding */ getCountries),
 /* harmony export */   getLanguages: () => (/* binding */ getLanguages),
 /* harmony export */   getPendingProcessingPostTasks: () => (/* binding */ getPendingProcessingPostTasks),
+/* harmony export */   getPluginAppId: () => (/* binding */ getPluginAppId),
+/* harmony export */   getPluginName: () => (/* binding */ getPluginName),
+/* harmony export */   getPluginSlug: () => (/* binding */ getPluginSlug),
+/* harmony export */   getPluginVersion: () => (/* binding */ getPluginVersion),
 /* harmony export */   getPostTypes: () => (/* binding */ getPostTypes),
 /* harmony export */   getTaxonomies: () => (/* binding */ getTaxonomies),
 /* harmony export */   openrouter: () => (/* binding */ openrouter),
@@ -5640,6 +5644,18 @@ var getLanguages = function getLanguages() {
 };
 var getCountries = function getCountries() {
   return getBootstrapValue('countries') || {};
+};
+var getPluginName = function getPluginName() {
+  return getConfig().plugin_name || 'Post Station by Rankima';
+};
+var getPluginSlug = function getPluginSlug() {
+  return getConfig().plugin_slug || 'poststation';
+};
+var getPluginVersion = function getPluginVersion() {
+  return getConfig().plugin_version || '';
+};
+var getPluginAppId = function getPluginAppId() {
+  return getConfig().plugin_app_id || "".concat(getPluginSlug(), "-app");
 };
 var getBootstrapSettings = function getBootstrapSettings() {
   return getBootstrap().settings || null;
@@ -8551,6 +8567,27 @@ function BodyFieldConfig(_ref) {
           handleChange('sources_count', Number.isNaN(val) ? '' : Math.min(10, Math.max(1, val)));
         }
       })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
+      className: "space-y-1",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Select, {
+        label: "Generation Mode",
+        tooltip: "Control whether the AI writes the full article in one pass or section by section.",
+        options: [{
+          value: 'single',
+          label: 'Single'
+        }, {
+          value: 'segmented',
+          label: 'Segmented (Coming Soon)',
+          disabled: true
+        }],
+        value: config.generation_mode || 'single',
+        onChange: function onChange(e) {
+          return handleChange('generation_mode', e.target.value);
+        }
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("p", {
+        className: "text-xs text-gray-500",
+        children: (config.generation_mode || 'single') === 'segmented' ? 'Segmented — AI writes each section individually for more focused and detailed output.' : 'Single — AI writes the entire article in one pass.'
+      })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Textarea, {
       label: "Additional Instruction",
       tooltip: "Extra guidance used when generating the body content.",
@@ -8595,14 +8632,6 @@ function BodyFieldConfig(_ref) {
             value: config.faq || 'yes',
             onChange: function onChange(e) {
               return handleChange('faq', e.target.value);
-            }
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_common__WEBPACK_IMPORTED_MODULE_0__.Select, {
-            label: "External Linking",
-            tooltip: "Include external links to authoritative sources.",
-            options: yesNoOptions,
-            value: config.external_linking || 'yes',
-            onChange: function onChange(e) {
-              return handleChange('external_linking', e.target.value);
             }
           })]
         })]
@@ -10302,6 +10331,7 @@ function RichSelect(_ref) {
     options = _ref$options === void 0 ? [] : _ref$options,
     value = _ref.value,
     onChange = _ref.onChange,
+    getOptionAction = _ref.getOptionAction,
     _ref$placeholder = _ref.placeholder,
     placeholder = _ref$placeholder === void 0 ? 'Select...' : _ref$placeholder,
     _ref$className = _ref.className,
@@ -10395,6 +10425,7 @@ function RichSelect(_ref) {
       children: placeholder
     }), options.map(function (option) {
       var isSelected = String(option.value) === String(value);
+      var optionAction = typeof getOptionAction === 'function' ? getOptionAction(option) : null;
       return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("li", {
         role: "option",
         "aria-selected": isSelected,
@@ -10415,6 +10446,19 @@ function RichSelect(_ref) {
             className: "text-xs text-gray-500 mt-1",
             children: option.description
           })]
+        }), optionAction && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          type: "button",
+          className: optionAction.className || 'poststation-icon-btn',
+          title: optionAction.title || 'Action',
+          "aria-label": optionAction.ariaLabel || optionAction.title || 'Action',
+          onClick: function onClick(e) {
+            var _optionAction$onClick;
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(false);
+            (_optionAction$onClick = optionAction.onClick) === null || _optionAction$onClick === void 0 || _optionAction$onClick.call(optionAction, option);
+          },
+          children: optionAction.icon
         })]
       }, option.value);
     })]
@@ -11339,16 +11383,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
 /* harmony import */ var _context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../context/UnsavedChangesContext */ "./src/context/UnsavedChangesContext.jsx");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
 
 
 
@@ -11368,13 +11414,13 @@ var navItems = [{
 }];
 function CampaignsIcon(_ref) {
   var className = _ref.className;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("svg", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
     className: className,
     fill: "none",
     viewBox: "0 0 24 24",
     strokeWidth: 1.5,
     stroke: "currentColor",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
       strokeLinecap: "round",
       strokeLinejoin: "round",
       d: "M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
@@ -11383,13 +11429,13 @@ function CampaignsIcon(_ref) {
 }
 function WebhooksIcon(_ref2) {
   var className = _ref2.className;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("svg", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
     className: className,
     fill: "none",
     viewBox: "0 0 24 24",
     strokeWidth: 1.5,
     stroke: "currentColor",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
       strokeLinecap: "round",
       strokeLinejoin: "round",
       d: "M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
@@ -11398,17 +11444,17 @@ function WebhooksIcon(_ref2) {
 }
 function SettingsIcon(_ref3) {
   var className = _ref3.className;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
     className: className,
     fill: "none",
     viewBox: "0 0 24 24",
     strokeWidth: 1.5,
     stroke: "currentColor",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
       strokeLinecap: "round",
       strokeLinejoin: "round",
       d: "M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
       strokeLinecap: "round",
       strokeLinejoin: "round",
       d: "M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
@@ -11417,7 +11463,11 @@ function SettingsIcon(_ref3) {
 }
 function AppShell(_ref4) {
   var children = _ref4.children;
-  var location = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_3__.useLocation)();
+  var location = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_4__.useLocation)();
+  var pluginName = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getPluginName)();
+  var pluginVersion = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getPluginVersion)();
+  var appId = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getPluginAppId)();
+  var versionLabel = pluginVersion ? "".concat(pluginName, " v").concat(pluginVersion) : pluginName;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
     isSidebarOpen = _useState2[0],
@@ -11470,7 +11520,7 @@ function AppShell(_ref4) {
     };
   }, [isDirty]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    var appRoot = document.getElementById('poststation-app');
+    var appRoot = document.getElementById(appId);
     if (!appRoot) return undefined;
     var updateTopOffset = function updateTopOffset() {
       var adminBar = document.getElementById('wpadminbar');
@@ -11479,7 +11529,7 @@ function AppShell(_ref4) {
       var noticeBottom = adminBarBottom;
       document.querySelectorAll(noticeSelectors.join(',')).forEach(function (node) {
         if (!(node instanceof HTMLElement)) return;
-        if (node.closest('#poststation-app')) return;
+        if (node.closest("#".concat(appId))) return;
         if (node.offsetParent === null) return;
         var rect = node.getBoundingClientRect();
         if (rect.height <= 0 || rect.bottom <= adminBarBottom) return;
@@ -11511,27 +11561,27 @@ function AppShell(_ref4) {
       observer.disconnect();
     };
   }, []);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
     className: "min-h-screen bg-gray-50 flex",
-    children: [isSidebarOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+    children: [isSidebarOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
       type: "button",
       onClick: function onClick() {
         return setIsSidebarOpen(false);
       },
       className: "fixed inset-0 bg-black/30 z-99970 lg:hidden poststation-mobile-overlay",
       "aria-label": "Close navigation"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("aside", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("aside", {
       className: "poststation-desktop-sidebar fixed inset-y-0 left-0 z-99980 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 ease-out poststation-mobile-sidebar ".concat(isSidebarOpen ? 'translate-x-0' : '-translate-x-full', " lg:translate-x-0"),
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
         className: "h-16 flex items-center px-6 border-b border-gray-200",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h1", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
           className: "text-xl font-semibold text-gray-900",
-          children: "Post Station"
+          children: pluginName
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("nav", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("nav", {
         className: "flex-1 p-4 space-y-1",
         children: navItems.map(function (item) {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_router_dom__WEBPACK_IMPORTED_MODULE_4__.NavLink, {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_router_dom__WEBPACK_IMPORTED_MODULE_5__.NavLink, {
             to: item.to,
             onClick: function onClick(event) {
               if (isDirty) {
@@ -11547,46 +11597,46 @@ function AppShell(_ref4) {
               var isActive = _ref5.isActive;
               return "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ".concat(isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-100');
             },
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(item.icon, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(item.icon, {
               className: "w-5 h-5"
             }), item.label]
           }, item.to);
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
         className: "p-4 border-t border-gray-200",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
           className: "text-xs text-gray-500",
-          children: "PostStation v1.0"
+          children: versionLabel
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("main", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("main", {
       className: "flex-1 min-w-0",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "p-4 sm:p-6",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "flex items-center gap-3 mb-4 lg:hidden",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
             type: "button",
             onClick: function onClick() {
               return setIsSidebarOpen(true);
             },
             className: "inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
             "aria-label": "Open navigation",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("svg", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
               className: "w-5 h-5",
               fill: "none",
               viewBox: "0 0 24 24",
               stroke: "currentColor",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
                 strokeLinecap: "round",
                 strokeLinejoin: "round",
                 strokeWidth: 2,
                 d: "M4 6h16M4 12h16M4 18h16"
               })
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
             className: "text-lg font-semibold text-gray-900",
-            children: "Post Station"
+            children: pluginName
           })]
         }), children]
       })
@@ -11606,113 +11656,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ InfoSidebar)
 /* harmony export */ });
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
 
 function InfoSidebar() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
+  var pluginName = (0,_api_client__WEBPACK_IMPORTED_MODULE_0__.getPluginName)();
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
     className: "w-full xl:w-64 shrink-0",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
       className: "bg-white rounded-lg border border-gray-200 shadow-sm mb-4",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
         className: "px-4 py-3 border-b border-gray-200",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h3", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("h3", {
           className: "text-sm font-medium text-gray-900",
-          children: "Quick Tips"
+          children: ["About ", pluginName]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-        className: "px-4 py-3 space-y-3",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-          className: "flex gap-3",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
-            className: "shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-medium",
-            children: "1"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", {
-            className: "text-sm text-gray-600",
-            children: "Configure your content fields to define what gets generated for each post."
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-          className: "flex gap-3",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
-            className: "shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-medium",
-            children: "2"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", {
-            className: "text-sm text-gray-600",
-            children: "Add post tasks with topics to create multiple posts at once."
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-          className: "flex gap-3",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
-            className: "shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-medium",
-            children: "3"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", {
-            className: "text-sm text-gray-600",
-            children: "Click Run to process all pending post tasks through your configured webhook."
-          })]
-        })]
-      })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-      className: "bg-white rounded-lg border border-gray-200 shadow-sm mb-4",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
-        className: "px-4 py-3 border-b border-gray-200",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h3", {
-          className: "text-sm font-medium text-gray-900",
-          children: "Shortcuts"
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
+        className: "px-4 py-3",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("p", {
+          className: "text-sm text-gray-600",
+          children: [pluginName, " connects your WordPress site to the Rankima n8n workflow, giving you full control over AI content generation, scheduling, and publishing - all from a simple dashboard interface."]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-        className: "px-4 py-3 space-y-2",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-          className: "flex justify-between items-center text-sm",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", {
-            className: "text-gray-600",
-            children: "Save changes"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-            className: "flex gap-1",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
-              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
-              children: "Ctrl+S"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
-              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
-              children: "\u2318S"
-            })]
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-          className: "flex justify-between items-center text-sm",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", {
-            className: "text-gray-600",
-            children: "Add new post task"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-            className: "flex gap-1",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
-              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
-              children: "Ctrl+N"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("kbd", {
-              className: "px-2 py-0.5 bg-gray-100 rounded text-[10px] font-mono text-gray-700",
-              children: "\u2318N"
-            })]
-          })]
-        })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
-      className: "bg-linear-to-br from-indigo-500 to-purple-600 rounded-lg shadow-sm p-4 text-white",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h3", {
-        className: "font-medium mb-2",
-        children: "Need More Power?"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", {
-        className: "text-sm text-indigo-100 mb-3",
-        children: "Upgrade to Pro for unlimited posts, advanced AI models, and priority support."
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", {
-        href: "#",
-        className: "inline-block px-4 py-2 bg-white text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors",
-        children: "Learn More"
-      })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
-      className: "mt-4 text-center",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", {
-        href: "#",
-        className: "text-sm text-gray-500 hover:text-gray-700",
-        children: "Need help? View documentation"
-      })
-    })]
+    })
   });
 }
 
@@ -11773,7 +11740,10 @@ function WritingPresetModal(_ref) {
     mode = _ref$mode === void 0 ? 'add' : _ref$mode,
     _ref$writingPreset = _ref.writingPreset,
     writingPreset = _ref$writingPreset === void 0 ? null : _ref$writingPreset,
-    onSaved = _ref.onSaved;
+    onSaved = _ref.onSaved,
+    onSaveAndApply = _ref.onSaveAndApply,
+    _ref$showSaveAndApply = _ref.showSaveAndApply,
+    showSaveAndApply = _ref$showSaveAndApply === void 0 ? false : _ref$showSaveAndApply;
   var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSettings)() || {};
   var defaultAiModel = (bootstrapSettings === null || bootstrapSettings === void 0 ? void 0 : bootstrapSettings.openrouter_default_text_model) || '';
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
@@ -11905,13 +11875,33 @@ function WritingPresetModal(_ref) {
       return _ref2.apply(this, arguments);
     };
   }();
-  var handleSubmit = /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(e) {
-      var keyTrim, nameTrim, payload, _result$id, _result$writing_prese, result;
+  var savePreset = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+      var _ref4,
+        _ref4$applyAfterSave,
+        applyAfterSave,
+        keyTrim,
+        nameTrim,
+        payload,
+        result,
+        savedId,
+        savedPreset,
+        _ref5,
+        _result$id,
+        _result,
+        _result2,
+        _result$writing_prese,
+        _result3,
+        _ref6,
+        _writingPreset$id,
+        _result4,
+        _result$writing_prese2,
+        _result5,
+        _args2 = arguments;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
-            e.preventDefault();
+            _ref4 = _args2.length > 0 && _args2[0] !== undefined ? _args2[0] : {}, _ref4$applyAfterSave = _ref4.applyAfterSave, applyAfterSave = _ref4$applyAfterSave === void 0 ? false : _ref4$applyAfterSave;
             setError('');
             keyTrim = normalizeKey(String(key !== null && key !== void 0 ? key : '').trim());
             nameTrim = String(name !== null && name !== void 0 ? name : '').trim();
@@ -11920,14 +11910,14 @@ function WritingPresetModal(_ref) {
               break;
             }
             setError('Key and name are required.');
-            return _context2.abrupt("return");
+            return _context2.abrupt("return", false);
           case 7:
             if (KEY_FORMAT.test(keyTrim)) {
               _context2.next = 10;
               break;
             }
             setError('Key must use lowercase letters, numbers, underscores, and hyphens only.');
-            return _context2.abrupt("return");
+            return _context2.abrupt("return", false);
           case 10:
             payload = {
               description: limitDescription(String(description !== null && description !== void 0 ? description : '').trim()),
@@ -11938,73 +11928,134 @@ function WritingPresetModal(_ref) {
             };
             setSaving(true);
             _context2.prev = 12;
+            result = null;
+            savedId = null;
+            savedPreset = null;
             if (!(mode === 'add' || mode === 'duplicate')) {
-              _context2.next = 22;
+              _context2.next = 24;
               break;
             }
-            _context2.next = 16;
+            _context2.next = 19;
             return _api_client__WEBPACK_IMPORTED_MODULE_2__.writingPresets.create(_objectSpread({
               key: keyTrim,
               name: nameTrim
             }, payload));
-          case 16:
-            result = _context2.sent;
-            _context2.next = 19;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
           case 19:
-            onSaved === null || onSaved === void 0 || onSaved((_result$id = result === null || result === void 0 ? void 0 : result.id) !== null && _result$id !== void 0 ? _result$id : result === null || result === void 0 || (_result$writing_prese = result.writing_preset) === null || _result$writing_prese === void 0 ? void 0 : _result$writing_prese.id);
-            _context2.next = 27;
+            result = _context2.sent;
+            savedId = (_ref5 = (_result$id = (_result = result) === null || _result === void 0 ? void 0 : _result.id) !== null && _result$id !== void 0 ? _result$id : (_result2 = result) === null || _result2 === void 0 || (_result2 = _result2.writing_preset) === null || _result2 === void 0 ? void 0 : _result2.id) !== null && _ref5 !== void 0 ? _ref5 : null;
+            savedPreset = (_result$writing_prese = (_result3 = result) === null || _result3 === void 0 ? void 0 : _result3.writing_preset) !== null && _result$writing_prese !== void 0 ? _result$writing_prese : null;
+            _context2.next = 29;
             break;
-          case 22:
-            _context2.next = 24;
-            return _api_client__WEBPACK_IMPORTED_MODULE_2__.writingPresets.update(writingPreset.id, payload);
           case 24:
             _context2.next = 26;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+            return _api_client__WEBPACK_IMPORTED_MODULE_2__.writingPresets.update(writingPreset.id, payload);
           case 26:
-            onSaved === null || onSaved === void 0 || onSaved();
-          case 27:
+            result = _context2.sent;
+            savedId = (_ref6 = (_writingPreset$id = writingPreset === null || writingPreset === void 0 ? void 0 : writingPreset.id) !== null && _writingPreset$id !== void 0 ? _writingPreset$id : (_result4 = result) === null || _result4 === void 0 || (_result4 = _result4.writing_preset) === null || _result4 === void 0 ? void 0 : _result4.id) !== null && _ref6 !== void 0 ? _ref6 : null;
+            savedPreset = (_result$writing_prese2 = (_result5 = result) === null || _result5 === void 0 ? void 0 : _result5.writing_preset) !== null && _result$writing_prese2 !== void 0 ? _result$writing_prese2 : _objectSpread(_objectSpread({}, writingPreset || {}), {}, {
+              description: payload.description,
+              instructions: payload.instructions
+            });
+          case 29:
+            _context2.next = 31;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 31:
+            onSaved === null || onSaved === void 0 || onSaved({
+              id: savedId,
+              writingPreset: savedPreset,
+              mode: mode,
+              applyAfterSave: applyAfterSave
+            });
+            if (!applyAfterSave) {
+              _context2.next = 35;
+              break;
+            }
+            _context2.next = 35;
+            return onSaveAndApply === null || onSaveAndApply === void 0 ? void 0 : onSaveAndApply({
+              id: savedId,
+              writingPreset: savedPreset
+            });
+          case 35:
             onClose();
-            _context2.next = 33;
-            break;
-          case 30:
-            _context2.prev = 30;
+            return _context2.abrupt("return", true);
+          case 39:
+            _context2.prev = 39;
             _context2.t0 = _context2["catch"](12);
             setError((_context2.t0 === null || _context2.t0 === void 0 ? void 0 : _context2.t0.message) || 'Failed to save.');
-          case 33:
-            _context2.prev = 33;
+            return _context2.abrupt("return", false);
+          case 43:
+            _context2.prev = 43;
             setSaving(false);
-            return _context2.finish(33);
-          case 36:
+            return _context2.finish(43);
+          case 46:
           case "end":
             return _context2.stop();
         }
-      }, _callee2, null, [[12, 30, 33, 36]]);
+      }, _callee2, null, [[12, 39, 43, 46]]);
     }));
-    return function handleSubmit(_x) {
+    return function savePreset() {
       return _ref3.apply(this, arguments);
     };
   }();
-  var handleReset = /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2;
+  var handleSubmit = /*#__PURE__*/function () {
+    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(e) {
       return _regeneratorRuntime().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
+            e.preventDefault();
+            _context3.next = 3;
+            return savePreset({
+              applyAfterSave: false
+            });
+          case 3:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3);
+    }));
+    return function handleSubmit(_x) {
+      return _ref7.apply(this, arguments);
+    };
+  }();
+  var handleSaveAndApply = /*#__PURE__*/function () {
+    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
+            _context4.next = 2;
+            return savePreset({
+              applyAfterSave: true
+            });
+          case 2:
+          case "end":
+            return _context4.stop();
+        }
+      }, _callee4);
+    }));
+    return function handleSaveAndApply() {
+      return _ref8.apply(this, arguments);
+    };
+  }();
+  var handleReset = /*#__PURE__*/function () {
+    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
+      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2;
+      return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+        while (1) switch (_context5.prev = _context5.next) {
+          case 0:
             if (!(!(writingPreset !== null && writingPreset !== void 0 && writingPreset.id) || !showResetButton)) {
-              _context3.next = 2;
+              _context5.next = 2;
               break;
             }
-            return _context3.abrupt("return");
+            return _context5.abrupt("return");
           case 2:
             setError('');
             setResetting(true);
-            _context3.prev = 4;
-            _context3.next = 7;
+            _context5.prev = 4;
+            _context5.next = 7;
             return _api_client__WEBPACK_IMPORTED_MODULE_2__.writingPresets.reset(writingPreset.id);
           case 7:
-            result = _context3.sent;
-            _context3.next = 10;
+            result = _context5.sent;
+            _context5.next = 10;
             return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
           case 10:
             inst = result === null || result === void 0 ? void 0 : result.writing_preset;
@@ -12014,24 +12065,24 @@ function WritingPresetModal(_ref) {
               setBodyInstruction((_inst$instructions$bo = (_inst$instructions2 = inst.instructions) === null || _inst$instructions2 === void 0 ? void 0 : _inst$instructions2.body) !== null && _inst$instructions$bo !== void 0 ? _inst$instructions$bo : '');
             }
             onSaved === null || onSaved === void 0 || onSaved();
-            _context3.next = 18;
+            _context5.next = 18;
             break;
           case 15:
-            _context3.prev = 15;
-            _context3.t0 = _context3["catch"](4);
-            setError((_context3.t0 === null || _context3.t0 === void 0 ? void 0 : _context3.t0.message) || 'Failed to reset.');
+            _context5.prev = 15;
+            _context5.t0 = _context5["catch"](4);
+            setError((_context5.t0 === null || _context5.t0 === void 0 ? void 0 : _context5.t0.message) || 'Failed to reset.');
           case 18:
-            _context3.prev = 18;
+            _context5.prev = 18;
             setResetting(false);
-            return _context3.finish(18);
+            return _context5.finish(18);
           case 21:
           case "end":
-            return _context3.stop();
+            return _context5.stop();
         }
-      }, _callee3, null, [[4, 15, 18, 21]]);
+      }, _callee5, null, [[4, 15, 18, 21]]);
     }));
     return function handleReset() {
-      return _ref4.apply(this, arguments);
+      return _ref9.apply(this, arguments);
     };
   }();
   var title = mode === 'add' ? 'Add writing preset' : mode === 'duplicate' ? 'Duplicate writing preset' : 'Edit writing preset';
@@ -12210,6 +12261,13 @@ function WritingPresetModal(_ref) {
           onClick: onClose,
           disabled: saving || aiGenerating,
           children: "Cancel"
+        }), mode === 'edit' && showSaveAndApply && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          type: "button",
+          variant: "secondary",
+          onClick: handleSaveAndApply,
+          loading: saving,
+          disabled: aiGenerating || keyHasInvalidFormat,
+          children: "Save and Apply"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
           type: "submit",
           loading: saving,
@@ -12556,6 +12614,10 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 var isBlank = function isBlank(value) {
   return String(value !== null && value !== void 0 ? value : '').trim() === '';
 };
+var DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
+var isDefaultWritingPreset = function isDefaultWritingPreset(key) {
+  return key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
+};
 
 // Icons for writing preset options (by key)
 var InstructionIcon = function InstructionIcon(_ref) {
@@ -12718,7 +12780,7 @@ function EditableCampaignTitle(_ref2) {
   });
 }
 function CampaignEditPage() {
-  var _getTaxonomies, _campaign$rss_config, _campaign$rss_config2, _campaign$writing_pre2;
+  var _getTaxonomies, _campaign$rss_config, _campaign$rss_config2, _campaign$writing_pre3;
   var _useParams = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_14__.useParams)(),
     id = _useParams.id;
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
@@ -12749,10 +12811,14 @@ function CampaignEditPage() {
     _useState18 = _slicedToArray(_useState17, 2),
     retryFailedLoading = _useState18[0],
     setRetryFailedLoading = _useState18[1];
-  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+      open: false,
+      mode: 'add',
+      writingPreset: null
+    }),
     _useState20 = _slicedToArray(_useState19, 2),
-    writingPresetModalOpen = _useState20[0],
-    setWritingPresetModalOpen = _useState20[1];
+    writingPresetModal = _useState20[0],
+    setWritingPresetModal = _useState20[1];
   var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
     rssConfigModalOpen = _useState22[0],
@@ -13113,6 +13179,73 @@ function CampaignEditPage() {
     }
     setCampaign(newCampaign);
     setIsDirty(true);
+  };
+  var handleWritingPresetSelect = function handleWritingPresetSelect(id) {
+    var nextPresetId = id !== null && id !== void 0 ? id : null;
+    var presets = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapWritingPresets)() || [];
+    var selectedPreset = nextPresetId != null ? presets.find(function (p) {
+      return Number(p.id) === Number(nextPresetId);
+    }) : null;
+    var contentFieldsRaw = {};
+    try {
+      if (campaign !== null && campaign !== void 0 && campaign.content_fields) {
+        contentFieldsRaw = typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields;
+      }
+    } catch (_unused2) {
+      contentFieldsRaw = {};
+    }
+    var contentFields = _objectSpread({}, contentFieldsRaw);
+    if (selectedPreset) {
+      var _instructions$title, _instructions$body, _contentFields$title$, _contentFields$title, _contentFields$body$p, _contentFields$body;
+      var instructions = selectedPreset.instructions || {};
+      var titleInstruction = String((_instructions$title = instructions.title) !== null && _instructions$title !== void 0 ? _instructions$title : '');
+      var bodyInstruction = String((_instructions$body = instructions.body) !== null && _instructions$body !== void 0 ? _instructions$body : '');
+      var existingTitlePrompt = String((_contentFields$title$ = contentFields === null || contentFields === void 0 || (_contentFields$title = contentFields.title) === null || _contentFields$title === void 0 ? void 0 : _contentFields$title.prompt) !== null && _contentFields$title$ !== void 0 ? _contentFields$title$ : '').trim();
+      var existingBodyPrompt = String((_contentFields$body$p = contentFields === null || contentFields === void 0 || (_contentFields$body = contentFields.body) === null || _contentFields$body === void 0 ? void 0 : _contentFields$body.prompt) !== null && _contentFields$body$p !== void 0 ? _contentFields$body$p : '').trim();
+      var willOverrideTitle = titleInstruction.trim() !== '' && existingTitlePrompt !== '' && existingTitlePrompt !== titleInstruction;
+      var willOverrideBody = bodyInstruction.trim() !== '' && existingBodyPrompt !== '' && existingBodyPrompt !== bodyInstruction;
+      if (willOverrideTitle || willOverrideBody) {
+        var ok = window.confirm('Applying this preset will replace the existing campaign title and body instructions. Do you wish to proceed?');
+        if (!ok) {
+          return;
+        }
+      }
+      if (titleInstruction.trim() !== '') {
+        contentFields.title = _objectSpread(_objectSpread({}, contentFields.title || {}), {}, {
+          prompt: titleInstruction
+        });
+      }
+      if (bodyInstruction.trim() !== '') {
+        contentFields.body = _objectSpread(_objectSpread({}, contentFields.body || {}), {}, {
+          prompt: bodyInstruction
+        });
+      }
+    } else {
+      var _contentFields$title$2, _contentFields$title2, _contentFields$body$p2, _contentFields$body2;
+      var _existingTitlePrompt = String((_contentFields$title$2 = contentFields === null || contentFields === void 0 || (_contentFields$title2 = contentFields.title) === null || _contentFields$title2 === void 0 ? void 0 : _contentFields$title2.prompt) !== null && _contentFields$title$2 !== void 0 ? _contentFields$title$2 : '').trim();
+      var _existingBodyPrompt = String((_contentFields$body$p2 = contentFields === null || contentFields === void 0 || (_contentFields$body2 = contentFields.body) === null || _contentFields$body2 === void 0 ? void 0 : _contentFields$body2.prompt) !== null && _contentFields$body$p2 !== void 0 ? _contentFields$body$p2 : '').trim();
+      var hasAnyPrompt = _existingTitlePrompt !== '' || _existingBodyPrompt !== '';
+      if (hasAnyPrompt) {
+        var _ok = window.confirm('Removing the writing preset will clear the existing campaign title and body instructions. Do you wish to proceed?');
+        if (!_ok) {
+          return;
+        }
+        if (contentFields.title) {
+          contentFields.title = _objectSpread(_objectSpread({}, contentFields.title || {}), {}, {
+            prompt: ''
+          });
+        }
+        if (contentFields.body) {
+          contentFields.body = _objectSpread(_objectSpread({}, contentFields.body || {}), {}, {
+            prompt: ''
+          });
+        }
+      }
+    }
+    handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
+      writing_preset_id: nextPresetId,
+      content_fields: JSON.stringify(contentFields)
+    }));
   };
 
   // Handle title change from header
@@ -13502,7 +13635,7 @@ function CampaignEditPage() {
   // Save everything
   var handleSave = /*#__PURE__*/function () {
     var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
-      var _contentFields, _ref10, _overrides$status, _campaign$writing_pre, _campaign$rss_enabled, _ref11, _overrides$rss_config;
+      var _contentFields, _ref10, _overrides$status, _campaign$writing_pre2, _campaign$rss_enabled, _ref11, _overrides$rss_config;
       var overrides,
         validationErrors,
         _campaign$publication,
@@ -13513,6 +13646,24 @@ function CampaignEditPage() {
         customFields,
         rssOverride,
         statusValue,
+        contentFieldsForSave,
+        _campaign$writing_pre,
+        presetId,
+        presets,
+        preset,
+        _instructions$title2,
+        _instructions$body2,
+        _parsedFields$title$p,
+        _parsedFields,
+        _parsedFields$body$pr,
+        _parsedFields2,
+        instructions,
+        titleInstruction,
+        bodyInstruction,
+        parsedFields,
+        titlePrompt,
+        bodyPrompt,
+        changed,
         payload,
         _args7 = arguments;
       return _regeneratorRuntime().wrap(function _callee7$(_context7) {
@@ -13571,7 +13722,7 @@ function CampaignEditPage() {
             contentFields = {};
             try {
               contentFields = campaign !== null && campaign !== void 0 && campaign.content_fields ? typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields : {};
-            } catch (_unused2) {
+            } catch (_unused3) {
               contentFields = {};
             }
             customFields = Array.isArray((_contentFields = contentFields) === null || _contentFields === void 0 ? void 0 : _contentFields.custom_fields) ? contentFields.custom_fields : [];
@@ -13624,7 +13775,47 @@ function CampaignEditPage() {
           case 25:
             setSavingAll(true);
             rssOverride = (overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) != null;
-            statusValue = (_ref10 = (_overrides$status = overrides === null || overrides === void 0 ? void 0 : overrides.status) !== null && _overrides$status !== void 0 ? _overrides$status : campaign.status) !== null && _ref10 !== void 0 ? _ref10 : 'paused';
+            statusValue = (_ref10 = (_overrides$status = overrides === null || overrides === void 0 ? void 0 : overrides.status) !== null && _overrides$status !== void 0 ? _overrides$status : campaign.status) !== null && _ref10 !== void 0 ? _ref10 : 'paused'; // Ensure title/body prompts are filled from preset when selected but empty
+            contentFieldsForSave = campaign.content_fields;
+            try {
+              presetId = (_campaign$writing_pre = campaign.writing_preset_id) !== null && _campaign$writing_pre !== void 0 ? _campaign$writing_pre : null;
+              if (presetId) {
+                presets = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapWritingPresets)() || [];
+                preset = presets.find(function (p) {
+                  return Number(p.id) === Number(presetId);
+                });
+                if (preset) {
+                  instructions = preset.instructions || {};
+                  titleInstruction = String((_instructions$title2 = instructions.title) !== null && _instructions$title2 !== void 0 ? _instructions$title2 : '').trim();
+                  bodyInstruction = String((_instructions$body2 = instructions.body) !== null && _instructions$body2 !== void 0 ? _instructions$body2 : '').trim();
+                  parsedFields = {};
+                  if (campaign.content_fields) {
+                    parsedFields = typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields;
+                  }
+                  titlePrompt = String((_parsedFields$title$p = (_parsedFields = parsedFields) === null || _parsedFields === void 0 || (_parsedFields = _parsedFields.title) === null || _parsedFields === void 0 ? void 0 : _parsedFields.prompt) !== null && _parsedFields$title$p !== void 0 ? _parsedFields$title$p : '').trim();
+                  bodyPrompt = String((_parsedFields$body$pr = (_parsedFields2 = parsedFields) === null || _parsedFields2 === void 0 || (_parsedFields2 = _parsedFields2.body) === null || _parsedFields2 === void 0 ? void 0 : _parsedFields2.prompt) !== null && _parsedFields$body$pr !== void 0 ? _parsedFields$body$pr : '').trim();
+                  changed = false;
+                  if (titlePrompt === '' && titleInstruction !== '') {
+                    parsedFields.title = _objectSpread(_objectSpread({}, parsedFields.title || {}), {}, {
+                      prompt: titleInstruction
+                    });
+                    changed = true;
+                  }
+                  if (bodyPrompt === '' && bodyInstruction !== '') {
+                    parsedFields.body = _objectSpread(_objectSpread({}, parsedFields.body || {}), {}, {
+                      prompt: bodyInstruction
+                    });
+                    changed = true;
+                  }
+                  if (changed) {
+                    contentFieldsForSave = JSON.stringify(parsedFields);
+                  }
+                }
+              }
+            } catch (_unused4) {
+              // If anything goes wrong parsing/merging, fall back to existing content_fields
+              contentFieldsForSave = campaign.content_fields;
+            }
             payload = {
               title: campaign.title,
               post_type: campaign.post_type,
@@ -13640,16 +13831,16 @@ function CampaignEditPage() {
               readability: campaign.readability,
               language: campaign.language,
               target_country: campaign.target_country,
-              writing_preset_id: (_campaign$writing_pre = campaign.writing_preset_id) !== null && _campaign$writing_pre !== void 0 ? _campaign$writing_pre : null,
-              content_fields: campaign.content_fields,
+              writing_preset_id: (_campaign$writing_pre2 = campaign.writing_preset_id) !== null && _campaign$writing_pre2 !== void 0 ? _campaign$writing_pre2 : null,
+              content_fields: contentFieldsForSave,
               rss_enabled: rssOverride ? 'yes' : (_campaign$rss_enabled = campaign.rss_enabled) !== null && _campaign$rss_enabled !== void 0 ? _campaign$rss_enabled : 'no',
               rss_config: (_ref11 = (_overrides$rss_config = overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) !== null && _overrides$rss_config !== void 0 ? _overrides$rss_config : campaign.rss_config) !== null && _ref11 !== void 0 ? _ref11 : null,
               status: statusValue
             };
-            _context7.prev = 29;
-            _context7.next = 32;
+            _context7.prev = 31;
+            _context7.next = 34;
             return Promise.all([updateCampaign(payload), updateTasks(taskItems)]);
-          case 32:
+          case 34:
             if (rssOverride) {
               setCampaign(function (prev) {
                 return _objectSpread(_objectSpread({}, prev), {}, {
@@ -13668,21 +13859,21 @@ function CampaignEditPage() {
             setIsDirty(false);
             showToast('Changes saved.', 'success');
             return _context7.abrupt("return", true);
-          case 39:
-            _context7.prev = 39;
-            _context7.t0 = _context7["catch"](29);
+          case 41:
+            _context7.prev = 41;
+            _context7.t0 = _context7["catch"](31);
             console.error('Failed to save:', _context7.t0);
             showToast((_context7.t0 === null || _context7.t0 === void 0 ? void 0 : _context7.t0.message) || 'Failed to save.', 'error');
             return _context7.abrupt("return", false);
-          case 44:
-            _context7.prev = 44;
+          case 46:
+            _context7.prev = 46;
             setSavingAll(false);
-            return _context7.finish(44);
-          case 47:
+            return _context7.finish(46);
+          case 49:
           case "end":
             return _context7.stop();
         }
-      }, _callee7, null, [[29, 39, 44, 47]]);
+      }, _callee7, null, [[31, 41, 46, 49]]);
     }));
     return function handleSave() {
       return _ref9.apply(this, arguments);
@@ -13869,6 +14060,7 @@ function CampaignEditPage() {
   }();
   if (loading || !campaign) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
   var webhooksList = (webhooksData === null || webhooksData === void 0 ? void 0 : webhooksData.webhooks) || [];
+  var writingPresets = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapWritingPresets)() || [];
   var users = (data === null || data === void 0 ? void 0 : data.users) || [];
   var hasTaxonomies = (data === null || data === void 0 ? void 0 : data.taxonomies) && Object.keys(data.taxonomies).length > 0;
   var taxonomies = hasTaxonomies ? data.taxonomies : (_getTaxonomies = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getTaxonomies)()) !== null && _getTaxonomies !== void 0 ? _getTaxonomies : {};
@@ -14073,11 +14265,15 @@ function CampaignEditPage() {
                   variant: "secondary",
                   size: "sm",
                   onClick: function onClick() {
-                    return setWritingPresetModalOpen(true);
+                    return setWritingPresetModal({
+                      open: true,
+                      mode: 'add',
+                      writingPreset: null
+                    });
                   },
                   children: "Add new preset"
                 }),
-                options: (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapWritingPresets)().map(function (i) {
+                options: writingPresets.map(function (i) {
                   return {
                     value: Number(i.id),
                     label: i.name,
@@ -14086,80 +14282,40 @@ function CampaignEditPage() {
                       type: i.key,
                       className: "w-4 h-4"
                     }),
-                    instructions: i.instructions
+                    instructions: i.instructions,
+                    sourcePreset: i
                   };
                 }),
-                value: (_campaign$writing_pre2 = campaign === null || campaign === void 0 ? void 0 : campaign.writing_preset_id) !== null && _campaign$writing_pre2 !== void 0 ? _campaign$writing_pre2 : null,
-                onChange: function onChange(id) {
-                  var nextPresetId = id !== null && id !== void 0 ? id : null;
-
-                  // Resolve selected preset (if any)
-                  var presets = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getBootstrapWritingPresets)() || [];
-                  var selectedPreset = nextPresetId != null ? presets.find(function (p) {
-                    return Number(p.id) === Number(nextPresetId);
-                  }) : null;
-                  var contentFieldsRaw = {};
-                  try {
-                    if (campaign !== null && campaign !== void 0 && campaign.content_fields) {
-                      contentFieldsRaw = typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields;
-                    }
-                  } catch (_unused3) {
-                    contentFieldsRaw = {};
+                value: (_campaign$writing_pre3 = campaign === null || campaign === void 0 ? void 0 : campaign.writing_preset_id) !== null && _campaign$writing_pre3 !== void 0 ? _campaign$writing_pre3 : null,
+                onChange: handleWritingPresetSelect,
+                getOptionAction: function getOptionAction(option) {
+                  var preset = option.sourcePreset || null;
+                  if (!preset || isDefaultWritingPreset(preset.key)) {
+                    return null;
                   }
-                  var contentFields = _objectSpread({}, contentFieldsRaw);
-                  if (selectedPreset) {
-                    var _instructions$title, _instructions$body, _contentFields$title$, _contentFields$title, _contentFields$body$p, _contentFields$body;
-                    var instructions = selectedPreset.instructions || {};
-                    var titleInstruction = String((_instructions$title = instructions.title) !== null && _instructions$title !== void 0 ? _instructions$title : '');
-                    var bodyInstruction = String((_instructions$body = instructions.body) !== null && _instructions$body !== void 0 ? _instructions$body : '');
-                    var existingTitlePrompt = String((_contentFields$title$ = contentFields === null || contentFields === void 0 || (_contentFields$title = contentFields.title) === null || _contentFields$title === void 0 ? void 0 : _contentFields$title.prompt) !== null && _contentFields$title$ !== void 0 ? _contentFields$title$ : '').trim();
-                    var existingBodyPrompt = String((_contentFields$body$p = contentFields === null || contentFields === void 0 || (_contentFields$body = contentFields.body) === null || _contentFields$body === void 0 ? void 0 : _contentFields$body.prompt) !== null && _contentFields$body$p !== void 0 ? _contentFields$body$p : '').trim();
-                    var willOverrideTitle = titleInstruction.trim() !== '' && existingTitlePrompt !== '' && existingTitlePrompt !== titleInstruction;
-                    var willOverrideBody = bodyInstruction.trim() !== '' && existingBodyPrompt !== '' && existingBodyPrompt !== bodyInstruction;
-                    if (willOverrideTitle || willOverrideBody) {
-                      // Ask before overriding existing prompts
-                      var ok = window.confirm('Applying this preset will replace the existing campaign title and body instructions. Do you wish to proceed?');
-                      if (!ok) {
-                        // Do not change anything if user cancels
-                        return;
-                      }
-                    }
-                    if (titleInstruction.trim() !== '') {
-                      contentFields.title = _objectSpread(_objectSpread({}, contentFields.title || {}), {}, {
-                        prompt: titleInstruction
+                  return {
+                    title: 'Edit preset',
+                    ariaLabel: "Edit ".concat(option.label),
+                    icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("svg", {
+                      className: "w-4 h-4",
+                      fill: "none",
+                      viewBox: "0 0 24 24",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("path", {
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                        d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      })
+                    }),
+                    onClick: function onClick() {
+                      return setWritingPresetModal({
+                        open: true,
+                        mode: 'edit',
+                        writingPreset: preset
                       });
                     }
-                    if (bodyInstruction.trim() !== '') {
-                      contentFields.body = _objectSpread(_objectSpread({}, contentFields.body || {}), {}, {
-                        prompt: bodyInstruction
-                      });
-                    }
-                  } else {
-                    var _contentFields$title$2, _contentFields$title2, _contentFields$body$p2, _contentFields$body2;
-                    var _existingTitlePrompt = String((_contentFields$title$2 = contentFields === null || contentFields === void 0 || (_contentFields$title2 = contentFields.title) === null || _contentFields$title2 === void 0 ? void 0 : _contentFields$title2.prompt) !== null && _contentFields$title$2 !== void 0 ? _contentFields$title$2 : '').trim();
-                    var _existingBodyPrompt = String((_contentFields$body$p2 = contentFields === null || contentFields === void 0 || (_contentFields$body2 = contentFields.body) === null || _contentFields$body2 === void 0 ? void 0 : _contentFields$body2.prompt) !== null && _contentFields$body$p2 !== void 0 ? _contentFields$body$p2 : '').trim();
-                    var hasAnyPrompt = _existingTitlePrompt !== '' || _existingBodyPrompt !== '';
-                    if (hasAnyPrompt) {
-                      var _ok = window.confirm('Removing the writing preset will clear the existing campaign title and body instructions. Do you wish to proceed?');
-                      if (!_ok) {
-                        return;
-                      }
-                      if (contentFields.title) {
-                        contentFields.title = _objectSpread(_objectSpread({}, contentFields.title || {}), {}, {
-                          prompt: ''
-                        });
-                      }
-                      if (contentFields.body) {
-                        contentFields.body = _objectSpread(_objectSpread({}, contentFields.body || {}), {}, {
-                          prompt: ''
-                        });
-                      }
-                    }
-                  }
-                  handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
-                    writing_preset_id: nextPresetId,
-                    content_fields: JSON.stringify(contentFields)
-                  }));
+                  };
                 },
                 placeholder: "None"
               })
@@ -14193,16 +14349,23 @@ function CampaignEditPage() {
         })
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_layout_InfoSidebar__WEBPACK_IMPORTED_MODULE_5__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_6__["default"], {
-      isOpen: writingPresetModalOpen,
+      isOpen: writingPresetModal.open,
       onClose: function onClose() {
-        return setWritingPresetModalOpen(false);
+        return setWritingPresetModal(function (prev) {
+          return _objectSpread(_objectSpread({}, prev), {}, {
+            open: false
+          });
+        });
       },
-      mode: "add",
-      onSaved: function onSaved(newId) {
-        if (newId != null) {
-          handleCampaignChange(_objectSpread(_objectSpread({}, campaign), {}, {
-            writing_preset_id: newId
-          }));
+      mode: writingPresetModal.mode,
+      writingPreset: writingPresetModal.writingPreset,
+      showSaveAndApply: writingPresetModal.mode === 'edit',
+      onSaved: function onSaved() {},
+      onSaveAndApply: function onSaveAndApply(result) {
+        var _result$id;
+        var savedId = (_result$id = result === null || result === void 0 ? void 0 : result.id) !== null && _result$id !== void 0 ? _result$id : null;
+        if (savedId != null) {
+          handleWritingPresetSelect(savedId);
         }
       }
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_campaign_RssFeedConfigModal__WEBPACK_IMPORTED_MODULE_7__["default"], {
@@ -14831,6 +14994,7 @@ var isDefaultPreset = function isDefaultPreset(key) {
 
 
 function SettingsPage() {
+  var pluginName = (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getPluginName)();
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
     showApiDocs = _useState2[0],
@@ -15071,7 +15235,7 @@ function SettingsPage() {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageHeader, {
       title: "Settings",
-      description: "Manage your PostStation configuration"
+      description: "Manage your ".concat(pluginName, " configuration")
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "max-w-5xl grid grid-cols-2 gap-6",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
@@ -15101,7 +15265,7 @@ function SettingsPage() {
               className: "flex gap-2 items-end",
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
                 label: "API Key",
-                tooltip: "Used to authenticate requests to the PostStation API.",
+                tooltip: "Used to authenticate requests to the ".concat(pluginName, " API."),
                 type: "text",
                 value: apiKey || (data === null || data === void 0 ? void 0 : data.api_key) || '',
                 readOnly: true,
@@ -15346,19 +15510,6 @@ function SettingsPage() {
                 }, inst.id);
               })
             })
-          })
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        className: "col-span-2",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
-            className: "text-lg font-medium text-gray-900",
-            children: "About PostStation"
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-            className: "text-sm text-gray-600",
-            children: "PostStation is a WordPress plugin that enables automated post creation through webhooks and API endpoints. Configure Campaigns to define post templates, then trigger content generation via webhooks."
           })
         })]
       })]
@@ -24181,12 +24332,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _App__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./App */ "./src/App.jsx");
 /* harmony import */ var _index_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./index.css */ "./src/index.css");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+var _window$poststation;
 
 
 
 
 
-var container = document.getElementById('poststation-app');
+var appId = ((_window$poststation = window.poststation) === null || _window$poststation === void 0 ? void 0 : _window$poststation.plugin_app_id) || 'poststation-app';
+var container = document.getElementById(appId);
 if (container) {
   var root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_0__.createRoot)(container);
   root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_4__.HashRouter, {

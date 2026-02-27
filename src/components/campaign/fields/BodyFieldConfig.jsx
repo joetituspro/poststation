@@ -154,6 +154,34 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 				</div>
 			)}
 
+			<div className="space-y-1">
+				<Select
+					label="Generation Mode"
+					tooltip="Control whether the AI writes the full article in one pass or section by section."
+					options={ [
+						{ value: 'single', label: 'Single' },
+						{
+							value: 'segmented',
+							label: 'Segmented (Coming Soon)',
+							disabled: true,
+						},
+					] }
+					value={ config.generation_mode || 'single' }
+					onChange={ ( e ) =>
+						handleChange(
+							'generation_mode',
+							e.target.value
+						)
+					}
+				/>
+				<p className="text-xs text-gray-500">
+					{ ( config.generation_mode || 'single' ) ===
+					'segmented'
+						? 'Segmented — AI writes each section individually for more focused and detailed output.'
+						: 'Single — AI writes the entire article in one pass.' }
+				</p>
+			</div>
+
 			<Textarea
 				label="Additional Instruction"
 				tooltip="Extra guidance used when generating the body content."
@@ -174,30 +202,38 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 						<Select
 							label="Key Takeaways"
 							tooltip="Include a key takeaways section."
-							options={yesNoOptions}
-							value={config.key_takeaways || 'yes'}
-							onChange={(e) => handleChange('key_takeaways', e.target.value)}
+							options={ yesNoOptions }
+							value={ config.key_takeaways || 'yes' }
+							onChange={ ( e ) =>
+								handleChange(
+									'key_takeaways',
+									e.target.value
+								)
+							}
 						/>
 						<Select
 							label="Conclusion"
 							tooltip="Include a conclusion section."
-							options={yesNoOptions}
-							value={config.conclusion || 'yes'}
-							onChange={(e) => handleChange('conclusion', e.target.value)}
+							options={ yesNoOptions }
+							value={ config.conclusion || 'yes' }
+							onChange={ ( e ) =>
+								handleChange(
+									'conclusion',
+									e.target.value
+								)
+							}
 						/>
 						<Select
 							label="FAQ"
 							tooltip="Include a FAQ section."
-							options={yesNoOptions}
-							value={config.faq || 'yes'}
-							onChange={(e) => handleChange('faq', e.target.value)}
-						/>
-						<Select
-							label="External Linking"
-							tooltip="Include external links to authoritative sources."
-							options={yesNoOptions}
-							value={config.external_linking || 'yes'}
-							onChange={(e) => handleChange('external_linking', e.target.value)}
+							options={ yesNoOptions }
+							value={ config.faq || 'yes' }
+							onChange={ ( e ) =>
+								handleChange(
+									'faq',
+									e.target.value
+								)
+							}
 						/>
 					</div>
 				</div>

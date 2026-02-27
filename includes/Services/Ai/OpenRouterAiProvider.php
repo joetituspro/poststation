@@ -96,11 +96,19 @@ Field guidance:
 - instructions.title: include SEO positioning, keyword placement, emotional trigger guidance (if relevant), length guidance, and title pattern examples.
 - instructions.body: focus only on body content elements. Do not include H1/title-writing guidance.
 - instructions.body must start with introduction guidance, then section flow (H2/H3 and body content patterns).
-- instructions.body should include tone/voice, paragraph length guidance, formatting rules (bullets/tables/bold), comparison-benefit logic (if relevant), SEO guidance, internal linking guidance (if relevant), CTA placement strategy, and any distinctive generalized pattern from references.
+- instructions.body should include tone/voice, paragraph length guidance, formatting rules (bullets/tables/bold), comparison-benefit logic (if relevant), SEO guidance, CTA placement strategy, and any distinctive generalized pattern from references.
+- Do not write direct, article-specific headings (H2/H3) in instructions.body.
+- For headings, provide reusable guidance on heading style, structure, and sequencing instead of literal heading text.
 - Do not include FAQ generation instructions.
 - Do not include conclusion-generation instructions.
 - Do not include key-takeaways-generation instructions.
+- Do not include summary-generation instructions.
+- Do not include overview-generation instructions.
+- Do not include "at a glance"-generation instructions.
 - Do not include table-of-contents instructions.
+- Do not include internal-linking instructions.
+- Do not include media generation instructions.
+- Do not include media recommendation instructions.
 - Assume the writer will receive a separate topic/keyword input later; do not hard-code specific companies, brands, organizations, products, or proper nouns in reusable instructions.
 
 If user input is vague, infer the most logical professional structure from best practices.
