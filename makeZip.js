@@ -177,7 +177,7 @@ class ZipCreator {
 const pluginConfig = {
   slug: "poststation",
   mainFile: "poststation.php",
-  includes: ["assets", "includes"],
+  includes: ["build", "includes", "vendor"],
   excludePatterns: [],
 };
 

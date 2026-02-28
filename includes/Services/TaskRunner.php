@@ -58,8 +58,9 @@ class TaskRunner
 					$content_fields['slug']['mode'] = 'generate';
 				}
 
-				if (!empty($content_fields['image']['mode']) && $content_fields['image']['mode'] === 'generate_from_title') {
-					$content_fields['image']['mode'] = 'generate_from_article';
+				// Normalize legacy image mode values to 'generate'
+				if (!empty($content_fields['image']['mode']) && in_array($content_fields['image']['mode'], ['generate_from_title', 'generate_from_article'], true)) {
+					$content_fields['image']['mode'] = 'generate';
 				}
 
 				if (!empty($task['feature_image_id']) && isset($content_fields['image'])) {
@@ -205,6 +206,18 @@ class TaskRunner
 			$language_key = $campaign['language'] ?? 'en';
 			$country_key = $campaign['target_country'] ?? 'international';
 
+			$callback_base = get_site_url();
+			$host = (string) parse_url($callback_base, PHP_URL_HOST);
+			$is_local_host = in_array($host, ['localhost', '127.0.0.1'], true) || preg_match('/\.local$/i', $host);
+			$tunnel_url = SettingsService::get_tunnel_url();
+			if ($is_local_host && $tunnel_url !== '') {
+				$callback_base = $tunnel_url;
+			}
+			$callback_url = rtrim($callback_base, '/') . '/ps-api';
+			$workflow_api_key = (string) get_option(SettingsService::WORKFLOW_API_KEY_OPTION, '');
+			$poststation_api_key = (string) get_option('poststation_api_key', '');
+			$send_api_to_webhook = SettingsService::should_send_api_to_webhook();
+
 			$body = [
 				'task_id' => $task['id'],
 				'research_url' => $research_url,
@@ -227,9 +240,11 @@ class TaskRunner
 				'readability' => (string) ($campaign['readability'] ?? 'grade_8'),
 				'content_fields' => $content_fields,
 				'sitemap' => $sitemap_payload,
-				'callback_url' => get_site_url() . '/ps-api',
-				'api_key' => get_option('poststation_api_key'),
+				'callback_url' => $callback_url,
 			];
+			if ($send_api_to_webhook) {
+				$body['api_key'] = $poststation_api_key;
+			}
 
 			PostTask::update($task_id, [
 				'status' => 'processing',
@@ -239,11 +254,15 @@ class TaskRunner
 			]);
 
 			$response = wp_remote_post($webhook['url'], [
-				'headers' => ['Content-Type' => 'application/json'],
+				'headers' => [
+					'Content-Type' => 'application/json',
+					'X-API-Key' => $workflow_api_key,
+				],
 				'body' => wp_json_encode($body),
 				'timeout' => 30,
 				'sslverify' => false,
 			]);
+
 
 			if (is_wp_error($response)) {
 				throw new Exception($response->get_error_message());

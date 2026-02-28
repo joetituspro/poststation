@@ -364,14 +364,14 @@ function TaskItem( {
 							</span>
 							<StatusBadge status={ task.status } />
 						</div>
-						<div className="flex items-center gap-2 mt-0.5 min-w-0">
+						<div className="flex flex-wrap items-center gap-2 mt-0.5 min-w-0">
 							<span className="text-[14px] font-semibold text-gray-900 truncate">
 								{ primaryLabel }
 							</span>
 							{ task.progress !== null &&
 								task.progress !== undefined &&
 								task.status !== 'completed' && (
-									<span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic truncate max-w-[120px]">
+									<span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic min-w-0 break-words whitespace-normal">
 										{ String( task.progress ) }
 									</span>
 								) }

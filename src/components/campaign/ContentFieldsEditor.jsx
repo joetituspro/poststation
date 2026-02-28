@@ -64,7 +64,7 @@ const getDefaultContentFields = (settings = null) => {
 	custom_fields: [],
 	image: {
 		enabled: false,
-		mode: 'generate_from_article',
+		mode: 'generate',
 		prompt: '',
 		model_id: defaultImageModel,
 		image_size: '1344x768',

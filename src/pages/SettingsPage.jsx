@@ -11,9 +11,15 @@ export default function SettingsPage() {
 	const pluginName = getPluginName();
 	const [showApiDocs, setShowApiDocs] = useState(false);
 	const [apiKey, setApiKey] = useState('');
+	const [showPoststationApiKey, setShowPoststationApiKey] = useState(false);
+	const [sendApiToWebhook, setSendApiToWebhook] = useState(true);
+	const [workflowApiKey, setWorkflowApiKey] = useState('');
+	const [showWorkflowApiKey, setShowWorkflowApiKey] = useState(false);
 	const [openRouterApiKey, setOpenRouterApiKey] = useState('');
 	const [defaultTextModel, setDefaultTextModel] = useState('');
 	const [defaultImageModel, setDefaultImageModel] = useState('');
+	const [enableTunnelUrl, setEnableTunnelUrl] = useState(false);
+	const [tunnelUrl, setTunnelUrl] = useState('');
 	const [copied, setCopied] = useState(false);
 
 	const [writingPresetModal, setWritingPresetModal] = useState({ open: false, mode: 'add', writingPreset: null });
@@ -36,10 +42,19 @@ export default function SettingsPage() {
 			refreshBootstrap();
 		},
 	});
+	const { mutate: saveSendApiToWebhook, loading: savingSendApiToWebhook } = useMutation(settings.saveSendApiToWebhook, {
+		onSuccess: refreshBootstrap,
+	});
+	const { mutate: saveWorkflowApiKey, loading: savingWorkflowApiKey } = useMutation(settings.saveWorkflowApiKey, {
+		onSuccess: refreshBootstrap,
+	});
 	const { mutate: saveOpenRouterApiKey, loading: savingOpenRouter } = useMutation(settings.saveOpenRouterApiKey, {
 		onSuccess: refreshBootstrap,
 	});
 	const { mutate: saveOpenRouterDefaults, loading: savingOpenRouterDefaults } = useMutation(settings.saveOpenRouterDefaults, {
+		onSuccess: refreshBootstrap,
+	});
+	const { mutate: saveDevSettings, loading: savingDevSettings } = useMutation(settings.saveDevSettings, {
 		onSuccess: refreshBootstrap,
 	});
 
@@ -47,8 +62,12 @@ export default function SettingsPage() {
 		if (data?.api_key) {
 			setApiKey(data.api_key);
 		}
+		setSendApiToWebhook(data?.send_api_to_webhook !== false);
+		setWorkflowApiKey(data?.workflow_api_key || '');
 		setDefaultTextModel(data?.openrouter_default_text_model || '');
 		setDefaultImageModel(data?.openrouter_default_image_model || '');
+		setEnableTunnelUrl(Boolean(data?.enable_tunnel_url));
+		setTunnelUrl(data?.tunnel_url || '');
 	}, [data]);
 
 	const handleCopy = () => {
@@ -80,6 +99,38 @@ export default function SettingsPage() {
 			refetch();
 		} catch (err) {
 			console.error('Failed to save OpenRouter settings:', err);
+			refetch();
+		}
+	};
+
+	const handleSaveWorkflowApiKey = async () => {
+		try {
+			await saveWorkflowApiKey(workflowApiKey);
+			refetch();
+		} catch (err) {
+			console.error('Failed to save workflow API key:', err);
+			refetch();
+		}
+	};
+
+	const handleToggleSendApiToWebhook = async (checked) => {
+		setSendApiToWebhook(checked);
+		try {
+			await saveSendApiToWebhook(checked);
+			refetch();
+		} catch (err) {
+			console.error('Failed to save Send to Webhook setting:', err);
+			setSendApiToWebhook(!checked);
+			refetch();
+		}
+	};
+
+	const handleSaveDevSettings = async () => {
+		try {
+			await saveDevSettings(enableTunnelUrl, tunnelUrl);
+			refetch();
+		} catch (err) {
+			console.error('Failed to save dev settings:', err);
 			refetch();
 		}
 	};
@@ -125,8 +176,8 @@ export default function SettingsPage() {
 					<CardHeader>
 						<div className="flex items-center justify-between">
 							<div>
-								<h3 className="text-lg font-medium text-gray-900">API Key</h3>
-								<p className="text-sm text-gray-500">Use this key to authenticate API requests</p>
+								<h3 className="text-lg font-medium text-gray-900">Poststation API Key</h3>
+								<p className="text-sm text-gray-500">Use this key to authenticate Poststation API requests.</p>
 							</div>
 							<Button variant="secondary" onClick={() => setShowApiDocs(true)}>
 								View API Docs
@@ -136,14 +187,53 @@ export default function SettingsPage() {
 					<CardBody>
 						<div className="space-y-4">
 							<div className="flex gap-2 items-end">
-								<Input
-									label="API Key"
-									tooltip={ `Used to authenticate requests to the ${ pluginName } API.` }
-									type="text"
-									value={apiKey || data?.api_key || ''}
-									readOnly
-									className="flex-1"
-								/>
+								<div className="flex-1">
+									<div className="flex items-center justify-between mb-1">
+										<label className="flex items-center text-sm font-medium text-gray-700">
+											Poststation API Key
+										</label>
+										<label className="poststation-switch inline-flex items-center gap-2 cursor-pointer text-xs text-gray-600">
+											<input
+												type="checkbox"
+												className="poststation-field-checkbox"
+												checked={sendApiToWebhook}
+												disabled={savingSendApiToWebhook}
+												onChange={(e) => handleToggleSendApiToWebhook(e.target.checked)}
+											/>
+											<span className="poststation-switch-track" aria-hidden />
+											<span>Send to Webhook</span>
+										</label>
+									</div>
+									<p className="text-xs text-gray-500 mb-2">
+										Used to authenticate requests to the {pluginName} API. When "Send to Webhook" is enabled, this key is included in webhook payload data.
+									</p>
+									<div className="relative">
+										<input
+											className="poststation-field pr-10"
+											type={showPoststationApiKey ? 'text' : 'password'}
+											value={apiKey || data?.api_key || ''}
+											readOnly
+										/>
+										<button
+											type="button"
+											className="absolute right-2 top-1/2 -translate-y-1/2 poststation-icon-btn"
+											onClick={() => setShowPoststationApiKey((prev) => !prev)}
+											title={showPoststationApiKey ? 'Hide key' : 'Show key'}
+											aria-label={showPoststationApiKey ? 'Hide key' : 'Show key'}
+										>
+											{showPoststationApiKey ? (
+												<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+													<path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M10.477 10.48a3 3 0 004.243 4.242M9.88 5.09A10.958 10.958 0 0112 4.909c5.523 0 10 4.477 10 10 0 1.232-.223 2.41-.632 3.498M6.228 6.228A9.965 9.965 0 002 14.91c0 .84.103 1.656.297 2.435" />
+												</svg>
+											) : (
+												<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+													<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+													<path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
+												</svg>
+											)}
+										</button>
+									</div>
+								</div>
 								<button
 									type="button"
 									className="poststation-icon-btn mb-1"
@@ -180,6 +270,46 @@ export default function SettingsPage() {
 										</svg>
 									)}
 								</button>
+							</div>
+							<div className="pt-3 border-t border-gray-100">
+								<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+									Workflow API Key
+								</label>
+								<p className="text-xs text-gray-500 mb-2">
+									This API key is used for the n8n Rankima workflow webhook authentication.
+								</p>
+								<div className="flex gap-2 items-end">
+									<div className="relative flex-1">
+										<input
+											className="poststation-field pr-10"
+											type={showWorkflowApiKey ? 'text' : 'password'}
+											value={workflowApiKey}
+											onChange={(e) => setWorkflowApiKey(e.target.value)}
+											placeholder="Enter workflow API key"
+										/>
+										<button
+											type="button"
+											className="absolute right-2 top-1/2 -translate-y-1/2 poststation-icon-btn"
+											onClick={() => setShowWorkflowApiKey((prev) => !prev)}
+											title={showWorkflowApiKey ? 'Hide key' : 'Show key'}
+											aria-label={showWorkflowApiKey ? 'Hide key' : 'Show key'}
+										>
+											{showWorkflowApiKey ? (
+												<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+													<path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M10.477 10.48a3 3 0 004.243 4.242M9.88 5.09A10.958 10.958 0 0112 4.909c5.523 0 10 4.477 10 10 0 1.232-.223 2.41-.632 3.498M6.228 6.228A9.965 9.965 0 002 14.91c0 .84.103 1.656.297 2.435" />
+												</svg>
+											) : (
+												<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+													<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+													<path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
+												</svg>
+											)}
+										</button>
+									</div>
+									<Button onClick={handleSaveWorkflowApiKey} loading={savingWorkflowApiKey}>
+										Save
+									</Button>
+								</div>
 							</div>
 						</div>
 					</CardBody>
@@ -234,6 +364,45 @@ export default function SettingsPage() {
 						</div>
 					</CardBody>
 				</Card>
+
+				{Boolean(data?.is_local) && (
+					<Card className="col-span-2">
+						<CardHeader>
+							<div>
+								<h3 className="text-lg font-medium text-gray-900">Dev</h3>
+								<p className="text-sm text-gray-500">Local development overrides</p>
+							</div>
+						</CardHeader>
+						<CardBody>
+							<div className="space-y-4">
+								<label className="flex items-center gap-2 text-sm text-gray-800">
+									<input
+										type="checkbox"
+										checked={enableTunnelUrl}
+										onChange={(e) => setEnableTunnelUrl(e.target.checked)}
+									/>
+									Enable tunnel URL
+								</label>
+
+								{enableTunnelUrl && (
+									<Input
+										label="Tunnel URL"
+										type="url"
+										value={tunnelUrl}
+										onChange={(e) => setTunnelUrl(e.target.value)}
+										placeholder="https://your-subdomain.ngrok-free.app"
+									/>
+								)}
+
+								<div className="flex justify-end">
+									<Button onClick={handleSaveDevSettings} loading={savingDevSettings}>
+										Save Dev Settings
+									</Button>
+								</div>
+							</div>
+						</CardBody>
+					</Card>
+				)}
 
 				{/* Writing presets */}
 				<Card className="col-span-2">

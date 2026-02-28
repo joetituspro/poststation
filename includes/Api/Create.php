@@ -7,6 +7,7 @@ use Exception;
 use PostStation\Models\Webhook;
 use PostStation\Models\PostTask;
 use PostStation\Models\Campaign;
+use PostStation\Services\SettingsService;
 
 class Create
 {
@@ -476,16 +477,20 @@ class Create
 		}
 
 		if (!empty($bg_image_url)) {
-			$ngrok_url = 'https://natural-cute-robin.ngrok-free.app';
+			$tunnel_url = SettingsService::get_tunnel_url();
 
 			// Parse the BG image URL host
 			$image_host = parse_url($bg_image_url, PHP_URL_HOST);
 
-			// If the image host is a local host, replace it with the ngrok URL
-			if ($image_host && (in_array($image_host, ['localhost', '127.0.0.1']) || strpos($image_host, '.local') !== false)) {
+			// If local image URLs are used, replace them with the configured tunnel URL.
+			if (
+				$tunnel_url !== '' &&
+				$image_host &&
+				(in_array($image_host, ['localhost', '127.0.0.1']) || strpos($image_host, '.local') !== false)
+			) {
 				$scheme = parse_url($bg_image_url, PHP_URL_SCHEME);
 				$local_base = $scheme . '://' . $image_host;
-				$bg_image_url = str_replace($local_base, $ngrok_url, $bg_image_url);
+				$bg_image_url = str_replace($local_base, $tunnel_url, $bg_image_url);
 			}
 
 			$body['bgImageUrl'] = $bg_image_url;

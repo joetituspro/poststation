@@ -93,7 +93,7 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 				: campaign.content_fields;
 	}
 	const imageConfig = contentFields?.image || null;
-	const imageMode = imageConfig?.mode || 'generate_from_article';
+	const imageMode = imageConfig?.mode || 'generate';
 	const showImageTitleOverride = Boolean(
 		imageConfig?.enabled && imageMode === 'generate_from_dt'
 	);

@@ -253,7 +253,7 @@ class Campaign
 			'custom_fields' => [],
 			'image' => [
 				'enabled' => false,
-				'mode' => 'generate_from_article',
+				'mode' => 'generate',
 				'prompt' => '',
 				'model_id' => $default_image_model,
 				'image_size' => '1344x768',

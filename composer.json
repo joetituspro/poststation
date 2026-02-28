@@ -1,12 +1,12 @@
 {
-  "name": "joetitus/poststation",
-  "description": "A robust WordPress plugin to handle automated post creation via API",
+  "name": "rankima/poststation",
+  "description": "Post Station by Rankima connects your WordPress site to the Rankima n8n workflow, giving you full control over AI content generation, scheduling, and publishing — all from a simple dashboard interface.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "authors": [
     {
-      "name": "Joe Titus",
-      "email": "your@email.com"
+      "name": "Rankima",
+      "email": "support@rankima.com"
     }
   ],
   "minimum-stability": "dev",

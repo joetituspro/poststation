@@ -199,11 +199,18 @@ export const writingPresets = {
 export const settings = {
 	get: () => ajax('poststation_get_settings'),
 	regenerateApiKey: () => ajax('poststation_regenerate_api_key'),
+	saveWorkflowApiKey: (workflowApiKey) => ajax('poststation_save_workflow_api_key', { workflow_api_key: workflowApiKey }),
+	saveSendApiToWebhook: (sendApiToWebhook) => ajax('poststation_save_send_api_to_webhook', { send_api_to_webhook: sendApiToWebhook ? '1' : '0' }),
 	saveOpenRouterApiKey: (apiKey) => ajax('poststation_save_openrouter_api_key', { api_key: apiKey }),
 	saveOpenRouterDefaults: (defaultTextModel, defaultImageModel) =>
 		ajax('poststation_save_openrouter_defaults', {
 			default_text_model: defaultTextModel,
 			default_image_model: defaultImageModel,
+		}),
+	saveDevSettings: (enableTunnelUrl, tunnelUrl) =>
+		ajax('poststation_save_dev_settings', {
+			enable_tunnel_url: enableTunnelUrl ? '1' : '0',
+			tunnel_url: tunnelUrl,
 		}),
 };
 

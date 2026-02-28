@@ -3,6 +3,7 @@
 namespace PostStation\Admin\Ajax;
 
 use PostStation\Services\SettingsService;
+use PostStation\Utils\Environment;
 
 class SettingsAjaxHandler
 {
@@ -50,6 +51,33 @@ class SettingsAjaxHandler
 
 		$new_key = $this->settings_service->regenerate_api_key();
 		wp_send_json_success(['api_key' => $new_key]);
+	}
+
+	public function save_workflow_api_key(): void
+	{
+		if (!NonceVerifier::verify()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$this->settings_service->save_workflow_api_key((string) ($_POST['workflow_api_key'] ?? ''));
+		wp_send_json_success(['message' => 'Workflow API key saved']);
+	}
+
+	public function save_send_api_to_webhook(): void
+	{
+		if (!NonceVerifier::verify()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$send_api_to_webhook = !empty($_POST['send_api_to_webhook']) && $_POST['send_api_to_webhook'] !== 'false';
+		$this->settings_service->save_send_api_to_webhook($send_api_to_webhook);
+		wp_send_json_success(['message' => 'Webhook payload setting saved']);
 	}
 
 	public function save_openrouter_api_key(): void
@@ -110,5 +138,24 @@ class SettingsAjaxHandler
 			'models' => $models,
 			'updated_at' => current_time('timestamp'),
 		]);
+	}
+
+	public function save_dev_settings(): void
+	{
+		if (!NonceVerifier::verify()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+		if (!Environment::is_local()) {
+			wp_send_json_error(['message' => 'Dev settings are only available in local environments']);
+		}
+
+		$enable_tunnel_url = !empty($_POST['enable_tunnel_url']) && $_POST['enable_tunnel_url'] !== 'false';
+		$tunnel_url = (string) ($_POST['tunnel_url'] ?? '');
+
+		$this->settings_service->save_dev_settings($enable_tunnel_url, $tunnel_url);
+		wp_send_json_success(['message' => 'Dev settings saved']);
 	}
 }

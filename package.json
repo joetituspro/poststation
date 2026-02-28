@@ -1,8 +1,8 @@
 {
   "name": "poststation",
   "version": "1.0.0",
-  "description": "Post Station WordPress Plugin",
-  "author": "Joe Titus",
+  "description": "Post Station by Rankima connects your WordPress site to the Rankima n8n workflow, giving you full control over AI content generation, scheduling, and publishing — all from a simple dashboard interface.",
+  "author": "Rankima",
   "license": "GPL-2.0-or-later",
   "scripts": {
     "build": "wp-scripts build --webpack-src-dir=src --output-path=build",

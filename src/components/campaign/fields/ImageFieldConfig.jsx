@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Select, Textarea, Input, Tooltip, ModelSelect } from '../../common';
 
 const MODE_OPTIONS = [
-	{ value: 'generate_from_article', label: 'Generate from Article' },
+	{ value: 'generate', label: 'Generate New' },
 	{ value: 'generate_from_dt', label: 'Generate from DT (Design Template)' },
 ];
 
@@ -111,11 +111,11 @@ export default function ImageFieldConfig({ config, onChange }) {
 				label="Mode"
 				tooltip="Choose how the featured image is produced."
 				options={MODE_OPTIONS}
-				value={config.mode || 'generate_from_article'}
+				value={config.mode || 'generate'}
 				onChange={(e) => handleChange('mode', e.target.value)}
 			/>
 
-			{config.mode === 'generate_from_article' && (
+			{config.mode === 'generate' && (
 				<>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<Select

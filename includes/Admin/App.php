@@ -63,9 +63,12 @@ class App
 		add_action('wp_ajax_poststation_get_settings', [$this->settings_handler, 'get_settings']);
 		add_action('wp_ajax_poststation_save_api_key', [$this->settings_handler, 'save_api_key']);
 		add_action('wp_ajax_poststation_regenerate_api_key', [$this->settings_handler, 'regenerate_api_key']);
+		add_action('wp_ajax_poststation_save_workflow_api_key', [$this->settings_handler, 'save_workflow_api_key']);
+		add_action('wp_ajax_poststation_save_send_api_to_webhook', [$this->settings_handler, 'save_send_api_to_webhook']);
 		add_action('wp_ajax_poststation_save_openrouter_api_key', [$this->settings_handler, 'save_openrouter_api_key']);
 		add_action('wp_ajax_poststation_save_openrouter_defaults', [$this->settings_handler, 'save_openrouter_defaults']);
 		add_action('wp_ajax_poststation_get_openrouter_models', [$this->settings_handler, 'get_openrouter_models']);
+		add_action('wp_ajax_poststation_save_dev_settings', [$this->settings_handler, 'save_dev_settings']);
 
 		add_action('wp_ajax_poststation_get_bootstrap', [$this, 'ajax_get_bootstrap']);
 
