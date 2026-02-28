@@ -52,7 +52,10 @@ class BackgroundRunner
 		$table_name = $wpdb->prefix . PostTask::get_table_name();
 		$wpdb->update(
 			$table_name,
-			['status' => 'pending'],
+			[
+				'status' => 'pending',
+				'progress' => null,
+			],
 			[
 				'campaign_id' => $campaign_id,
 				'status' => 'processing'

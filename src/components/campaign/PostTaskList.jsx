@@ -261,6 +261,8 @@ function TaskItem( {
 		: 'Published on';
 	const completedDateTimeValue =
 		task.scheduled_publication_date || task.post_date || '';
+	const progressText = String( task.progress ?? '' );
+	const progressTypingWidth = `${ Math.max( 1, progressText.length ) }ch`;
 
 	return (
 		<div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -371,8 +373,16 @@ function TaskItem( {
 							{ task.progress !== null &&
 								task.progress !== undefined &&
 								task.status !== 'completed' && (
-									<span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic min-w-0 break-words whitespace-normal">
-										{ String( task.progress ) }
+									<span className="poststation-progress-badge text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 italic min-w-0">
+										<span
+											className="poststation-progress-typing"
+											style={ {
+												'--poststation-typing-width':
+													progressTypingWidth,
+											} }
+										>
+											{ progressText }
+										</span>
 									</span>
 								) }
 						</div>

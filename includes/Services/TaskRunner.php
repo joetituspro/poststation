@@ -259,7 +259,7 @@ class TaskRunner
 					'X-API-Key' => $workflow_api_key,
 				],
 				'body' => wp_json_encode($body),
-				'timeout' => 30,
+				'timeout' => 60,
 				'sslverify' => false,
 			]);
 

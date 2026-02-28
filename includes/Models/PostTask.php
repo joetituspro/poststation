@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostTask
 {
-	public const DB_VERSION = '4.5';
+	public const DB_VERSION = '4.6';
 	protected const TABLE_NAME = 'poststation_posttasks';
 
 	public static function get_table_name(): string

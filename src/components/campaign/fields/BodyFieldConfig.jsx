@@ -22,8 +22,6 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 		onChange({ ...config, [field]: value });
 	};
 
-	const isRewrite = campaignType === 'rewrite_blog_post';
-
 	const yesNoOptions = [
 		{ value: 'yes', label: 'Yes' },
 		{ value: 'no', label: 'No' },
@@ -109,50 +107,48 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 				filter="text"
 			/>
 
-			{!isRewrite && (
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<Select
-						label="Real-Time Data"
-						tooltip="Select the source for real-time data when generating content."
-						options={ RESEARCH_MODE_OPTIONS }
-						value={ config.research_mode || 'perplexity' }
-						onChange={ ( e ) =>
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+				<Select
+					label="Real-Time Data"
+					tooltip="Select the source for real-time data when generating content."
+					options={ RESEARCH_MODE_OPTIONS }
+					value={ config.research_mode || 'perplexity' }
+					onChange={ ( e ) =>
+						handleChange(
+							'research_mode',
+							e.target.value
+						)
+					}
+				/>
+				{ config.research_mode !== 'none' && (
+					<Input
+						label="Number of Sources to Use"
+						tooltip="How many sources to research. Max is 10."
+						type="number"
+						min="1"
+						max="10"
+						value={ config.sources_count ?? 5 }
+						onChange={ ( e ) => {
+							const val = parseInt(
+								e.target.value,
+								10
+							);
 							handleChange(
-								'research_mode',
-								e.target.value
-							)
-						}
+								'sources_count',
+								Number.isNaN( val )
+									? ''
+									: Math.min(
+											10,
+											Math.max(
+												1,
+												val
+											)
+									  )
+							);
+						} }
 					/>
-					{ config.research_mode !== 'none' && (
-						<Input
-							label="Number of Sources to Use"
-							tooltip="How many sources to research. Max is 10."
-							type="number"
-							min="1"
-							max="10"
-							value={ config.sources_count ?? 5 }
-							onChange={ ( e ) => {
-								const val = parseInt(
-									e.target.value,
-									10
-								);
-								handleChange(
-									'sources_count',
-									Number.isNaN( val )
-										? ''
-										: Math.min(
-												10,
-												Math.max(
-													1,
-													val
-												)
-										  )
-								);
-							} }
-						/>
-					) }
-				</div>
-			)}
+				) }
+			</div>
 
 			<div className="space-y-1">
 				<Select

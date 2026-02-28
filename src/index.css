@@ -124,6 +124,57 @@
 	text-decoration: none;
 }
 
+#poststation-app .poststation-progress-badge {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+}
+
+#poststation-app .poststation-progress-typing {
+	display: inline-block;
+	max-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	border-right: 1px solid currentColor;
+	animation: poststation-progress-typing 5s ease-in-out infinite,
+		poststation-progress-caret 1s steps(1, end) infinite;
+	will-change: max-width;
+}
+
+@keyframes poststation-progress-typing {
+	0% {
+		max-width: 0;
+	}
+	68% {
+		max-width: var(--poststation-typing-width);
+	}
+	86% {
+		max-width: var(--poststation-typing-width);
+	}
+	100% {
+		max-width: 0;
+	}
+}
+
+@keyframes poststation-progress-caret {
+	0%,
+	49% {
+		border-right-color: currentColor;
+	}
+	50%,
+	100% {
+		border-right-color: transparent;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#poststation-app .poststation-progress-typing {
+		animation: none;
+		max-width: none;
+		border-right: 0;
+	}
+}
+
 @media (min-width: 783px) {
 	#poststation-app {
 		margin-left: -20px;

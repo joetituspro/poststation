@@ -427,6 +427,7 @@ class ApiHandler
 	 */
 	private function update_task_progress(array $data): array
 	{
+
 		$task_id = isset($data['task_id']) ? (int) $data['task_id'] : null;
 		$execution_id = isset($data['execution_id']) ? trim((string) $data['execution_id']) : null;
 		$status = $data['status'] ?? null;
