@@ -8,6 +8,7 @@ use PostStation\Models\WritingPreset;
 use PostStation\Models\PostTask;
 use PostStation\Models\Webhook;
 use PostStation\Services\SettingsService;
+use PostStation\Services\SupportService;
 use PostStation\Utils\Countries;
 use PostStation\Utils\Languages;
 
@@ -17,10 +18,12 @@ class BootstrapDataProvider
 	private const STATIC_CACHE_TTL = 300; // 5 minutes
 
 	private SettingsService $settings_service;
+	private SupportService $support_service;
 
-	public function __construct(?SettingsService $settings_service = null)
+	public function __construct(?SettingsService $settings_service = null, ?SupportService $support_service = null)
 	{
 		$this->settings_service = $settings_service ?? new SettingsService();
+		$this->support_service = $support_service ?? new SupportService();
 	}
 
 	/**
@@ -164,6 +167,7 @@ class BootstrapDataProvider
 			'users' => $user_data,
 			'current_user_id' => get_current_user_id(),
 			'openrouter_models' => $static['openrouter_models'],
+			'support' => $this->support_service->get_support_state(),
 		];
 	}
 }

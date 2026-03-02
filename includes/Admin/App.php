@@ -8,6 +8,7 @@ use PostStation\Admin\Ajax\WritingPresetAjaxHandler;
 use PostStation\Admin\Ajax\PostTaskAjaxHandler;
 use PostStation\Admin\Ajax\RssAjaxHandler;
 use PostStation\Admin\Ajax\SettingsAjaxHandler;
+use PostStation\Admin\Ajax\SupportAjaxHandler;
 use PostStation\Admin\Ajax\WebhookAjaxHandler;
 
 class App
@@ -20,6 +21,7 @@ class App
 	private WritingPresetAjaxHandler $writing_preset_handler;
 	private RssAjaxHandler $rss_handler;
 	private AiAjaxHandler $ai_handler;
+	private SupportAjaxHandler $support_handler;
 
 	public function __construct()
 	{
@@ -31,6 +33,7 @@ class App
 		$this->writing_preset_handler = new WritingPresetAjaxHandler();
 		$this->rss_handler = new RssAjaxHandler();
 		$this->ai_handler = new AiAjaxHandler();
+		$this->support_handler = new SupportAjaxHandler();
 
 		add_action('admin_menu', [$this, 'register_menu']);
 		add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
@@ -71,6 +74,14 @@ class App
 		add_action('wp_ajax_poststation_save_dev_settings', [$this->settings_handler, 'save_dev_settings']);
 
 		add_action('wp_ajax_poststation_get_bootstrap', [$this, 'ajax_get_bootstrap']);
+		add_action('wp_ajax_poststation_support_get_state', [$this->support_handler, 'get_state']);
+		add_action('wp_ajax_poststation_support_license', [$this->support_handler, 'handle_license']);
+		add_action('wp_ajax_poststation_support_save_n8n_config', [$this->support_handler, 'save_n8n_config']);
+		add_action('wp_ajax_poststation_support_deploy_n8n_blueprint', [$this->support_handler, 'deploy_n8n_blueprint']);
+		add_action('wp_ajax_poststation_support_get_manual_blueprint', [$this->support_handler, 'get_manual_blueprint']);
+		add_action('wp_ajax_poststation_support_check_blueprint_update', [$this->support_handler, 'check_blueprint_update']);
+		add_action('wp_ajax_poststation_support_set_auto_update_plugin', [$this->support_handler, 'set_auto_update_plugin']);
+		add_action('wp_ajax_poststation_support_complete_onboarding', [$this->support_handler, 'complete_onboarding']);
 
 		add_action('wp_ajax_poststation_create_writing_preset', [$this->writing_preset_handler, 'create_writing_preset']);
 		add_action('wp_ajax_poststation_update_writing_preset', [$this->writing_preset_handler, 'update_writing_preset']);

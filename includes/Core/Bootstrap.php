@@ -13,7 +13,10 @@ use PostStation\Models\RssHistory;
 use PostStation\Admin\App;
 use PostStation\Services\Sitemap;
 use PostStation\Services\BackgroundRunner;
+use PostStation\Services\AuthService;
 use PostStation\Services\GlobalUpdateService;
+use PostStation\Services\PluginUpdateService;
+use PostStation\Services\SupportService;
 
 class Bootstrap
 {
@@ -40,9 +43,15 @@ class Bootstrap
 		$global_update = new GlobalUpdateService();
 		$global_update->init();
 
+		AuthService::instance();
+
+		$plugin_update_service = new PluginUpdateService();
+		$plugin_update_service->init();
+
 		// Initialize Admin
 		if (is_admin()) {
 			$this->check_db_version();
+			add_action('admin_init', [$this, 'maybe_redirect_to_support'], 20);
 			
 			// Initialize React App (new SPA interface)
 			new App();
@@ -67,6 +76,13 @@ class Bootstrap
 			// Generate API key if not exists
 			if (!get_option('poststation_api_key')) {
 				update_option('poststation_api_key', wp_generate_password(32, false));
+			}
+
+			$support_service = new SupportService();
+			$has_seen_onboarding = (int) get_option(SupportService::ONBOARDING_SEEN_AT_OPTION, 0) > 0;
+			$is_onboarding_configured = get_option(SupportService::ONBOARDING_REQUIRED_OPTION, null) !== null;
+			if (!$has_seen_onboarding && !$is_onboarding_configured) {
+				$support_service->mark_onboarding_required();
 			}
 
 			// Create or upgrade tables with error checking
@@ -133,9 +149,55 @@ class Bootstrap
 		// Remove options
 		delete_option('poststation_api_key');
 		delete_option('poststation_posttask_db_version');
+		delete_option(\PostStation\Services\AuthService::LICENSE_KEY_OPTION);
+		delete_option(\PostStation\Services\AuthService::SITE_KEY_OPTION);
+		delete_option(\PostStation\Services\AuthService::LICENSE_STATUS_OPTION);
+		delete_option(\PostStation\Services\SupportService::ONBOARDING_REQUIRED_OPTION);
+		delete_option(\PostStation\Services\SupportService::ONBOARDING_SEEN_AT_OPTION);
+		delete_option(\PostStation\Services\SupportService::ONBOARDING_REDIRECT_OPTION);
+		delete_option(\PostStation\Services\SupportService::N8N_BASE_URL_OPTION);
+		delete_option(\PostStation\Services\SupportService::N8N_API_KEY_OPTION_ENC);
+		delete_option(\PostStation\Services\SupportService::RAPIDAPI_KEY_OPTION_ENC);
+		delete_option(\PostStation\Services\SupportService::FIRECRAWL_KEY_OPTION_ENC);
+		delete_option(\PostStation\Services\SupportService::N8N_AUTODEPLOY_ENABLED_OPTION);
+		delete_option(\PostStation\Services\SupportService::N8N_LAST_DEPLOY_OPTION);
+		delete_option(\PostStation\Services\SupportService::N8N_LAST_ERROR_OPTION);
+		delete_option(\PostStation\Services\SupportService::BLUEPRINT_UPDATE_STATE_OPTION);
+		delete_option(\PostStation\Services\SupportService::PLUGIN_AUTO_UPDATE_ENABLED_OPTION);
+		delete_option(\PostStation\Services\SupportService::PLUGIN_UPDATE_LAST_CHECK_OPTION);
+		delete_option(\PostStation\Services\SupportService::BLUEPRINT_LAST_CHECK_OPTION);
+		delete_transient(\PostStation\Services\AuthService::TRANSIENT_AUTH_CHECK);
+		delete_transient(\PostStation\Services\AuthService::TRANSIENT_LAST_LICENSE_KEY);
+		delete_transient(\PostStation\Services\AuthService::TRANSIENT_UPGRADE_CACHE);
 	}
 
 	public function register_assets(): void
 	{
+	}
+
+	public function maybe_redirect_to_support(): void
+	{
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+		if (wp_doing_ajax()) {
+			return;
+		}
+		if (!is_admin()) {
+			return;
+		}
+
+		if (defined('IFRAME_REQUEST') && IFRAME_REQUEST) {
+			return;
+		}
+
+		$support_service = new SupportService();
+		if (!$support_service->should_redirect_to_support()) {
+			return;
+		}
+
+		$support_service->clear_support_redirect_flag();
+		wp_safe_redirect(admin_url('admin.php?page=' . POSTSTATION_APP_ID . '#/support?onboarding=1'));
+		exit;
 	}
 }

@@ -18,6 +18,12 @@ class OpenRouterService
 		'black-forest-labs/flux.2-flex',
 		'black-forest-labs/flux.2-pro',
 	];
+	private CryptoService $crypto_service;
+
+	public function __construct(?CryptoService $crypto_service = null)
+	{
+		$this->crypto_service = $crypto_service ?? new CryptoService();
+	}
 
 	public function resolve_api_key(): string
 	{
@@ -37,7 +43,7 @@ class OpenRouterService
 
 		$encrypted_option = get_option(self::KEY_OPTION_ENC, '');
 		if (is_string($encrypted_option) && $encrypted_option !== '') {
-			$decrypted = $this->decrypt_api_key($encrypted_option);
+			$decrypted = $this->crypto_service->decrypt($encrypted_option, 'openrouter');
 			if ($decrypted !== '') {
 				return $decrypted;
 			}
@@ -65,7 +71,7 @@ class OpenRouterService
 			return true;
 		}
 
-		$encrypted = $this->encrypt_api_key($api_key);
+		$encrypted = $this->crypto_service->encrypt($api_key, 'openrouter');
 		if ($encrypted === '') {
 			return false;
 		}
@@ -220,47 +226,6 @@ class OpenRouterService
 		$normalized[0]['supportsAudio'] = false;
 
 		return $normalized[0];
-	}
-
-	private function get_encryption_secret(): string
-	{
-		return hash('sha256', wp_salt('auth') . '|poststation|openrouter', true);
-	}
-
-	private function encrypt_api_key(string $plain_text): string
-	{
-		if ($plain_text === '' || !function_exists('openssl_encrypt') || !function_exists('openssl_random_pseudo_bytes')) {
-			return '';
-		}
-
-		$key = $this->get_encryption_secret();
-		$iv = openssl_random_pseudo_bytes(12);
-		$tag = '';
-		$ciphertext = openssl_encrypt($plain_text, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, '', 16);
-		if (!is_string($ciphertext) || $ciphertext === '') {
-			return '';
-		}
-
-		return base64_encode($iv . $tag . $ciphertext);
-	}
-
-	private function decrypt_api_key(string $encoded): string
-	{
-		if ($encoded === '' || !function_exists('openssl_decrypt')) {
-			return '';
-		}
-
-		$payload = base64_decode($encoded, true);
-		if (!is_string($payload) || strlen($payload) <= 28) {
-			return '';
-		}
-
-		$iv = substr($payload, 0, 12);
-		$tag = substr($payload, 12, 16);
-		$ciphertext = substr($payload, 28);
-		$key = $this->get_encryption_secret();
-		$decrypted = openssl_decrypt($ciphertext, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
-		return is_string($decrypted) ? trim($decrypted) : '';
 	}
 
 	private function normalize_models(array $models): array

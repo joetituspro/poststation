@@ -6,6 +6,7 @@ import SettingsPage from './pages/SettingsPage';
 import CampaignsPage from './pages/CampaignsPage';
 import CampaignEditPage from './pages/CampaignEditPage';
 import WebhooksPage from './pages/WebhooksPage';
+import SupportPage from './pages/SupportPage';
 
 export default function App() {
 	return (
@@ -18,6 +19,7 @@ export default function App() {
 					<Route path="/campaigns" element={<CampaignsPage />} />
 					<Route path="/campaigns/:id" element={<CampaignEditPage />} />
 					<Route path="/webhooks" element={<WebhooksPage />} />
+					<Route path="/support" element={<SupportPage />} />
 					</Routes>
 				</AppShell>
 			</UnsavedChangesProvider>

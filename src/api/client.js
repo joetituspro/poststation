@@ -26,6 +26,7 @@ export const setBootstrap = (bootstrap = {}) => {
 		'campaigns',
 		'writing_presets',
 		'openrouter_models',
+		'support',
 	];
 
 	mirrorKeys.forEach((key) => {
@@ -67,7 +68,15 @@ export async function ajax(action, data = {}) {
 	const result = await response.json();
 	
 	if (!result.success) {
-		throw new Error(result.data?.message || 'Request failed');
+		let message = 'Request failed';
+		if (typeof result?.data === 'string' && result.data.trim() !== '') {
+			message = result.data;
+		} else if (result?.data?.message) {
+			message = result.data.message;
+		} else if (result?.message) {
+			message = result.message;
+		}
+		throw new Error(message);
 	}
 	
 	return result.data;
@@ -246,7 +255,32 @@ export const openrouter = {
 		ajax('poststation_get_openrouter_models', { force_refresh: forceRefresh ? '1' : '0' }),
 };
 
+export const support = {
+	getState: () => ajax('poststation_support_get_state'),
+	saveLicense: ({ licenseKey }) =>
+		ajax('poststation_support_license', {
+			action_type: 'activate',
+			license_key: licenseKey,
+		}),
+	deactivateLicense: () =>
+		ajax('poststation_support_license', {
+			action_type: 'deactivate',
+		}),
+	refreshLicense: () =>
+		ajax('poststation_support_license', {
+			action_type: 'refresh',
+		}),
+	saveN8nConfig: (payload) => ajax('poststation_support_save_n8n_config', payload),
+	deployN8nBlueprint: () => ajax('poststation_support_deploy_n8n_blueprint'),
+	getManualBlueprint: () => ajax('poststation_support_get_manual_blueprint'),
+	checkBlueprintUpdate: ({ force = false } = {}) => ajax('poststation_support_check_blueprint_update', { force: force ? '1' : '0' }),
+	setAutoUpdatePlugin: (enabled) => ajax('poststation_support_set_auto_update_plugin', { enabled: enabled ? '1' : '0' }),
+	completeOnboarding: () => ajax('poststation_support_complete_onboarding'),
+};
+
 export const ai = {
 	generateWritingPreset: ({ prompt, provider = 'openrouter', model = '' }) =>
 		ajax('poststation_generate_writing_preset', { prompt, provider, model }),
 };
+
+export const getBootstrapSupport = () => getBootstrap().support || null;
