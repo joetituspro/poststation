@@ -64,6 +64,9 @@ class N8nDeploymentService
 		$resolved_id = isset($resolved_workflow['id']) ? trim((string) $resolved_workflow['id']) : '';
 		if ($resolved_id !== '' && $blueprint_version !== '') {
 			$current_remote_version = $this->get_current_workflow_version($resolved_workflow);
+			if ($current_remote_version === '') {
+				$current_remote_version = $this->get_last_deployed_version_for_workflow($resolved_id);
+			}
 			if ($current_remote_version !== '' && version_compare($current_remote_version, $blueprint_version, '=')) {
 				$up_to_date = new \WP_Error(
 					'poststation_workflow_up_to_date',
@@ -616,6 +619,7 @@ class N8nDeploymentService
 		}
 
 		$create_body = $this->workflow_create_body($workflow_data, $provisioned_credentials);
+		$create_body = $this->apply_blueprint_version_marker($create_body, $release_version);
 
 		$normalized_body = $create_body;
 		$action = 'created';
@@ -626,13 +630,11 @@ class N8nDeploymentService
 		if ($workflow_id !== '') {
 			$action = 'updated';
 			$workflow_result = $this->update_workflow($base_url, $api_key, $workflow_id, $normalized_body);
-			error_log('Update Result: ' . print_r($workflow_result, true));
 			if (is_wp_error($workflow_result)) {
 				return $workflow_result;
 			}
 		} else {
 			$workflow_result = $this->n8n_request($base_url, $api_key, 'POST', '/api/v1/workflows', $normalized_body);
-			error_log('Create Result: ' . print_r($workflow_result, true));
 			if (is_wp_error($workflow_result) && $this->is_n8n_additional_properties_error($workflow_result)) {
 				$normalized_body = [
 					'name' => isset($normalized_body['name']) ? (string) $normalized_body['name'] : 'PostStation Workflow',
@@ -679,6 +681,29 @@ class N8nDeploymentService
 		}
 
 		return '';
+	}
+
+	private function get_last_deployed_version_for_workflow(string $workflow_id): string
+	{
+		$id = trim($workflow_id);
+		if ($id === '') {
+			return '';
+		}
+
+		$last = get_option(SupportService::N8N_LAST_DEPLOY_OPTION, []);
+		if (!is_array($last)) {
+			return '';
+		}
+
+		$last_id = trim((string) ($last['workflow_id'] ?? ''));
+		if ($last_id === '' && isset($last['workflow']) && is_array($last['workflow'])) {
+			$last_id = trim((string) ($last['workflow']['id'] ?? ''));
+		}
+		if ($last_id === '' || $last_id !== $id) {
+			return '';
+		}
+
+		return trim((string) ($last['blueprint_version'] ?? ''));
 	}
 
 	/**
@@ -804,6 +829,8 @@ class N8nDeploymentService
 			$workflow['versionName'] ?? '',
 			$workflow['meta']['versionName'] ?? '',
 			$workflow['meta']['poststationBlueprintVersion'] ?? '',
+			$workflow['staticData']['poststationBlueprintVersion'] ?? '',
+			$workflow['staticData']['global']['poststationBlueprintVersion'] ?? '',
 			$workflow['settings']['poststation_blueprint_version'] ?? '',
 		];
 		foreach ($direct_candidates as $candidate) {
@@ -878,6 +905,26 @@ class N8nDeploymentService
 		}
 
 		return $body;
+	}
+
+	/**
+	 * Persist blueprint version on workflow payload so future remote checks can short-circuit updates.
+	 *
+	 * @param array<string,mixed> $workflow_body
+	 * @return array<string,mixed>
+	 */
+	private function apply_blueprint_version_marker(array $workflow_body, string $release_version): array
+	{
+		$version = trim($release_version);
+		if ($version === '') {
+			return $workflow_body;
+		}
+
+		$static_data = isset($workflow_body['staticData']) && is_array($workflow_body['staticData']) ? $workflow_body['staticData'] : [];
+		$static_data['poststationBlueprintVersion'] = sanitize_text_field($version);
+		$workflow_body['staticData'] = $static_data;
+
+		return $workflow_body;
 	}
 
 	/**
