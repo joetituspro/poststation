@@ -34,7 +34,7 @@ class AuthService
 		$this->rankima_client = $rankima_client ?? new RankimaClient();
 	}
 
-	public function get_license_key(): string
+	public static function get_license_key(): string
 	{
 		$license_data = get_option(self::LICENSE_STATUS_OPTION, []);
 		if (is_array($license_data) && !empty($license_data)) {
@@ -43,7 +43,7 @@ class AuthService
 		return '';
 	}
 
-	public function get_site_key(): string
+	public static function get_site_key(): string
 	{
 		return sanitize_text_field((string) get_option(self::SITE_KEY_OPTION, ''));
 	}

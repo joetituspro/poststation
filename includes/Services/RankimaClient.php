@@ -36,8 +36,8 @@ class RankimaClient
     {
         $site_key = $this->get_site_key();
 		$site_domain = $this->get_site_domain();
-		$license_key = $this->get_license_key();
-        $license_key = isset($body['license_key']) && !empty($body['license_key']) ? $body['license_key'] : ($license_key ?: '');
+		$license_key = AuthService::get_license_key();
+        $license_key = isset($body['license_key']) && !empty($body['license_key']) ? $body['license_key'] : ($license_key ?? '');
 
 		$data = array_merge($body, [
 			'license_key' => $license_key,
@@ -64,7 +64,6 @@ class RankimaClient
             $response = wp_remote_get($url, $args);
         }
 
-
 		if (is_wp_error($response)) {
             return ['status' => 'connection_error', 'message' => 'Error: Unable to connect to the host. ' . $response->get_error_message()];
         }
@@ -75,6 +74,7 @@ class RankimaClient
         }
 
         $response_body = json_decode(wp_remote_retrieve_body($response), true);
+
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             return ['status' => 'connection_error', 'message' => 'Error: Invalid response from host.'];
@@ -101,11 +101,6 @@ class RankimaClient
 		return sanitize_text_field($domain);
 	}
 
-	private function get_license_key(): string
-	{
-		$license_key = (string) get_option(AuthService::LICENSE_KEY_OPTION, '');
-		return sanitize_text_field($license_key);
-	}
 
 	private function get_site_key(): string
 	{
