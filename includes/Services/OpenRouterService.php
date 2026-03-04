@@ -41,7 +41,13 @@ class OpenRouterService
 			return trim($env_key);
 		}
 
-		$encrypted_option = get_option(self::KEY_OPTION_ENC, '');
+		$encrypted_option = (string) $this->get_option_value(self::KEY_OPTION_ENC, '');
+		if ($encrypted_option === '') {
+			$encrypted_option = (string) get_option(self::KEY_OPTION_ENC, '');
+			if ($encrypted_option !== '') {
+				$this->set_option_value(self::KEY_OPTION_ENC, $encrypted_option);
+			}
+		}
 		if (is_string($encrypted_option) && $encrypted_option !== '') {
 			$decrypted = $this->crypto_service->decrypt($encrypted_option, 'openrouter');
 			if ($decrypted !== '') {
@@ -49,7 +55,13 @@ class OpenRouterService
 			}
 		}
 
-		$option_key = get_option(self::KEY_OPTION, '');
+		$option_key = (string) $this->get_option_value(self::KEY_OPTION, '');
+		if ($option_key === '') {
+			$option_key = (string) get_option(self::KEY_OPTION, '');
+			if ($option_key !== '') {
+				$this->set_option_value(self::KEY_OPTION, $option_key);
+			}
+		}
 		if (is_string($option_key) && $option_key !== '') {
 			return trim($option_key);
 		}
@@ -59,6 +71,8 @@ class OpenRouterService
 
 	public function clear_api_key(): void
 	{
+		$this->delete_option_value(self::KEY_OPTION_ENC);
+		$this->delete_option_value(self::KEY_OPTION);
 		delete_option(self::KEY_OPTION_ENC);
 		delete_option(self::KEY_OPTION);
 	}
@@ -76,9 +90,50 @@ class OpenRouterService
 			return false;
 		}
 
-		update_option(self::KEY_OPTION_ENC, $encrypted);
+		$this->set_option_value(self::KEY_OPTION_ENC, $encrypted);
+		$this->delete_option_value(self::KEY_OPTION);
 		delete_option(self::KEY_OPTION);
 		return true;
+	}
+
+	/**
+	 * @return array<string,mixed>
+	 */
+	private function get_options(): array
+	{
+		$options = get_option(SettingsService::OPTIONS_KEY, []);
+		return is_array($options) ? $options : [];
+	}
+
+	/**
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	private function get_option_value(string $key, $default = '')
+	{
+		$options = $this->get_options();
+		return array_key_exists($key, $options) ? $options[$key] : $default;
+	}
+
+	/**
+	 * @param mixed $value
+	 */
+	private function set_option_value(string $key, $value): void
+	{
+		$options = $this->get_options();
+		$options[$key] = $value;
+		update_option(SettingsService::OPTIONS_KEY, $options);
+	}
+
+	private function delete_option_value(string $key): void
+	{
+		$options = $this->get_options();
+		if (!array_key_exists($key, $options)) {
+			return;
+		}
+
+		unset($options[$key]);
+		update_option(SettingsService::OPTIONS_KEY, $options);
 	}
 
 	public function get_models(bool $force_refresh = false, bool $suppress_errors = false)

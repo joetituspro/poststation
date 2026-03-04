@@ -3,10 +3,10 @@
 namespace PostStation\Services\Ai;
 
 use PostStation\Services\OpenRouterService;
+use PostStation\Services\SettingsService;
 
 class OpenRouterAiProvider implements AiProviderInterface
 {
-	private const DESCRIPTION_MAX_LENGTH = 80;
 	private OpenRouterService $openrouter_service;
 
 	public function __construct(?OpenRouterService $openrouter_service = null)
@@ -31,7 +31,7 @@ class OpenRouterAiProvider implements AiProviderInterface
 
 		$model = trim((string) ($options['model'] ?? ''));
 		if ($model === '') {
-			$model = trim((string) get_option(OpenRouterService::DEFAULT_TEXT_MODEL_OPTION, ''));
+			$model = trim((new SettingsService())->get_openrouter_default_text_model());
 		}
 		if ($model === '') {
 			$model = 'openai/gpt-4.1-mini';
@@ -80,25 +80,24 @@ Output requirements:
 {
   "key": "snake_case_key",
   "name": "Human readable name",
-  "description": "Short description",
   "instructions": {
     "title": "Instruction for generating the post title",
-    "body": "Instruction for generating the post body"
+    "body": [
+      { "name": "Voice Tone", "content": "Clear instruction text" }
+    ]
   }
 }
 
 Field guidance:
 - key: lowercase snake_case, descriptive, 3-60 chars.
 - name: clean human-readable format name.
-- description: strict hard limit of 80 characters total.
-- description must be concise, reusable, and preferably 60-75 characters.
-- before returning, count description characters; if > 80, rewrite until <= 80.
 - instructions.title: include SEO positioning, keyword placement, emotional trigger guidance (if relevant), length guidance, and title pattern examples.
-- instructions.body: focus only on body content elements. Do not include H1/title-writing guidance.
-- instructions.body must start with introduction guidance, then section flow (H2/H3 and body content patterns).
-- instructions.body should include tone/voice, paragraph length guidance, formatting rules (bullets/tables/bold), comparison-benefit logic (if relevant), SEO guidance, CTA placement strategy, and any distinctive generalized pattern from references.
-- Do not write direct, article-specific headings (H2/H3) in instructions.body.
-- For headings, provide reusable guidance on heading style, structure, and sequencing instead of literal heading text.
+- instructions.body: return an array of 5-10 reusable elements (max 10).
+- each body element must use exactly: { "name": "...", "content": "..." }.
+- focus only on body-content guidance. Do not include H1/title-writing guidance.
+- include distinct elements such as introduction approach, section flow, heading style, tone/voice, paragraph length, formatting rules, SEO body guidance, and CTA placement.
+- do not write direct article-specific headings; keep all elements generic and reusable.
+- do not repeat the same instruction across multiple elements.
 - Do not include FAQ generation instructions.
 - Do not include conclusion-generation instructions.
 - Do not include key-takeaways-generation instructions.
@@ -172,7 +171,6 @@ PROMPT;
 			'model' => $model,
 			'key' => $normalized['key'],
 			'name' => $normalized['name'],
-			'description' => $normalized['description'],
 			'instructions' => [
 				'title' => $normalized['instructions']['title'],
 				'body' => $normalized['instructions']['body'],
@@ -187,14 +185,8 @@ PROMPT;
 	{
 		$key = sanitize_key((string) ($parsed['key'] ?? ''));
 		$name = sanitize_text_field((string) ($parsed['name'] ?? ''));
-		$description = sanitize_textarea_field((string) ($parsed['description'] ?? ''));
-		if (function_exists('mb_substr')) {
-			$description = (string) mb_substr($description, 0, self::DESCRIPTION_MAX_LENGTH);
-		} else {
-			$description = substr($description, 0, self::DESCRIPTION_MAX_LENGTH);
-		}
 		$title_instruction = sanitize_textarea_field((string) ($parsed['instructions']['title'] ?? ''));
-		$body_instruction = sanitize_textarea_field((string) ($parsed['instructions']['body'] ?? ''));
+		$body_instruction = $this->normalize_body_instruction($parsed['instructions']['body'] ?? '');
 
 		if ($key === '') {
 			$key = sanitize_key($name);
@@ -212,12 +204,56 @@ PROMPT;
 		return [
 			'key' => $key,
 			'name' => $name,
-			'description' => $description,
 			'instructions' => [
 				'title' => $title_instruction,
 				'body' => $body_instruction,
 			],
 		];
+	}
+
+	private function normalize_body_instruction($raw_body): string
+	{
+		$elements = [];
+
+		if (is_array($raw_body)) {
+			$elements = $raw_body;
+		} elseif (is_string($raw_body)) {
+			$decoded = json_decode($raw_body, true);
+			if (is_array($decoded)) {
+				$elements = $decoded;
+			}
+		}
+
+		if (is_array($elements) && !empty($elements)) {
+			$normalized = [];
+			$seen = [];
+			foreach ($elements as $element) {
+				$name = sanitize_text_field((string) ($element['name'] ?? ''));
+				$content = sanitize_textarea_field((string) ($element['content'] ?? ''));
+				if ($name === '' && $content === '') {
+					continue;
+				}
+
+				$signature = strtolower($name . '::' . $content);
+				if (isset($seen[$signature])) {
+					continue;
+				}
+				$seen[$signature] = true;
+
+				$normalized[] = [
+					'name' => $name,
+					'content' => $content,
+				];
+
+				if (count($normalized) >= 10) {
+					break;
+				}
+			}
+
+			return wp_json_encode($normalized) ?: '[]';
+		}
+
+		return sanitize_textarea_field((string) $raw_body);
 	}
 
 	/**

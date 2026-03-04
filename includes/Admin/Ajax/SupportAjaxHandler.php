@@ -65,6 +65,7 @@ class SupportAjaxHandler
 		$this->require_manage_options();
 		$this->support_service->save_n8n_config([
 			'base_url' => (string) ($_POST['base_url'] ?? ''),
+			'workflow_id' => (string) ($_POST['workflow_id'] ?? ''),
 			'n8n_api_key' => (string) ($_POST['n8n_api_key'] ?? ''),
 			'rapidapi_key' => (string) ($_POST['rapidapi_key'] ?? ''),
 			'firecrawl_key' => (string) ($_POST['firecrawl_key'] ?? ''),
@@ -80,7 +81,13 @@ class SupportAjaxHandler
 	public function deploy_n8n_blueprint(): void
 	{
 		$this->require_manage_options();
-		$result = $this->n8n_deployment_service->deploy_blueprint();
+		$create_or_update_webhook = !isset($_POST['create_or_update_webhook']) || ($_POST['create_or_update_webhook'] !== 'false' && $_POST['create_or_update_webhook'] !== '0');
+		$create_or_update_credentials = !isset($_POST['create_or_update_credentials']) || ($_POST['create_or_update_credentials'] !== 'false' && $_POST['create_or_update_credentials'] !== '0');
+
+		$result = $this->n8n_deployment_service->deploy_blueprint([
+			'create_or_update_webhook' => $create_or_update_webhook,
+			'create_or_update_credentials' => $create_or_update_credentials,
+		]);
 		if (is_wp_error($result)) {
 			wp_send_json_error(['message' => $result->get_error_message()]);
 		}

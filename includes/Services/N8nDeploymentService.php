@@ -2,30 +2,32 @@
 
 namespace PostStation\Services;
 
+use PostStation\Models\Webhook;
+
 class N8nDeploymentService
 {
 	private AuthService $auth_service;
 	private RankimaClient $rankima_client;
 	private SupportService $support_service;
-	private SettingsService $settings_service;
 
 	public function __construct(
 		?AuthService $auth_service = null,
 		?RankimaClient $rankima_client = null,
-		?SupportService $support_service = null,
-		?SettingsService $settings_service = null
+		?SupportService $support_service = null
 	) {
 		$this->auth_service = $auth_service ?? AuthService::instance();
 		$this->rankima_client = $rankima_client ?? new RankimaClient();
 		$this->support_service = $support_service ?? new SupportService();
-		$this->settings_service = $settings_service ?? new SettingsService();
 	}
 
 	/**
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public function deploy_blueprint()
+	public function deploy_blueprint(array $options = [])
 	{
+		$create_or_update_webhook = !isset($options['create_or_update_webhook']) || (bool) $options['create_or_update_webhook'];
+		$create_or_update_credentials = !isset($options['create_or_update_credentials']) || (bool) $options['create_or_update_credentials'];
+
 		$license_key = $this->auth_service->get_license_key();
 		if ($license_key === '') {
 			return new \WP_Error('poststation_missing_license', 'License key is required before deployment.');
@@ -41,7 +43,6 @@ class N8nDeploymentService
 
 		$blueprint_meta = $this->rankima_client->request('/api/downloads/latest', ['product_id' => 'n8n-workflow'], 'POST');
 		if (is_wp_error($blueprint_meta)) {
-			$this->support_service->set_n8n_last_error($blueprint_meta->get_error_message());
 			return $blueprint_meta;
 		}
 
@@ -52,22 +53,17 @@ class N8nDeploymentService
 		$resolved_workflow = $this->resolve_existing_workflow(
 			$base_url,
 			$n8n_api_key,
-			$this->get_saved_workflow_id(),
-			'RANKIMA'
+			$this->get_saved_workflow_id((string) ($config['workflow_id'] ?? ''))
 		);
 		if (is_wp_error($resolved_workflow)) {
-			$this->support_service->set_n8n_last_error($resolved_workflow->get_error_message());
 			return $resolved_workflow;
 		}
 
 		$current_remote_version = '';
 		$resolved_id = isset($resolved_workflow['id']) ? trim((string) $resolved_workflow['id']) : '';
 		if ($resolved_id !== '' && $blueprint_version !== '') {
-			$current_remote_version = $this->get_current_workflow_version($resolved_workflow);
-			if ($current_remote_version === '') {
-				$current_remote_version = $this->get_last_deployed_version_for_workflow($resolved_id);
-			}
-			if ($current_remote_version !== '' && version_compare($current_remote_version, $blueprint_version, '=')) {
+			$current_remote_version = $this->extract_version_from_workflow_name((string) ($resolved_workflow['name'] ?? ''));
+			if ($current_remote_version !== '' && version_compare($current_remote_version, $blueprint_version, '>=')) {
 				$up_to_date = new \WP_Error(
 					'poststation_workflow_up_to_date',
 					sprintf('Workflow is already up to date (version %s).', $blueprint_version),
@@ -76,7 +72,6 @@ class N8nDeploymentService
 						'version' => $blueprint_version,
 					]
 				);
-				$this->support_service->set_n8n_last_error($up_to_date->get_error_message());
 				return $up_to_date;
 			}
 		}
@@ -85,31 +80,44 @@ class N8nDeploymentService
 		$grant_url = esc_url_raw((string) ($data['url'] ?? ''));
 		if ($grant_url === '') {
 			$error = new \WP_Error('poststation_missing_blueprint_url', 'Blueprint download URL was not returned.');
-			$this->support_service->set_n8n_last_error($error->get_error_message());
 			return $error;
 		}
 
-		// Generate workflow API key if not exists
-		$workflow_api_key = (string) get_option(SettingsService::WORKFLOW_API_KEY_OPTION, '');
-		if ($workflow_api_key === '') {
-			$workflow_api_key = wp_generate_password(32, false);
-			$this->settings_service->save_workflow_api_key($workflow_api_key);
-		}
+		// Use the license key as RIM-POSTSTATION credential value.
+		$poststation_key = $license_key;
 
-		$credentials = $this->provision_credentials($base_url, $n8n_api_key, [
-			'rapidapi' => (string) ($config['rapidapi_key'] ?? ''),
-			'firecrawl' => (string) ($config['firecrawl_key'] ?? ''),
-			'openrouter' => (string) ($config['openrouter_key'] ?? ''),
-			'poststation' => $workflow_api_key,
-		]);
-		if (is_wp_error($credentials)) {
-			$this->support_service->set_n8n_last_error($credentials->get_error_message());
-			return $credentials;
+		$credentials = [];
+		if ($create_or_update_credentials) {
+			$missing = [];
+			if (trim((string) ($config['rapidapi_key'] ?? '')) === '') {
+				$missing[] = 'RapidAPI key';
+			}
+			if (trim((string) ($config['firecrawl_key'] ?? '')) === '') {
+				$missing[] = 'Firecrawl key';
+			}
+			if (trim((string) ($config['openrouter_key'] ?? '')) === '') {
+				$missing[] = 'OpenRouter key';
+			}
+			if ($missing !== []) {
+				return new \WP_Error(
+					'poststation_missing_n8n_credentials',
+					'Create/Update credentials is enabled, but required values are missing: ' . implode(', ', $missing) . '.'
+				);
+			}
+
+			$credentials = $this->provision_credentials($base_url, $n8n_api_key, [
+				'rapidapi' => (string) ($config['rapidapi_key'] ?? ''),
+				'firecrawl' => (string) ($config['firecrawl_key'] ?? ''),
+				'openrouter' => (string) ($config['openrouter_key'] ?? ''),
+				'poststation' => $poststation_key,
+			]);
+			if (is_wp_error($credentials)) {
+				return $credentials;
+			}
 		}
 
 		$blueprint_payload = $this->download_blueprint_payload($grant_url);
 		if (is_wp_error($blueprint_payload)) {
-			$this->support_service->set_n8n_last_error($blueprint_payload->get_error_message());
 			return $blueprint_payload;
 		}
 
@@ -123,14 +131,32 @@ class N8nDeploymentService
 			$resolved_workflow
 		);
 		if (is_wp_error($workflow_result)) {
-			$this->support_service->set_n8n_last_error($workflow_result->get_error_message());
 			return $workflow_result;
+		}
+
+		$workflow_id = (string) ($workflow_result['id'] ?? '');
+		if (trim((string) ($config['workflow_id'] ?? '')) === '' && $workflow_id !== '') {
+			$this->support_service->save_n8n_config([
+				'base_url' => $base_url,
+				'workflow_id' => $workflow_id,
+			]);
+		}
+
+		$webhook_result = null;
+		if ($create_or_update_webhook) {
+			$webhook_result = $this->create_or_update_rankima_webhook($base_url);
+			if (is_wp_error($webhook_result)) {
+				return $webhook_result;
+			}
 		}
 
 		$deploy_data = [
 			'workflow' => $workflow_result,
-			'workflow_id' => (string) ($workflow_result['id'] ?? ''),
+			'workflow_id' => $workflow_id,
 			'credentials' => $credentials,
+			'webhook' => $webhook_result,
+			'create_or_update_webhook' => $create_or_update_webhook,
+			'create_or_update_credentials' => $create_or_update_credentials,
 			'blueprint_version' => $blueprint_version,
 			'blueprint_changelog' => sanitize_textarea_field($blueprint_changelog),
 			'blueprint_hash' => sanitize_text_field((string) ($release['hash'] ?? '')),
@@ -138,10 +164,63 @@ class N8nDeploymentService
 			'blueprint_release_date' => sanitize_text_field((string) ($release['releaseDate'] ?? '')),
 			'deployed_at' => current_time('timestamp'),
 		];
-		$this->support_service->save_n8n_last_deploy($deploy_data);
 		$this->support_service->set_n8n_autodeploy_enabled(true);
 
 		return $deploy_data;
+	}
+
+	/**
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	private function create_or_update_rankima_webhook(string $base_url)
+	{
+		$url = rtrim($base_url, '/') . '/webhook/rankima';
+		$name = 'n8n Rankima Live';
+		$existing = null;
+
+		foreach (Webhook::get_all() as $webhook) {
+			if (!is_array($webhook)) {
+				continue;
+			}
+			$webhook_name = strtolower(trim((string) ($webhook['name'] ?? '')));
+			$webhook_url = trim((string) ($webhook['url'] ?? ''));
+			if ($webhook_name === strtolower($name) || $webhook_url === $url) {
+				$existing = $webhook;
+				break;
+			}
+		}
+
+		if (is_array($existing) && !empty($existing['id'])) {
+			$id = (int) $existing['id'];
+			$updated = Webhook::update($id, [
+				'name' => $name,
+				'url' => esc_url_raw($url),
+			]);
+			if (!$updated) {
+				return new \WP_Error('poststation_webhook_update_failed', 'Workflow deployment succeeded, but updating the RANKIMA webhook failed.');
+			}
+			return [
+				'id' => $id,
+				'name' => $name,
+				'url' => esc_url_raw($url),
+				'action' => 'updated',
+			];
+		}
+
+		$created_id = Webhook::create([
+			'name' => $name,
+			'url' => esc_url_raw($url),
+		]);
+		if (!$created_id) {
+			return new \WP_Error('poststation_webhook_create_failed', 'Workflow deployment succeeded, but creating the RANKIMA webhook failed.');
+		}
+
+		return [
+			'id' => (int) $created_id,
+			'name' => $name,
+			'url' => esc_url_raw($url),
+			'action' => 'created',
+		];
 	}
 
 	/**
@@ -189,20 +268,6 @@ class N8nDeploymentService
 			}
 
 			$rim_name = $meta['rim_name'];
-			$lookup_key = strtolower($rim_name) . '|' . (string) $meta['type'];
-			if (isset($existing_by_name_and_type[$lookup_key]) && is_array($existing_by_name_and_type[$lookup_key])) {
-				$existing = $existing_by_name_and_type[$lookup_key];
-				$existing_id = isset($existing['id']) ? (string) $existing['id'] : '';
-				if ($existing_id !== '') {
-					$created[$key] = [
-						'id' => $existing_id,
-						'name' => $rim_name,
-						'type' => (string) $meta['type'],
-					];
-					continue;
-				}
-			}
-
 			$payload = [
 				'name' => $rim_name,
 				'type' => $meta['type'],
@@ -220,6 +285,27 @@ class N8nDeploymentService
 					'name' => $meta['header'],
 					'value' => $data_value,
 				];
+			}
+
+			$lookup_key = strtolower($rim_name) . '|' . (string) $meta['type'];
+			if (isset($existing_by_name_and_type[$lookup_key]) && is_array($existing_by_name_and_type[$lookup_key])) {
+				$existing = $existing_by_name_and_type[$lookup_key];
+				$existing_id = isset($existing['id']) ? (string) $existing['id'] : '';
+				if ($existing_id !== '') {
+					$update_result = $this->n8n_request($base_url, $api_key, 'PATCH', '/api/v1/credentials/' . $existing_id, $payload);
+					if (is_wp_error($update_result)) {
+						$update_result = $this->n8n_request($base_url, $api_key, 'PUT', '/api/v1/credentials/' . $existing_id, $payload);
+					}
+					if (is_wp_error($update_result)) {
+						return $update_result;
+					}
+					$created[$key] = [
+						'id' => $existing_id,
+						'name' => $rim_name,
+						'type' => (string) $meta['type'],
+					];
+					continue;
+				}
 			}
 
 			$result = $this->create_credential($base_url, $api_key, $payload);
@@ -619,7 +705,7 @@ class N8nDeploymentService
 		}
 
 		$create_body = $this->workflow_create_body($workflow_data, $provisioned_credentials);
-		$create_body = $this->apply_blueprint_version_marker($create_body, $release_version);
+		$create_body = $this->apply_versioned_workflow_name($create_body, $release_version, $existing_workflow);
 
 		$normalized_body = $create_body;
 		$action = 'created';
@@ -663,47 +749,14 @@ class N8nDeploymentService
 	}
 
 
-	private function get_saved_workflow_id(): string
+	private function get_saved_workflow_id(string $preferred_id = ''): string
 	{
-		$last = get_option(SupportService::N8N_LAST_DEPLOY_OPTION, []);
-		if (!is_array($last)) {
-			return '';
-		}
-
-		$workflow_id = trim((string) ($last['workflow_id'] ?? ''));
-		if ($workflow_id !== '') {
-			return $workflow_id;
-		}
-
-		$workflow = $last['workflow'] ?? null;
-		if (is_array($workflow)) {
-			return trim((string) ($workflow['id'] ?? ''));
+		$preferred = trim($preferred_id);
+		if ($preferred !== '') {
+			return $preferred;
 		}
 
 		return '';
-	}
-
-	private function get_last_deployed_version_for_workflow(string $workflow_id): string
-	{
-		$id = trim($workflow_id);
-		if ($id === '') {
-			return '';
-		}
-
-		$last = get_option(SupportService::N8N_LAST_DEPLOY_OPTION, []);
-		if (!is_array($last)) {
-			return '';
-		}
-
-		$last_id = trim((string) ($last['workflow_id'] ?? ''));
-		if ($last_id === '' && isset($last['workflow']) && is_array($last['workflow'])) {
-			$last_id = trim((string) ($last['workflow']['id'] ?? ''));
-		}
-		if ($last_id === '' || $last_id !== $id) {
-			return '';
-		}
-
-		return trim((string) ($last['blueprint_version'] ?? ''));
 	}
 
 	/**
@@ -736,109 +789,63 @@ class N8nDeploymentService
 	 *
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	private function resolve_existing_workflow(string $base_url, string $api_key, string $preferred_id, string $fallback_name)
+	private function resolve_existing_workflow(string $base_url, string $api_key, string $preferred_id)
 	{
 		$workflow_id = trim($preferred_id);
 		if ($workflow_id !== '') {
 			$by_id = $this->n8n_request($base_url, $api_key, 'GET', '/api/v1/workflows/' . rawurlencode($workflow_id));
 			if (!is_wp_error($by_id)) {
-				return is_array($by_id) ? $by_id : ['id' => $workflow_id];
-			}
-			if ($this->n8n_request_status($by_id) !== 404) {
-				return $by_id;
-			}
-		}
-
-		$by_name = $this->find_workflow_by_name($base_url, $api_key, $fallback_name);
-		if (is_wp_error($by_name)) {
-			return $by_name;
-		}
-		if (!is_array($by_name) || empty($by_name['id'])) {
-			return [];
-		}
-
-		// Hydrate full workflow once so version/meta checks do not trigger extra lookups later.
-		$full = $this->n8n_request($base_url, $api_key, 'GET', '/api/v1/workflows/' . rawurlencode((string) $by_name['id']));
-		if (is_wp_error($full)) {
-			return $full;
-		}
-		return is_array($full) ? $full : $by_name;
-	}
-
-	/**
-	 * @return array<string,mixed>|\WP_Error
-	 */
-	private function find_workflow_by_name(string $base_url, string $api_key, string $name)
-	{
-		$target_name = trim($name);
-		if ($target_name === '') {
-			return [];
-		}
-
-		$cursor = '';
-		$max_pages = 20;
-		for ($page = 0; $page < $max_pages; $page++) {
-			$path = '/api/v1/workflows?limit=100';
-			if ($cursor !== '') {
-				$path .= '&cursor=' . rawurlencode($cursor);
-			}
-
-			$list = $this->n8n_request($base_url, $api_key, 'GET', $path);
-			if (is_wp_error($list)) {
-				return $list;
-			}
-
-			$items = isset($list['data']) && is_array($list['data']) ? $list['data'] : [];
-			$first_partial = [];
-			foreach ($items as $item) {
-				if (!is_array($item)) {
-					continue;
+				if (is_array($by_id) && !empty($by_id['id'])) {
+					return $by_id;
 				}
-				$item_name = trim((string) ($item['name'] ?? ''));
-				$item_id = trim((string) ($item['id'] ?? ''));
-				if ($item_name === '' || $item_id === '') {
-					continue;
-				}
-				if (strcasecmp($item_name, $target_name) === 0) {
-					return $item;
-				}
-				if ($first_partial === [] && stripos($item_name, $target_name) !== false && is_array($item)) {
-					$first_partial = $item;
-				}
+				return new \WP_Error(
+					'poststation_workflow_id_invalid_response',
+					sprintf('Workflow ID "%s" returned an invalid response from n8n.', $workflow_id)
+				);
 			}
-			if ($first_partial !== []) {
-				return $first_partial;
+			if ($this->n8n_request_status($by_id) === 404) {
+				return new \WP_Error(
+					'poststation_workflow_not_found',
+					sprintf('Workflow ID "%s" was not found in n8n. Update the Workflow ID in Support settings and try again.', $workflow_id)
+				);
 			}
-
-			$cursor = isset($list['nextCursor']) ? trim((string) $list['nextCursor']) : '';
-			if ($cursor === '') {
-				break;
-			}
+			return new \WP_Error(
+				'poststation_workflow_lookup_failed',
+				sprintf('Failed to fetch workflow ID "%s" from n8n: %s', $workflow_id, $by_id->get_error_message()),
+				$by_id->get_error_data()
+			);
 		}
 
+		// No configured workflow id means "create new workflow" flow.
 		return [];
 	}
 
-	/**
-	 * @param array<string,mixed> $workflow
-	 * @return string
-	 */
-	private function get_current_workflow_version(array $workflow = []): string
+	private function extract_base_workflow_name(string $workflow_name): string
 	{
-		$direct_candidates = [
-			$workflow['versionName'] ?? '',
-			$workflow['meta']['versionName'] ?? '',
-			$workflow['meta']['poststationBlueprintVersion'] ?? '',
-			$workflow['staticData']['poststationBlueprintVersion'] ?? '',
-			$workflow['staticData']['global']['poststationBlueprintVersion'] ?? '',
-			$workflow['settings']['poststation_blueprint_version'] ?? '',
-		];
-		foreach ($direct_candidates as $candidate) {
-			$value = trim((string) $candidate);
-			if ($value !== '') {
-				return $value;
-			}
+		$name = trim($workflow_name);
+		if ($name === '') {
+			return '';
 		}
+
+		if (preg_match('/^(.*?)-v?(\d+(?:\.\d+){1,3})$/i', $name, $matches)) {
+			$base = trim((string) $matches[1]);
+			return $base !== '' ? $base : $name;
+		}
+
+		return $name;
+	}
+
+	private function extract_version_from_workflow_name(string $workflow_name): string
+	{
+		$name = trim($workflow_name);
+		if ($name === '') {
+			return '';
+		}
+
+		if (preg_match('/-v?(\d+(?:\.\d+){1,3})$/i', $name, $matches)) {
+			return trim((string) $matches[1]);
+		}
+
 		return '';
 	}
 
@@ -908,22 +915,26 @@ class N8nDeploymentService
 	}
 
 	/**
-	 * Persist blueprint version on workflow payload so future remote checks can short-circuit updates.
+	 * Version workflow name as BASE-VERSION (e.g., RANKIMA-1.0.0).
 	 *
 	 * @param array<string,mixed> $workflow_body
+	 * @param array<string,mixed> $existing_workflow
 	 * @return array<string,mixed>
 	 */
-	private function apply_blueprint_version_marker(array $workflow_body, string $release_version): array
+	private function apply_versioned_workflow_name(array $workflow_body, string $release_version, array $existing_workflow = []): array
 	{
 		$version = trim($release_version);
 		if ($version === '') {
 			return $workflow_body;
 		}
 
-		$static_data = isset($workflow_body['staticData']) && is_array($workflow_body['staticData']) ? $workflow_body['staticData'] : [];
-		$static_data['poststationBlueprintVersion'] = sanitize_text_field($version);
-		$workflow_body['staticData'] = $static_data;
+		$current_name = trim((string) ($existing_workflow['name'] ?? $workflow_body['name'] ?? 'RANKIMA'));
+		$base_name = $this->extract_base_workflow_name($current_name);
+		if ($base_name === '') {
+			$base_name = 'RANKIMA';
+		}
 
+		$workflow_body['name'] = sanitize_text_field($base_name . '-' . $version);
 		return $workflow_body;
 	}
 

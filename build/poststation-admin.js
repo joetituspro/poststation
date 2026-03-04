@@ -5137,16 +5137,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ App)
 /* harmony export */ });
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
 /* harmony import */ var _components_common__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/common */ "./src/components/common/index.js");
 /* harmony import */ var _components_layout_AppShell__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/layout/AppShell */ "./src/components/layout/AppShell.jsx");
 /* harmony import */ var _context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./context/UnsavedChangesContext */ "./src/context/UnsavedChangesContext.jsx");
 /* harmony import */ var _pages_SettingsPage__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./pages/SettingsPage */ "./src/pages/SettingsPage.jsx");
 /* harmony import */ var _pages_CampaignsPage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pages/CampaignsPage */ "./src/pages/CampaignsPage.jsx");
 /* harmony import */ var _pages_CampaignEditPage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pages/CampaignEditPage */ "./src/pages/CampaignEditPage.jsx");
-/* harmony import */ var _pages_WebhooksPage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pages/WebhooksPage */ "./src/pages/WebhooksPage.jsx");
-/* harmony import */ var _pages_SupportPage__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./pages/SupportPage */ "./src/pages/SupportPage.jsx");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _pages_WritingPresetsPage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pages/WritingPresetsPage */ "./src/pages/WritingPresetsPage.jsx");
+/* harmony import */ var _pages_WebhooksPage__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./pages/WebhooksPage */ "./src/pages/WebhooksPage.jsx");
+/* harmony import */ var _pages_SupportPage__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./pages/SupportPage */ "./src/pages/SupportPage.jsx");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
 
 
 
@@ -5158,31 +5160,34 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function App() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_0__.ToastProvider, {
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_2__.UnsavedChangesProvider, {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_components_layout_AppShell__WEBPACK_IMPORTED_MODULE_1__["default"], {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Routes, {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Route, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_0__.ToastProvider, {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_2__.UnsavedChangesProvider, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_layout_AppShell__WEBPACK_IMPORTED_MODULE_1__["default"], {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Routes, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Route, {
             path: "/",
-            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Navigate, {
+            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Navigate, {
               to: "/campaigns",
               replace: true
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Route, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Route, {
             path: "/settings",
-            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_pages_SettingsPage__WEBPACK_IMPORTED_MODULE_3__["default"], {})
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Route, {
+            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_pages_SettingsPage__WEBPACK_IMPORTED_MODULE_3__["default"], {})
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Route, {
             path: "/campaigns",
-            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_pages_CampaignsPage__WEBPACK_IMPORTED_MODULE_4__["default"], {})
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Route, {
+            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_pages_CampaignsPage__WEBPACK_IMPORTED_MODULE_4__["default"], {})
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Route, {
+            path: "/writing-presets",
+            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_pages_WritingPresetsPage__WEBPACK_IMPORTED_MODULE_6__["default"], {})
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Route, {
             path: "/campaigns/:id",
-            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_pages_CampaignEditPage__WEBPACK_IMPORTED_MODULE_5__["default"], {})
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Route, {
+            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_pages_CampaignEditPage__WEBPACK_IMPORTED_MODULE_5__["default"], {})
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Route, {
             path: "/webhooks",
-            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_pages_WebhooksPage__WEBPACK_IMPORTED_MODULE_6__["default"], {})
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.Route, {
+            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_pages_WebhooksPage__WEBPACK_IMPORTED_MODULE_7__["default"], {})
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_10__.Route, {
             path: "/support",
-            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_pages_SupportPage__WEBPACK_IMPORTED_MODULE_7__["default"], {})
+            element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_pages_SupportPage__WEBPACK_IMPORTED_MODULE_8__["default"], {})
           })]
         })
       })
@@ -5568,11 +5573,10 @@ var webhooks = {
 // Writing presets API
 var writingPresets = {
   create: function create(data) {
-    var _data$description, _data$instructions;
+    var _data$instructions;
     return ajax('poststation_create_writing_preset', {
       key: data.key,
       name: data.name,
-      description: (_data$description = data.description) !== null && _data$description !== void 0 ? _data$description : '',
       instructions: JSON.stringify((_data$instructions = data.instructions) !== null && _data$instructions !== void 0 ? _data$instructions : {
         title: '',
         body: ''
@@ -5580,10 +5584,9 @@ var writingPresets = {
     });
   },
   update: function update(id, data) {
-    var _data$description2, _data$instructions2;
+    var _data$instructions2;
     return ajax('poststation_update_writing_preset', {
       id: id,
-      description: (_data$description2 = data.description) !== null && _data$description2 !== void 0 ? _data$description2 : '',
       instructions: JSON.stringify((_data$instructions2 = data.instructions) !== null && _data$instructions2 !== void 0 ? _data$instructions2 : {
         title: '',
         body: ''
@@ -5614,35 +5617,12 @@ var settings = {
   get: function get() {
     return ajax('poststation_get_settings');
   },
-  regenerateApiKey: function regenerateApiKey() {
-    return ajax('poststation_regenerate_api_key');
+  save: function save(payload) {
+    return ajax('poststation_save_settings', payload);
   },
-  saveWorkflowApiKey: function saveWorkflowApiKey(workflowApiKey) {
-    return ajax('poststation_save_workflow_api_key', {
-      workflow_api_key: workflowApiKey
-    });
-  },
-  saveSendApiToWebhook: function saveSendApiToWebhook(sendApiToWebhook) {
-    return ajax('poststation_save_send_api_to_webhook', {
-      send_api_to_webhook: sendApiToWebhook ? '1' : '0'
-    });
-  },
-  saveOpenRouterApiKey: function saveOpenRouterApiKey(apiKey) {
-    return ajax('poststation_save_openrouter_api_key', {
-      api_key: apiKey
-    });
-  },
-  saveOpenRouterDefaults: function saveOpenRouterDefaults(defaultTextModel, defaultImageModel) {
-    return ajax('poststation_save_openrouter_defaults', {
-      default_text_model: defaultTextModel,
-      default_image_model: defaultImageModel
-    });
-  },
-  saveDevSettings: function saveDevSettings(enableTunnelUrl, tunnelUrl) {
-    return ajax('poststation_save_dev_settings', {
-      enable_tunnel_url: enableTunnelUrl ? '1' : '0',
-      tunnel_url: tunnelUrl
-    });
+  deployN8nBlueprint: function deployN8nBlueprint() {
+    var payload = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return ajax('poststation_support_deploy_n8n_blueprint', payload);
   }
 };
 var getPendingProcessingPostTasks = function getPendingProcessingPostTasks(campaignId) {
@@ -11439,7 +11419,7 @@ function PageHeader(_ref5) {
     description = _ref5.description,
     actions = _ref5.actions;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
-    className: "mb-8",
+    className: "mb-4 px-3 py-3",
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
       className: "flex items-center justify-between",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", {
@@ -11493,6 +11473,10 @@ var navItems = [{
   label: 'Campaigns',
   icon: CampaignsIcon
 }, {
+  to: '/writing-presets',
+  label: 'Writing Presets',
+  icon: WritingPresetsIcon
+}, {
   to: '/webhooks',
   label: 'Webhooks',
   icon: WebhooksIcon
@@ -11535,8 +11519,27 @@ function WebhooksIcon(_ref2) {
     })
   });
 }
-function SettingsIcon(_ref3) {
+function WritingPresetsIcon(_ref3) {
   var className = _ref3.className;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+    className: className,
+    fill: "none",
+    viewBox: "0 0 24 24",
+    strokeWidth: 1.5,
+    stroke: "currentColor",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      d: "M19.5 7.5v9a2.25 2.25 0 0 1-2.25 2.25h-10.5A2.25 2.25 0 0 1 4.5 16.5v-9A2.25 2.25 0 0 1 6.75 5.25h10.5A2.25 2.25 0 0 1 19.5 7.5Z"
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      d: "M8.25 9.75h7.5M8.25 12h7.5M8.25 14.25h4.5"
+    })]
+  });
+}
+function SettingsIcon(_ref4) {
+  var className = _ref4.className;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
     className: className,
     fill: "none",
@@ -11554,8 +11557,8 @@ function SettingsIcon(_ref3) {
     })]
   });
 }
-function SupportIcon(_ref4) {
-  var className = _ref4.className;
+function SupportIcon(_ref5) {
+  var className = _ref5.className;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
     className: className,
     fill: "none",
@@ -11577,8 +11580,8 @@ function SupportIcon(_ref4) {
     })]
   });
 }
-function AppShell(_ref5) {
-  var children = _ref5.children;
+function AppShell(_ref6) {
+  var children = _ref6.children;
   var location = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_4__.useLocation)();
   var pluginName = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getPluginName)();
   var pluginVersion = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getPluginVersion)();
@@ -11709,8 +11712,8 @@ function AppShell(_ref5) {
               }
               setIsSidebarOpen(false);
             },
-            className: function className(_ref6) {
-              var isActive = _ref6.isActive;
+            className: function className(_ref7) {
+              var isActive = _ref7.isActive;
               return "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ".concat(isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-100');
             },
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(item.icon, {
@@ -11816,27 +11819,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common */ "./src/components/common/index.js");
 /* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../api/client */ "./src/api/client.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
 
 
 
 var DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
-var DESCRIPTION_MAX_LENGTH = 80;
+var MAX_BODY_ELEMENTS = 10;
 var isDefaultPreset = function isDefaultPreset(key) {
   return key && DEFAULT_KEYS.includes(key);
 };
@@ -11845,9 +11853,86 @@ var normalizeKey = function normalizeKey() {
   var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
   return String(value).toLowerCase().replace(/[^a-z0-9_\s-]/g, '').replace(/\s+/g, '_').replace(/-+/g, '-').replace(/_+/g, '_');
 };
-var limitDescription = function limitDescription() {
-  var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-  return String(value !== null && value !== void 0 ? value : '').slice(0, DESCRIPTION_MAX_LENGTH);
+var createBodyElement = function createBodyElement() {
+  var name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var content = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  return {
+    id: "".concat(Date.now(), "_").concat(Math.random().toString(36).slice(2, 8)),
+    name: String(name !== null && name !== void 0 ? name : ''),
+    content: String(content !== null && content !== void 0 ? content : '')
+  };
+};
+var normalizeBodyElements = function normalizeBodyElements(elements) {
+  if (!Array.isArray(elements)) return [];
+  var normalized = [];
+  var _iterator = _createForOfIteratorHelper(elements),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var _row$name, _row$content;
+      var row = _step.value;
+      var name = String((_row$name = row === null || row === void 0 ? void 0 : row.name) !== null && _row$name !== void 0 ? _row$name : '').trim();
+      var content = String((_row$content = row === null || row === void 0 ? void 0 : row.content) !== null && _row$content !== void 0 ? _row$content : '').trim();
+      if (!name && !content) continue;
+      normalized.push(createBodyElement(name, content));
+      if (normalized.length >= MAX_BODY_ELEMENTS) break;
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  return normalized;
+};
+var parseBodyInstruction = function parseBodyInstruction(value) {
+  if (Array.isArray(value)) {
+    return normalizeBodyElements(value);
+  }
+  if (value && _typeof(value) === 'object' && Array.isArray(value.elements)) {
+    return normalizeBodyElements(value.elements);
+  }
+  var text = String(value !== null && value !== void 0 ? value : '').trim();
+  if (!text) return [];
+  try {
+    var parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) {
+      return normalizeBodyElements(parsed);
+    }
+    if (parsed && _typeof(parsed) === 'object' && Array.isArray(parsed.elements)) {
+      return normalizeBodyElements(parsed.elements);
+    }
+  } catch (_err) {
+    // Legacy plain-text body instructions are converted into one row.
+  }
+  return [createBodyElement('Body instruction', text)];
+};
+var serializeBodyInstruction = function serializeBodyInstruction(elements) {
+  var payload = [];
+  var seen = new Set();
+  var _iterator2 = _createForOfIteratorHelper(elements || []),
+    _step2;
+  try {
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var _row$name2, _row$content2;
+      var row = _step2.value;
+      var name = String((_row$name2 = row === null || row === void 0 ? void 0 : row.name) !== null && _row$name2 !== void 0 ? _row$name2 : '').trim();
+      var content = String((_row$content2 = row === null || row === void 0 ? void 0 : row.content) !== null && _row$content2 !== void 0 ? _row$content2 : '').trim();
+      if (!name && !content) continue;
+      var signature = "".concat(name.toLowerCase(), "::").concat(content.toLowerCase());
+      if (seen.has(signature)) continue;
+      seen.add(signature);
+      payload.push({
+        name: name,
+        content: content
+      });
+      if (payload.length >= MAX_BODY_ELEMENTS) break;
+    }
+  } catch (err) {
+    _iterator2.e(err);
+  } finally {
+    _iterator2.f();
+  }
+  return JSON.stringify(payload);
 };
 function WritingPresetModal(_ref) {
   var isOpen = _ref.isOpen,
@@ -11872,69 +11957,64 @@ function WritingPresetModal(_ref) {
     setName = _useState4[1];
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState6 = _slicedToArray(_useState5, 2),
-    description = _useState6[0],
-    setDescription = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    titleInstruction = _useState6[0],
+    setTitleInstruction = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState8 = _slicedToArray(_useState7, 2),
-    titleInstruction = _useState8[0],
-    setTitleInstruction = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    bodyElements = _useState8[0],
+    setBodyElements = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState10 = _slicedToArray(_useState9, 2),
-    bodyInstruction = _useState10[0],
-    setBodyInstruction = _useState10[1];
+    saving = _useState10[0],
+    setSaving = _useState10[1];
   var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    saving = _useState12[0],
-    setSaving = _useState12[1];
+    resetting = _useState12[0],
+    setResetting = _useState12[1];
   var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
-    resetting = _useState14[0],
-    setResetting = _useState14[1];
-  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    aiOpen = _useState14[0],
+    setAiOpen = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState16 = _slicedToArray(_useState15, 2),
-    aiOpen = _useState16[0],
-    setAiOpen = _useState16[1];
-  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    aiPrompt = _useState16[0],
+    setAiPrompt = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(defaultAiModel),
     _useState18 = _slicedToArray(_useState17, 2),
-    aiPrompt = _useState18[0],
-    setAiPrompt = _useState18[1];
-  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(defaultAiModel),
+    aiModel = _useState18[0],
+    setAiModel = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState20 = _slicedToArray(_useState19, 2),
-    aiModel = _useState20[0],
-    setAiModel = _useState20[1];
-  var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    aiGenerating = _useState20[0],
+    setAiGenerating = _useState20[1];
+  var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState22 = _slicedToArray(_useState21, 2),
-    aiGenerating = _useState22[0],
-    setAiGenerating = _useState22[1];
-  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState24 = _slicedToArray(_useState23, 2),
-    error = _useState24[0],
-    setError = _useState24[1];
+    error = _useState22[0],
+    setError = _useState22[1];
   var lockKeyAndName = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
   var showResetButton = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
+  var bodyElementsLimitReached = bodyElements.length >= MAX_BODY_ELEMENTS;
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (!isOpen) return;
     setError('');
     if (mode === 'add' && !writingPreset) {
       setKey('');
       setName('');
-      setDescription('');
       setTitleInstruction('');
-      setBodyInstruction('');
+      setBodyElements([]);
       setAiPrompt('');
       setAiModel(defaultAiModel);
       setAiOpen(false);
       return;
     }
     if (mode === 'duplicate' || mode === 'edit') {
-      var _inst$key, _inst$name, _inst$description, _instr$title, _instr$body;
+      var _inst$key, _inst$name, _instr$title;
       var inst = writingPreset || {};
       var instr = inst.instructions || {};
       setKey(mode === 'duplicate' ? '' : (_inst$key = inst.key) !== null && _inst$key !== void 0 ? _inst$key : '');
       setName(mode === 'duplicate' ? '' : (_inst$name = inst.name) !== null && _inst$name !== void 0 ? _inst$name : '');
-      setDescription(limitDescription((_inst$description = inst.description) !== null && _inst$description !== void 0 ? _inst$description : ''));
       setTitleInstruction((_instr$title = instr.title) !== null && _instr$title !== void 0 ? _instr$title : '');
-      setBodyInstruction((_instr$body = instr.body) !== null && _instr$body !== void 0 ? _instr$body : '');
+      setBodyElements(parseBodyInstruction(instr.body));
       setAiPrompt('');
       setAiModel(defaultAiModel);
       setAiOpen(false);
@@ -11942,7 +12022,7 @@ function WritingPresetModal(_ref) {
   }, [isOpen, mode, writingPreset, defaultAiModel]);
   var handleAiGenerate = /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-      var _preset$key, _preset$name, _preset$description, _generatedInstruction, _generatedInstruction2, result, preset, generatedInstructions;
+      var _preset$key, _preset$name, _generatedInstruction, result, preset, generatedInstructions;
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -11968,29 +12048,48 @@ function WritingPresetModal(_ref) {
             generatedInstructions = (preset === null || preset === void 0 ? void 0 : preset.instructions) || {};
             setKey(normalizeKey((_preset$key = preset === null || preset === void 0 ? void 0 : preset.key) !== null && _preset$key !== void 0 ? _preset$key : ''));
             setName((_preset$name = preset === null || preset === void 0 ? void 0 : preset.name) !== null && _preset$name !== void 0 ? _preset$name : '');
-            setDescription(limitDescription((_preset$description = preset === null || preset === void 0 ? void 0 : preset.description) !== null && _preset$description !== void 0 ? _preset$description : ''));
             setTitleInstruction((_generatedInstruction = generatedInstructions === null || generatedInstructions === void 0 ? void 0 : generatedInstructions.title) !== null && _generatedInstruction !== void 0 ? _generatedInstruction : '');
-            setBodyInstruction((_generatedInstruction2 = generatedInstructions === null || generatedInstructions === void 0 ? void 0 : generatedInstructions.body) !== null && _generatedInstruction2 !== void 0 ? _generatedInstruction2 : '');
-            _context.next = 21;
+            setBodyElements(parseBodyInstruction(generatedInstructions === null || generatedInstructions === void 0 ? void 0 : generatedInstructions.body));
+            _context.next = 20;
             break;
-          case 18:
-            _context.prev = 18;
+          case 17:
+            _context.prev = 17;
             _context.t0 = _context["catch"](5);
             setError((_context.t0 === null || _context.t0 === void 0 ? void 0 : _context.t0.message) || 'Failed to generate preset with AI.');
-          case 21:
-            _context.prev = 21;
+          case 20:
+            _context.prev = 20;
             setAiGenerating(false);
-            return _context.finish(21);
-          case 24:
+            return _context.finish(20);
+          case 23:
           case "end":
             return _context.stop();
         }
-      }, _callee, null, [[5, 18, 21, 24]]);
+      }, _callee, null, [[5, 17, 20, 23]]);
     }));
     return function handleAiGenerate() {
       return _ref2.apply(this, arguments);
     };
   }();
+  var addBodyElement = function addBodyElement() {
+    if (bodyElementsLimitReached) return;
+    setBodyElements(function (prev) {
+      return [].concat(_toConsumableArray(prev), [createBodyElement()]);
+    });
+  };
+  var updateBodyElement = function updateBodyElement(id, field, value) {
+    setBodyElements(function (prev) {
+      return prev.map(function (row) {
+        return row.id === id ? _objectSpread(_objectSpread({}, row), {}, _defineProperty({}, field, value)) : row;
+      });
+    });
+  };
+  var removeBodyElement = function removeBodyElement(id) {
+    setBodyElements(function (prev) {
+      return prev.filter(function (row) {
+        return row.id !== id;
+      });
+    });
+  };
   var savePreset = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
       var _ref4,
@@ -12036,10 +12135,9 @@ function WritingPresetModal(_ref) {
             return _context2.abrupt("return", false);
           case 10:
             payload = {
-              description: limitDescription(String(description !== null && description !== void 0 ? description : '').trim()),
               instructions: {
                 title: String(titleInstruction !== null && titleInstruction !== void 0 ? titleInstruction : '').trim(),
-                body: String(bodyInstruction !== null && bodyInstruction !== void 0 ? bodyInstruction : '').trim()
+                body: serializeBodyInstruction(bodyElements)
               }
             };
             setSaving(true);
@@ -12069,7 +12167,6 @@ function WritingPresetModal(_ref) {
             result = _context2.sent;
             savedId = (_ref6 = (_writingPreset$id = writingPreset === null || writingPreset === void 0 ? void 0 : writingPreset.id) !== null && _writingPreset$id !== void 0 ? _writingPreset$id : (_result4 = result) === null || _result4 === void 0 || (_result4 = _result4.writing_preset) === null || _result4 === void 0 ? void 0 : _result4.id) !== null && _ref6 !== void 0 ? _ref6 : null;
             savedPreset = (_result$writing_prese2 = (_result5 = result) === null || _result5 === void 0 ? void 0 : _result5.writing_preset) !== null && _result$writing_prese2 !== void 0 ? _result$writing_prese2 : _objectSpread(_objectSpread({}, writingPreset || {}), {}, {
-              description: payload.description,
               instructions: payload.instructions
             });
           case 29:
@@ -12154,7 +12251,7 @@ function WritingPresetModal(_ref) {
   }();
   var handleReset = /*#__PURE__*/function () {
     var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
-      var result, inst, _inst$description2, _inst$instructions$ti, _inst$instructions, _inst$instructions$bo, _inst$instructions2;
+      var result, inst, _inst$instructions$ti, _inst$instructions, _inst$instructions2;
       return _regeneratorRuntime().wrap(function _callee5$(_context5) {
         while (1) switch (_context5.prev = _context5.next) {
           case 0:
@@ -12176,9 +12273,8 @@ function WritingPresetModal(_ref) {
           case 10:
             inst = result === null || result === void 0 ? void 0 : result.writing_preset;
             if (inst) {
-              setDescription((_inst$description2 = inst.description) !== null && _inst$description2 !== void 0 ? _inst$description2 : '');
               setTitleInstruction((_inst$instructions$ti = (_inst$instructions = inst.instructions) === null || _inst$instructions === void 0 ? void 0 : _inst$instructions.title) !== null && _inst$instructions$ti !== void 0 ? _inst$instructions$ti : '');
-              setBodyInstruction((_inst$instructions$bo = (_inst$instructions2 = inst.instructions) === null || _inst$instructions2 === void 0 ? void 0 : _inst$instructions2.body) !== null && _inst$instructions$bo !== void 0 ? _inst$instructions$bo : '');
+              setBodyElements(parseBodyInstruction((_inst$instructions2 = inst.instructions) === null || _inst$instructions2 === void 0 ? void 0 : _inst$instructions2.body));
             }
             onSaved === null || onSaved === void 0 || onSaved();
             _context5.next = 18;
@@ -12316,29 +12412,6 @@ function WritingPresetModal(_ref) {
               required: true
             })]
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
-              className: "flex items-center text-sm font-medium text-gray-700 mb-1",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
-                children: "Description"
-              })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-              className: "relative",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
-                value: description,
-                onChange: function onChange(e) {
-                  return setDescription(limitDescription(e.target.value));
-                },
-                placeholder: "Short description for the preset",
-                rows: 2,
-                maxLength: DESCRIPTION_MAX_LENGTH,
-                disabled: aiGenerating,
-                className: "poststation-field pr-16 pb-6"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-                className: "pointer-events-none absolute bottom-2 right-3 text-xs text-gray-500",
-                children: [description.length, "/", DESCRIPTION_MAX_LENGTH]
-              })]
-            })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
             className: "border-t border-gray-200 pt-4 space-y-4",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
               label: "Title instruction",
@@ -12349,15 +12422,99 @@ function WritingPresetModal(_ref) {
               placeholder: "How to write the title for this type",
               rows: 2,
               disabled: aiGenerating
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Textarea, {
-              label: "Body instruction",
-              value: bodyInstruction,
-              onChange: function onChange(e) {
-                return setBodyInstruction(e.target.value);
-              },
-              placeholder: "How to write the body",
-              rows: 3,
-              disabled: aiGenerating
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                className: "flex items-center justify-between mb-2",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+                  className: "text-sm font-medium text-gray-700",
+                  children: "Writing Preset"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+                  className: "text-xs text-gray-500",
+                  children: [bodyElements.length, "/", MAX_BODY_ELEMENTS]
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                className: "rounded-lg border border-gray-200 overflow-hidden",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                  className: "grid grid-cols-12 bg-gray-50 border-b border-gray-200",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                    className: "col-span-4 px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wide",
+                    children: "Name"
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                    className: "col-span-7 px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wide",
+                    children: "Content"
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                    className: "col-span-1 px-3 py-2"
+                  })]
+                }), bodyElements.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  className: "px-3 py-4 text-sm text-gray-500 bg-white",
+                  children: "No elements yet. Add one below."
+                }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  className: "max-h-72 overflow-y-auto bg-white",
+                  children: bodyElements.map(function (row) {
+                    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                      className: "grid grid-cols-12 border-b border-gray-100 last:border-b-0",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                        className: "col-span-3 px-2 py-2",
+                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
+                          value: row.name,
+                          onChange: function onChange(e) {
+                            return updateBodyElement(row.id, 'name', e.target.value);
+                          },
+                          placeholder: "e.g. Voice Tone",
+                          rows: 2,
+                          className: "poststation-inline-editor w-full min-h-[56px] resize-none! bg-transparent border-0 rounded-none px-2 py-2 text-sm font-bold! text-gray-900 placeholder:text-gray-400 outline-none shadow-none focus:outline-none focus:ring-0 focus:border-0",
+                          disabled: aiGenerating
+                        })
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                        className: "col-span-8 px-2 py-2",
+                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
+                          value: row.content,
+                          onChange: function onChange(e) {
+                            return updateBodyElement(row.id, 'content', e.target.value);
+                          },
+                          placeholder: "Describe this element",
+                          rows: 2,
+                          className: "poststation-inline-editor w-full min-h-[72px] resize-none bg-transparent border-0 rounded-none px-2 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none shadow-none focus:outline-none focus:ring-0 focus:border-0",
+                          disabled: aiGenerating
+                        })
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                        className: "col-span-1 px-2 py-2 flex items-center justify-center",
+                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                          type: "button",
+                          className: "poststation-icon-btn-danger",
+                          onClick: function onClick() {
+                            return removeBodyElement(row.id);
+                          },
+                          title: "Remove element",
+                          "aria-label": "Remove element",
+                          disabled: aiGenerating,
+                          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+                            className: "w-4 h-4",
+                            fill: "none",
+                            viewBox: "0 0 24 24",
+                            stroke: "currentColor",
+                            strokeWidth: 2,
+                            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                              strokeLinecap: "round",
+                              strokeLinejoin: "round",
+                              d: "M6 18L18 6M6 6l12 12"
+                            })
+                          })
+                        })
+                      })]
+                    }, row.id);
+                  })
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                className: "pt-3",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                  type: "button",
+                  variant: "secondary",
+                  onClick: addBodyElement,
+                  disabled: aiGenerating || bodyElementsLimitReached,
+                  children: "Add an Element"
+                })
+              })]
             })]
           })]
         })]
@@ -12689,7 +12846,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _context_UnsavedChangesContext__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../context/UnsavedChangesContext */ "./src/context/UnsavedChangesContext.jsx");
 /* harmony import */ var _utils_publication__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../utils/publication */ "./src/utils/publication.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 var _excluded = ["clear_image_overrides"],
   _excluded2 = ["id", "post_id", "error_message", "status"];
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var s = Object.getOwnPropertySymbols(e); for (r = 0; r < s.length; r++) o = s[r], t.includes(o) || {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
@@ -12708,10 +12864,12 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 
 
 
@@ -12733,6 +12891,52 @@ var isBlank = function isBlank(value) {
 var DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
 var isDefaultWritingPreset = function isDefaultWritingPreset(key) {
   return key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
+};
+var formatBodyInstructionForPrompt = function formatBodyInstructionForPrompt(bodyInstruction) {
+  var raw = String(bodyInstruction !== null && bodyInstruction !== void 0 ? bodyInstruction : '').trim();
+  if (raw === '') return '';
+  var parsed = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (_unused) {
+    return raw;
+  }
+  var elements = [];
+  if (Array.isArray(parsed)) {
+    elements = parsed;
+  } else if (parsed && _typeof(parsed) === 'object' && Array.isArray(parsed.elements)) {
+    elements = parsed.elements;
+  } else {
+    return raw;
+  }
+  var seen = new Set();
+  var formatted = [];
+  var _iterator = _createForOfIteratorHelper(elements),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var _row$name, _row$content;
+      var row = _step.value;
+      var name = String((_row$name = row === null || row === void 0 ? void 0 : row.name) !== null && _row$name !== void 0 ? _row$name : '').trim();
+      var content = String((_row$content = row === null || row === void 0 ? void 0 : row.content) !== null && _row$content !== void 0 ? _row$content : '').trim();
+      if (!name && !content) continue;
+      var signature = "".concat(name.toLowerCase(), "::").concat(content.toLowerCase());
+      if (seen.has(signature)) continue;
+      seen.add(signature);
+      if (name && content) {
+        formatted.push("*".concat(name, ":* ").concat(content));
+      } else if (name) {
+        formatted.push("*".concat(name, ":*"));
+      } else {
+        formatted.push(content);
+      }
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  return formatted.length > 0 ? formatted.join('\n\n') : raw;
 };
 
 // Icons for writing preset options (by key)
@@ -13307,15 +13511,15 @@ function CampaignEditPage() {
       if (campaign !== null && campaign !== void 0 && campaign.content_fields) {
         contentFieldsRaw = typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields;
       }
-    } catch (_unused2) {
+    } catch (_unused3) {
       contentFieldsRaw = {};
     }
     var contentFields = _objectSpread({}, contentFieldsRaw);
     if (selectedPreset) {
-      var _instructions$title, _instructions$body, _contentFields$title$, _contentFields$title, _contentFields$body$p, _contentFields$body;
+      var _instructions$title, _contentFields$title$, _contentFields$title, _contentFields$body$p, _contentFields$body;
       var instructions = selectedPreset.instructions || {};
       var titleInstruction = String((_instructions$title = instructions.title) !== null && _instructions$title !== void 0 ? _instructions$title : '');
-      var bodyInstruction = String((_instructions$body = instructions.body) !== null && _instructions$body !== void 0 ? _instructions$body : '');
+      var bodyInstruction = formatBodyInstructionForPrompt(instructions.body);
       var existingTitlePrompt = String((_contentFields$title$ = contentFields === null || contentFields === void 0 || (_contentFields$title = contentFields.title) === null || _contentFields$title === void 0 ? void 0 : _contentFields$title.prompt) !== null && _contentFields$title$ !== void 0 ? _contentFields$title$ : '').trim();
       var existingBodyPrompt = String((_contentFields$body$p = contentFields === null || contentFields === void 0 || (_contentFields$body = contentFields.body) === null || _contentFields$body === void 0 ? void 0 : _contentFields$body.prompt) !== null && _contentFields$body$p !== void 0 ? _contentFields$body$p : '').trim();
       var willOverrideTitle = titleInstruction.trim() !== '' && existingTitlePrompt !== '' && existingTitlePrompt !== titleInstruction;
@@ -13768,7 +13972,6 @@ function CampaignEditPage() {
         presets,
         preset,
         _instructions$title2,
-        _instructions$body2,
         _parsedFields$title$p,
         _parsedFields,
         _parsedFields$body$pr,
@@ -13838,7 +14041,7 @@ function CampaignEditPage() {
             contentFields = {};
             try {
               contentFields = campaign !== null && campaign !== void 0 && campaign.content_fields ? typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields : {};
-            } catch (_unused3) {
+            } catch (_unused4) {
               contentFields = {};
             }
             customFields = Array.isArray((_contentFields = contentFields) === null || _contentFields === void 0 ? void 0 : _contentFields.custom_fields) ? contentFields.custom_fields : [];
@@ -13903,7 +14106,7 @@ function CampaignEditPage() {
                 if (preset) {
                   instructions = preset.instructions || {};
                   titleInstruction = String((_instructions$title2 = instructions.title) !== null && _instructions$title2 !== void 0 ? _instructions$title2 : '').trim();
-                  bodyInstruction = String((_instructions$body2 = instructions.body) !== null && _instructions$body2 !== void 0 ? _instructions$body2 : '').trim();
+                  bodyInstruction = formatBodyInstructionForPrompt(instructions.body).trim();
                   parsedFields = {};
                   if (campaign.content_fields) {
                     parsedFields = typeof campaign.content_fields === 'string' ? JSON.parse(campaign.content_fields) : campaign.content_fields;
@@ -13928,7 +14131,7 @@ function CampaignEditPage() {
                   }
                 }
               }
-            } catch (_unused4) {
+            } catch (_unused5) {
               // If anything goes wrong parsing/merging, fall back to existing content_fields
               contentFieldsForSave = campaign.content_fields;
             }
@@ -14393,7 +14596,6 @@ function CampaignEditPage() {
                   return {
                     value: Number(i.id),
                     label: i.name,
-                    description: i.description || '',
                     icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(InstructionIcon, {
                       type: i.key,
                       className: "w-4 h-4"
@@ -15080,16 +15282,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/common */ "./src/components/common/index.js");
-/* harmony import */ var _components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/writing-presets/WritingPresetModal */ "./src/components/writing-presets/WritingPresetModal.jsx");
-/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
-/* harmony import */ var _hooks_useApi__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../hooks/useApi */ "./src/hooks/useApi.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
+/* harmony import */ var _hooks_useApi__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../hooks/useApi */ "./src/hooks/useApi.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
@@ -15103,38 +15299,35 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
-var isDefaultPreset = function isDefaultPreset(key) {
-  return key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
-};
-
 
 function SettingsPage() {
-  var pluginName = (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getPluginName)();
+  var pluginName = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getPluginName)();
+  var _useToast = (0,_components_common__WEBPACK_IMPORTED_MODULE_1__.useToast)(),
+    showToast = _useToast.showToast;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
-    showApiDocs = _useState2[0],
-    setShowApiDocs = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    savingSettings = _useState2[0],
+    setSavingSettings = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState4 = _slicedToArray(_useState3, 2),
-    apiKey = _useState4[0],
-    setApiKey = _useState4[1];
+    regenerating = _useState4[0],
+    setRegenerating = _useState4[1];
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
-    showPoststationApiKey = _useState6[0],
-    setShowPoststationApiKey = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    showApiDocs = _useState6[0],
+    setShowApiDocs = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState8 = _slicedToArray(_useState7, 2),
-    sendApiToWebhook = _useState8[0],
-    setSendApiToWebhook = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    apiKey = _useState8[0],
+    setApiKey = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState10 = _slicedToArray(_useState9, 2),
-    workflowApiKey = _useState10[0],
-    setWorkflowApiKey = _useState10[1];
-  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    showPoststationApiKey = _useState10[0],
+    setShowPoststationApiKey = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
     _useState12 = _slicedToArray(_useState11, 2),
-    showWorkflowApiKey = _useState12[0],
-    setShowWorkflowApiKey = _useState12[1];
+    sendApiToWebhook = _useState12[0],
+    setSendApiToWebhook = _useState12[1];
   var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState14 = _slicedToArray(_useState13, 2),
     openRouterApiKey = _useState14[0],
@@ -15155,103 +15348,87 @@ function SettingsPage() {
     _useState22 = _slicedToArray(_useState21, 2),
     tunnelUrl = _useState22[0],
     setTunnelUrl = _useState22[1];
-  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState24 = _slicedToArray(_useState23, 2),
-    copied = _useState24[0],
-    setCopied = _useState24[1];
-  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
-      open: false,
-      mode: 'add',
-      writingPreset: null
-    }),
+    n8nBaseUrl = _useState24[0],
+    setN8nBaseUrl = _useState24[1];
+  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState26 = _slicedToArray(_useState25, 2),
-    writingPresetModal = _useState26[0],
-    setWritingPresetModal = _useState26[1];
-  var _useState27 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    n8nApiKey = _useState26[0],
+    setN8nApiKey = _useState26[1];
+  var _useState27 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState28 = _slicedToArray(_useState27, 2),
-    deleteWritingPreset = _useState28[0],
-    setDeleteWritingPreset = _useState28[1];
-  var _useState29 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    n8nWorkflowId = _useState28[0],
+    setN8nWorkflowId = _useState28[1];
+  var _useState29 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState30 = _slicedToArray(_useState29, 2),
-    deleting = _useState30[0],
-    setDeleting = _useState30[1];
-  var _useState31 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
-      return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)();
-    }),
+    rapidApiKey = _useState30[0],
+    setRapidApiKey = _useState30[1];
+  var _useState31 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState32 = _slicedToArray(_useState31, 2),
-    writingPresetsList = _useState32[0],
-    setWritingPresetsList = _useState32[1];
-  var fetchWritingPresets = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-    return _regeneratorRuntime().wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          _context.next = 2;
-          return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
-        case 2:
-          setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
-        case 3:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  })), []);
-  var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapSettings)();
+    firecrawlKey = _useState32[0],
+    setFirecrawlKey = _useState32[1];
+  var _useState33 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState34 = _slicedToArray(_useState33, 2),
+    openRouterConnKey = _useState34[0],
+    setOpenRouterConnKey = _useState34[1];
+  var _useState35 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState36 = _slicedToArray(_useState35, 2),
+    showN8nCredentials = _useState36[0],
+    setShowN8nCredentials = _useState36[1];
+  var _useState37 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState38 = _slicedToArray(_useState37, 2),
+    showDeployConfirm = _useState38[0],
+    setShowDeployConfirm = _useState38[1];
+  var _useState39 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState40 = _slicedToArray(_useState39, 2),
+    deployCreateOrUpdateWebhook = _useState40[0],
+    setDeployCreateOrUpdateWebhook = _useState40[1];
+  var _useState41 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState42 = _slicedToArray(_useState41, 2),
+    deployCreateOrUpdateCredentials = _useState42[0],
+    setDeployCreateOrUpdateCredentials = _useState42[1];
+  var _useState43 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState44 = _slicedToArray(_useState43, 2),
+    deployError = _useState44[0],
+    setDeployError = _useState44[1];
+  var _useState45 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState46 = _slicedToArray(_useState45, 2),
+    copied = _useState46[0],
+    setCopied = _useState46[1];
+  var bootstrapSettings = (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSettings)();
   var fetchSettings = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
-    return _api_client__WEBPACK_IMPORTED_MODULE_3__.settings.get();
+    return _api_client__WEBPACK_IMPORTED_MODULE_2__.settings.get();
   }, []);
-  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useQuery)(fetchSettings, [], {
+  var _useQuery = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useQuery)(fetchSettings, [], {
       initialData: bootstrapSettings
     }),
     data = _useQuery.data,
     loading = _useQuery.loading,
-    error = _useQuery.error,
     refetch = _useQuery.refetch;
-  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.regenerateApiKey, {
-      onSuccess: function onSuccess(result) {
-        if (result !== null && result !== void 0 && result.api_key) {
-          setApiKey(result.api_key);
-        }
-        (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
-      }
+  var _useMutation = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.settings.save, {
+      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap
     }),
-    regenerateApiKey = _useMutation.mutate,
-    regenerating = _useMutation.loading;
-  var _useMutation2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveSendApiToWebhook, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
+    saveSettings = _useMutation.mutate;
+  var _useMutation2 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.settings.deployN8nBlueprint, {
+      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap
     }),
-    saveSendApiToWebhook = _useMutation2.mutate,
-    savingSendApiToWebhook = _useMutation2.loading;
-  var _useMutation3 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveWorkflowApiKey, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
-    }),
-    saveWorkflowApiKey = _useMutation3.mutate,
-    savingWorkflowApiKey = _useMutation3.loading;
-  var _useMutation4 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveOpenRouterApiKey, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
-    }),
-    saveOpenRouterApiKey = _useMutation4.mutate,
-    savingOpenRouter = _useMutation4.loading;
-  var _useMutation5 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveOpenRouterDefaults, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
-    }),
-    saveOpenRouterDefaults = _useMutation5.mutate,
-    savingOpenRouterDefaults = _useMutation5.loading;
-  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_4__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_3__.settings.saveDevSettings, {
-      onSuccess: _api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap
-    }),
-    saveDevSettings = _useMutation6.mutate,
-    savingDevSettings = _useMutation6.loading;
+    deployN8nBlueprint = _useMutation2.mutate,
+    deployingN8nBlueprint = _useMutation2.loading;
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (data !== null && data !== void 0 && data.api_key) {
       setApiKey(data.api_key);
     }
     setSendApiToWebhook((data === null || data === void 0 ? void 0 : data.send_api_to_webhook) !== false);
-    setWorkflowApiKey((data === null || data === void 0 ? void 0 : data.workflow_api_key) || '');
     setDefaultTextModel((data === null || data === void 0 ? void 0 : data.openrouter_default_text_model) || '');
     setDefaultImageModel((data === null || data === void 0 ? void 0 : data.openrouter_default_image_model) || '');
     setEnableTunnelUrl(Boolean(data === null || data === void 0 ? void 0 : data.enable_tunnel_url));
     setTunnelUrl((data === null || data === void 0 ? void 0 : data.tunnel_url) || '');
   }, [data]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    setN8nBaseUrl((data === null || data === void 0 ? void 0 : data.n8n_base_url) || '');
+    setN8nWorkflowId((data === null || data === void 0 ? void 0 : data.n8n_workflow_id) || '');
+  }, [data === null || data === void 0 ? void 0 : data.n8n_base_url, data === null || data === void 0 ? void 0 : data.n8n_workflow_id]);
   var handleCopy = function handleCopy() {
     navigator.clipboard.writeText(apiKey || (data === null || data === void 0 ? void 0 : data.api_key) || '');
     setCopied(true);
@@ -15261,867 +15438,827 @@ function SettingsPage() {
   };
   var REGENERATE_CONFIRM_MESSAGE = 'Generate a new API key? The current key will stop working immediately. You must update any clients using the old key.';
   var handleRegenerate = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-      var result;
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+      var charset, randomBytes, generatedKey;
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            if (window.confirm(REGENERATE_CONFIRM_MESSAGE)) {
+              _context.next = 2;
+              break;
+            }
+            return _context.abrupt("return");
+          case 2:
+            try {
+              setRegenerating(true);
+              charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+              randomBytes = new Uint32Array(32);
+              window.crypto.getRandomValues(randomBytes);
+              generatedKey = Array.from(randomBytes, function (value) {
+                return charset[value % charset.length];
+              }).join('');
+              setApiKey(generatedKey);
+            } catch (err) {
+              console.error('Failed to regenerate API key locally:', err);
+            } finally {
+              setRegenerating(false);
+            }
+          case 3:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return function handleRegenerate() {
+      return _ref.apply(this, arguments);
+    };
+  }();
+  var hasUnsavedApiKeyChange = (apiKey || '') !== ((data === null || data === void 0 ? void 0 : data.api_key) || '');
+  var hasUnsavedSendApiChange = sendApiToWebhook !== ((data === null || data === void 0 ? void 0 : data.send_api_to_webhook) !== false);
+  var hasUnsavedOpenRouterChanges = (openRouterApiKey || '').trim() !== '' || (defaultTextModel || '') !== ((data === null || data === void 0 ? void 0 : data.openrouter_default_text_model) || '') || (defaultImageModel || '') !== ((data === null || data === void 0 ? void 0 : data.openrouter_default_image_model) || '');
+  var hasUnsavedDevChanges = Boolean(data === null || data === void 0 ? void 0 : data.is_local) && (enableTunnelUrl !== Boolean(data === null || data === void 0 ? void 0 : data.enable_tunnel_url) || (tunnelUrl || '').trim() !== ((data === null || data === void 0 ? void 0 : data.tunnel_url) || '').trim());
+  var hasUnsavedN8nChanges = (n8nBaseUrl || '').trim() !== ((data === null || data === void 0 ? void 0 : data.n8n_base_url) || '').trim() || (n8nWorkflowId || '').trim() !== ((data === null || data === void 0 ? void 0 : data.n8n_workflow_id) || '').trim() || (n8nApiKey || '').trim() !== '' || (rapidApiKey || '').trim() !== '' || (firecrawlKey || '').trim() !== '' || (openRouterConnKey || '').trim() !== '';
+  var hasUnsavedChanges = hasUnsavedApiKeyChange || hasUnsavedSendApiChange || hasUnsavedOpenRouterChanges || hasUnsavedDevChanges || hasUnsavedN8nChanges;
+  var handleSaveSettings = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(e) {
+      var _e$preventDefault;
+      var base, key, hasStoredKey;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
-            if (window.confirm(REGENERATE_CONFIRM_MESSAGE)) {
-              _context2.next = 2;
+            e === null || e === void 0 || (_e$preventDefault = e.preventDefault) === null || _e$preventDefault === void 0 || _e$preventDefault.call(e);
+            base = (n8nBaseUrl || '').trim();
+            key = (n8nApiKey || '').trim();
+            hasStoredKey = Boolean(data === null || data === void 0 ? void 0 : data.n8n_api_key_set);
+            if (!(hasUnsavedN8nChanges && (base === '' || key === '' && !hasStoredKey))) {
+              _context2.next = 7;
               break;
             }
+            showToast('n8n Base URL and n8n API Key are required.', 'error');
             return _context2.abrupt("return");
-          case 2:
-            _context2.prev = 2;
-            _context2.next = 5;
-            return regenerateApiKey();
-          case 5:
-            result = _context2.sent;
-            if (result !== null && result !== void 0 && result.api_key) setApiKey(result.api_key);
-            _context2.next = 12;
+          case 7:
+            setSavingSettings(true);
+            _context2.prev = 8;
+            _context2.next = 11;
+            return saveSettings({
+              api_key: apiKey,
+              send_api_to_webhook: sendApiToWebhook ? '1' : '0',
+              default_text_model: defaultTextModel,
+              default_image_model: defaultImageModel,
+              openrouter_api_key: (openRouterApiKey || '').trim() !== '' ? openRouterApiKey : undefined,
+              enable_tunnel_url: enableTunnelUrl ? '1' : '0',
+              tunnel_url: tunnelUrl,
+              base_url: base,
+              workflow_id: n8nWorkflowId,
+              n8n_api_key: n8nApiKey,
+              rapidapi_key: rapidApiKey,
+              firecrawl_key: firecrawlKey,
+              openrouter_key: openRouterConnKey
+            });
+          case 11:
+            setOpenRouterApiKey('');
+            setN8nApiKey('');
+            setRapidApiKey('');
+            setFirecrawlKey('');
+            setOpenRouterConnKey('');
+            showToast('Settings saved.', 'success');
+            _context2.next = 19;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 19:
+            _context2.next = 21;
+            return refetch({
+              background: true
+            });
+          case 21:
+            _context2.next = 31;
             break;
-          case 9:
-            _context2.prev = 9;
-            _context2.t0 = _context2["catch"](2);
-            console.error('Failed to regenerate API key:', _context2.t0);
-          case 12:
+          case 23:
+            _context2.prev = 23;
+            _context2.t0 = _context2["catch"](8);
+            console.error('Failed to save settings:', _context2.t0);
+            showToast((_context2.t0 === null || _context2.t0 === void 0 ? void 0 : _context2.t0.message) || 'Failed to save settings.', 'error');
+            _context2.next = 29;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 29:
+            _context2.next = 31;
+            return refetch({
+              background: true
+            });
+          case 31:
+            _context2.prev = 31;
+            setSavingSettings(false);
+            return _context2.finish(31);
+          case 34:
           case "end":
             return _context2.stop();
         }
-      }, _callee2, null, [[2, 9]]);
+      }, _callee2, null, [[8, 23, 31, 34]]);
     }));
-    return function handleRegenerate() {
+    return function handleSaveSettings(_x) {
       return _ref2.apply(this, arguments);
     };
   }();
-  var handleSaveOpenRouterSettings = /*#__PURE__*/function () {
+  var canDeployN8n = !hasUnsavedN8nChanges && ((data === null || data === void 0 ? void 0 : data.n8n_base_url) || '').trim() !== '' && Boolean(data === null || data === void 0 ? void 0 : data.n8n_api_key_set) && !savingSettings && !deployingN8nBlueprint;
+  var handleDeployN8nBlueprint = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+      var options,
+        missing,
+        _args3 = arguments;
       return _regeneratorRuntime().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
-            _context3.prev = 0;
-            if (!((openRouterApiKey || '').trim() !== '')) {
-              _context3.next = 5;
+            options = _args3.length > 0 && _args3[0] !== undefined ? _args3[0] : {};
+            if (canDeployN8n) {
+              _context3.next = 4;
               break;
             }
-            _context3.next = 4;
-            return saveOpenRouterApiKey(openRouterApiKey);
+            showToast('Save n8n settings first. Deploy is only available when there are no unsaved changes.', 'error');
+            return _context3.abrupt("return");
           case 4:
-            setOpenRouterApiKey('');
-          case 5:
-            _context3.next = 7;
-            return saveOpenRouterDefaults(defaultTextModel, defaultImageModel);
-          case 7:
-            refetch();
-            _context3.next = 14;
+            if (!(options !== null && options !== void 0 && options.create_or_update_credentials)) {
+              _context3.next = 12;
+              break;
+            }
+            missing = [];
+            if (!(data !== null && data !== void 0 && data.rapidapi_key_set)) missing.push('RapidAPI Key');
+            if (!(data !== null && data !== void 0 && data.firecrawl_key_set)) missing.push('Firecrawl Key');
+            if (!(data !== null && data !== void 0 && data.n8n_openrouter_key_set)) missing.push('OpenRouter Key');
+            if (!(missing.length > 0)) {
+              _context3.next = 12;
+              break;
+            }
+            setDeployError("Create/Update credentials is enabled, but required credentials are missing: ".concat(missing.join(', '), ". Save these in n8n Connection credentials first."));
+            return _context3.abrupt("return");
+          case 12:
+            _context3.prev = 12;
+            setDeployError('');
+            _context3.next = 16;
+            return deployN8nBlueprint(options);
+          case 16:
+            _context3.next = 18;
+            return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
+          case 18:
+            _context3.next = 20;
+            return refetch();
+          case 20:
+            setShowDeployConfirm(false);
+            showToast('n8n workflow deployed successfully.', 'success');
+            _context3.next = 28;
             break;
-          case 10:
-            _context3.prev = 10;
-            _context3.t0 = _context3["catch"](0);
-            console.error('Failed to save OpenRouter settings:', _context3.t0);
-            refetch();
-          case 14:
+          case 24:
+            _context3.prev = 24;
+            _context3.t0 = _context3["catch"](12);
+            console.error('Failed to deploy n8n workflow:', _context3.t0);
+            setDeployError((_context3.t0 === null || _context3.t0 === void 0 ? void 0 : _context3.t0.message) || 'Failed to deploy n8n workflow.');
+          case 28:
           case "end":
             return _context3.stop();
         }
-      }, _callee3, null, [[0, 10]]);
+      }, _callee3, null, [[12, 24]]);
     }));
-    return function handleSaveOpenRouterSettings() {
+    return function handleDeployN8nBlueprint() {
       return _ref3.apply(this, arguments);
     };
   }();
-  var handleSaveWorkflowApiKey = /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
-      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
-          case 0:
-            _context4.prev = 0;
-            _context4.next = 3;
-            return saveWorkflowApiKey(workflowApiKey);
-          case 3:
-            refetch();
-            _context4.next = 10;
-            break;
-          case 6:
-            _context4.prev = 6;
-            _context4.t0 = _context4["catch"](0);
-            console.error('Failed to save workflow API key:', _context4.t0);
-            refetch();
-          case 10:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee4, null, [[0, 6]]);
-    }));
-    return function handleSaveWorkflowApiKey() {
-      return _ref4.apply(this, arguments);
-    };
-  }();
-  var handleToggleSendApiToWebhook = /*#__PURE__*/function () {
-    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(checked) {
-      return _regeneratorRuntime().wrap(function _callee5$(_context5) {
-        while (1) switch (_context5.prev = _context5.next) {
-          case 0:
-            setSendApiToWebhook(checked);
-            _context5.prev = 1;
-            _context5.next = 4;
-            return saveSendApiToWebhook(checked);
-          case 4:
-            refetch();
-            _context5.next = 12;
-            break;
-          case 7:
-            _context5.prev = 7;
-            _context5.t0 = _context5["catch"](1);
-            console.error('Failed to save Send to Webhook setting:', _context5.t0);
-            setSendApiToWebhook(!checked);
-            refetch();
-          case 12:
-          case "end":
-            return _context5.stop();
-        }
-      }, _callee5, null, [[1, 7]]);
-    }));
-    return function handleToggleSendApiToWebhook(_x) {
-      return _ref5.apply(this, arguments);
-    };
-  }();
-  var handleSaveDevSettings = /*#__PURE__*/function () {
-    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
-      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
-        while (1) switch (_context6.prev = _context6.next) {
-          case 0:
-            _context6.prev = 0;
-            _context6.next = 3;
-            return saveDevSettings(enableTunnelUrl, tunnelUrl);
-          case 3:
-            refetch();
-            _context6.next = 10;
-            break;
-          case 6:
-            _context6.prev = 6;
-            _context6.t0 = _context6["catch"](0);
-            console.error('Failed to save dev settings:', _context6.t0);
-            refetch();
-          case 10:
-          case "end":
-            return _context6.stop();
-        }
-      }, _callee6, null, [[0, 6]]);
-    }));
-    return function handleSaveDevSettings() {
-      return _ref6.apply(this, arguments);
-    };
-  }();
-  var openWritingPresetModal = function openWritingPresetModal(mode) {
-    var writingPreset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    setWritingPresetModal({
-      open: true,
-      mode: mode,
-      writingPreset: writingPreset
-    });
+  var handleRequestDeployN8nBlueprint = function handleRequestDeployN8nBlueprint() {
+    if (!canDeployN8n) {
+      showToast('Save n8n settings first. Deploy is only available when there are no unsaved changes.', 'error');
+      return;
+    }
+    setDeployCreateOrUpdateWebhook(true);
+    setDeployCreateOrUpdateCredentials(true);
+    setDeployError('');
+    setShowDeployConfirm(true);
   };
-  var closeWritingPresetModal = function closeWritingPresetModal() {
-    setWritingPresetModal(function (prev) {
-      return _objectSpread(_objectSpread({}, prev), {}, {
-        open: false
-      });
-    });
-  };
-  var handleWritingPresetSaved = function handleWritingPresetSaved() {
-    // Modal already called refreshBootstrap() before onSaved; use current bootstrap so list updates immediately
-    setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
-  };
-  var handleConfirmDeleteWritingPreset = /*#__PURE__*/function () {
-    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
-      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
-        while (1) switch (_context7.prev = _context7.next) {
-          case 0:
-            if (deleteWritingPreset !== null && deleteWritingPreset !== void 0 && deleteWritingPreset.id) {
-              _context7.next = 2;
-              break;
-            }
-            return _context7.abrupt("return");
-          case 2:
-            setDeleting(true);
-            _context7.prev = 3;
-            _context7.next = 6;
-            return _api_client__WEBPACK_IMPORTED_MODULE_3__.writingPresets["delete"](deleteWritingPreset.id);
-          case 6:
-            _context7.next = 8;
-            return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
-          case 8:
-            setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
-            setDeleteWritingPreset(null);
-            _context7.next = 15;
-            break;
-          case 12:
-            _context7.prev = 12;
-            _context7.t0 = _context7["catch"](3);
-            console.error('Failed to delete writing preset:', _context7.t0);
-          case 15:
-            _context7.prev = 15;
-            setDeleting(false);
-            return _context7.finish(15);
-          case 18:
-          case "end":
-            return _context7.stop();
-        }
-      }, _callee7, null, [[3, 12, 15, 18]]);
-    }));
-    return function handleConfirmDeleteWritingPreset() {
-      return _ref7.apply(this, arguments);
-    };
-  }();
-  if (loading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageHeader, {
-      title: "Settings",
-      description: "Manage your ".concat(pluginName, " configuration")
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-      className: "max-w-5xl grid grid-cols-2 gap-6",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            className: "flex items-center justify-between",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
-                className: "text-lg font-medium text-gray-900",
-                children: "Poststation API Key"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-                className: "text-sm text-gray-500",
-                children: "Use this key to authenticate Poststation API requests."
-              })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-              variant: "secondary",
-              onClick: function onClick() {
-                return setShowApiDocs(true);
-              },
-              children: "View API Docs"
-            })]
+  var savedWorkflowId = ((data === null || data === void 0 ? void 0 : data.n8n_workflow_id) || '').trim();
+  if (loading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("form", {
+      onSubmit: handleSaveSettings,
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+        className: "poststation-sticky-header sticky top-8  bg-gray-50",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageHeader, {
+          title: "Settings",
+          description: "Manage your ".concat(pluginName, " configuration"),
+          actions: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            type: "submit",
+            loading: savingSettings,
+            disabled: !hasUnsavedChanges || deployingN8nBlueprint,
+            children: "Save Settings"
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            className: "space-y-4",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-              className: "flex gap-2 items-end",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                className: "flex-1",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                  className: "flex items-center justify-between mb-1",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("label", {
-                    className: "flex items-center text-sm font-medium text-gray-700",
-                    children: "Poststation API Key"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
-                    className: "poststation-switch inline-flex items-center gap-2 cursor-pointer text-xs text-gray-600",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
-                      type: "checkbox",
-                      className: "poststation-field-checkbox",
-                      checked: sendApiToWebhook,
-                      disabled: savingSendApiToWebhook,
-                      onChange: function onChange(e) {
-                        return handleToggleSendApiToWebhook(e.target.checked);
-                      }
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                      className: "poststation-switch-track",
-                      "aria-hidden": true
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                      children: "Send to Webhook"
-                    })]
-                  })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
-                  className: "text-xs text-gray-500 mb-2",
-                  children: ["Used to authenticate requests to the ", pluginName, " API. When \"Send to Webhook\" is enabled, this key is included in webhook payload data."]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                  className: "relative",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
-                    className: "poststation-field pr-10",
-                    type: showPoststationApiKey ? 'text' : 'password',
-                    value: apiKey || (data === null || data === void 0 ? void 0 : data.api_key) || '',
-                    readOnly: true
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                    type: "button",
-                    className: "absolute right-2 top-1/2 -translate-y-1/2 poststation-icon-btn",
-                    onClick: function onClick() {
-                      return setShowPoststationApiKey(function (prev) {
-                        return !prev;
-                      });
-                    },
-                    title: showPoststationApiKey ? 'Hide key' : 'Show key',
-                    "aria-label": showPoststationApiKey ? 'Hide key' : 'Show key',
-                    children: showPoststationApiKey ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                      className: "w-4 h-4",
-                      fill: "none",
-                      viewBox: "0 0 24 24",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        d: "M3 3l18 18M10.477 10.48a3 3 0 004.243 4.242M9.88 5.09A10.958 10.958 0 0112 4.909c5.523 0 10 4.477 10 10 0 1.232-.223 2.41-.632 3.498M6.228 6.228A9.965 9.965 0 002 14.91c0 .84.103 1.656.297 2.435"
-                      })
-                    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
-                      className: "w-4 h-4",
-                      fill: "none",
-                      viewBox: "0 0 24 24",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        d: "M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
-                      })]
-                    })
-                  })]
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        className: "max-w-5xl grid grid-cols-2 gap-6",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              className: "flex items-center justify-between",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+                  className: "text-lg font-medium text-gray-900",
+                  children: "Poststation API Key"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+                  className: "text-sm text-gray-500",
+                  children: "Use this key to authenticate Poststation API requests."
                 })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                type: "button",
-                className: "poststation-icon-btn mb-1",
-                onClick: handleCopy,
-                title: copied ? 'Copied!' : 'Copy',
-                "aria-label": "Copy",
-                children: copied ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                  className: "w-5 h-5 text-green-600",
-                  fill: "none",
-                  viewBox: "0 0 24 24",
-                  stroke: "currentColor",
-                  strokeWidth: 2,
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                    strokeLinecap: "round",
-                    strokeLinejoin: "round",
-                    d: "M5 13l4 4L19 7"
-                  })
-                }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                  className: "w-5 h-5",
-                  fill: "none",
-                  viewBox: "0 0 24 24",
-                  stroke: "currentColor",
-                  strokeWidth: 2,
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                    strokeLinecap: "round",
-                    strokeLinejoin: "round",
-                    d: "M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
-                  })
-                })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                type: "button",
-                className: "poststation-icon-btn mb-1",
-                onClick: handleRegenerate,
-                disabled: regenerating,
-                title: "Regenerate API key",
-                "aria-label": "Regenerate API key",
-                children: regenerating ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
-                  className: "w-5 h-5 animate-spin",
-                  fill: "none",
-                  viewBox: "0 0 24 24",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("circle", {
-                    className: "opacity-25",
-                    cx: "12",
-                    cy: "12",
-                    r: "10",
-                    stroke: "currentColor",
-                    strokeWidth: "4"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                    className: "opacity-75",
-                    fill: "currentColor",
-                    d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  })]
-                }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                  className: "w-5 h-5",
-                  fill: "none",
-                  viewBox: "0 0 24 24",
-                  stroke: "currentColor",
-                  strokeWidth: 2,
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                    strokeLinecap: "round",
-                    strokeLinejoin: "round",
-                    d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  })
-                })
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                variant: "secondary",
+                onClick: function onClick() {
+                  return setShowApiDocs(true);
+                },
+                children: "View API Docs"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-              className: "pt-3 border-t border-gray-100",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("label", {
-                className: "flex items-center text-sm font-medium text-gray-700 mb-1",
-                children: "Workflow API Key"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-                className: "text-xs text-gray-500 mb-2",
-                children: "This API key is used for the n8n Rankima workflow webhook authentication."
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+              className: "space-y-4",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                 className: "flex gap-2 items-end",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                  className: "relative flex-1",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
-                    className: "poststation-field pr-10",
-                    type: showWorkflowApiKey ? 'text' : 'password',
-                    value: workflowApiKey,
-                    onChange: function onChange(e) {
-                      return setWorkflowApiKey(e.target.value);
-                    },
-                    placeholder: "Enter workflow API key"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                    type: "button",
-                    className: "absolute right-2 top-1/2 -translate-y-1/2 poststation-icon-btn",
-                    onClick: function onClick() {
-                      return setShowWorkflowApiKey(function (prev) {
-                        return !prev;
-                      });
-                    },
-                    title: showWorkflowApiKey ? 'Hide key' : 'Show key',
-                    "aria-label": showWorkflowApiKey ? 'Hide key' : 'Show key',
-                    children: showWorkflowApiKey ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                      className: "w-4 h-4",
-                      fill: "none",
-                      viewBox: "0 0 24 24",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        d: "M3 3l18 18M10.477 10.48a3 3 0 004.243 4.242M9.88 5.09A10.958 10.958 0 0112 4.909c5.523 0 10 4.477 10 10 0 1.232-.223 2.41-.632 3.498M6.228 6.228A9.965 9.965 0 002 14.91c0 .84.103 1.656.297 2.435"
-                      })
-                    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
-                      className: "w-4 h-4",
-                      fill: "none",
-                      viewBox: "0 0 24 24",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        d: "M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                  className: "flex-1",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                    className: "flex items-center justify-between mb-1",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
+                      className: "flex items-center text-sm font-medium text-gray-700",
+                      children: "Poststation API Key"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
+                      className: "poststation-switch inline-flex items-center gap-2 cursor-pointer text-xs text-gray-600",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+                        type: "checkbox",
+                        className: "poststation-field-checkbox",
+                        checked: sendApiToWebhook,
+                        disabled: savingSettings,
+                        onChange: function onChange(e) {
+                          return setSendApiToWebhook(e.target.checked);
+                        }
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                        className: "poststation-switch-track",
+                        "aria-hidden": true
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                        children: "Send to Webhook"
                       })]
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+                    className: "text-xs text-gray-500 mb-2",
+                    children: ["Used to authenticate requests to the ", pluginName, " API. When \"Send to Webhook\" is enabled, this key is included in webhook payload data."]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                    className: "relative",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+                      className: "poststation-field pr-10",
+                      type: showPoststationApiKey ? 'text' : 'password',
+                      value: apiKey || (data === null || data === void 0 ? void 0 : data.api_key) || '',
+                      readOnly: true
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                      type: "button",
+                      className: "absolute right-2 top-1/2 -translate-y-1/2 poststation-icon-btn",
+                      onClick: function onClick() {
+                        return setShowPoststationApiKey(function (prev) {
+                          return !prev;
+                        });
+                      },
+                      title: showPoststationApiKey ? 'Hide key' : 'Show key',
+                      "aria-label": showPoststationApiKey ? 'Hide key' : 'Show key',
+                      children: showPoststationApiKey ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+                        className: "w-4 h-4",
+                        fill: "none",
+                        viewBox: "0 0 24 24",
+                        stroke: "currentColor",
+                        strokeWidth: 2,
+                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                          strokeLinecap: "round",
+                          strokeLinejoin: "round",
+                          d: "M3 3l18 18M10.477 10.48a3 3 0 004.243 4.242M9.88 5.09A10.958 10.958 0 0112 4.909c5.523 0 10 4.477 10 10 0 1.232-.223 2.41-.632 3.498M6.228 6.228A9.965 9.965 0 002 14.91c0 .84.103 1.656.297 2.435"
+                        })
+                      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+                        className: "w-4 h-4",
+                        fill: "none",
+                        viewBox: "0 0 24 24",
+                        stroke: "currentColor",
+                        strokeWidth: 2,
+                        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                          strokeLinecap: "round",
+                          strokeLinejoin: "round",
+                          d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                          strokeLinecap: "round",
+                          strokeLinejoin: "round",
+                          d: "M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
+                        })]
+                      })
+                    })]
+                  })]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  type: "button",
+                  className: "poststation-icon-btn mb-1",
+                  onClick: handleCopy,
+                  title: copied ? 'Copied!' : 'Copy',
+                  "aria-label": "Copy",
+                  children: copied ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+                    className: "w-5 h-5 text-green-600",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    stroke: "currentColor",
+                    strokeWidth: 2,
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round",
+                      d: "M5 13l4 4L19 7"
                     })
-                  })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-                  onClick: handleSaveWorkflowApiKey,
-                  loading: savingWorkflowApiKey,
-                  children: "Save"
+                  }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+                    className: "w-5 h-5",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    stroke: "currentColor",
+                    strokeWidth: 2,
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round",
+                      d: "M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
+                    })
+                  })
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  type: "button",
+                  className: "poststation-icon-btn mb-1",
+                  onClick: handleRegenerate,
+                  disabled: regenerating,
+                  title: "Regenerate API key",
+                  "aria-label": "Regenerate API key",
+                  children: regenerating ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+                    className: "w-5 h-5 animate-spin",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                      className: "opacity-25",
+                      cx: "12",
+                      cy: "12",
+                      r: "10",
+                      stroke: "currentColor",
+                      strokeWidth: "4"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                      className: "opacity-75",
+                      fill: "currentColor",
+                      d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    })]
+                  }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+                    className: "w-5 h-5",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    stroke: "currentColor",
+                    strokeWidth: 2,
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round",
+                      d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    })
+                  })
                 })]
-              })]
-            })]
-          })
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
-              className: "text-lg font-medium text-gray-900",
-              children: "OpenRouter"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-              className: "text-sm text-gray-500",
-              children: "Store your OpenRouter API key for model discovery"
-            })]
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            className: "space-y-4",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "OpenRouter API Key",
-              tooltip: "Saved encrypted server-side. The value cannot be viewed after saving.",
-              type: "password",
-              value: openRouterApiKey,
-              onChange: function onChange(e) {
-                return setOpenRouterApiKey(e.target.value);
-              },
-              placeholder: data !== null && data !== void 0 && data.openrouter_api_key_set ? 'Saved (hidden). Enter new key to replace or leave empty to clear.' : 'Enter OpenRouter API key'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-              className: "text-xs text-gray-500",
-              children: data !== null && data !== void 0 && data.openrouter_api_key_set ? 'An OpenRouter key is currently stored and hidden.' : 'No OpenRouter key stored yet.'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-              className: "grid grid-cols-1 gap-3 pt-2 border-t border-gray-100",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
-                label: "Default Text Model",
-                tooltip: "Used as the default text model for new and unconfigured Campaign fields.",
-                value: defaultTextModel,
-                onChange: function onChange(e) {
-                  return setDefaultTextModel(e.target.value);
-                },
-                filter: "text"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
-                label: "Default Image Model",
-                tooltip: "Used as the default image model for new and unconfigured Campaign image fields.",
-                value: defaultImageModel,
-                onChange: function onChange(e) {
-                  return setDefaultImageModel(e.target.value);
-                },
-                filter: "image"
-              })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-              className: "flex justify-end gap-2",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-                onClick: handleSaveOpenRouterSettings,
-                loading: savingOpenRouter || savingOpenRouterDefaults,
-                children: "Save OpenRouter Settings"
-              })
-            })]
-          })
-        })]
-      }), Boolean(data === null || data === void 0 ? void 0 : data.is_local) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        className: "col-span-2",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
-              className: "text-lg font-medium text-gray-900",
-              children: "Dev"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-              className: "text-sm text-gray-500",
-              children: "Local development overrides"
-            })]
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            className: "space-y-4",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
-              className: "flex items-center gap-2 text-sm text-gray-800",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
-                type: "checkbox",
-                checked: enableTunnelUrl,
-                onChange: function onChange(e) {
-                  return setEnableTunnelUrl(e.target.checked);
-                }
-              }), "Enable tunnel URL"]
-            }), enableTunnelUrl && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "Tunnel URL",
-              type: "url",
-              value: tunnelUrl,
-              onChange: function onChange(e) {
-                return setTunnelUrl(e.target.value);
-              },
-              placeholder: "https://your-subdomain.ngrok-free.app"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-              className: "flex justify-end",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-                onClick: handleSaveDevSettings,
-                loading: savingDevSettings,
-                children: "Save Dev Settings"
-              })
-            })]
-          })
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        className: "col-span-2",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            className: "flex items-center justify-between",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
-                className: "text-lg font-medium text-gray-900",
-                children: "Writing presets"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-                className: "text-sm text-gray-500",
-                children: "Manage writing presets used for title, body, and section generation"
-              })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-              variant: "primary",
-              onClick: function onClick() {
-                return openWritingPresetModal('add');
-              },
-              children: "Add new"
-            })]
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-            className: "space-y-4",
-            children: writingPresetsList.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-              className: "flex items-center justify-center py-10 px-6 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-                className: "text-sm text-gray-400",
-                children: "No writing presets. Add one to get started."
-              })
-            }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-              className: "flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1",
-              children: writingPresetsList.map(function (inst) {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                  className: "group flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-all hover:border-gray-300 hover:bg-gray-50",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                    className: "min-w-0 flex-1 flex flex-col gap-0.5",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                      className: "flex items-center gap-2",
-                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                        className: "font-medium text-sm text-gray-900 truncate",
-                        children: inst.name
-                      }), inst.key && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                        className: "shrink-0 inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-500",
-                        children: inst.key
-                      })]
-                    }), inst.description && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                      className: "text-xs text-gray-400 truncate",
-                      children: inst.description
-                    })]
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                    className: "flex items-center gap-1 shrink-0",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                      type: "button",
-                      className: "poststation-icon-btn",
-                      onClick: function onClick() {
-                        return openWritingPresetModal('edit', inst);
-                      },
-                      title: "Edit",
-                      "aria-label": "Edit",
-                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                        className: "w-4 h-4",
-                        fill: "none",
-                        viewBox: "0 0 24 24",
-                        stroke: "currentColor",
-                        strokeWidth: 2,
-                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                          strokeLinecap: "round",
-                          strokeLinejoin: "round",
-                          d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        })
-                      })
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                      type: "button",
-                      className: "poststation-icon-btn",
-                      onClick: function onClick() {
-                        return openWritingPresetModal('duplicate', inst);
-                      },
-                      title: "Duplicate",
-                      "aria-label": "Duplicate",
-                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                        className: "w-4 h-4",
-                        fill: "none",
-                        viewBox: "0 0 24 24",
-                        stroke: "currentColor",
-                        strokeWidth: 2,
-                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                          strokeLinecap: "round",
-                          strokeLinejoin: "round",
-                          d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        })
-                      })
-                    }), !isDefaultPreset(inst.key) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                      type: "button",
-                      className: "poststation-icon-btn-danger",
-                      onClick: function onClick() {
-                        return setDeleteWritingPreset(inst);
-                      },
-                      title: "Delete",
-                      "aria-label": "Delete",
-                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
-                        className: "w-4 h-4",
-                        fill: "none",
-                        viewBox: "0 0 24 24",
-                        stroke: "currentColor",
-                        strokeWidth: 2,
-                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-                          strokeLinecap: "round",
-                          strokeLinejoin: "round",
-                          d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        })
-                      })
-                    })]
-                  })]
-                }, inst.id);
               })
             })
-          })
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              className: "flex items-center justify-between gap-3",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+                  className: "text-lg font-medium text-gray-900",
+                  children: "n8n Connection"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+                  className: "text-sm text-gray-500",
+                  children: "Configure n8n connection and optional credential keys"
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                variant: "secondary",
+                onClick: handleRequestDeployN8nBlueprint,
+                disabled: !canDeployN8n,
+                loading: deployingN8nBlueprint,
+                title: !canDeployN8n ? 'Save all n8n changes before deploying.' : 'Deploy workflow',
+                children: "Deploy"
+              })]
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              className: "space-y-3",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                className: "grid grid-cols-1 md:grid-cols-2 gap-3",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                  label: "n8n Base URL",
+                  value: n8nBaseUrl,
+                  onChange: function onChange(e) {
+                    return setN8nBaseUrl(e.target.value);
+                  },
+                  placeholder: "https://your-n8n.example.com",
+                  required: true
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                  label: "n8n API Key",
+                  type: "password",
+                  value: n8nApiKey,
+                  onChange: function onChange(e) {
+                    return setN8nApiKey(e.target.value);
+                  },
+                  placeholder: data !== null && data !== void 0 && data.n8n_api_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter n8n API key',
+                  required: !(data !== null && data !== void 0 && data.n8n_api_key_set)
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                  label: "Workflow ID",
+                  value: n8nWorkflowId,
+                  onChange: function onChange(e) {
+                    return setN8nWorkflowId(e.target.value);
+                  },
+                  placeholder: "Optional: existing workflow id"
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
+                className: "poststation-switch inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+                  type: "checkbox",
+                  className: "poststation-field-checkbox",
+                  checked: showN8nCredentials,
+                  onChange: function onChange(e) {
+                    return setShowN8nCredentials(e.target.checked);
+                  }
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  className: "poststation-switch-track",
+                  "aria-hidden": true
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  children: "Credentials?"
+                })]
+              }), showN8nCredentials && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                className: "grid grid-cols-1 md:grid-cols-2 gap-3",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                  label: "RapidAPI Key",
+                  type: "password",
+                  value: rapidApiKey,
+                  onChange: function onChange(e) {
+                    return setRapidApiKey(e.target.value);
+                  },
+                  placeholder: data !== null && data !== void 0 && data.rapidapi_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter RapidAPI key'
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                  label: "Firecrawl Key",
+                  type: "password",
+                  value: firecrawlKey,
+                  onChange: function onChange(e) {
+                    return setFirecrawlKey(e.target.value);
+                  },
+                  placeholder: data !== null && data !== void 0 && data.firecrawl_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter Firecrawl key'
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                  label: "OpenRouter Key",
+                  type: "password",
+                  value: openRouterConnKey,
+                  onChange: function onChange(e) {
+                    return setOpenRouterConnKey(e.target.value);
+                  },
+                  placeholder: data !== null && data !== void 0 && data.n8n_openrouter_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter OpenRouter key'
+                })]
+              })]
+            })
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+                className: "text-lg font-medium text-gray-900",
+                children: "OpenRouter"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+                className: "text-sm text-gray-500",
+                children: "Store your OpenRouter API key for model discovery"
+              })]
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              className: "space-y-4",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                label: "OpenRouter API Key",
+                tooltip: "Saved encrypted server-side. The value cannot be viewed after saving.",
+                type: "password",
+                value: openRouterApiKey,
+                onChange: function onChange(e) {
+                  return setOpenRouterApiKey(e.target.value);
+                },
+                placeholder: data !== null && data !== void 0 && data.openrouter_api_key_set ? 'Saved (hidden). Enter new key to replace.' : 'Enter OpenRouter API key'
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+                className: "text-xs text-gray-500",
+                children: data !== null && data !== void 0 && data.openrouter_api_key_set ? 'An OpenRouter key is currently stored and hidden.' : 'No OpenRouter key stored yet.'
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                className: "grid grid-cols-1 gap-3 pt-2 border-t border-gray-100",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
+                  label: "Default Text Model",
+                  tooltip: "Used as the default text model for new and unconfigured Campaign fields.",
+                  value: defaultTextModel,
+                  onChange: function onChange(e) {
+                    return setDefaultTextModel(e.target.value);
+                  },
+                  filter: "text"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ModelSelect, {
+                  label: "Default Image Model",
+                  tooltip: "Used as the default image model for new and unconfigured Campaign image fields.",
+                  value: defaultImageModel,
+                  onChange: function onChange(e) {
+                    return setDefaultImageModel(e.target.value);
+                  },
+                  filter: "image"
+                })]
+              })]
+            })
+          })]
+        }), Boolean(data === null || data === void 0 ? void 0 : data.is_local) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+                className: "text-lg font-medium text-gray-900",
+                children: "Dev"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+                className: "text-sm text-gray-500",
+                children: "Local development overrides"
+              })]
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              className: "space-y-4",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
+                className: "flex items-center gap-2 text-sm text-gray-800",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+                  type: "checkbox",
+                  checked: enableTunnelUrl,
+                  onChange: function onChange(e) {
+                    return setEnableTunnelUrl(e.target.checked);
+                  }
+                }), "Enable tunnel URL"]
+              }), enableTunnelUrl && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
+                label: "Tunnel URL",
+                type: "url",
+                value: tunnelUrl,
+                onChange: function onChange(e) {
+                  return setTunnelUrl(e.target.value);
+                },
+                placeholder: "https://your-subdomain.ngrok-free.app"
+              })]
+            })
+          })]
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
       isOpen: showApiDocs,
       onClose: function onClose() {
         return setShowApiDocs(false);
       },
       title: "API Documentation",
       size: "lg",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "space-y-6",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "Base URL"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
             className: "text-sm text-gray-600",
-            children: ["All endpoints live under ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+            children: ["All endpoints live under ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
               className: "font-mono text-indigo-600 bg-gray-100 px-1 rounded",
               children: "/ps-api/"
-            }), " on your site (e.g. ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+            }), " on your site (e.g. ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
               className: "font-mono text-indigo-600 bg-gray-100 px-1 rounded",
               children: "https://yoursite.com/ps-api/create"
             }), ")."]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "Authentication"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
             className: "text-sm text-gray-600 mb-2",
-            children: ["Send your API key in the request header for ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            children: ["Send your API key in the request header for ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
               children: "POST"
             }), " endpoints:"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("pre", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("pre", {
             className: "p-3 bg-gray-900 text-gray-100 rounded-lg text-sm overflow-x-auto",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
               children: "X-API-Key: your-api-key"
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
             className: "text-sm text-gray-500 mt-1",
             children: "GET /ps-api/posttasks does not require the header."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "Endpoints"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "space-y-3",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "p-3 bg-gray-50 rounded-lg",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
                 className: "text-sm font-mono text-indigo-600",
                 children: "POST /ps-api/create"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
                 className: "text-sm text-gray-600 mt-1",
-                children: ["Create a post. Links to a post task when ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+                children: ["Create a post. Links to a post task when ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
                   children: "task_id"
                 }), " is provided."]
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "p-3 bg-gray-50 rounded-lg",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
                 className: "text-sm font-mono text-indigo-600",
                 children: "POST /ps-api/progress"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
                 className: "text-sm text-gray-600 mt-1",
                 children: "Update a post task\u2019s status or progress (e.g. processing, completed, failed)."
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "p-3 bg-gray-50 rounded-lg",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
                 className: "text-sm font-mono text-indigo-600",
                 children: "GET /ps-api/posttasks?campaign_id=123"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
                 className: "text-sm text-gray-600 mt-1",
-                children: ["List post tasks for a campaign. Optional: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+                children: ["List post tasks for a campaign. Optional: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
                   children: "status"
-                }), " (pending, processing, completed, failed, cancelled or \"all\"), ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+                }), " (pending, processing, completed, failed, cancelled or \"all\"), ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
                   children: "last_task_count"
                 }), " for delta updates."]
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "p-3 bg-gray-50 rounded-lg",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
                 className: "text-sm font-mono text-indigo-600",
                 children: "POST /ps-api/upload"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
                 className: "text-sm text-gray-600 mt-1",
                 children: "Upload an image as base64 for a task (e.g. generated images)."
               })]
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "POST /ps-api/create \u2014 Request body"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
             className: "text-sm text-gray-600 mb-2",
             children: "JSON body. Content-Type: application/json."
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("pre", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("pre", {
             className: "p-3 bg-gray-900 text-gray-100 rounded-lg text-sm overflow-x-auto",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
               children: "{\n  \"task_id\": 123,\n  \"title\": \"Post Title\",\n  \"content\": \"<p>Post content...</p>\",\n  \"slug\": \"post-slug\",\n  \"thumbnail_url\": \"https://...\",\n  \"thumbnail_id\": 456,\n  \"taxonomies\": {\n    \"category\": [\"news\"],\n    \"post_tag\": [\"featured\"]\n  },\n  \"custom_fields\": {\n    \"meta_key\": \"meta_value\"\n  }\n}"
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("ul", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("ul", {
             className: "text-sm text-gray-600 space-y-1 mt-2",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "task_id"
               }), " \u2014 Associated post task ID (optional)"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "title"
               }), " \u2014 Post title"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "content"
               }), " \u2014 Post content (HTML)"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "slug"
               }), " \u2014 URL slug (defaults from title)"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "thumbnail_url"
               }), " \u2014 Featured image URL"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "thumbnail_id"
               }), " \u2014 WordPress attachment ID for featured image"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "taxonomies"
               }), " \u2014 Object of taxonomy slug \u2192 array of term names/slugs"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                 children: "custom_fields"
               }), " \u2014 Post meta key/value pairs"]
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "POST /ps-api/create \u2014 Response"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("pre", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("pre", {
             className: "p-3 bg-gray-900 text-gray-100 rounded-lg text-sm overflow-x-auto",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
               children: "{\n  \"success\": true,\n  \"post_id\": 789,\n  \"post_url\": \"https://...\",\n  \"edit_url\": \"https://...\"\n}"
             })
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "POST /ps-api/progress \u2014 Request body"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("pre", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("pre", {
             className: "p-3 bg-gray-900 text-gray-100 rounded-lg text-sm overflow-x-auto",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
               children: "{\n  \"task_id\": 123,\n  \"execution_id\": \"optional-run-id\",\n  \"status\": \"processing|completed|failed|cancelled\",\n  \"progress\": \"Optional progress message\",\n  \"error_message\": \"Required when status is failed\"\n}"
             })
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
             className: "font-medium text-gray-900 mb-2",
             children: "POST /ps-api/upload \u2014 Request body"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("pre", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("pre", {
             className: "p-3 bg-gray-900 text-gray-100 rounded-lg text-sm overflow-x-auto",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("code", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
               children: "{\n  \"task_id\": 123,\n  \"image_base64\": \"base64-encoded-image-data\",\n  \"index\": 0,\n  \"filename\": \"image.png\",\n  \"alt_text\": \"Description\",\n  \"format\": \"webp\"\n}"
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
             className: "text-sm text-gray-600 mt-1",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
               children: "task_id"
-            }), " and ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
+            }), " and ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
               children: "image_base64"
             }), " are required."]
           })]
         })]
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_2__["default"], {
-      isOpen: writingPresetModal.open,
-      onClose: closeWritingPresetModal,
-      mode: writingPresetModal.mode,
-      writingPreset: writingPresetModal.writingPreset,
-      onSaved: handleWritingPresetSaved
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ConfirmModal, {
-      isOpen: Boolean(deleteWritingPreset),
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Modal, {
+      isOpen: showDeployConfirm,
       onClose: function onClose() {
-        return setDeleteWritingPreset(null);
+        if (deployingN8nBlueprint) return;
+        setShowDeployConfirm(false);
+        setDeployError('');
       },
-      onConfirm: handleConfirmDeleteWritingPreset,
-      title: "Delete writing preset",
-      message: deleteWritingPreset ? "Delete \"".concat(deleteWritingPreset.name, "\"? This cannot be undone.") : '',
-      confirmText: "Delete",
-      variant: "danger",
-      loading: deleting
+      title: "Deploy n8n Workflow",
+      size: "md",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        className: "space-y-4",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          className: "text-sm text-gray-600",
+          children: "Deployment will push the latest RANKIMA workflow blueprint to your connected n8n instance and then attempt activation."
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          className: "space-y-2",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
+            className: "poststation-switch inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700 mt-1",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "checkbox",
+              className: "poststation-field-checkbox",
+              checked: deployCreateOrUpdateWebhook,
+              onChange: function onChange(e) {
+                return setDeployCreateOrUpdateWebhook(e.target.checked);
+              },
+              disabled: deployingN8nBlueprint
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "poststation-switch-track",
+              "aria-hidden": true
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              children: "Create/Update Webhook After Deployment"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
+            className: "poststation-switch inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "checkbox",
+              className: "poststation-field-checkbox",
+              checked: deployCreateOrUpdateCredentials,
+              onChange: function onChange(e) {
+                return setDeployCreateOrUpdateCredentials(e.target.checked);
+              },
+              disabled: deployingN8nBlueprint
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "poststation-switch-track",
+              "aria-hidden": true
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              children: "Create/Update n8n workflow credentials"
+            })]
+          })]
+        }), savedWorkflowId !== '' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          className: "text-sm text-gray-600 leading-6 pt-1",
+          children: ["Clicking ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
+            children: "Proceed to Deploy"
+          }), " will attempt to update your n8n workflow with ID ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
+            children: savedWorkflowId
+          }), " to the latest version."]
+        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+          className: "text-sm text-gray-600 leading-6 pt-1",
+          children: ["This will create a new latest RANKIMA workflow in your n8n instance with webhook path ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("code", {
+            children: "rankima"
+          }), ". Ensure no existing workflow is already using that webhook path, or the new workflow may not activate."]
+        }), deployError && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          className: "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 mt-1",
+          children: deployError
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          className: "flex justify-end gap-3 pt-3",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            variant: "secondary",
+            onClick: function onClick() {
+              setShowDeployConfirm(false);
+              setDeployError('');
+            },
+            disabled: deployingN8nBlueprint,
+            children: "Cancel"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            onClick: function onClick() {
+              return handleDeployN8nBlueprint({
+                create_or_update_webhook: deployCreateOrUpdateWebhook,
+                create_or_update_credentials: deployCreateOrUpdateCredentials
+              });
+            },
+            loading: deployingN8nBlueprint,
+            children: "Proceed to Deploy"
+          })]
+        })]
+      })
     })]
   });
 }
@@ -16193,7 +16330,7 @@ function StepCard(_ref) {
   });
 }
 function SupportPage() {
-  var _supportState$license, _licenseStatus$valid, _supportState$n8n, _supportState$n8n2, _supportState$n8n3, _supportState$updates, _supportState$updates2, _supportState$updates3, _supportState$license2, _supportState$n8n4, _supportState$n8n5, _supportState$n8n6, _supportState$n8n7, _supportState$n8n8, _supportState$n8n9;
+  var _supportState$license, _licenseStatus$valid, _supportState$n8n, _supportState$n8n2, _supportState$n8n3, _supportState$updates, _supportState$updates2, _supportState$updates3, _supportState$license2, _supportState$n8n4;
   var location = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_5__.useLocation)();
   var _useToast = (0,_components_common__WEBPACK_IMPORTED_MODULE_1__.useToast)(),
     showToast = _useToast.showToast;
@@ -16210,42 +16347,21 @@ function SupportPage() {
     _useState6 = _slicedToArray(_useState5, 2),
     licenseKeyTouched = _useState6[0],
     setLicenseKeyTouched = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    n8nBaseUrl = _useState8[0],
-    setN8nBaseUrl = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    manualBlueprint = _useState8[0],
+    setManualBlueprint = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState10 = _slicedToArray(_useState9, 2),
-    n8nApiKey = _useState10[0],
-    setN8nApiKey = _useState10[1];
-  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    onboardingOpen = _useState10[0],
+    setOnboardingOpen = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
     _useState12 = _slicedToArray(_useState11, 2),
-    rapidApiKey = _useState12[0],
-    setRapidApiKey = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState14 = _slicedToArray(_useState13, 2),
-    firecrawlKey = _useState14[0],
-    setFirecrawlKey = _useState14[1];
-  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState16 = _slicedToArray(_useState15, 2),
-    openRouterKey = _useState16[0],
-    setOpenRouterKey = _useState16[1];
-  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
-    _useState18 = _slicedToArray(_useState17, 2),
-    manualBlueprint = _useState18[0],
-    setManualBlueprint = _useState18[1];
-  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState20 = _slicedToArray(_useState19, 2),
-    onboardingOpen = _useState20[0],
-    setOnboardingOpen = _useState20[1];
-  var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
-    _useState22 = _slicedToArray(_useState21, 2),
-    onboardingStep = _useState22[0],
-    setOnboardingStep = _useState22[1];
+    onboardingStep = _useState12[0],
+    setOnboardingStep = _useState12[1];
 
   // Sync local inputs from bootstrap-backed support state
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    var _state$n8n;
     var state = supportState || (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSupport)();
     if (!state) return;
     if (!licenseKeyTouched) {
@@ -16258,7 +16374,6 @@ function SupportPage() {
         setLicenseKeyInput('');
       }
     }
-    setN8nBaseUrl((state === null || state === void 0 || (_state$n8n = state.n8n) === null || _state$n8n === void 0 ? void 0 : _state$n8n.base_url) || '');
   }, [supportState, licenseKeyTouched]);
   var licenseStatus = (supportState === null || supportState === void 0 || (_supportState$license = supportState.license) === null || _supportState$license === void 0 ? void 0 : _supportState$license.status) || {};
   var licenseValid = Boolean((_licenseStatus$valid = licenseStatus === null || licenseStatus === void 0 ? void 0 : licenseStatus.valid) !== null && _licenseStatus$valid !== void 0 ? _licenseStatus$valid : (licenseStatus === null || licenseStatus === void 0 ? void 0 : licenseStatus.status) === 'active');
@@ -16378,18 +16493,19 @@ function SupportPage() {
     }),
     refreshLicense = _useMutation3.mutate,
     refreshingLicense = _useMutation3.loading;
-  var _useMutation4 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.saveN8nConfig, {
+  var _useMutation4 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.deployN8nBlueprint, {
       onSuccess: function () {
         var _onSuccess4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(result) {
           return _regeneratorRuntime().wrap(function _callee4$(_context4) {
             while (1) switch (_context4.prev = _context4.next) {
               case 0:
-                showToast('n8n configuration saved.', 'success');
+                showToast('Blueprint deployed successfully.', 'success');
                 _context4.next = 3;
                 return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
               case 3:
                 setSupportState((0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSupport)());
-              case 4:
+                setOnboardingOpen(false);
+              case 5:
               case "end":
                 return _context4.stop();
             }
@@ -16401,21 +16517,27 @@ function SupportPage() {
         return onSuccess;
       }()
     }),
-    saveN8nConfig = _useMutation4.mutate,
-    savingN8nConfig = _useMutation4.loading;
-  var _useMutation5 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.deployN8nBlueprint, {
+    deployN8nBlueprint = _useMutation4.mutate,
+    deploying = _useMutation4.loading;
+  var _useMutation5 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.getManualBlueprint, {
+      onSuccess: function onSuccess(result) {
+        return setManualBlueprint(result);
+      }
+    }),
+    fetchManualBlueprint = _useMutation5.mutate,
+    loadingManualBlueprint = _useMutation5.loading;
+  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.checkBlueprintUpdate, {
       onSuccess: function () {
         var _onSuccess5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(result) {
           return _regeneratorRuntime().wrap(function _callee5$(_context5) {
             while (1) switch (_context5.prev = _context5.next) {
               case 0:
-                showToast('Blueprint deployed successfully.', 'success');
+                showToast('Blueprint update check completed.', 'success');
                 _context5.next = 3;
                 return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
               case 3:
                 setSupportState((0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSupport)());
-                setOnboardingOpen(false);
-              case 5:
+              case 4:
               case "end":
                 return _context5.stop();
             }
@@ -16427,22 +16549,15 @@ function SupportPage() {
         return onSuccess;
       }()
     }),
-    deployN8nBlueprint = _useMutation5.mutate,
-    deploying = _useMutation5.loading;
-  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.getManualBlueprint, {
-      onSuccess: function onSuccess(result) {
-        return setManualBlueprint(result);
-      }
-    }),
-    fetchManualBlueprint = _useMutation6.mutate,
-    loadingManualBlueprint = _useMutation6.loading;
-  var _useMutation7 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.checkBlueprintUpdate, {
+    checkBlueprintUpdate = _useMutation6.mutate,
+    checkingBlueprint = _useMutation6.loading;
+  var _useMutation7 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.setAutoUpdatePlugin, {
       onSuccess: function () {
         var _onSuccess6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(result) {
           return _regeneratorRuntime().wrap(function _callee6$(_context6) {
             while (1) switch (_context6.prev = _context6.next) {
               case 0:
-                showToast('Blueprint update check completed.', 'success');
+                showToast('Plugin auto-update setting saved.', 'success');
                 _context6.next = 3;
                 return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
               case 3:
@@ -16459,20 +16574,21 @@ function SupportPage() {
         return onSuccess;
       }()
     }),
-    checkBlueprintUpdate = _useMutation7.mutate,
-    checkingBlueprint = _useMutation7.loading;
-  var _useMutation8 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.setAutoUpdatePlugin, {
+    setAutoUpdatePlugin = _useMutation7.mutate,
+    savingAutoUpdate = _useMutation7.loading;
+  var _useMutation8 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.completeOnboarding, {
       onSuccess: function () {
         var _onSuccess7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7(result) {
           return _regeneratorRuntime().wrap(function _callee7$(_context7) {
             while (1) switch (_context7.prev = _context7.next) {
               case 0:
-                showToast('Plugin auto-update setting saved.', 'success');
+                showToast('Onboarding completed.', 'success');
                 _context7.next = 3;
                 return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
               case 3:
                 setSupportState((0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSupport)());
-              case 4:
+                setOnboardingOpen(false);
+              case 5:
               case "end":
                 return _context7.stop();
             }
@@ -16484,183 +16600,172 @@ function SupportPage() {
         return onSuccess;
       }()
     }),
-    setAutoUpdatePlugin = _useMutation8.mutate,
-    savingAutoUpdate = _useMutation8.loading;
-  var _useMutation9 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.completeOnboarding, {
-      onSuccess: function () {
-        var _onSuccess8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8(result) {
-          return _regeneratorRuntime().wrap(function _callee8$(_context8) {
-            while (1) switch (_context8.prev = _context8.next) {
-              case 0:
-                showToast('Onboarding completed.', 'success');
-                _context8.next = 3;
-                return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
-              case 3:
-                setSupportState((0,_api_client__WEBPACK_IMPORTED_MODULE_2__.getBootstrapSupport)());
-                setOnboardingOpen(false);
-              case 5:
-              case "end":
-                return _context8.stop();
-            }
-          }, _callee8);
-        }));
-        function onSuccess(_x8) {
-          return _onSuccess8.apply(this, arguments);
-        }
-        return onSuccess;
-      }()
-    }),
-    completeOnboarding = _useMutation9.mutate;
+    completeOnboarding = _useMutation8.mutate;
   var saveLicenseAction = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
-      return _regeneratorRuntime().wrap(function _callee9$(_context9) {
-        while (1) switch (_context9.prev = _context9.next) {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+        while (1) switch (_context8.prev = _context8.next) {
           case 0:
-            _context9.prev = 0;
-            _context9.next = 3;
+            _context8.prev = 0;
+            _context8.next = 3;
             return saveLicense({
               licenseKey: licenseKeyInput
             });
           case 3:
             setOnboardingStep(2);
-            _context9.next = 9;
+            _context8.next = 9;
             break;
           case 6:
-            _context9.prev = 6;
-            _context9.t0 = _context9["catch"](0);
-            showToast(_context9.t0.message || 'Unable to save license.', 'error');
+            _context8.prev = 6;
+            _context8.t0 = _context8["catch"](0);
+            showToast(_context8.t0.message || 'Unable to save license.', 'error');
           case 9:
           case "end":
-            return _context9.stop();
+            return _context8.stop();
         }
-      }, _callee9, null, [[0, 6]]);
+      }, _callee8, null, [[0, 6]]);
     }));
     return function saveLicenseAction() {
       return _ref2.apply(this, arguments);
     };
   }();
-  var saveN8nAction = /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
+  var deployAction = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
+      return _regeneratorRuntime().wrap(function _callee9$(_context9) {
+        while (1) switch (_context9.prev = _context9.next) {
+          case 0:
+            _context9.prev = 0;
+            _context9.next = 3;
+            return deployN8nBlueprint();
+          case 3:
+            _context9.next = 8;
+            break;
+          case 5:
+            _context9.prev = 5;
+            _context9.t0 = _context9["catch"](0);
+            showToast(_context9.t0.message || 'Deployment failed.', 'error');
+          case 8:
+          case "end":
+            return _context9.stop();
+        }
+      }, _callee9, null, [[0, 5]]);
+    }));
+    return function deployAction() {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  var skipN8nOnboarding = /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
       return _regeneratorRuntime().wrap(function _callee10$(_context10) {
         while (1) switch (_context10.prev = _context10.next) {
           case 0:
             _context10.prev = 0;
             _context10.next = 3;
-            return saveN8nConfig({
-              base_url: n8nBaseUrl,
-              n8n_api_key: n8nApiKey,
-              rapidapi_key: rapidApiKey,
-              firecrawl_key: firecrawlKey,
-              openrouter_key: openRouterKey
-            });
+            return completeOnboarding();
           case 3:
-            setOnboardingStep(3);
-            _context10.next = 9;
+            _context10.next = 8;
             break;
-          case 6:
-            _context10.prev = 6;
+          case 5:
+            _context10.prev = 5;
             _context10.t0 = _context10["catch"](0);
-            showToast(_context10.t0.message || 'Unable to save n8n config.', 'error');
-          case 9:
+            showToast(_context10.t0.message || 'Could not complete onboarding.', 'error');
+          case 8:
           case "end":
             return _context10.stop();
         }
-      }, _callee10, null, [[0, 6]]);
+      }, _callee10, null, [[0, 5]]);
     }));
-    return function saveN8nAction() {
-      return _ref3.apply(this, arguments);
+    return function skipN8nOnboarding() {
+      return _ref4.apply(this, arguments);
     };
   }();
-  var deployAction = /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
+  var activateFromPage = /*#__PURE__*/function () {
+    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
       return _regeneratorRuntime().wrap(function _callee11$(_context11) {
         while (1) switch (_context11.prev = _context11.next) {
           case 0:
             _context11.prev = 0;
             _context11.next = 3;
-            return deployN8nBlueprint();
+            return saveLicense({
+              licenseKey: licenseKeyInput
+            });
           case 3:
             _context11.next = 8;
             break;
           case 5:
             _context11.prev = 5;
             _context11.t0 = _context11["catch"](0);
-            showToast(_context11.t0.message || 'Deployment failed.', 'error');
+            showToast(_context11.t0.message || 'Unable to activate license.', 'error');
           case 8:
           case "end":
             return _context11.stop();
         }
       }, _callee11, null, [[0, 5]]);
     }));
-    return function deployAction() {
-      return _ref4.apply(this, arguments);
+    return function activateFromPage() {
+      return _ref5.apply(this, arguments);
     };
   }();
-  var skipN8nOnboarding = /*#__PURE__*/function () {
-    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
+  var deactivateFromPage = /*#__PURE__*/function () {
+    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
       return _regeneratorRuntime().wrap(function _callee12$(_context12) {
         while (1) switch (_context12.prev = _context12.next) {
           case 0:
             _context12.prev = 0;
             _context12.next = 3;
-            return completeOnboarding();
+            return deactivateLicense();
           case 3:
-            _context12.next = 8;
+            setLicenseKeyTouched(false);
+            _context12.next = 9;
             break;
-          case 5:
-            _context12.prev = 5;
+          case 6:
+            _context12.prev = 6;
             _context12.t0 = _context12["catch"](0);
-            showToast(_context12.t0.message || 'Could not complete onboarding.', 'error');
-          case 8:
+            showToast(_context12.t0.message || 'Unable to deactivate license.', 'error');
+          case 9:
           case "end":
             return _context12.stop();
         }
-      }, _callee12, null, [[0, 5]]);
+      }, _callee12, null, [[0, 6]]);
     }));
-    return function skipN8nOnboarding() {
-      return _ref5.apply(this, arguments);
+    return function deactivateFromPage() {
+      return _ref6.apply(this, arguments);
     };
   }();
-  var saveN8nFromPage = /*#__PURE__*/function () {
-    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee13() {
+  var refreshLicenseFromPage = /*#__PURE__*/function () {
+    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee13() {
       return _regeneratorRuntime().wrap(function _callee13$(_context13) {
         while (1) switch (_context13.prev = _context13.next) {
           case 0:
             _context13.prev = 0;
             _context13.next = 3;
-            return saveN8nConfig({
-              base_url: n8nBaseUrl,
-              n8n_api_key: n8nApiKey,
-              rapidapi_key: rapidApiKey,
-              firecrawl_key: firecrawlKey,
-              openrouter_key: openRouterKey
-            });
+            return refreshLicense();
           case 3:
             _context13.next = 8;
             break;
           case 5:
             _context13.prev = 5;
             _context13.t0 = _context13["catch"](0);
-            showToast(_context13.t0.message || 'Could not save n8n config.', 'error');
+            showToast(_context13.t0.message || 'Unable to refresh license status.', 'error');
           case 8:
           case "end":
             return _context13.stop();
         }
       }, _callee13, null, [[0, 5]]);
     }));
-    return function saveN8nFromPage() {
-      return _ref6.apply(this, arguments);
+    return function refreshLicenseFromPage() {
+      return _ref7.apply(this, arguments);
     };
   }();
-  var activateFromPage = /*#__PURE__*/function () {
-    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
+  var checkBlueprintUpdateFromPage = /*#__PURE__*/function () {
+    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
       return _regeneratorRuntime().wrap(function _callee14$(_context14) {
         while (1) switch (_context14.prev = _context14.next) {
           case 0:
             _context14.prev = 0;
             _context14.next = 3;
-            return saveLicense({
-              licenseKey: licenseKeyInput
+            return checkBlueprintUpdate({
+              force: true
             });
           case 3:
             _context14.next = 8;
@@ -16668,143 +16773,65 @@ function SupportPage() {
           case 5:
             _context14.prev = 5;
             _context14.t0 = _context14["catch"](0);
-            showToast(_context14.t0.message || 'Unable to activate license.', 'error');
+            showToast(_context14.t0.message || 'Blueprint update check failed.', 'error');
           case 8:
           case "end":
             return _context14.stop();
         }
       }, _callee14, null, [[0, 5]]);
     }));
-    return function activateFromPage() {
-      return _ref7.apply(this, arguments);
+    return function checkBlueprintUpdateFromPage() {
+      return _ref8.apply(this, arguments);
     };
   }();
-  var deactivateFromPage = /*#__PURE__*/function () {
-    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15() {
+  var setAutoUpdateFromPage = /*#__PURE__*/function () {
+    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15(enabled) {
       return _regeneratorRuntime().wrap(function _callee15$(_context15) {
         while (1) switch (_context15.prev = _context15.next) {
           case 0:
             _context15.prev = 0;
             _context15.next = 3;
-            return deactivateLicense();
+            return setAutoUpdatePlugin(enabled);
           case 3:
-            setLicenseKeyTouched(false);
-            _context15.next = 9;
+            _context15.next = 8;
             break;
-          case 6:
-            _context15.prev = 6;
+          case 5:
+            _context15.prev = 5;
             _context15.t0 = _context15["catch"](0);
-            showToast(_context15.t0.message || 'Unable to deactivate license.', 'error');
-          case 9:
+            showToast(_context15.t0.message || 'Unable to update plugin auto-update setting.', 'error');
+          case 8:
           case "end":
             return _context15.stop();
         }
-      }, _callee15, null, [[0, 6]]);
+      }, _callee15, null, [[0, 5]]);
     }));
-    return function deactivateFromPage() {
-      return _ref8.apply(this, arguments);
+    return function setAutoUpdateFromPage(_x8) {
+      return _ref9.apply(this, arguments);
     };
   }();
-  var refreshLicenseFromPage = /*#__PURE__*/function () {
-    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16() {
+  var loadManualBlueprintFromPage = /*#__PURE__*/function () {
+    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16() {
       return _regeneratorRuntime().wrap(function _callee16$(_context16) {
         while (1) switch (_context16.prev = _context16.next) {
           case 0:
             _context16.prev = 0;
             _context16.next = 3;
-            return refreshLicense();
+            return fetchManualBlueprint();
           case 3:
             _context16.next = 8;
             break;
           case 5:
             _context16.prev = 5;
             _context16.t0 = _context16["catch"](0);
-            showToast(_context16.t0.message || 'Unable to refresh license status.', 'error');
+            showToast(_context16.t0.message || 'Unable to load manual blueprint.', 'error');
           case 8:
           case "end":
             return _context16.stop();
         }
       }, _callee16, null, [[0, 5]]);
     }));
-    return function refreshLicenseFromPage() {
-      return _ref9.apply(this, arguments);
-    };
-  }();
-  var checkBlueprintUpdateFromPage = /*#__PURE__*/function () {
-    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17() {
-      return _regeneratorRuntime().wrap(function _callee17$(_context17) {
-        while (1) switch (_context17.prev = _context17.next) {
-          case 0:
-            _context17.prev = 0;
-            _context17.next = 3;
-            return checkBlueprintUpdate({
-              force: true
-            });
-          case 3:
-            _context17.next = 8;
-            break;
-          case 5:
-            _context17.prev = 5;
-            _context17.t0 = _context17["catch"](0);
-            showToast(_context17.t0.message || 'Blueprint update check failed.', 'error');
-          case 8:
-          case "end":
-            return _context17.stop();
-        }
-      }, _callee17, null, [[0, 5]]);
-    }));
-    return function checkBlueprintUpdateFromPage() {
-      return _ref10.apply(this, arguments);
-    };
-  }();
-  var setAutoUpdateFromPage = /*#__PURE__*/function () {
-    var _ref11 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18(enabled) {
-      return _regeneratorRuntime().wrap(function _callee18$(_context18) {
-        while (1) switch (_context18.prev = _context18.next) {
-          case 0:
-            _context18.prev = 0;
-            _context18.next = 3;
-            return setAutoUpdatePlugin(enabled);
-          case 3:
-            _context18.next = 8;
-            break;
-          case 5:
-            _context18.prev = 5;
-            _context18.t0 = _context18["catch"](0);
-            showToast(_context18.t0.message || 'Unable to update plugin auto-update setting.', 'error');
-          case 8:
-          case "end":
-            return _context18.stop();
-        }
-      }, _callee18, null, [[0, 5]]);
-    }));
-    return function setAutoUpdateFromPage(_x9) {
-      return _ref11.apply(this, arguments);
-    };
-  }();
-  var loadManualBlueprintFromPage = /*#__PURE__*/function () {
-    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19() {
-      return _regeneratorRuntime().wrap(function _callee19$(_context19) {
-        while (1) switch (_context19.prev = _context19.next) {
-          case 0:
-            _context19.prev = 0;
-            _context19.next = 3;
-            return fetchManualBlueprint();
-          case 3:
-            _context19.next = 8;
-            break;
-          case 5:
-            _context19.prev = 5;
-            _context19.t0 = _context19["catch"](0);
-            showToast(_context19.t0.message || 'Unable to load manual blueprint.', 'error');
-          case 8:
-          case "end":
-            return _context19.stop();
-        }
-      }, _callee19, null, [[0, 5]]);
-    }));
     return function loadManualBlueprintFromPage() {
-      return _ref12.apply(this, arguments);
+      return _ref10.apply(this, arguments);
     };
   }();
   var blueprintUpdate = (supportState === null || supportState === void 0 || (_supportState$n8n3 = supportState.n8n) === null || _supportState$n8n3 === void 0 ? void 0 : _supportState$n8n3.blueprint_update) || {};
@@ -16816,7 +16843,7 @@ function SupportPage() {
       title: "Support",
       description: "License, n8n deployment, manual setup, and update management."
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-      className: "grid grid-cols-1 gap-6 max-w-5xl",
+      className: "grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl w-full mx-auto",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
@@ -16891,105 +16918,6 @@ function SupportPage() {
                 children: "Manage"
               })]
             })]
-          })]
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
-            className: "text-lg font-medium text-gray-900",
-            children: "n8n Auto Deployment"
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-            className: "grid grid-cols-1 md:grid-cols-2 gap-3",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "n8n Base URL",
-              value: n8nBaseUrl,
-              onChange: function onChange(e) {
-                return setN8nBaseUrl(e.target.value);
-              },
-              placeholder: "https://your-n8n.example.com"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "n8n API Key",
-              type: "password",
-              value: n8nApiKey,
-              onChange: function onChange(e) {
-                return setN8nApiKey(e.target.value);
-              },
-              placeholder: supportState !== null && supportState !== void 0 && (_supportState$n8n4 = supportState.n8n) !== null && _supportState$n8n4 !== void 0 && _supportState$n8n4.n8n_api_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter n8n API key'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "RapidAPI Key",
-              type: "password",
-              value: rapidApiKey,
-              onChange: function onChange(e) {
-                return setRapidApiKey(e.target.value);
-              },
-              placeholder: supportState !== null && supportState !== void 0 && (_supportState$n8n5 = supportState.n8n) !== null && _supportState$n8n5 !== void 0 && _supportState$n8n5.rapidapi_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter RapidAPI key'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "Firecrawl Key",
-              type: "password",
-              value: firecrawlKey,
-              onChange: function onChange(e) {
-                return setFirecrawlKey(e.target.value);
-              },
-              placeholder: supportState !== null && supportState !== void 0 && (_supportState$n8n6 = supportState.n8n) !== null && _supportState$n8n6 !== void 0 && _supportState$n8n6.firecrawl_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter Firecrawl key'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-              label: "OpenRouter Key",
-              type: "password",
-              value: openRouterKey,
-              onChange: function onChange(e) {
-                return setOpenRouterKey(e.target.value);
-              },
-              placeholder: supportState !== null && supportState !== void 0 && (_supportState$n8n7 = supportState.n8n) !== null && _supportState$n8n7 !== void 0 && _supportState$n8n7.openrouter_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter OpenRouter key'
-            })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-            className: "mt-4 flex flex-wrap gap-2",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-              onClick: saveN8nFromPage,
-              loading: savingN8nConfig,
-              children: "Save"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-              onClick: deployAction,
-              loading: deploying,
-              disabled: !licenseValid,
-              children: "Deploy"
-            }), (supportState === null || supportState === void 0 || (_supportState$n8n8 = supportState.n8n) === null || _supportState$n8n8 === void 0 ? void 0 : _supportState$n8n8.last_error) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-              className: "text-xs text-red-600 self-center",
-              children: supportState.n8n.last_error
-            })]
-          })]
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
-            className: "text-lg font-medium text-gray-900",
-            children: "Manual Deployment"
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-            className: "flex gap-2 mb-3",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-              onClick: loadManualBlueprintFromPage,
-              loading: loadingManualBlueprint,
-              disabled: !licenseValid,
-              children: "Load Manual Instructions"
-            }), (manualBlueprint === null || manualBlueprint === void 0 ? void 0 : manualBlueprint.download_url) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
-              href: manualBlueprint.download_url,
-              target: "_blank",
-              rel: "noreferrer",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-                variant: "secondary",
-                children: "Download Blueprint"
-              })
-            }), (manualBlueprint === null || manualBlueprint === void 0 ? void 0 : manualBlueprint.version) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
-              className: "self-center text-xs text-gray-600",
-              children: ["Version: ", manualBlueprint.version]
-            })]
-          }), (manualBlueprint === null || manualBlueprint === void 0 ? void 0 : manualBlueprint.manual_instructions) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-            className: "prose prose-sm max-w-none text-gray-700",
-            dangerouslySetInnerHTML: {
-              __html: manualBlueprint.manual_instructions
-            }
           })]
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
@@ -17081,62 +17009,36 @@ function SupportPage() {
             })]
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(StepCard, {
-          title: "Step 2: n8n Auto Deployment Settings",
+          title: "Step 2: n8n Connection Settings",
           subtitle: "Optional",
           active: onboardingStep === 2,
           locked: !licenseValid,
           complete: n8nConfigured,
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "space-y-3",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-              className: "grid grid-cols-1 md:grid-cols-2 gap-3",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-                label: "n8n Base URL",
-                value: n8nBaseUrl,
-                onChange: function onChange(e) {
-                  return setN8nBaseUrl(e.target.value);
-                }
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-                label: "n8n API Key",
-                type: "password",
-                value: n8nApiKey,
-                onChange: function onChange(e) {
-                  return setN8nApiKey(e.target.value);
-                }
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-                label: "RapidAPI Key",
-                type: "password",
-                value: rapidApiKey,
-                onChange: function onChange(e) {
-                  return setRapidApiKey(e.target.value);
-                }
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-                label: "Firecrawl Key",
-                type: "password",
-                value: firecrawlKey,
-                onChange: function onChange(e) {
-                  return setFirecrawlKey(e.target.value);
-                }
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Input, {
-                label: "OpenRouter Key",
-                type: "password",
-                value: openRouterKey,
-                onChange: function onChange(e) {
-                  return setOpenRouterKey(e.target.value);
-                }
-              })]
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+              className: "text-sm text-gray-600",
+              children: "n8n connection has moved to the Settings page. Configure Base URL and API Key there, then return to deploy."
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "flex flex-wrap gap-2",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
-                onClick: saveN8nAction,
-                loading: savingN8nConfig,
-                disabled: !licenseValid,
-                children: "Save & Continue"
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+                href: "#/settings",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                  variant: "secondary",
+                  disabled: !licenseValid,
+                  children: "Open Settings"
+                })
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
                 variant: "secondary",
                 onClick: skipN8nOnboarding,
                 disabled: !licenseValid,
                 children: "Skip (Manual Later)"
+              }), n8nConfigured && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+                onClick: function onClick() {
+                  return setOnboardingStep(3);
+                },
+                disabled: !licenseValid,
+                children: "Continue"
               })]
             })]
           })
@@ -17145,7 +17047,7 @@ function SupportPage() {
           subtitle: "Deploy now to finish onboarding",
           active: onboardingStep === 3,
           locked: !licenseValid || !n8nConfigured,
-          complete: Boolean(supportState === null || supportState === void 0 || (_supportState$n8n9 = supportState.n8n) === null || _supportState$n8n9 === void 0 || (_supportState$n8n9 = _supportState$n8n9.last_deploy) === null || _supportState$n8n9 === void 0 ? void 0 : _supportState$n8n9.deployed_at),
+          complete: Boolean(supportState === null || supportState === void 0 || (_supportState$n8n4 = supportState.n8n) === null || _supportState$n8n4 === void 0 ? void 0 : _supportState$n8n4.workflow_id),
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "space-y-2",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
@@ -17449,6 +17351,282 @@ function WebhooksPage() {
       mode: webhookModal.mode,
       webhook: webhookModal.webhook,
       onSaved: handleWebhookSaved
+    })]
+  });
+}
+
+/***/ }),
+
+/***/ "./src/pages/WritingPresetsPage.jsx":
+/*!******************************************!*\
+  !*** ./src/pages/WritingPresetsPage.jsx ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ WritingPresetsPage)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/common */ "./src/components/common/index.js");
+/* harmony import */ var _components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/writing-presets/WritingPresetModal */ "./src/components/writing-presets/WritingPresetModal.jsx");
+/* harmony import */ var _api_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../api/client */ "./src/api/client.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+
+
+
+
+var DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
+var isDefaultPreset = function isDefaultPreset(key) {
+  return key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
+};
+function WritingPresetsPage() {
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+      open: false,
+      mode: 'add',
+      writingPreset: null
+    }),
+    _useState2 = _slicedToArray(_useState, 2),
+    writingPresetModal = _useState2[0],
+    setWritingPresetModal = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState4 = _slicedToArray(_useState3, 2),
+    deleteWritingPreset = _useState4[0],
+    setDeleteWritingPreset = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    deleting = _useState6[0],
+    setDeleting = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {
+      return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)();
+    }),
+    _useState8 = _slicedToArray(_useState7, 2),
+    writingPresetsList = _useState8[0],
+    setWritingPresetsList = _useState8[1];
+  var fetchWritingPresets = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return (0,_api_client__WEBPACK_IMPORTED_MODULE_3__.refreshBootstrap)();
+        case 2:
+          setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
+        case 3:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  })), []);
+  var openWritingPresetModal = function openWritingPresetModal(mode) {
+    var writingPreset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    setWritingPresetModal({
+      open: true,
+      mode: mode,
+      writingPreset: writingPreset
+    });
+  };
+  var closeWritingPresetModal = function closeWritingPresetModal() {
+    setWritingPresetModal(function (prev) {
+      return _objectSpread(_objectSpread({}, prev), {}, {
+        open: false
+      });
+    });
+  };
+  var handleWritingPresetSaved = function handleWritingPresetSaved() {
+    setWritingPresetsList((0,_api_client__WEBPACK_IMPORTED_MODULE_3__.getBootstrapWritingPresets)());
+  };
+  var handleConfirmDeleteWritingPreset = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            if (deleteWritingPreset !== null && deleteWritingPreset !== void 0 && deleteWritingPreset.id) {
+              _context2.next = 2;
+              break;
+            }
+            return _context2.abrupt("return");
+          case 2:
+            setDeleting(true);
+            _context2.prev = 3;
+            _context2.next = 6;
+            return _api_client__WEBPACK_IMPORTED_MODULE_3__.writingPresets["delete"](deleteWritingPreset.id);
+          case 6:
+            _context2.next = 8;
+            return fetchWritingPresets();
+          case 8:
+            setDeleteWritingPreset(null);
+            _context2.next = 14;
+            break;
+          case 11:
+            _context2.prev = 11;
+            _context2.t0 = _context2["catch"](3);
+            console.error('Failed to delete writing preset:', _context2.t0);
+          case 14:
+            _context2.prev = 14;
+            setDeleting(false);
+            return _context2.finish(14);
+          case 17:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee2, null, [[3, 11, 14, 17]]);
+    }));
+    return function handleConfirmDeleteWritingPreset() {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageHeader, {
+      title: "Writing Presets",
+      description: "Manage writing presets used for title and body generation",
+      actions: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+        variant: "primary",
+        onClick: function onClick() {
+          return openWritingPresetModal('add');
+        },
+        children: "Add new"
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Card, {
+      className: "max-w-5xl",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardHeader, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+            className: "text-lg font-medium text-gray-900",
+            children: "Writing presets"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+            className: "text-sm text-gray-500",
+            children: "Create and manage reusable writing profiles."
+          })]
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.CardBody, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          className: "space-y-4",
+          children: writingPresetsList.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            className: "flex items-center justify-center py-10 px-6 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+              className: "text-sm text-gray-400",
+              children: "No writing presets. Add one to get started."
+            })
+          }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            className: "flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto pr-1",
+            children: writingPresetsList.map(function (inst) {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                className: "group flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-all hover:border-gray-300 hover:bg-gray-50",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                  className: "min-w-0 flex-1 flex flex-col gap-0.5",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                    className: "flex items-center gap-2",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                      className: "font-medium text-sm text-gray-900 truncate",
+                      children: inst.name
+                    }), inst.key && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                      className: "shrink-0 inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-500",
+                      children: inst.key
+                    })]
+                  })
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                  className: "flex items-center gap-1 shrink-0",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                    type: "button",
+                    className: "poststation-icon-btn",
+                    onClick: function onClick() {
+                      return openWritingPresetModal('edit', inst);
+                    },
+                    title: "Edit",
+                    "aria-label": "Edit",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+                      className: "w-4 h-4",
+                      fill: "none",
+                      viewBox: "0 0 24 24",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                        d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      })
+                    })
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                    type: "button",
+                    className: "poststation-icon-btn",
+                    onClick: function onClick() {
+                      return openWritingPresetModal('duplicate', inst);
+                    },
+                    title: "Duplicate",
+                    "aria-label": "Duplicate",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+                      className: "w-4 h-4",
+                      fill: "none",
+                      viewBox: "0 0 24 24",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                        d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      })
+                    })
+                  }), !isDefaultPreset(inst.key) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                    type: "button",
+                    className: "poststation-icon-btn-danger",
+                    onClick: function onClick() {
+                      return setDeleteWritingPreset(inst);
+                    },
+                    title: "Delete",
+                    "aria-label": "Delete",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+                      className: "w-4 h-4",
+                      fill: "none",
+                      viewBox: "0 0 24 24",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                        d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      })
+                    })
+                  })]
+                })]
+              }, inst.id);
+            })
+          })
+        })
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_writing_presets_WritingPresetModal__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      isOpen: writingPresetModal.open,
+      onClose: closeWritingPresetModal,
+      mode: writingPresetModal.mode,
+      writingPreset: writingPresetModal.writingPreset,
+      onSaved: handleWritingPresetSaved
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.ConfirmModal, {
+      isOpen: Boolean(deleteWritingPreset),
+      onClose: function onClose() {
+        return setDeleteWritingPreset(null);
+      },
+      onConfirm: handleConfirmDeleteWritingPreset,
+      title: "Delete writing preset",
+      message: deleteWritingPreset ? "Delete \"".concat(deleteWritingPreset.name, "\"? This cannot be undone.") : '',
+      confirmText: "Delete",
+      variant: "danger",
+      loading: deleting
     })]
   });
 }
@@ -18205,6 +18383,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .top-3 {
     top: calc(var(--spacing) * 3);
   }
+  .top-4 {
+    top: calc(var(--spacing) * 4);
+  }
   .top-8 {
     top: calc(var(--spacing) * 8);
   }
@@ -18283,8 +18464,23 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .order-2 {
     order: 2;
   }
+  .col-span-1 {
+    grid-column: span 1 / span 1;
+  }
   .col-span-2 {
     grid-column: span 2 / span 2;
+  }
+  .col-span-3 {
+    grid-column: span 3 / span 3;
+  }
+  .col-span-4 {
+    grid-column: span 4 / span 4;
+  }
+  .col-span-7 {
+    grid-column: span 7 / span 7;
+  }
+  .col-span-8 {
+    grid-column: span 8 / span 8;
   }
   .container {
     width: 100%;
@@ -18348,6 +18544,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
+  }
+  .mt-3 {
+    margin-top: calc(var(--spacing) * 3);
   }
   .mt-4 {
     margin-top: calc(var(--spacing) * 4);
@@ -18499,6 +18698,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .max-h-112 {
     max-height: calc(var(--spacing) * 112);
   }
+  .max-h-\\[60vh\\] {
+    max-height: 60vh;
+  }
   .min-h-0 {
     min-height: calc(var(--spacing) * 0);
   }
@@ -18510,6 +18712,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .min-h-\\[38px\\] {
     min-height: 38px;
+  }
+  .min-h-\\[56px\\] {
+    min-height: 56px;
+  }
+  .min-h-\\[72px\\] {
+    min-height: 72px;
   }
   .min-h-screen {
     min-height: 100vh;
@@ -18725,6 +18933,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .resize {
     resize: both;
   }
+  .resize-none {
+    resize: none;
+  }
+  .resize-none\\! {
+    resize: none !important;
+  }
   .resize-y {
     resize: vertical;
   }
@@ -18736,6 +18950,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   }
   .grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid-cols-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
   .flex-col {
     flex-direction: column;
@@ -18831,6 +19048,13 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
       --tw-space-y-reverse: 0;
       margin-block-start: calc(calc(var(--spacing) * 4) * var(--tw-space-y-reverse));
       margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
+    }
+  }
+  .space-y-5 {
+    :where(& > :not(:last-child)) {
+      --tw-space-y-reverse: 0;
+      margin-block-start: calc(calc(var(--spacing) * 5) * var(--tw-space-y-reverse));
+      margin-block-end: calc(calc(var(--spacing) * 5) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
   .space-y-6 {
@@ -19342,6 +19566,10 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .text-\\[14px\\] {
     font-size: 14px;
   }
+  .leading-6 {
+    --tw-leading: calc(var(--spacing) * 6);
+    line-height: calc(var(--spacing) * 6);
+  }
   .leading-none {
     --tw-leading: 1;
     line-height: 1;
@@ -19358,6 +19586,10 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
     --tw-font-weight: var(--font-weight-bold);
     font-weight: var(--font-weight-bold);
   }
+  .font-bold\\! {
+    --tw-font-weight: var(--font-weight-bold) !important;
+    font-weight: var(--font-weight-bold) !important;
+  }
   .font-medium {
     --tw-font-weight: var(--font-weight-medium);
     font-weight: var(--font-weight-medium);
@@ -19369,6 +19601,10 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .font-semibold {
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
+  }
+  .tracking-wide {
+    --tw-tracking: var(--tracking-wide);
+    letter-spacing: var(--tracking-wide);
   }
   .tracking-wider {
     --tw-tracking: var(--tracking-wider);
@@ -19608,6 +19844,10 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
     --tw-ease: var(--ease-out);
     transition-timing-function: var(--ease-out);
   }
+  .outline-none {
+    --tw-outline-style: none;
+    outline-style: none;
+  }
   .\\[animation-delay\\:-0\\.3s\\] {
     animation-delay: -0.3s;
   }
@@ -19682,6 +19922,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .placeholder\\:text-gray-400 {
     &::placeholder {
       color: var(--color-gray-400);
+    }
+  }
+  .last\\:border-b-0 {
+    &:last-child {
+      border-bottom-style: var(--tw-border-style);
+      border-bottom-width: 0px;
     }
   }
   .hover\\:border-gray-300 {
@@ -19841,6 +20087,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
       }
     }
   }
+  .focus\\:border-0 {
+    &:focus {
+      border-style: var(--tw-border-style);
+      border-width: 0px;
+    }
+  }
   .focus\\:border-indigo-500 {
     &:focus {
       border-color: var(--color-indigo-500);
@@ -19849,6 +20101,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   .focus\\:border-red-500 {
     &:focus {
       border-color: var(--color-red-500);
+    }
+  }
+  .focus\\:ring-0 {
+    &:focus {
+      --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+      box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
     }
   }
   .focus\\:ring-1 {
@@ -20171,6 +20429,19 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   resize: vertical;
   overflow-y: auto;
 }
+#poststation-app .poststation-inline-editor,
+#poststation-app .poststation-inline-editor:hover,
+#poststation-app .poststation-inline-editor:active,
+#poststation-app .poststation-inline-editor:focus,
+#poststation-app .poststation-inline-editor:focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
 #poststation-app .poststation-switch {
   display: inline-flex;
   cursor: pointer;
@@ -20336,7 +20607,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.1.18 | MIT License 
   overflow: hidden;
   white-space: nowrap;
   border-right: 1px solid currentColor;
-  animation: poststation-progress-typing 5s ease-in-out infinite,
+  animation: poststation-progress-typing 2.5s ease-in-out infinite,
 		poststation-progress-caret 1s steps(1, end) infinite;
   will-change: max-width;
 }
@@ -20818,7 +21089,7 @@ body.admin-bar .poststation-mobile-sidebar {
     }
   }
 }
-`, "",{"version":3,"sources":["<no source>","webpack://./node_modules/tailwindcss/index.css","webpack://./src/index.css"],"names":[],"mappings":"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","sourcesContent":[null,"@layer theme, base, components, utilities;\n\n@layer theme {\n  @theme default {\n    --font-sans:\n      ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-serif: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif;\n    --font-mono:\n      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n      \"Courier New\", monospace;\n\n    --color-red-50: oklch(97.1% 0.013 17.38);\n    --color-red-100: oklch(93.6% 0.032 17.717);\n    --color-red-200: oklch(88.5% 0.062 18.334);\n    --color-red-300: oklch(80.8% 0.114 19.571);\n    --color-red-400: oklch(70.4% 0.191 22.216);\n    --color-red-500: oklch(63.7% 0.237 25.331);\n    --color-red-600: oklch(57.7% 0.245 27.325);\n    --color-red-700: oklch(50.5% 0.213 27.518);\n    --color-red-800: oklch(44.4% 0.177 26.899);\n    --color-red-900: oklch(39.6% 0.141 25.723);\n    --color-red-950: oklch(25.8% 0.092 26.042);\n\n    --color-orange-50: oklch(98% 0.016 73.684);\n    --color-orange-100: oklch(95.4% 0.038 75.164);\n    --color-orange-200: oklch(90.1% 0.076 70.697);\n    --color-orange-300: oklch(83.7% 0.128 66.29);\n    --color-orange-400: oklch(75% 0.183 55.934);\n    --color-orange-500: oklch(70.5% 0.213 47.604);\n    --color-orange-600: oklch(64.6% 0.222 41.116);\n    --color-orange-700: oklch(55.3% 0.195 38.402);\n    --color-orange-800: oklch(47% 0.157 37.304);\n    --color-orange-900: oklch(40.8% 0.123 38.172);\n    --color-orange-950: oklch(26.6% 0.079 36.259);\n\n    --color-amber-50: oklch(98.7% 0.022 95.277);\n    --color-amber-100: oklch(96.2% 0.059 95.617);\n    --color-amber-200: oklch(92.4% 0.12 95.746);\n    --color-amber-300: oklch(87.9% 0.169 91.605);\n    --color-amber-400: oklch(82.8% 0.189 84.429);\n    --color-amber-500: oklch(76.9% 0.188 70.08);\n    --color-amber-600: oklch(66.6% 0.179 58.318);\n    --color-amber-700: oklch(55.5% 0.163 48.998);\n    --color-amber-800: oklch(47.3% 0.137 46.201);\n    --color-amber-900: oklch(41.4% 0.112 45.904);\n    --color-amber-950: oklch(27.9% 0.077 45.635);\n\n    --color-yellow-50: oklch(98.7% 0.026 102.212);\n    --color-yellow-100: oklch(97.3% 0.071 103.193);\n    --color-yellow-200: oklch(94.5% 0.129 101.54);\n    --color-yellow-300: oklch(90.5% 0.182 98.111);\n    --color-yellow-400: oklch(85.2% 0.199 91.936);\n    --color-yellow-500: oklch(79.5% 0.184 86.047);\n    --color-yellow-600: oklch(68.1% 0.162 75.834);\n    --color-yellow-700: oklch(55.4% 0.135 66.442);\n    --color-yellow-800: oklch(47.6% 0.114 61.907);\n    --color-yellow-900: oklch(42.1% 0.095 57.708);\n    --color-yellow-950: oklch(28.6% 0.066 53.813);\n\n    --color-lime-50: oklch(98.6% 0.031 120.757);\n    --color-lime-100: oklch(96.7% 0.067 122.328);\n    --color-lime-200: oklch(93.8% 0.127 124.321);\n    --color-lime-300: oklch(89.7% 0.196 126.665);\n    --color-lime-400: oklch(84.1% 0.238 128.85);\n    --color-lime-500: oklch(76.8% 0.233 130.85);\n    --color-lime-600: oklch(64.8% 0.2 131.684);\n    --color-lime-700: oklch(53.2% 0.157 131.589);\n    --color-lime-800: oklch(45.3% 0.124 130.933);\n    --color-lime-900: oklch(40.5% 0.101 131.063);\n    --color-lime-950: oklch(27.4% 0.072 132.109);\n\n    --color-green-50: oklch(98.2% 0.018 155.826);\n    --color-green-100: oklch(96.2% 0.044 156.743);\n    --color-green-200: oklch(92.5% 0.084 155.995);\n    --color-green-300: oklch(87.1% 0.15 154.449);\n    --color-green-400: oklch(79.2% 0.209 151.711);\n    --color-green-500: oklch(72.3% 0.219 149.579);\n    --color-green-600: oklch(62.7% 0.194 149.214);\n    --color-green-700: oklch(52.7% 0.154 150.069);\n    --color-green-800: oklch(44.8% 0.119 151.328);\n    --color-green-900: oklch(39.3% 0.095 152.535);\n    --color-green-950: oklch(26.6% 0.065 152.934);\n\n    --color-emerald-50: oklch(97.9% 0.021 166.113);\n    --color-emerald-100: oklch(95% 0.052 163.051);\n    --color-emerald-200: oklch(90.5% 0.093 164.15);\n    --color-emerald-300: oklch(84.5% 0.143 164.978);\n    --color-emerald-400: oklch(76.5% 0.177 163.223);\n    --color-emerald-500: oklch(69.6% 0.17 162.48);\n    --color-emerald-600: oklch(59.6% 0.145 163.225);\n    --color-emerald-700: oklch(50.8% 0.118 165.612);\n    --color-emerald-800: oklch(43.2% 0.095 166.913);\n    --color-emerald-900: oklch(37.8% 0.077 168.94);\n    --color-emerald-950: oklch(26.2% 0.051 172.552);\n\n    --color-teal-50: oklch(98.4% 0.014 180.72);\n    --color-teal-100: oklch(95.3% 0.051 180.801);\n    --color-teal-200: oklch(91% 0.096 180.426);\n    --color-teal-300: oklch(85.5% 0.138 181.071);\n    --color-teal-400: oklch(77.7% 0.152 181.912);\n    --color-teal-500: oklch(70.4% 0.14 182.503);\n    --color-teal-600: oklch(60% 0.118 184.704);\n    --color-teal-700: oklch(51.1% 0.096 186.391);\n    --color-teal-800: oklch(43.7% 0.078 188.216);\n    --color-teal-900: oklch(38.6% 0.063 188.416);\n    --color-teal-950: oklch(27.7% 0.046 192.524);\n\n    --color-cyan-50: oklch(98.4% 0.019 200.873);\n    --color-cyan-100: oklch(95.6% 0.045 203.388);\n    --color-cyan-200: oklch(91.7% 0.08 205.041);\n    --color-cyan-300: oklch(86.5% 0.127 207.078);\n    --color-cyan-400: oklch(78.9% 0.154 211.53);\n    --color-cyan-500: oklch(71.5% 0.143 215.221);\n    --color-cyan-600: oklch(60.9% 0.126 221.723);\n    --color-cyan-700: oklch(52% 0.105 223.128);\n    --color-cyan-800: oklch(45% 0.085 224.283);\n    --color-cyan-900: oklch(39.8% 0.07 227.392);\n    --color-cyan-950: oklch(30.2% 0.056 229.695);\n\n    --color-sky-50: oklch(97.7% 0.013 236.62);\n    --color-sky-100: oklch(95.1% 0.026 236.824);\n    --color-sky-200: oklch(90.1% 0.058 230.902);\n    --color-sky-300: oklch(82.8% 0.111 230.318);\n    --color-sky-400: oklch(74.6% 0.16 232.661);\n    --color-sky-500: oklch(68.5% 0.169 237.323);\n    --color-sky-600: oklch(58.8% 0.158 241.966);\n    --color-sky-700: oklch(50% 0.134 242.749);\n    --color-sky-800: oklch(44.3% 0.11 240.79);\n    --color-sky-900: oklch(39.1% 0.09 240.876);\n    --color-sky-950: oklch(29.3% 0.066 243.157);\n\n    --color-blue-50: oklch(97% 0.014 254.604);\n    --color-blue-100: oklch(93.2% 0.032 255.585);\n    --color-blue-200: oklch(88.2% 0.059 254.128);\n    --color-blue-300: oklch(80.9% 0.105 251.813);\n    --color-blue-400: oklch(70.7% 0.165 254.624);\n    --color-blue-500: oklch(62.3% 0.214 259.815);\n    --color-blue-600: oklch(54.6% 0.245 262.881);\n    --color-blue-700: oklch(48.8% 0.243 264.376);\n    --color-blue-800: oklch(42.4% 0.199 265.638);\n    --color-blue-900: oklch(37.9% 0.146 265.522);\n    --color-blue-950: oklch(28.2% 0.091 267.935);\n\n    --color-indigo-50: oklch(96.2% 0.018 272.314);\n    --color-indigo-100: oklch(93% 0.034 272.788);\n    --color-indigo-200: oklch(87% 0.065 274.039);\n    --color-indigo-300: oklch(78.5% 0.115 274.713);\n    --color-indigo-400: oklch(67.3% 0.182 276.935);\n    --color-indigo-500: oklch(58.5% 0.233 277.117);\n    --color-indigo-600: oklch(51.1% 0.262 276.966);\n    --color-indigo-700: oklch(45.7% 0.24 277.023);\n    --color-indigo-800: oklch(39.8% 0.195 277.366);\n    --color-indigo-900: oklch(35.9% 0.144 278.697);\n    --color-indigo-950: oklch(25.7% 0.09 281.288);\n\n    --color-violet-50: oklch(96.9% 0.016 293.756);\n    --color-violet-100: oklch(94.3% 0.029 294.588);\n    --color-violet-200: oklch(89.4% 0.057 293.283);\n    --color-violet-300: oklch(81.1% 0.111 293.571);\n    --color-violet-400: oklch(70.2% 0.183 293.541);\n    --color-violet-500: oklch(60.6% 0.25 292.717);\n    --color-violet-600: oklch(54.1% 0.281 293.009);\n    --color-violet-700: oklch(49.1% 0.27 292.581);\n    --color-violet-800: oklch(43.2% 0.232 292.759);\n    --color-violet-900: oklch(38% 0.189 293.745);\n    --color-violet-950: oklch(28.3% 0.141 291.089);\n\n    --color-purple-50: oklch(97.7% 0.014 308.299);\n    --color-purple-100: oklch(94.6% 0.033 307.174);\n    --color-purple-200: oklch(90.2% 0.063 306.703);\n    --color-purple-300: oklch(82.7% 0.119 306.383);\n    --color-purple-400: oklch(71.4% 0.203 305.504);\n    --color-purple-500: oklch(62.7% 0.265 303.9);\n    --color-purple-600: oklch(55.8% 0.288 302.321);\n    --color-purple-700: oklch(49.6% 0.265 301.924);\n    --color-purple-800: oklch(43.8% 0.218 303.724);\n    --color-purple-900: oklch(38.1% 0.176 304.987);\n    --color-purple-950: oklch(29.1% 0.149 302.717);\n\n    --color-fuchsia-50: oklch(97.7% 0.017 320.058);\n    --color-fuchsia-100: oklch(95.2% 0.037 318.852);\n    --color-fuchsia-200: oklch(90.3% 0.076 319.62);\n    --color-fuchsia-300: oklch(83.3% 0.145 321.434);\n    --color-fuchsia-400: oklch(74% 0.238 322.16);\n    --color-fuchsia-500: oklch(66.7% 0.295 322.15);\n    --color-fuchsia-600: oklch(59.1% 0.293 322.896);\n    --color-fuchsia-700: oklch(51.8% 0.253 323.949);\n    --color-fuchsia-800: oklch(45.2% 0.211 324.591);\n    --color-fuchsia-900: oklch(40.1% 0.17 325.612);\n    --color-fuchsia-950: oklch(29.3% 0.136 325.661);\n\n    --color-pink-50: oklch(97.1% 0.014 343.198);\n    --color-pink-100: oklch(94.8% 0.028 342.258);\n    --color-pink-200: oklch(89.9% 0.061 343.231);\n    --color-pink-300: oklch(82.3% 0.12 346.018);\n    --color-pink-400: oklch(71.8% 0.202 349.761);\n    --color-pink-500: oklch(65.6% 0.241 354.308);\n    --color-pink-600: oklch(59.2% 0.249 0.584);\n    --color-pink-700: oklch(52.5% 0.223 3.958);\n    --color-pink-800: oklch(45.9% 0.187 3.815);\n    --color-pink-900: oklch(40.8% 0.153 2.432);\n    --color-pink-950: oklch(28.4% 0.109 3.907);\n\n    --color-rose-50: oklch(96.9% 0.015 12.422);\n    --color-rose-100: oklch(94.1% 0.03 12.58);\n    --color-rose-200: oklch(89.2% 0.058 10.001);\n    --color-rose-300: oklch(81% 0.117 11.638);\n    --color-rose-400: oklch(71.2% 0.194 13.428);\n    --color-rose-500: oklch(64.5% 0.246 16.439);\n    --color-rose-600: oklch(58.6% 0.253 17.585);\n    --color-rose-700: oklch(51.4% 0.222 16.935);\n    --color-rose-800: oklch(45.5% 0.188 13.697);\n    --color-rose-900: oklch(41% 0.159 10.272);\n    --color-rose-950: oklch(27.1% 0.105 12.094);\n\n    --color-slate-50: oklch(98.4% 0.003 247.858);\n    --color-slate-100: oklch(96.8% 0.007 247.896);\n    --color-slate-200: oklch(92.9% 0.013 255.508);\n    --color-slate-300: oklch(86.9% 0.022 252.894);\n    --color-slate-400: oklch(70.4% 0.04 256.788);\n    --color-slate-500: oklch(55.4% 0.046 257.417);\n    --color-slate-600: oklch(44.6% 0.043 257.281);\n    --color-slate-700: oklch(37.2% 0.044 257.287);\n    --color-slate-800: oklch(27.9% 0.041 260.031);\n    --color-slate-900: oklch(20.8% 0.042 265.755);\n    --color-slate-950: oklch(12.9% 0.042 264.695);\n\n    --color-gray-50: oklch(98.5% 0.002 247.839);\n    --color-gray-100: oklch(96.7% 0.003 264.542);\n    --color-gray-200: oklch(92.8% 0.006 264.531);\n    --color-gray-300: oklch(87.2% 0.01 258.338);\n    --color-gray-400: oklch(70.7% 0.022 261.325);\n    --color-gray-500: oklch(55.1% 0.027 264.364);\n    --color-gray-600: oklch(44.6% 0.03 256.802);\n    --color-gray-700: oklch(37.3% 0.034 259.733);\n    --color-gray-800: oklch(27.8% 0.033 256.848);\n    --color-gray-900: oklch(21% 0.034 264.665);\n    --color-gray-950: oklch(13% 0.028 261.692);\n\n    --color-zinc-50: oklch(98.5% 0 0);\n    --color-zinc-100: oklch(96.7% 0.001 286.375);\n    --color-zinc-200: oklch(92% 0.004 286.32);\n    --color-zinc-300: oklch(87.1% 0.006 286.286);\n    --color-zinc-400: oklch(70.5% 0.015 286.067);\n    --color-zinc-500: oklch(55.2% 0.016 285.938);\n    --color-zinc-600: oklch(44.2% 0.017 285.786);\n    --color-zinc-700: oklch(37% 0.013 285.805);\n    --color-zinc-800: oklch(27.4% 0.006 286.033);\n    --color-zinc-900: oklch(21% 0.006 285.885);\n    --color-zinc-950: oklch(14.1% 0.005 285.823);\n\n    --color-neutral-50: oklch(98.5% 0 0);\n    --color-neutral-100: oklch(97% 0 0);\n    --color-neutral-200: oklch(92.2% 0 0);\n    --color-neutral-300: oklch(87% 0 0);\n    --color-neutral-400: oklch(70.8% 0 0);\n    --color-neutral-500: oklch(55.6% 0 0);\n    --color-neutral-600: oklch(43.9% 0 0);\n    --color-neutral-700: oklch(37.1% 0 0);\n    --color-neutral-800: oklch(26.9% 0 0);\n    --color-neutral-900: oklch(20.5% 0 0);\n    --color-neutral-950: oklch(14.5% 0 0);\n\n    --color-stone-50: oklch(98.5% 0.001 106.423);\n    --color-stone-100: oklch(97% 0.001 106.424);\n    --color-stone-200: oklch(92.3% 0.003 48.717);\n    --color-stone-300: oklch(86.9% 0.005 56.366);\n    --color-stone-400: oklch(70.9% 0.01 56.259);\n    --color-stone-500: oklch(55.3% 0.013 58.071);\n    --color-stone-600: oklch(44.4% 0.011 73.639);\n    --color-stone-700: oklch(37.4% 0.01 67.558);\n    --color-stone-800: oklch(26.8% 0.007 34.298);\n    --color-stone-900: oklch(21.6% 0.006 56.043);\n    --color-stone-950: oklch(14.7% 0.004 49.25);\n\n    --color-black: #000;\n    --color-white: #fff;\n\n    --spacing: 0.25rem;\n\n    --breakpoint-sm: 40rem;\n    --breakpoint-md: 48rem;\n    --breakpoint-lg: 64rem;\n    --breakpoint-xl: 80rem;\n    --breakpoint-2xl: 96rem;\n\n    --container-3xs: 16rem;\n    --container-2xs: 18rem;\n    --container-xs: 20rem;\n    --container-sm: 24rem;\n    --container-md: 28rem;\n    --container-lg: 32rem;\n    --container-xl: 36rem;\n    --container-2xl: 42rem;\n    --container-3xl: 48rem;\n    --container-4xl: 56rem;\n    --container-5xl: 64rem;\n    --container-6xl: 72rem;\n    --container-7xl: 80rem;\n\n    --text-xs: 0.75rem;\n    --text-xs--line-height: calc(1 / 0.75);\n    --text-sm: 0.875rem;\n    --text-sm--line-height: calc(1.25 / 0.875);\n    --text-base: 1rem;\n    --text-base--line-height: calc(1.5 / 1);\n    --text-lg: 1.125rem;\n    --text-lg--line-height: calc(1.75 / 1.125);\n    --text-xl: 1.25rem;\n    --text-xl--line-height: calc(1.75 / 1.25);\n    --text-2xl: 1.5rem;\n    --text-2xl--line-height: calc(2 / 1.5);\n    --text-3xl: 1.875rem;\n    --text-3xl--line-height: calc(2.25 / 1.875);\n    --text-4xl: 2.25rem;\n    --text-4xl--line-height: calc(2.5 / 2.25);\n    --text-5xl: 3rem;\n    --text-5xl--line-height: 1;\n    --text-6xl: 3.75rem;\n    --text-6xl--line-height: 1;\n    --text-7xl: 4.5rem;\n    --text-7xl--line-height: 1;\n    --text-8xl: 6rem;\n    --text-8xl--line-height: 1;\n    --text-9xl: 8rem;\n    --text-9xl--line-height: 1;\n\n    --font-weight-thin: 100;\n    --font-weight-extralight: 200;\n    --font-weight-light: 300;\n    --font-weight-normal: 400;\n    --font-weight-medium: 500;\n    --font-weight-semibold: 600;\n    --font-weight-bold: 700;\n    --font-weight-extrabold: 800;\n    --font-weight-black: 900;\n\n    --tracking-tighter: -0.05em;\n    --tracking-tight: -0.025em;\n    --tracking-normal: 0em;\n    --tracking-wide: 0.025em;\n    --tracking-wider: 0.05em;\n    --tracking-widest: 0.1em;\n\n    --leading-tight: 1.25;\n    --leading-snug: 1.375;\n    --leading-normal: 1.5;\n    --leading-relaxed: 1.625;\n    --leading-loose: 2;\n\n    --radius-xs: 0.125rem;\n    --radius-sm: 0.25rem;\n    --radius-md: 0.375rem;\n    --radius-lg: 0.5rem;\n    --radius-xl: 0.75rem;\n    --radius-2xl: 1rem;\n    --radius-3xl: 1.5rem;\n    --radius-4xl: 2rem;\n\n    --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);\n    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-md:\n      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --shadow-lg:\n      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --shadow-xl:\n      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n\n    --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);\n\n    --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);\n    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);\n    --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);\n    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);\n    --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);\n    --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);\n\n    --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);\n    --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);\n    --text-shadow-sm:\n      0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),\n      0px 2px 2px rgb(0 0 0 / 0.075);\n    --text-shadow-md:\n      0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),\n      0px 2px 4px rgb(0 0 0 / 0.1);\n    --text-shadow-lg:\n      0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),\n      0px 4px 8px rgb(0 0 0 / 0.1);\n\n    --ease-in: cubic-bezier(0.4, 0, 1, 1);\n    --ease-out: cubic-bezier(0, 0, 0.2, 1);\n    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);\n\n    --animate-spin: spin 1s linear infinite;\n    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;\n    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n    --animate-bounce: bounce 1s infinite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @keyframes ping {\n      75%,\n      100% {\n        transform: scale(2);\n        opacity: 0;\n      }\n    }\n\n    @keyframes pulse {\n      50% {\n        opacity: 0.5;\n      }\n    }\n\n    @keyframes bounce {\n      0%,\n      100% {\n        transform: translateY(-25%);\n        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);\n      }\n\n      50% {\n        transform: none;\n        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg: 16px;\n    --blur-xl: 24px;\n    --blur-2xl: 40px;\n    --blur-3xl: 64px;\n\n    --perspective-dramatic: 100px;\n    --perspective-near: 300px;\n    --perspective-normal: 500px;\n    --perspective-midrange: 800px;\n    --perspective-distant: 1200px;\n\n    --aspect-video: 16 / 9;\n\n    --default-transition-duration: 150ms;\n    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    --default-font-family: --theme(--font-sans, initial);\n    --default-font-feature-settings: --theme(\n      --font-sans--font-feature-settings,\n      initial\n    );\n    --default-font-variation-settings: --theme(\n      --font-sans--font-variation-settings,\n      initial\n    );\n    --default-mono-font-family: --theme(--font-mono, initial);\n    --default-mono-font-feature-settings: --theme(\n      --font-mono--font-feature-settings,\n      initial\n    );\n    --default-mono-font-variation-settings: --theme(\n      --font-mono--font-variation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n    --blur: 8px;\n    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);\n    --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);\n    --radius: 0.25rem;\n    --max-width-prose: 65ch;\n  }\n}\n\n@layer base {\n  /*\n  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n  2. Remove default margins and padding\n  3. Reset all borders.\n*/\n\n  *,\n  ::after,\n  ::before,\n  ::backdrop,\n  ::file-selector-button {\n    box-sizing: border-box; /* 1 */\n    margin: 0; /* 2 */\n    padding: 0; /* 2 */\n    border: 0 solid; /* 3 */\n  }\n\n  /*\n  1. Use a consistent sensible line-height in all browsers.\n  2. Prevent adjustments of font size after orientation changes in iOS.\n  3. Use a more readable tab size.\n  4. Use the user's configured `sans` font-family by default.\n  5. Use the user's configured `sans` font-feature-settings by default.\n  6. Use the user's configured `sans` font-variation-settings by default.\n  7. Disable tap highlights on iOS.\n*/\n\n  html,\n  :host {\n    line-height: 1.5; /* 1 */\n    -webkit-text-size-adjust: 100%; /* 2 */\n    tab-size: 4; /* 3 */\n    font-family: --theme(\n      --default-font-family,\n      ui-sans-serif,\n      system-ui,\n      sans-serif,\n      \"Apple Color Emoji\",\n      \"Segoe UI Emoji\",\n      \"Segoe UI Symbol\",\n      \"Noto Color Emoji\"\n    ); /* 4 */\n    font-feature-settings: --theme(\n      --default-font-feature-settings,\n      normal\n    ); /* 5 */\n    font-variation-settings: --theme(\n      --default-font-variation-settings,\n      normal\n    ); /* 6 */\n    -webkit-tap-highlight-color: transparent; /* 7 */\n  }\n\n  /*\n  1. Add the correct height in Firefox.\n  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n  3. Reset the default border style to a 1px solid border.\n*/\n\n  hr {\n    height: 0; /* 1 */\n    color: inherit; /* 2 */\n    border-top-width: 1px; /* 3 */\n  }\n\n  /*\n  Add the correct text decoration in Chrome, Edge, and Safari.\n*/\n\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n\n  /*\n  Remove the default font size and weight for headings.\n*/\n\n  h1,\n  h2,\n  h3,\n  h4,\n  h5,\n  h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n\n  /*\n  Reset links to optimize for opt-in styling instead of opt-out.\n*/\n\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n\n  /*\n  Add the correct font weight in Edge and Safari.\n*/\n\n  b,\n  strong {\n    font-weight: bolder;\n  }\n\n  /*\n  1. Use the user's configured `mono` font-family by default.\n  2. Use the user's configured `mono` font-feature-settings by default.\n  3. Use the user's configured `mono` font-variation-settings by default.\n  4. Correct the odd `em` font sizing in all browsers.\n*/\n\n  code,\n  kbd,\n  samp,\n  pre {\n    font-family: --theme(\n      --default-mono-font-family,\n      ui-monospace,\n      SFMono-Regular,\n      Menlo,\n      Monaco,\n      Consolas,\n      \"Liberation Mono\",\n      \"Courier New\",\n      monospace\n    ); /* 1 */\n    font-feature-settings: --theme(\n      --default-mono-font-feature-settings,\n      normal\n    ); /* 2 */\n    font-variation-settings: --theme(\n      --default-mono-font-variation-settings,\n      normal\n    ); /* 3 */\n    font-size: 1em; /* 4 */\n  }\n\n  /*\n  Add the correct font size in all browsers.\n*/\n\n  small {\n    font-size: 80%;\n  }\n\n  /*\n  Prevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\n  sub,\n  sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n\n  sub {\n    bottom: -0.25em;\n  }\n\n  sup {\n    top: -0.5em;\n  }\n\n  /*\n  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n  3. Remove gaps between table borders by default.\n*/\n\n  table {\n    text-indent: 0; /* 1 */\n    border-color: inherit; /* 2 */\n    border-collapse: collapse; /* 3 */\n  }\n\n  /*\n  Use the modern Firefox focus style for all focusable elements.\n*/\n\n  :-moz-focusring {\n    outline: auto;\n  }\n\n  /*\n  Add the correct vertical alignment in Chrome and Firefox.\n*/\n\n  progress {\n    vertical-align: baseline;\n  }\n\n  /*\n  Add the correct display in Chrome and Safari.\n*/\n\n  summary {\n    display: list-item;\n  }\n\n  /*\n  Make lists unstyled by default.\n*/\n\n  ol,\n  ul,\n  menu {\n    list-style: none;\n  }\n\n  /*\n  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n      This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\n  img,\n  svg,\n  video,\n  canvas,\n  audio,\n  iframe,\n  embed,\n  object {\n    display: block; /* 1 */\n    vertical-align: middle; /* 2 */\n  }\n\n  /*\n  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\n  img,\n  video {\n    max-width: 100%;\n    height: auto;\n  }\n\n  /*\n  1. Inherit font styles in all browsers.\n  2. Remove border radius in all browsers.\n  3. Remove background color in all browsers.\n  4. Ensure consistent opacity for disabled states in all browsers.\n*/\n\n  button,\n  input,\n  select,\n  optgroup,\n  textarea,\n  ::file-selector-button {\n    font: inherit; /* 1 */\n    font-feature-settings: inherit; /* 1 */\n    font-variation-settings: inherit; /* 1 */\n    letter-spacing: inherit; /* 1 */\n    color: inherit; /* 1 */\n    border-radius: 0; /* 2 */\n    background-color: transparent; /* 3 */\n    opacity: 1; /* 4 */\n  }\n\n  /*\n  Restore default font weight.\n*/\n\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n\n  /*\n  Restore indentation.\n*/\n\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n\n  /*\n  Restore space after button.\n*/\n\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n\n  /*\n  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n*/\n\n  ::placeholder {\n    opacity: 1;\n  }\n\n  /*\n  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not\n  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or\n    (contain-intrinsic-size: 1px) /* Safari 17+ */ {\n    ::placeholder {\n      color: color-mix(in oklab, currentcolor 50%, transparent);\n    }\n  }\n\n  /*\n  Prevent resizing textareas horizontally by default.\n*/\n\n  textarea {\n    resize: vertical;\n  }\n\n  /*\n  Remove the inner padding in Chrome and Safari on macOS.\n*/\n\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n\n  /*\n  1. Ensure date/time inputs have the same height when empty in iOS Safari.\n  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.\n*/\n\n  ::-webkit-date-and-time-value {\n    min-height: 1lh; /* 1 */\n    text-align: inherit; /* 2 */\n  }\n\n  /*\n  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.\n*/\n\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n\n  /*\n  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.\n*/\n\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n\n  ::-webkit-datetime-edit,\n  ::-webkit-datetime-edit-year-field,\n  ::-webkit-datetime-edit-month-field,\n  ::-webkit-datetime-edit-day-field,\n  ::-webkit-datetime-edit-hour-field,\n  ::-webkit-datetime-edit-minute-field,\n  ::-webkit-datetime-edit-second-field,\n  ::-webkit-datetime-edit-millisecond-field,\n  ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n\n  /*\n  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)\n*/\n\n  ::-webkit-calendar-picker-indicator {\n    line-height: 1;\n  }\n\n  /*\n  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n\n  /*\n  Correct the inability to style the border radius in iOS Safari.\n*/\n\n  button,\n  input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]),\n  ::file-selector-button {\n    appearance: button;\n  }\n\n  /*\n  Correct the cursor style of increment and decrement buttons in Safari.\n*/\n\n  ::-webkit-inner-spin-button,\n  ::-webkit-outer-spin-button {\n    height: auto;\n  }\n\n  /*\n  Make elements with the HTML hidden attribute stay hidden by default.\n*/\n\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n\n@layer utilities {\n  @tailwind utilities;\n}\n","@import \"tailwindcss\";\n\n/* Custom base styles */\n@layer base {\n\tbody {\n\t\t@apply bg-gray-50;\n\t}\n}\n\n/* WordPress admin overrides for the app container */\n#poststation-app {\n\tmargin-left: -20px;\n\tmargin-right: 0;\n\tmargin-top: -10px;\n\toverflow: visible;\n\t--poststation-top-offset: 32px;\n\tfont-family: ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\tcolor: #111827;\n\tbackground: #f9fafb;\n}\n\n#poststation-app *,\n#poststation-app *::before,\n#poststation-app *::after {\n\tbox-sizing: border-box;\n}\n\n#poststation-app h1,\n#poststation-app h2,\n#poststation-app h3,\n#poststation-app h4,\n#poststation-app h5,\n#poststation-app h6,\n#poststation-app p,\n#poststation-app ul,\n#poststation-app ol,\n#poststation-app li,\n#poststation-app figure,\n#poststation-app blockquote {\n\tmargin: 0;\n\tpadding: 0;\n}\n\n#poststation-app button,\n#poststation-app input,\n#poststation-app select,\n#poststation-app textarea {\n\tfont: inherit;\n\tcolor: inherit;\n}\n\n#poststation-app button {\n\tcursor: pointer;\n}\n\n#poststation-app button:disabled {\n\tcursor: not-allowed;\n}\n\n/* App-scoped form controls to avoid WordPress admin style bleed */\n#poststation-app .poststation-field {\n\t@apply block w-full max-w-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-none transition;\n\t@apply placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500;\n\t@apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;\n}\n\n#poststation-app .poststation-field-error {\n\t@apply border-red-300 focus:border-red-500 focus:ring-red-500;\n}\n\n#poststation-app select.poststation-field {\n\t@apply pr-8;\n}\n\n#poststation-app textarea.poststation-field {\n\t@apply min-h-10 max-h-60 field-sizing-content resize-y overflow-y-auto;\n}\n\n/* Switch-style checkbox: wrap in label.poststation-switch and add span.poststation-switch-track after input */\n#poststation-app .poststation-switch {\n\t@apply inline-flex items-center gap-3 cursor-pointer;\n}\n#poststation-app .poststation-switch input.poststation-field-checkbox {\n\t@apply sr-only;\n}\n#poststation-app .poststation-switch .poststation-switch-track {\n\t@apply relative inline-flex h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors duration-200;\n}\n#poststation-app .poststation-switch .poststation-switch-track::after {\n\tcontent: \"\";\n\t@apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition duration-200;\n}\n#poststation-app .poststation-switch input:focus-visible + .poststation-switch-track {\n\t@apply ring-2 ring-indigo-500 ring-offset-2;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track {\n\t@apply bg-indigo-600;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track::after {\n\t@apply translate-x-4;\n}\n#poststation-app .poststation-switch input:disabled + .poststation-switch-track {\n\t@apply opacity-50 cursor-not-allowed;\n}\n\n#poststation-app .poststation-field-color {\n\t@apply h-10 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1;\n}\n\n#poststation-app .poststation-icon-btn {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app .poststation-icon-btn-danger {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-red-300 hover:bg-red-50 hover:text-red-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app a {\n\tcolor: inherit;\n\ttext-decoration: none;\n}\n\n#poststation-app .poststation-progress-badge {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tmax-width: 100%;\n}\n\n#poststation-app .poststation-progress-typing {\n\tdisplay: inline-block;\n\tmax-width: 0;\n\toverflow: hidden;\n\twhite-space: nowrap;\n\tborder-right: 1px solid currentColor;\n\tanimation: poststation-progress-typing 5s ease-in-out infinite,\n\t\tpoststation-progress-caret 1s steps(1, end) infinite;\n\twill-change: max-width;\n}\n\n@keyframes poststation-progress-typing {\n\t0% {\n\t\tmax-width: 0;\n\t}\n\t68% {\n\t\tmax-width: var(--poststation-typing-width);\n\t}\n\t86% {\n\t\tmax-width: var(--poststation-typing-width);\n\t}\n\t100% {\n\t\tmax-width: 0;\n\t}\n}\n\n@keyframes poststation-progress-caret {\n\t0%,\n\t49% {\n\t\tborder-right-color: currentColor;\n\t}\n\t50%,\n\t100% {\n\t\tborder-right-color: transparent;\n\t}\n}\n\n@media (prefers-reduced-motion: reduce) {\n\t#poststation-app .poststation-progress-typing {\n\t\tanimation: none;\n\t\tmax-width: none;\n\t\tborder-right: 0;\n\t}\n}\n\n@media (min-width: 783px) {\n\t#poststation-app {\n\t\tmargin-left: -20px;\n\t}\n}\n\n@media (min-width: 1024px) {\n\t#poststation-app .poststation-desktop-sidebar {\n\t\tposition: sticky;\n\t\talign-self: flex-start;\n\t\ttop: var(--poststation-top-offset, 32px);\n\t\theight: calc(100vh - var(--poststation-top-offset, 32px));\n\t\tleft: auto;\n\t\tbottom: auto;\n\t\ttransform: none;\n\t}\n}\n\n/* Sticky header on Campaign edit - below WP admin bar */\n.poststation-sticky-header {\n\tposition: sticky;\n\ttop: var(--poststation-top-offset, 32px);\n\tz-index: 99990;\n\twidth: 100%;\n}\n\n@media screen and (max-width: 782px) {\n\t.poststation-sticky-header {\n\t\ttop: 0;\n\t}\n}\n\nbody.admin-bar .poststation-mobile-overlay,\nbody.admin-bar .poststation-mobile-sidebar {\n\ttop: 32px;\n\theight: calc(100vh - 32px);\n}\n\n@media screen and (max-width: 782px) {\n\tbody.admin-bar .poststation-mobile-overlay,\n\tbody.admin-bar .poststation-mobile-sidebar {\n\t\ttop: 46px;\n\t\theight: calc(100vh - 46px);\n\t}\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["<no source>","webpack://./node_modules/tailwindcss/index.css","webpack://./src/index.css"],"names":[],"mappings":"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","sourcesContent":[null,"@layer theme, base, components, utilities;\n\n@layer theme {\n  @theme default {\n    --font-sans:\n      ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-serif: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif;\n    --font-mono:\n      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n      \"Courier New\", monospace;\n\n    --color-red-50: oklch(97.1% 0.013 17.38);\n    --color-red-100: oklch(93.6% 0.032 17.717);\n    --color-red-200: oklch(88.5% 0.062 18.334);\n    --color-red-300: oklch(80.8% 0.114 19.571);\n    --color-red-400: oklch(70.4% 0.191 22.216);\n    --color-red-500: oklch(63.7% 0.237 25.331);\n    --color-red-600: oklch(57.7% 0.245 27.325);\n    --color-red-700: oklch(50.5% 0.213 27.518);\n    --color-red-800: oklch(44.4% 0.177 26.899);\n    --color-red-900: oklch(39.6% 0.141 25.723);\n    --color-red-950: oklch(25.8% 0.092 26.042);\n\n    --color-orange-50: oklch(98% 0.016 73.684);\n    --color-orange-100: oklch(95.4% 0.038 75.164);\n    --color-orange-200: oklch(90.1% 0.076 70.697);\n    --color-orange-300: oklch(83.7% 0.128 66.29);\n    --color-orange-400: oklch(75% 0.183 55.934);\n    --color-orange-500: oklch(70.5% 0.213 47.604);\n    --color-orange-600: oklch(64.6% 0.222 41.116);\n    --color-orange-700: oklch(55.3% 0.195 38.402);\n    --color-orange-800: oklch(47% 0.157 37.304);\n    --color-orange-900: oklch(40.8% 0.123 38.172);\n    --color-orange-950: oklch(26.6% 0.079 36.259);\n\n    --color-amber-50: oklch(98.7% 0.022 95.277);\n    --color-amber-100: oklch(96.2% 0.059 95.617);\n    --color-amber-200: oklch(92.4% 0.12 95.746);\n    --color-amber-300: oklch(87.9% 0.169 91.605);\n    --color-amber-400: oklch(82.8% 0.189 84.429);\n    --color-amber-500: oklch(76.9% 0.188 70.08);\n    --color-amber-600: oklch(66.6% 0.179 58.318);\n    --color-amber-700: oklch(55.5% 0.163 48.998);\n    --color-amber-800: oklch(47.3% 0.137 46.201);\n    --color-amber-900: oklch(41.4% 0.112 45.904);\n    --color-amber-950: oklch(27.9% 0.077 45.635);\n\n    --color-yellow-50: oklch(98.7% 0.026 102.212);\n    --color-yellow-100: oklch(97.3% 0.071 103.193);\n    --color-yellow-200: oklch(94.5% 0.129 101.54);\n    --color-yellow-300: oklch(90.5% 0.182 98.111);\n    --color-yellow-400: oklch(85.2% 0.199 91.936);\n    --color-yellow-500: oklch(79.5% 0.184 86.047);\n    --color-yellow-600: oklch(68.1% 0.162 75.834);\n    --color-yellow-700: oklch(55.4% 0.135 66.442);\n    --color-yellow-800: oklch(47.6% 0.114 61.907);\n    --color-yellow-900: oklch(42.1% 0.095 57.708);\n    --color-yellow-950: oklch(28.6% 0.066 53.813);\n\n    --color-lime-50: oklch(98.6% 0.031 120.757);\n    --color-lime-100: oklch(96.7% 0.067 122.328);\n    --color-lime-200: oklch(93.8% 0.127 124.321);\n    --color-lime-300: oklch(89.7% 0.196 126.665);\n    --color-lime-400: oklch(84.1% 0.238 128.85);\n    --color-lime-500: oklch(76.8% 0.233 130.85);\n    --color-lime-600: oklch(64.8% 0.2 131.684);\n    --color-lime-700: oklch(53.2% 0.157 131.589);\n    --color-lime-800: oklch(45.3% 0.124 130.933);\n    --color-lime-900: oklch(40.5% 0.101 131.063);\n    --color-lime-950: oklch(27.4% 0.072 132.109);\n\n    --color-green-50: oklch(98.2% 0.018 155.826);\n    --color-green-100: oklch(96.2% 0.044 156.743);\n    --color-green-200: oklch(92.5% 0.084 155.995);\n    --color-green-300: oklch(87.1% 0.15 154.449);\n    --color-green-400: oklch(79.2% 0.209 151.711);\n    --color-green-500: oklch(72.3% 0.219 149.579);\n    --color-green-600: oklch(62.7% 0.194 149.214);\n    --color-green-700: oklch(52.7% 0.154 150.069);\n    --color-green-800: oklch(44.8% 0.119 151.328);\n    --color-green-900: oklch(39.3% 0.095 152.535);\n    --color-green-950: oklch(26.6% 0.065 152.934);\n\n    --color-emerald-50: oklch(97.9% 0.021 166.113);\n    --color-emerald-100: oklch(95% 0.052 163.051);\n    --color-emerald-200: oklch(90.5% 0.093 164.15);\n    --color-emerald-300: oklch(84.5% 0.143 164.978);\n    --color-emerald-400: oklch(76.5% 0.177 163.223);\n    --color-emerald-500: oklch(69.6% 0.17 162.48);\n    --color-emerald-600: oklch(59.6% 0.145 163.225);\n    --color-emerald-700: oklch(50.8% 0.118 165.612);\n    --color-emerald-800: oklch(43.2% 0.095 166.913);\n    --color-emerald-900: oklch(37.8% 0.077 168.94);\n    --color-emerald-950: oklch(26.2% 0.051 172.552);\n\n    --color-teal-50: oklch(98.4% 0.014 180.72);\n    --color-teal-100: oklch(95.3% 0.051 180.801);\n    --color-teal-200: oklch(91% 0.096 180.426);\n    --color-teal-300: oklch(85.5% 0.138 181.071);\n    --color-teal-400: oklch(77.7% 0.152 181.912);\n    --color-teal-500: oklch(70.4% 0.14 182.503);\n    --color-teal-600: oklch(60% 0.118 184.704);\n    --color-teal-700: oklch(51.1% 0.096 186.391);\n    --color-teal-800: oklch(43.7% 0.078 188.216);\n    --color-teal-900: oklch(38.6% 0.063 188.416);\n    --color-teal-950: oklch(27.7% 0.046 192.524);\n\n    --color-cyan-50: oklch(98.4% 0.019 200.873);\n    --color-cyan-100: oklch(95.6% 0.045 203.388);\n    --color-cyan-200: oklch(91.7% 0.08 205.041);\n    --color-cyan-300: oklch(86.5% 0.127 207.078);\n    --color-cyan-400: oklch(78.9% 0.154 211.53);\n    --color-cyan-500: oklch(71.5% 0.143 215.221);\n    --color-cyan-600: oklch(60.9% 0.126 221.723);\n    --color-cyan-700: oklch(52% 0.105 223.128);\n    --color-cyan-800: oklch(45% 0.085 224.283);\n    --color-cyan-900: oklch(39.8% 0.07 227.392);\n    --color-cyan-950: oklch(30.2% 0.056 229.695);\n\n    --color-sky-50: oklch(97.7% 0.013 236.62);\n    --color-sky-100: oklch(95.1% 0.026 236.824);\n    --color-sky-200: oklch(90.1% 0.058 230.902);\n    --color-sky-300: oklch(82.8% 0.111 230.318);\n    --color-sky-400: oklch(74.6% 0.16 232.661);\n    --color-sky-500: oklch(68.5% 0.169 237.323);\n    --color-sky-600: oklch(58.8% 0.158 241.966);\n    --color-sky-700: oklch(50% 0.134 242.749);\n    --color-sky-800: oklch(44.3% 0.11 240.79);\n    --color-sky-900: oklch(39.1% 0.09 240.876);\n    --color-sky-950: oklch(29.3% 0.066 243.157);\n\n    --color-blue-50: oklch(97% 0.014 254.604);\n    --color-blue-100: oklch(93.2% 0.032 255.585);\n    --color-blue-200: oklch(88.2% 0.059 254.128);\n    --color-blue-300: oklch(80.9% 0.105 251.813);\n    --color-blue-400: oklch(70.7% 0.165 254.624);\n    --color-blue-500: oklch(62.3% 0.214 259.815);\n    --color-blue-600: oklch(54.6% 0.245 262.881);\n    --color-blue-700: oklch(48.8% 0.243 264.376);\n    --color-blue-800: oklch(42.4% 0.199 265.638);\n    --color-blue-900: oklch(37.9% 0.146 265.522);\n    --color-blue-950: oklch(28.2% 0.091 267.935);\n\n    --color-indigo-50: oklch(96.2% 0.018 272.314);\n    --color-indigo-100: oklch(93% 0.034 272.788);\n    --color-indigo-200: oklch(87% 0.065 274.039);\n    --color-indigo-300: oklch(78.5% 0.115 274.713);\n    --color-indigo-400: oklch(67.3% 0.182 276.935);\n    --color-indigo-500: oklch(58.5% 0.233 277.117);\n    --color-indigo-600: oklch(51.1% 0.262 276.966);\n    --color-indigo-700: oklch(45.7% 0.24 277.023);\n    --color-indigo-800: oklch(39.8% 0.195 277.366);\n    --color-indigo-900: oklch(35.9% 0.144 278.697);\n    --color-indigo-950: oklch(25.7% 0.09 281.288);\n\n    --color-violet-50: oklch(96.9% 0.016 293.756);\n    --color-violet-100: oklch(94.3% 0.029 294.588);\n    --color-violet-200: oklch(89.4% 0.057 293.283);\n    --color-violet-300: oklch(81.1% 0.111 293.571);\n    --color-violet-400: oklch(70.2% 0.183 293.541);\n    --color-violet-500: oklch(60.6% 0.25 292.717);\n    --color-violet-600: oklch(54.1% 0.281 293.009);\n    --color-violet-700: oklch(49.1% 0.27 292.581);\n    --color-violet-800: oklch(43.2% 0.232 292.759);\n    --color-violet-900: oklch(38% 0.189 293.745);\n    --color-violet-950: oklch(28.3% 0.141 291.089);\n\n    --color-purple-50: oklch(97.7% 0.014 308.299);\n    --color-purple-100: oklch(94.6% 0.033 307.174);\n    --color-purple-200: oklch(90.2% 0.063 306.703);\n    --color-purple-300: oklch(82.7% 0.119 306.383);\n    --color-purple-400: oklch(71.4% 0.203 305.504);\n    --color-purple-500: oklch(62.7% 0.265 303.9);\n    --color-purple-600: oklch(55.8% 0.288 302.321);\n    --color-purple-700: oklch(49.6% 0.265 301.924);\n    --color-purple-800: oklch(43.8% 0.218 303.724);\n    --color-purple-900: oklch(38.1% 0.176 304.987);\n    --color-purple-950: oklch(29.1% 0.149 302.717);\n\n    --color-fuchsia-50: oklch(97.7% 0.017 320.058);\n    --color-fuchsia-100: oklch(95.2% 0.037 318.852);\n    --color-fuchsia-200: oklch(90.3% 0.076 319.62);\n    --color-fuchsia-300: oklch(83.3% 0.145 321.434);\n    --color-fuchsia-400: oklch(74% 0.238 322.16);\n    --color-fuchsia-500: oklch(66.7% 0.295 322.15);\n    --color-fuchsia-600: oklch(59.1% 0.293 322.896);\n    --color-fuchsia-700: oklch(51.8% 0.253 323.949);\n    --color-fuchsia-800: oklch(45.2% 0.211 324.591);\n    --color-fuchsia-900: oklch(40.1% 0.17 325.612);\n    --color-fuchsia-950: oklch(29.3% 0.136 325.661);\n\n    --color-pink-50: oklch(97.1% 0.014 343.198);\n    --color-pink-100: oklch(94.8% 0.028 342.258);\n    --color-pink-200: oklch(89.9% 0.061 343.231);\n    --color-pink-300: oklch(82.3% 0.12 346.018);\n    --color-pink-400: oklch(71.8% 0.202 349.761);\n    --color-pink-500: oklch(65.6% 0.241 354.308);\n    --color-pink-600: oklch(59.2% 0.249 0.584);\n    --color-pink-700: oklch(52.5% 0.223 3.958);\n    --color-pink-800: oklch(45.9% 0.187 3.815);\n    --color-pink-900: oklch(40.8% 0.153 2.432);\n    --color-pink-950: oklch(28.4% 0.109 3.907);\n\n    --color-rose-50: oklch(96.9% 0.015 12.422);\n    --color-rose-100: oklch(94.1% 0.03 12.58);\n    --color-rose-200: oklch(89.2% 0.058 10.001);\n    --color-rose-300: oklch(81% 0.117 11.638);\n    --color-rose-400: oklch(71.2% 0.194 13.428);\n    --color-rose-500: oklch(64.5% 0.246 16.439);\n    --color-rose-600: oklch(58.6% 0.253 17.585);\n    --color-rose-700: oklch(51.4% 0.222 16.935);\n    --color-rose-800: oklch(45.5% 0.188 13.697);\n    --color-rose-900: oklch(41% 0.159 10.272);\n    --color-rose-950: oklch(27.1% 0.105 12.094);\n\n    --color-slate-50: oklch(98.4% 0.003 247.858);\n    --color-slate-100: oklch(96.8% 0.007 247.896);\n    --color-slate-200: oklch(92.9% 0.013 255.508);\n    --color-slate-300: oklch(86.9% 0.022 252.894);\n    --color-slate-400: oklch(70.4% 0.04 256.788);\n    --color-slate-500: oklch(55.4% 0.046 257.417);\n    --color-slate-600: oklch(44.6% 0.043 257.281);\n    --color-slate-700: oklch(37.2% 0.044 257.287);\n    --color-slate-800: oklch(27.9% 0.041 260.031);\n    --color-slate-900: oklch(20.8% 0.042 265.755);\n    --color-slate-950: oklch(12.9% 0.042 264.695);\n\n    --color-gray-50: oklch(98.5% 0.002 247.839);\n    --color-gray-100: oklch(96.7% 0.003 264.542);\n    --color-gray-200: oklch(92.8% 0.006 264.531);\n    --color-gray-300: oklch(87.2% 0.01 258.338);\n    --color-gray-400: oklch(70.7% 0.022 261.325);\n    --color-gray-500: oklch(55.1% 0.027 264.364);\n    --color-gray-600: oklch(44.6% 0.03 256.802);\n    --color-gray-700: oklch(37.3% 0.034 259.733);\n    --color-gray-800: oklch(27.8% 0.033 256.848);\n    --color-gray-900: oklch(21% 0.034 264.665);\n    --color-gray-950: oklch(13% 0.028 261.692);\n\n    --color-zinc-50: oklch(98.5% 0 0);\n    --color-zinc-100: oklch(96.7% 0.001 286.375);\n    --color-zinc-200: oklch(92% 0.004 286.32);\n    --color-zinc-300: oklch(87.1% 0.006 286.286);\n    --color-zinc-400: oklch(70.5% 0.015 286.067);\n    --color-zinc-500: oklch(55.2% 0.016 285.938);\n    --color-zinc-600: oklch(44.2% 0.017 285.786);\n    --color-zinc-700: oklch(37% 0.013 285.805);\n    --color-zinc-800: oklch(27.4% 0.006 286.033);\n    --color-zinc-900: oklch(21% 0.006 285.885);\n    --color-zinc-950: oklch(14.1% 0.005 285.823);\n\n    --color-neutral-50: oklch(98.5% 0 0);\n    --color-neutral-100: oklch(97% 0 0);\n    --color-neutral-200: oklch(92.2% 0 0);\n    --color-neutral-300: oklch(87% 0 0);\n    --color-neutral-400: oklch(70.8% 0 0);\n    --color-neutral-500: oklch(55.6% 0 0);\n    --color-neutral-600: oklch(43.9% 0 0);\n    --color-neutral-700: oklch(37.1% 0 0);\n    --color-neutral-800: oklch(26.9% 0 0);\n    --color-neutral-900: oklch(20.5% 0 0);\n    --color-neutral-950: oklch(14.5% 0 0);\n\n    --color-stone-50: oklch(98.5% 0.001 106.423);\n    --color-stone-100: oklch(97% 0.001 106.424);\n    --color-stone-200: oklch(92.3% 0.003 48.717);\n    --color-stone-300: oklch(86.9% 0.005 56.366);\n    --color-stone-400: oklch(70.9% 0.01 56.259);\n    --color-stone-500: oklch(55.3% 0.013 58.071);\n    --color-stone-600: oklch(44.4% 0.011 73.639);\n    --color-stone-700: oklch(37.4% 0.01 67.558);\n    --color-stone-800: oklch(26.8% 0.007 34.298);\n    --color-stone-900: oklch(21.6% 0.006 56.043);\n    --color-stone-950: oklch(14.7% 0.004 49.25);\n\n    --color-black: #000;\n    --color-white: #fff;\n\n    --spacing: 0.25rem;\n\n    --breakpoint-sm: 40rem;\n    --breakpoint-md: 48rem;\n    --breakpoint-lg: 64rem;\n    --breakpoint-xl: 80rem;\n    --breakpoint-2xl: 96rem;\n\n    --container-3xs: 16rem;\n    --container-2xs: 18rem;\n    --container-xs: 20rem;\n    --container-sm: 24rem;\n    --container-md: 28rem;\n    --container-lg: 32rem;\n    --container-xl: 36rem;\n    --container-2xl: 42rem;\n    --container-3xl: 48rem;\n    --container-4xl: 56rem;\n    --container-5xl: 64rem;\n    --container-6xl: 72rem;\n    --container-7xl: 80rem;\n\n    --text-xs: 0.75rem;\n    --text-xs--line-height: calc(1 / 0.75);\n    --text-sm: 0.875rem;\n    --text-sm--line-height: calc(1.25 / 0.875);\n    --text-base: 1rem;\n    --text-base--line-height: calc(1.5 / 1);\n    --text-lg: 1.125rem;\n    --text-lg--line-height: calc(1.75 / 1.125);\n    --text-xl: 1.25rem;\n    --text-xl--line-height: calc(1.75 / 1.25);\n    --text-2xl: 1.5rem;\n    --text-2xl--line-height: calc(2 / 1.5);\n    --text-3xl: 1.875rem;\n    --text-3xl--line-height: calc(2.25 / 1.875);\n    --text-4xl: 2.25rem;\n    --text-4xl--line-height: calc(2.5 / 2.25);\n    --text-5xl: 3rem;\n    --text-5xl--line-height: 1;\n    --text-6xl: 3.75rem;\n    --text-6xl--line-height: 1;\n    --text-7xl: 4.5rem;\n    --text-7xl--line-height: 1;\n    --text-8xl: 6rem;\n    --text-8xl--line-height: 1;\n    --text-9xl: 8rem;\n    --text-9xl--line-height: 1;\n\n    --font-weight-thin: 100;\n    --font-weight-extralight: 200;\n    --font-weight-light: 300;\n    --font-weight-normal: 400;\n    --font-weight-medium: 500;\n    --font-weight-semibold: 600;\n    --font-weight-bold: 700;\n    --font-weight-extrabold: 800;\n    --font-weight-black: 900;\n\n    --tracking-tighter: -0.05em;\n    --tracking-tight: -0.025em;\n    --tracking-normal: 0em;\n    --tracking-wide: 0.025em;\n    --tracking-wider: 0.05em;\n    --tracking-widest: 0.1em;\n\n    --leading-tight: 1.25;\n    --leading-snug: 1.375;\n    --leading-normal: 1.5;\n    --leading-relaxed: 1.625;\n    --leading-loose: 2;\n\n    --radius-xs: 0.125rem;\n    --radius-sm: 0.25rem;\n    --radius-md: 0.375rem;\n    --radius-lg: 0.5rem;\n    --radius-xl: 0.75rem;\n    --radius-2xl: 1rem;\n    --radius-3xl: 1.5rem;\n    --radius-4xl: 2rem;\n\n    --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);\n    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-md:\n      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --shadow-lg:\n      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --shadow-xl:\n      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n\n    --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);\n\n    --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);\n    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);\n    --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);\n    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);\n    --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);\n    --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);\n\n    --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);\n    --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);\n    --text-shadow-sm:\n      0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),\n      0px 2px 2px rgb(0 0 0 / 0.075);\n    --text-shadow-md:\n      0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),\n      0px 2px 4px rgb(0 0 0 / 0.1);\n    --text-shadow-lg:\n      0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),\n      0px 4px 8px rgb(0 0 0 / 0.1);\n\n    --ease-in: cubic-bezier(0.4, 0, 1, 1);\n    --ease-out: cubic-bezier(0, 0, 0.2, 1);\n    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);\n\n    --animate-spin: spin 1s linear infinite;\n    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;\n    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n    --animate-bounce: bounce 1s infinite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @keyframes ping {\n      75%,\n      100% {\n        transform: scale(2);\n        opacity: 0;\n      }\n    }\n\n    @keyframes pulse {\n      50% {\n        opacity: 0.5;\n      }\n    }\n\n    @keyframes bounce {\n      0%,\n      100% {\n        transform: translateY(-25%);\n        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);\n      }\n\n      50% {\n        transform: none;\n        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg: 16px;\n    --blur-xl: 24px;\n    --blur-2xl: 40px;\n    --blur-3xl: 64px;\n\n    --perspective-dramatic: 100px;\n    --perspective-near: 300px;\n    --perspective-normal: 500px;\n    --perspective-midrange: 800px;\n    --perspective-distant: 1200px;\n\n    --aspect-video: 16 / 9;\n\n    --default-transition-duration: 150ms;\n    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    --default-font-family: --theme(--font-sans, initial);\n    --default-font-feature-settings: --theme(\n      --font-sans--font-feature-settings,\n      initial\n    );\n    --default-font-variation-settings: --theme(\n      --font-sans--font-variation-settings,\n      initial\n    );\n    --default-mono-font-family: --theme(--font-mono, initial);\n    --default-mono-font-feature-settings: --theme(\n      --font-mono--font-feature-settings,\n      initial\n    );\n    --default-mono-font-variation-settings: --theme(\n      --font-mono--font-variation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n    --blur: 8px;\n    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);\n    --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);\n    --radius: 0.25rem;\n    --max-width-prose: 65ch;\n  }\n}\n\n@layer base {\n  /*\n  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n  2. Remove default margins and padding\n  3. Reset all borders.\n*/\n\n  *,\n  ::after,\n  ::before,\n  ::backdrop,\n  ::file-selector-button {\n    box-sizing: border-box; /* 1 */\n    margin: 0; /* 2 */\n    padding: 0; /* 2 */\n    border: 0 solid; /* 3 */\n  }\n\n  /*\n  1. Use a consistent sensible line-height in all browsers.\n  2. Prevent adjustments of font size after orientation changes in iOS.\n  3. Use a more readable tab size.\n  4. Use the user's configured `sans` font-family by default.\n  5. Use the user's configured `sans` font-feature-settings by default.\n  6. Use the user's configured `sans` font-variation-settings by default.\n  7. Disable tap highlights on iOS.\n*/\n\n  html,\n  :host {\n    line-height: 1.5; /* 1 */\n    -webkit-text-size-adjust: 100%; /* 2 */\n    tab-size: 4; /* 3 */\n    font-family: --theme(\n      --default-font-family,\n      ui-sans-serif,\n      system-ui,\n      sans-serif,\n      \"Apple Color Emoji\",\n      \"Segoe UI Emoji\",\n      \"Segoe UI Symbol\",\n      \"Noto Color Emoji\"\n    ); /* 4 */\n    font-feature-settings: --theme(\n      --default-font-feature-settings,\n      normal\n    ); /* 5 */\n    font-variation-settings: --theme(\n      --default-font-variation-settings,\n      normal\n    ); /* 6 */\n    -webkit-tap-highlight-color: transparent; /* 7 */\n  }\n\n  /*\n  1. Add the correct height in Firefox.\n  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n  3. Reset the default border style to a 1px solid border.\n*/\n\n  hr {\n    height: 0; /* 1 */\n    color: inherit; /* 2 */\n    border-top-width: 1px; /* 3 */\n  }\n\n  /*\n  Add the correct text decoration in Chrome, Edge, and Safari.\n*/\n\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n\n  /*\n  Remove the default font size and weight for headings.\n*/\n\n  h1,\n  h2,\n  h3,\n  h4,\n  h5,\n  h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n\n  /*\n  Reset links to optimize for opt-in styling instead of opt-out.\n*/\n\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n\n  /*\n  Add the correct font weight in Edge and Safari.\n*/\n\n  b,\n  strong {\n    font-weight: bolder;\n  }\n\n  /*\n  1. Use the user's configured `mono` font-family by default.\n  2. Use the user's configured `mono` font-feature-settings by default.\n  3. Use the user's configured `mono` font-variation-settings by default.\n  4. Correct the odd `em` font sizing in all browsers.\n*/\n\n  code,\n  kbd,\n  samp,\n  pre {\n    font-family: --theme(\n      --default-mono-font-family,\n      ui-monospace,\n      SFMono-Regular,\n      Menlo,\n      Monaco,\n      Consolas,\n      \"Liberation Mono\",\n      \"Courier New\",\n      monospace\n    ); /* 1 */\n    font-feature-settings: --theme(\n      --default-mono-font-feature-settings,\n      normal\n    ); /* 2 */\n    font-variation-settings: --theme(\n      --default-mono-font-variation-settings,\n      normal\n    ); /* 3 */\n    font-size: 1em; /* 4 */\n  }\n\n  /*\n  Add the correct font size in all browsers.\n*/\n\n  small {\n    font-size: 80%;\n  }\n\n  /*\n  Prevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\n  sub,\n  sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n\n  sub {\n    bottom: -0.25em;\n  }\n\n  sup {\n    top: -0.5em;\n  }\n\n  /*\n  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n  3. Remove gaps between table borders by default.\n*/\n\n  table {\n    text-indent: 0; /* 1 */\n    border-color: inherit; /* 2 */\n    border-collapse: collapse; /* 3 */\n  }\n\n  /*\n  Use the modern Firefox focus style for all focusable elements.\n*/\n\n  :-moz-focusring {\n    outline: auto;\n  }\n\n  /*\n  Add the correct vertical alignment in Chrome and Firefox.\n*/\n\n  progress {\n    vertical-align: baseline;\n  }\n\n  /*\n  Add the correct display in Chrome and Safari.\n*/\n\n  summary {\n    display: list-item;\n  }\n\n  /*\n  Make lists unstyled by default.\n*/\n\n  ol,\n  ul,\n  menu {\n    list-style: none;\n  }\n\n  /*\n  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n      This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\n  img,\n  svg,\n  video,\n  canvas,\n  audio,\n  iframe,\n  embed,\n  object {\n    display: block; /* 1 */\n    vertical-align: middle; /* 2 */\n  }\n\n  /*\n  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\n  img,\n  video {\n    max-width: 100%;\n    height: auto;\n  }\n\n  /*\n  1. Inherit font styles in all browsers.\n  2. Remove border radius in all browsers.\n  3. Remove background color in all browsers.\n  4. Ensure consistent opacity for disabled states in all browsers.\n*/\n\n  button,\n  input,\n  select,\n  optgroup,\n  textarea,\n  ::file-selector-button {\n    font: inherit; /* 1 */\n    font-feature-settings: inherit; /* 1 */\n    font-variation-settings: inherit; /* 1 */\n    letter-spacing: inherit; /* 1 */\n    color: inherit; /* 1 */\n    border-radius: 0; /* 2 */\n    background-color: transparent; /* 3 */\n    opacity: 1; /* 4 */\n  }\n\n  /*\n  Restore default font weight.\n*/\n\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n\n  /*\n  Restore indentation.\n*/\n\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n\n  /*\n  Restore space after button.\n*/\n\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n\n  /*\n  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n*/\n\n  ::placeholder {\n    opacity: 1;\n  }\n\n  /*\n  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not\n  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or\n    (contain-intrinsic-size: 1px) /* Safari 17+ */ {\n    ::placeholder {\n      color: color-mix(in oklab, currentcolor 50%, transparent);\n    }\n  }\n\n  /*\n  Prevent resizing textareas horizontally by default.\n*/\n\n  textarea {\n    resize: vertical;\n  }\n\n  /*\n  Remove the inner padding in Chrome and Safari on macOS.\n*/\n\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n\n  /*\n  1. Ensure date/time inputs have the same height when empty in iOS Safari.\n  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.\n*/\n\n  ::-webkit-date-and-time-value {\n    min-height: 1lh; /* 1 */\n    text-align: inherit; /* 2 */\n  }\n\n  /*\n  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.\n*/\n\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n\n  /*\n  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.\n*/\n\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n\n  ::-webkit-datetime-edit,\n  ::-webkit-datetime-edit-year-field,\n  ::-webkit-datetime-edit-month-field,\n  ::-webkit-datetime-edit-day-field,\n  ::-webkit-datetime-edit-hour-field,\n  ::-webkit-datetime-edit-minute-field,\n  ::-webkit-datetime-edit-second-field,\n  ::-webkit-datetime-edit-millisecond-field,\n  ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n\n  /*\n  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)\n*/\n\n  ::-webkit-calendar-picker-indicator {\n    line-height: 1;\n  }\n\n  /*\n  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n\n  /*\n  Correct the inability to style the border radius in iOS Safari.\n*/\n\n  button,\n  input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]),\n  ::file-selector-button {\n    appearance: button;\n  }\n\n  /*\n  Correct the cursor style of increment and decrement buttons in Safari.\n*/\n\n  ::-webkit-inner-spin-button,\n  ::-webkit-outer-spin-button {\n    height: auto;\n  }\n\n  /*\n  Make elements with the HTML hidden attribute stay hidden by default.\n*/\n\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n\n@layer utilities {\n  @tailwind utilities;\n}\n","@import \"tailwindcss\";\n\n/* Custom base styles */\n@layer base {\n\tbody {\n\t\t@apply bg-gray-50;\n\t}\n}\n\n/* WordPress admin overrides for the app container */\n#poststation-app {\n\tmargin-left: -20px;\n\tmargin-right: 0;\n\tmargin-top: -10px;\n\toverflow: visible;\n\t--poststation-top-offset: 32px;\n\tfont-family: ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\tcolor: #111827;\n\tbackground: #f9fafb;\n}\n\n#poststation-app *,\n#poststation-app *::before,\n#poststation-app *::after {\n\tbox-sizing: border-box;\n}\n\n#poststation-app h1,\n#poststation-app h2,\n#poststation-app h3,\n#poststation-app h4,\n#poststation-app h5,\n#poststation-app h6,\n#poststation-app p,\n#poststation-app ul,\n#poststation-app ol,\n#poststation-app li,\n#poststation-app figure,\n#poststation-app blockquote {\n\tmargin: 0;\n\tpadding: 0;\n}\n\n#poststation-app button,\n#poststation-app input,\n#poststation-app select,\n#poststation-app textarea {\n\tfont: inherit;\n\tcolor: inherit;\n}\n\n#poststation-app button {\n\tcursor: pointer;\n}\n\n#poststation-app button:disabled {\n\tcursor: not-allowed;\n}\n\n/* App-scoped form controls to avoid WordPress admin style bleed */\n#poststation-app .poststation-field {\n\t@apply block w-full max-w-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-none transition;\n\t@apply placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500;\n\t@apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;\n}\n\n#poststation-app .poststation-field-error {\n\t@apply border-red-300 focus:border-red-500 focus:ring-red-500;\n}\n\n#poststation-app select.poststation-field {\n\t@apply pr-8;\n}\n\n#poststation-app textarea.poststation-field {\n\t@apply min-h-10 max-h-60 field-sizing-content resize-y overflow-y-auto;\n}\n\n/* Borderless inline editors used in writing preset repeater */\n#poststation-app .poststation-inline-editor,\n#poststation-app .poststation-inline-editor:hover,\n#poststation-app .poststation-inline-editor:active,\n#poststation-app .poststation-inline-editor:focus,\n#poststation-app .poststation-inline-editor:focus-visible {\n\tborder: 0 !important;\n\toutline: 0 !important;\n\tbox-shadow: none !important;\n\tbackground: transparent !important;\n\tborder-radius: 0 !important;\n\t-webkit-appearance: none !important;\n\tappearance: none !important;\n}\n\n/* Switch-style checkbox: wrap in label.poststation-switch and add span.poststation-switch-track after input */\n#poststation-app .poststation-switch {\n\t@apply inline-flex items-center gap-3 cursor-pointer;\n}\n#poststation-app .poststation-switch input.poststation-field-checkbox {\n\t@apply sr-only;\n}\n#poststation-app .poststation-switch .poststation-switch-track {\n\t@apply relative inline-flex h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors duration-200;\n}\n#poststation-app .poststation-switch .poststation-switch-track::after {\n\tcontent: \"\";\n\t@apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition duration-200;\n}\n#poststation-app .poststation-switch input:focus-visible + .poststation-switch-track {\n\t@apply ring-2 ring-indigo-500 ring-offset-2;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track {\n\t@apply bg-indigo-600;\n}\n#poststation-app .poststation-switch input:checked + .poststation-switch-track::after {\n\t@apply translate-x-4;\n}\n#poststation-app .poststation-switch input:disabled + .poststation-switch-track {\n\t@apply opacity-50 cursor-not-allowed;\n}\n\n#poststation-app .poststation-field-color {\n\t@apply h-10 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1;\n}\n\n#poststation-app .poststation-icon-btn {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app .poststation-icon-btn-danger {\n\t@apply inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 transition;\n\t@apply hover:border-red-300 hover:bg-red-50 hover:text-red-600;\n\t@apply disabled:cursor-not-allowed disabled:opacity-50;\n}\n\n#poststation-app a {\n\tcolor: inherit;\n\ttext-decoration: none;\n}\n\n#poststation-app .poststation-progress-badge {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tmax-width: 100%;\n}\n\n#poststation-app .poststation-progress-typing {\n\tdisplay: inline-block;\n\tmax-width: 0;\n\toverflow: hidden;\n\twhite-space: nowrap;\n\tborder-right: 1px solid currentColor;\n\tanimation: poststation-progress-typing 2.5s ease-in-out infinite,\n\t\tpoststation-progress-caret 1s steps(1, end) infinite;\n\twill-change: max-width;\n}\n\n@keyframes poststation-progress-typing {\n\t0% {\n\t\tmax-width: 0;\n\t}\n\t68% {\n\t\tmax-width: var(--poststation-typing-width);\n\t}\n\t86% {\n\t\tmax-width: var(--poststation-typing-width);\n\t}\n\t100% {\n\t\tmax-width: 0;\n\t}\n}\n\n@keyframes poststation-progress-caret {\n\t0%,\n\t49% {\n\t\tborder-right-color: currentColor;\n\t}\n\t50%,\n\t100% {\n\t\tborder-right-color: transparent;\n\t}\n}\n\n@media (prefers-reduced-motion: reduce) {\n\t#poststation-app .poststation-progress-typing {\n\t\tanimation: none;\n\t\tmax-width: none;\n\t\tborder-right: 0;\n\t}\n}\n\n@media (min-width: 783px) {\n\t#poststation-app {\n\t\tmargin-left: -20px;\n\t}\n}\n\n@media (min-width: 1024px) {\n\t#poststation-app .poststation-desktop-sidebar {\n\t\tposition: sticky;\n\t\talign-self: flex-start;\n\t\ttop: var(--poststation-top-offset, 32px);\n\t\theight: calc(100vh - var(--poststation-top-offset, 32px));\n\t\tleft: auto;\n\t\tbottom: auto;\n\t\ttransform: none;\n\t}\n}\n\n/* Sticky header on Campaign edit - below WP admin bar */\n.poststation-sticky-header {\n\tposition: sticky;\n\ttop: var(--poststation-top-offset, 32px);\n\tz-index: 99990;\n\twidth: 100%;\n}\n\n@media screen and (max-width: 782px) {\n\t.poststation-sticky-header {\n\t\ttop: 0;\n\t}\n}\n\nbody.admin-bar .poststation-mobile-overlay,\nbody.admin-bar .poststation-mobile-sidebar {\n\ttop: 32px;\n\theight: calc(100vh - 32px);\n}\n\n@media screen and (max-width: 782px) {\n\tbody.admin-bar .poststation-mobile-overlay,\n\tbody.admin-bar .poststation-mobile-sidebar {\n\t\ttop: 46px;\n\t\theight: calc(100vh - 46px);\n\t}\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

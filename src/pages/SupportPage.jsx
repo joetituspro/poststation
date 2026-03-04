@@ -36,11 +36,6 @@ export default function SupportPage() {
 	const [supportState, setSupportState] = useState(bootstrapSupport);
 	const [licenseKeyInput, setLicenseKeyInput] = useState('');
 	const [licenseKeyTouched, setLicenseKeyTouched] = useState(false);
-	const [n8nBaseUrl, setN8nBaseUrl] = useState('');
-	const [n8nApiKey, setN8nApiKey] = useState('');
-	const [rapidApiKey, setRapidApiKey] = useState('');
-	const [firecrawlKey, setFirecrawlKey] = useState('');
-	const [openRouterKey, setOpenRouterKey] = useState('');
 	const [manualBlueprint, setManualBlueprint] = useState(null);
 	const [onboardingOpen, setOnboardingOpen] = useState(false);
 	const [onboardingStep, setOnboardingStep] = useState(1);
@@ -58,7 +53,6 @@ export default function SupportPage() {
 				setLicenseKeyInput('');
 			}
 		}
-		setN8nBaseUrl(state?.n8n?.base_url || '');
 	}, [supportState, licenseKeyTouched]);
 
 	const licenseStatus = supportState?.license?.status || {};
@@ -130,14 +124,6 @@ export default function SupportPage() {
 		},
 	});
 
-	const { mutate: saveN8nConfig, loading: savingN8nConfig } = useMutation(support.saveN8nConfig, {
-		onSuccess: async (result) => {
-			showToast('n8n configuration saved.', 'success');
-			await refreshBootstrap();
-			setSupportState(getBootstrapSupport());
-		},
-	});
-
 	const { mutate: deployN8nBlueprint, loading: deploying } = useMutation(support.deployN8nBlueprint, {
 		onSuccess: async (result) => {
 			showToast('Blueprint deployed successfully.', 'success');
@@ -185,21 +171,6 @@ export default function SupportPage() {
 		}
 	};
 
-	const saveN8nAction = async () => {
-		try {
-			await saveN8nConfig({
-				base_url: n8nBaseUrl,
-				n8n_api_key: n8nApiKey,
-				rapidapi_key: rapidApiKey,
-				firecrawl_key: firecrawlKey,
-				openrouter_key: openRouterKey,
-			});
-			setOnboardingStep(3);
-		} catch (e) {
-			showToast(e.message || 'Unable to save n8n config.', 'error');
-		}
-	};
-
 	const deployAction = async () => {
 		try {
 			await deployN8nBlueprint();
@@ -213,20 +184,6 @@ export default function SupportPage() {
 			await completeOnboarding();
 		} catch (e) {
 			showToast(e.message || 'Could not complete onboarding.', 'error');
-		}
-	};
-
-	const saveN8nFromPage = async () => {
-		try {
-			await saveN8nConfig({
-				base_url: n8nBaseUrl,
-				n8n_api_key: n8nApiKey,
-				rapidapi_key: rapidApiKey,
-				firecrawl_key: firecrawlKey,
-				openrouter_key: openRouterKey,
-			});
-		} catch (e) {
-			showToast(e.message || 'Could not save n8n config.', 'error');
 		}
 	};
 
@@ -291,7 +248,7 @@ export default function SupportPage() {
 				description="License, n8n deployment, manual setup, and update management."
 			/>
 
-			<div className="grid grid-cols-1 gap-6 max-w-5xl">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl w-full mx-auto">
 				<Card>
 					<CardHeader>
 						<h3 className="text-lg font-medium text-gray-900">License Management</h3>
@@ -350,55 +307,6 @@ export default function SupportPage() {
 								)}
 							</div>
 						</div>
-					</CardBody>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<h3 className="text-lg font-medium text-gray-900">n8n Auto Deployment</h3>
-					</CardHeader>
-					<CardBody>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-							<Input label="n8n Base URL" value={n8nBaseUrl} onChange={(e) => setN8nBaseUrl(e.target.value)} placeholder="https://your-n8n.example.com" />
-							<Input label="n8n API Key" type="password" value={n8nApiKey} onChange={(e) => setN8nApiKey(e.target.value)} placeholder={supportState?.n8n?.n8n_api_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter n8n API key'} />
-							<Input label="RapidAPI Key" type="password" value={rapidApiKey} onChange={(e) => setRapidApiKey(e.target.value)} placeholder={supportState?.n8n?.rapidapi_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter RapidAPI key'} />
-							<Input label="Firecrawl Key" type="password" value={firecrawlKey} onChange={(e) => setFirecrawlKey(e.target.value)} placeholder={supportState?.n8n?.firecrawl_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter Firecrawl key'} />
-							<Input label="OpenRouter Key" type="password" value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder={supportState?.n8n?.openrouter_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter OpenRouter key'} />
-						</div>
-						<div className="mt-4 flex flex-wrap gap-2">
-							<Button onClick={saveN8nFromPage} loading={savingN8nConfig}>Save</Button>
-							<Button onClick={deployAction} loading={deploying} disabled={!licenseValid}>Deploy</Button>
-							{supportState?.n8n?.last_error && (
-								<span className="text-xs text-red-600 self-center">{supportState.n8n.last_error}</span>
-							)}
-						</div>
-					</CardBody>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<h3 className="text-lg font-medium text-gray-900">Manual Deployment</h3>
-					</CardHeader>
-					<CardBody>
-						<div className="flex gap-2 mb-3">
-							<Button onClick={loadManualBlueprintFromPage} loading={loadingManualBlueprint} disabled={!licenseValid}>
-								Load Manual Instructions
-							</Button>
-							{manualBlueprint?.download_url && (
-								<a href={manualBlueprint.download_url} target="_blank" rel="noreferrer">
-									<Button variant="secondary">Download Blueprint</Button>
-								</a>
-							)}
-							{manualBlueprint?.version && (
-								<span className="self-center text-xs text-gray-600">Version: {manualBlueprint.version}</span>
-							)}
-						</div>
-						{manualBlueprint?.manual_instructions && (
-							<div
-								className="prose prose-sm max-w-none text-gray-700"
-								dangerouslySetInnerHTML={{ __html: manualBlueprint.manual_instructions }}
-							/>
-						)}
 					</CardBody>
 				</Card>
 
@@ -472,23 +380,25 @@ export default function SupportPage() {
 					</StepCard>
 
 					<StepCard
-						title="Step 2: n8n Auto Deployment Settings"
+						title="Step 2: n8n Connection Settings"
 						subtitle="Optional"
 						active={onboardingStep === 2}
 						locked={!licenseValid}
 						complete={n8nConfigured}
 					>
 						<div className="space-y-3">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-								<Input label="n8n Base URL" value={n8nBaseUrl} onChange={(e) => setN8nBaseUrl(e.target.value)} />
-								<Input label="n8n API Key" type="password" value={n8nApiKey} onChange={(e) => setN8nApiKey(e.target.value)} />
-								<Input label="RapidAPI Key" type="password" value={rapidApiKey} onChange={(e) => setRapidApiKey(e.target.value)} />
-								<Input label="Firecrawl Key" type="password" value={firecrawlKey} onChange={(e) => setFirecrawlKey(e.target.value)} />
-								<Input label="OpenRouter Key" type="password" value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} />
-							</div>
+							<p className="text-sm text-gray-600">
+								n8n connection has moved to the Settings page.
+								Configure Base URL and API Key there, then return to deploy.
+							</p>
 							<div className="flex flex-wrap gap-2">
-								<Button onClick={saveN8nAction} loading={savingN8nConfig} disabled={!licenseValid}>Save & Continue</Button>
+								<a href="#/settings">
+									<Button variant="secondary" disabled={!licenseValid}>Open Settings</Button>
+								</a>
 								<Button variant="secondary" onClick={skipN8nOnboarding} disabled={!licenseValid}>Skip (Manual Later)</Button>
+								{n8nConfigured && (
+									<Button onClick={() => setOnboardingStep(3)} disabled={!licenseValid}>Continue</Button>
+								)}
 							</div>
 						</div>
 					</StepCard>
@@ -498,7 +408,7 @@ export default function SupportPage() {
 						subtitle="Deploy now to finish onboarding"
 						active={onboardingStep === 3}
 						locked={!licenseValid || !n8nConfigured}
-						complete={Boolean(supportState?.n8n?.last_deploy?.deployed_at)}
+						complete={Boolean(supportState?.n8n?.workflow_id)}
 					>
 						<div className="space-y-2">
 							<p className="text-sm text-gray-600">

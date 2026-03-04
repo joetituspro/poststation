@@ -62,7 +62,7 @@ export function CardBody({ children, className = '' }) {
 // Page header component
 export function PageHeader({ title, description, actions }) {
 	return (
-		<div className="mb-8">
+		<div className="mb-4 px-3 py-3">
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-2xl font-semibold text-gray-900">{title}</h1>

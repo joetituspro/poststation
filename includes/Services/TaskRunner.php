@@ -214,8 +214,11 @@ class TaskRunner
 				$callback_base = $tunnel_url;
 			}
 			$callback_url = rtrim($callback_base, '/') . '/ps-api';
-			$workflow_api_key = (string) get_option(SettingsService::WORKFLOW_API_KEY_OPTION, '');
-			$poststation_api_key = (string) get_option('poststation_api_key', '');
+			$webhook_auth_key = AuthService::instance()->get_license_key();
+			if ($webhook_auth_key === '') {
+				$webhook_auth_key = (new SettingsService())->get_api_key();
+			}
+			$poststation_api_key = (new SettingsService())->get_api_key();
 			$send_api_to_webhook = SettingsService::should_send_api_to_webhook();
 
 			$body = [
@@ -256,7 +259,7 @@ class TaskRunner
 			$response = wp_remote_post($webhook['url'], [
 				'headers' => [
 					'Content-Type' => 'application/json',
-					'X-API-Key' => $workflow_api_key,
+					'X-API-Key' => $webhook_auth_key,
 				],
 				'body' => wp_json_encode($body),
 				'timeout' => 60,

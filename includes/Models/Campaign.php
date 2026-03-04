@@ -199,8 +199,9 @@ class Campaign
 
 	public static function get_default_content_fields(): array
 	{
-		$default_text_model = (string) get_option('poststation_openrouter_default_text_model', '');
-		$default_image_model = (string) get_option('poststation_openrouter_default_image_model', '');
+		$settings_service = new \PostStation\Services\SettingsService();
+		$default_text_model = $settings_service->get_openrouter_default_text_model();
+		$default_image_model = $settings_service->get_openrouter_default_image_model();
 
 		return [
 			'title' => [

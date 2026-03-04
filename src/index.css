@@ -76,6 +76,21 @@
 	@apply min-h-10 max-h-60 field-sizing-content resize-y overflow-y-auto;
 }
 
+/* Borderless inline editors used in writing preset repeater */
+#poststation-app .poststation-inline-editor,
+#poststation-app .poststation-inline-editor:hover,
+#poststation-app .poststation-inline-editor:active,
+#poststation-app .poststation-inline-editor:focus,
+#poststation-app .poststation-inline-editor:focus-visible {
+	border: 0 !important;
+	outline: 0 !important;
+	box-shadow: none !important;
+	background: transparent !important;
+	border-radius: 0 !important;
+	-webkit-appearance: none !important;
+	appearance: none !important;
+}
+
 /* Switch-style checkbox: wrap in label.poststation-switch and add span.poststation-switch-track after input */
 #poststation-app .poststation-switch {
 	@apply inline-flex items-center gap-3 cursor-pointer;
@@ -136,7 +151,7 @@
 	overflow: hidden;
 	white-space: nowrap;
 	border-right: 1px solid currentColor;
-	animation: poststation-progress-typing 5s ease-in-out infinite,
+	animation: poststation-progress-typing 2.5s ease-in-out infinite,
 		poststation-progress-caret 1s steps(1, end) infinite;
 	will-change: max-width;
 }

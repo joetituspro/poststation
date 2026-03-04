@@ -37,6 +37,49 @@ const DEFAULT_WRITING_PRESET_KEYS = [ 'listicle', 'news', 'guide', 'howto' ];
 const isDefaultWritingPreset = ( key ) =>
 	key && DEFAULT_WRITING_PRESET_KEYS.includes( key );
 
+const formatBodyInstructionForPrompt = ( bodyInstruction ) => {
+	const raw = String( bodyInstruction ?? '' ).trim();
+	if ( raw === '' ) return '';
+
+	let parsed = null;
+	try {
+		parsed = JSON.parse( raw );
+	} catch {
+		return raw;
+	}
+
+	let elements = [];
+	if ( Array.isArray( parsed ) ) {
+		elements = parsed;
+	} else if ( parsed && typeof parsed === 'object' && Array.isArray( parsed.elements ) ) {
+		elements = parsed.elements;
+	} else {
+		return raw;
+	}
+
+	const seen = new Set();
+	const formatted = [];
+	for ( const row of elements ) {
+		const name = String( row?.name ?? '' ).trim();
+		const content = String( row?.content ?? '' ).trim();
+		if ( !name && !content ) continue;
+
+		const signature = `${ name.toLowerCase() }::${ content.toLowerCase() }`;
+		if ( seen.has( signature ) ) continue;
+		seen.add( signature );
+
+		if ( name && content ) {
+			formatted.push( `*${ name }:* ${ content }` );
+		} else if ( name ) {
+			formatted.push( `*${ name }:*` );
+		} else {
+			formatted.push( content );
+		}
+	}
+
+	return formatted.length > 0 ? formatted.join( '\n\n' ) : raw;
+};
+
 // Icons for writing preset options (by key)
 const InstructionIcon = ( { type, className = 'w-4 h-4' } ) => {
 	const c = className;
@@ -615,7 +658,9 @@ export default function CampaignEditPage() {
 		if ( selectedPreset ) {
 			const instructions = selectedPreset.instructions || {};
 			const titleInstruction = String( instructions.title ?? '' );
-			const bodyInstruction = String( instructions.body ?? '' );
+			const bodyInstruction = formatBodyInstructionForPrompt(
+				instructions.body
+			);
 
 			const existingTitlePrompt = String(
 				contentFields?.title?.prompt ?? ''
@@ -1144,14 +1189,14 @@ export default function CampaignEditPage() {
 				const preset = presets.find(
 					( p ) => Number( p.id ) === Number( presetId )
 				);
-				if ( preset ) {
-					const instructions = preset.instructions || {};
-					const titleInstruction = String(
-						instructions.title ?? ''
-					).trim();
-					const bodyInstruction = String(
-						instructions.body ?? ''
-					).trim();
+					if ( preset ) {
+						const instructions = preset.instructions || {};
+						const titleInstruction = String(
+							instructions.title ?? ''
+						).trim();
+						const bodyInstruction = formatBodyInstructionForPrompt(
+							instructions.body
+						).trim();
 
 					let parsedFields = {};
 					if ( campaign.content_fields ) {
@@ -1618,15 +1663,13 @@ export default function CampaignEditPage() {
 												Add new preset
 											</Button>
 										}
-										options={ writingPresets.map(
-											( i ) => ( {
-												value: Number( i.id ),
-												label: i.name,
-												description:
-													i.description || '',
-												icon: (
-													<InstructionIcon
-														type={ i.key }
+											options={ writingPresets.map(
+												( i ) => ( {
+													value: Number( i.id ),
+													label: i.name,
+													icon: (
+														<InstructionIcon
+															type={ i.key }
 														className="w-4 h-4"
 													/>
 												),

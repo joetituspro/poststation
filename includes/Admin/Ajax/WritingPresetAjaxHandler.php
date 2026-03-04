@@ -6,8 +6,6 @@ use PostStation\Models\WritingPreset;
 
 class WritingPresetAjaxHandler
 {
-	private const DESCRIPTION_MAX_LENGTH = 80;
-
 	public function create_writing_preset(): void
 	{
 		if (!NonceVerifier::verify()) {
@@ -19,7 +17,6 @@ class WritingPresetAjaxHandler
 
 		$key = sanitize_key((string) ($_POST['key'] ?? ''));
 		$name = sanitize_text_field((string) ($_POST['name'] ?? ''));
-		$description = $this->normalize_description((string) ($_POST['description'] ?? ''));
 		$instructions = json_decode(stripslashes((string) ($_POST['instructions'] ?? '{}')), true);
 		if (!is_array($instructions)) {
 			$instructions = ['title' => '', 'body' => ''];
@@ -34,7 +31,6 @@ class WritingPresetAjaxHandler
 		$id = WritingPreset::create([
 			'key' => $key,
 			'name' => $name,
-			'description' => $description,
 			'instructions' => $instructions,
 		]);
 		if ($id) {
@@ -62,14 +58,12 @@ class WritingPresetAjaxHandler
 			wp_send_json_error(['message' => 'Writing preset not found']);
 		}
 
-		$description = $this->normalize_description((string) ($_POST['description'] ?? ''));
 		$instructions = json_decode(stripslashes((string) ($_POST['instructions'] ?? '{}')), true);
 		if (!is_array($instructions)) {
 			$instructions = ['title' => '', 'body' => ''];
 		}
 
 		$success = WritingPreset::update($id, [
-			'description' => $description,
 			'instructions' => $instructions,
 		]);
 		if ($success) {
@@ -105,7 +99,6 @@ class WritingPresetAjaxHandler
 		$new_id = WritingPreset::create([
 			'key' => $new_key,
 			'name' => $new_name,
-			'description' => $this->normalize_description((string) ($source['description'] ?? '')),
 			'instructions' => $source['instructions'] ?? ['title' => '', 'body' => ''],
 		]);
 		if ($new_id) {
@@ -156,12 +149,4 @@ class WritingPresetAjaxHandler
 		wp_send_json_error(['message' => 'Cannot delete default presets (Listicle, News, Guide, How-to)']);
 	}
 
-	private function normalize_description(string $description): string
-	{
-		$description = sanitize_textarea_field($description);
-		if (function_exists('mb_substr')) {
-			return (string) mb_substr($description, 0, self::DESCRIPTION_MAX_LENGTH);
-		}
-		return substr($description, 0, self::DESCRIPTION_MAX_LENGTH);
-	}
 }

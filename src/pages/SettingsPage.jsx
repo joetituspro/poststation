@@ -1,60 +1,42 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Button, Input, Modal, ConfirmModal, Card, CardHeader, CardBody, PageHeader, PageLoader, ModelSelect } from '../components/common';
-import WritingPresetModal from '../components/writing-presets/WritingPresetModal';
-import { settings, getBootstrapSettings, getBootstrapWritingPresets, refreshBootstrap, writingPresets, getPluginName } from '../api/client';
-
-const DEFAULT_WRITING_PRESET_KEYS = ['listicle', 'news', 'guide', 'howto'];
-const isDefaultPreset = (key) => key && DEFAULT_WRITING_PRESET_KEYS.includes(key);
+import { Button, Input, Modal, Card, CardHeader, CardBody, PageHeader, PageLoader, ModelSelect, useToast } from '../components/common';
+import { settings, getBootstrapSettings, refreshBootstrap, getPluginName } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 
 export default function SettingsPage() {
 	const pluginName = getPluginName();
+	const { showToast } = useToast();
+	const [savingSettings, setSavingSettings] = useState(false);
+	const [regenerating, setRegenerating] = useState(false);
 	const [showApiDocs, setShowApiDocs] = useState(false);
 	const [apiKey, setApiKey] = useState('');
 	const [showPoststationApiKey, setShowPoststationApiKey] = useState(false);
 	const [sendApiToWebhook, setSendApiToWebhook] = useState(true);
-	const [workflowApiKey, setWorkflowApiKey] = useState('');
-	const [showWorkflowApiKey, setShowWorkflowApiKey] = useState(false);
 	const [openRouterApiKey, setOpenRouterApiKey] = useState('');
 	const [defaultTextModel, setDefaultTextModel] = useState('');
 	const [defaultImageModel, setDefaultImageModel] = useState('');
 	const [enableTunnelUrl, setEnableTunnelUrl] = useState(false);
 	const [tunnelUrl, setTunnelUrl] = useState('');
+	const [n8nBaseUrl, setN8nBaseUrl] = useState('');
+	const [n8nApiKey, setN8nApiKey] = useState('');
+	const [n8nWorkflowId, setN8nWorkflowId] = useState('');
+	const [rapidApiKey, setRapidApiKey] = useState('');
+	const [firecrawlKey, setFirecrawlKey] = useState('');
+	const [openRouterConnKey, setOpenRouterConnKey] = useState('');
+	const [showN8nCredentials, setShowN8nCredentials] = useState(false);
+	const [showDeployConfirm, setShowDeployConfirm] = useState(false);
+	const [deployCreateOrUpdateWebhook, setDeployCreateOrUpdateWebhook] = useState(true);
+	const [deployCreateOrUpdateCredentials, setDeployCreateOrUpdateCredentials] = useState(true);
+	const [deployError, setDeployError] = useState('');
 	const [copied, setCopied] = useState(false);
-
-	const [writingPresetModal, setWritingPresetModal] = useState({ open: false, mode: 'add', writingPreset: null });
-	const [deleteWritingPreset, setDeleteWritingPreset] = useState(null);
-	const [deleting, setDeleting] = useState(false);
-	const [writingPresetsList, setWritingPresetsList] = useState(() => getBootstrapWritingPresets());
-	const fetchWritingPresets = useCallback(async () => {
-		await refreshBootstrap();
-		setWritingPresetsList(getBootstrapWritingPresets());
-	}, []);
 
 	const bootstrapSettings = getBootstrapSettings();
 	const fetchSettings = useCallback(() => settings.get(), []);
-	const { data, loading, error, refetch } = useQuery(fetchSettings, [], { initialData: bootstrapSettings });
-	const { mutate: regenerateApiKey, loading: regenerating } = useMutation(settings.regenerateApiKey, {
-		onSuccess: (result) => {
-			if (result?.api_key) {
-				setApiKey(result.api_key);
-			}
-			refreshBootstrap();
-		},
-	});
-	const { mutate: saveSendApiToWebhook, loading: savingSendApiToWebhook } = useMutation(settings.saveSendApiToWebhook, {
+	const { data, loading, refetch } = useQuery(fetchSettings, [], { initialData: bootstrapSettings });
+	const { mutate: saveSettings } = useMutation(settings.save, {
 		onSuccess: refreshBootstrap,
 	});
-	const { mutate: saveWorkflowApiKey, loading: savingWorkflowApiKey } = useMutation(settings.saveWorkflowApiKey, {
-		onSuccess: refreshBootstrap,
-	});
-	const { mutate: saveOpenRouterApiKey, loading: savingOpenRouter } = useMutation(settings.saveOpenRouterApiKey, {
-		onSuccess: refreshBootstrap,
-	});
-	const { mutate: saveOpenRouterDefaults, loading: savingOpenRouterDefaults } = useMutation(settings.saveOpenRouterDefaults, {
-		onSuccess: refreshBootstrap,
-	});
-	const { mutate: saveDevSettings, loading: savingDevSettings } = useMutation(settings.saveDevSettings, {
+	const { mutate: deployN8nBlueprint, loading: deployingN8nBlueprint } = useMutation(settings.deployN8nBlueprint, {
 		onSuccess: refreshBootstrap,
 	});
 
@@ -63,12 +45,16 @@ export default function SettingsPage() {
 			setApiKey(data.api_key);
 		}
 		setSendApiToWebhook(data?.send_api_to_webhook !== false);
-		setWorkflowApiKey(data?.workflow_api_key || '');
 		setDefaultTextModel(data?.openrouter_default_text_model || '');
 		setDefaultImageModel(data?.openrouter_default_image_model || '');
 		setEnableTunnelUrl(Boolean(data?.enable_tunnel_url));
 		setTunnelUrl(data?.tunnel_url || '');
 	}, [data]);
+
+	useEffect(() => {
+		setN8nBaseUrl(data?.n8n_base_url || '');
+		setN8nWorkflowId(data?.n8n_workflow_id || '');
+	}, [data?.n8n_base_url, data?.n8n_workflow_id]);
 
 	const handleCopy = () => {
 		navigator.clipboard.writeText(apiKey || data?.api_key || '');
@@ -82,95 +68,165 @@ export default function SettingsPage() {
 	const handleRegenerate = async () => {
 		if (!window.confirm(REGENERATE_CONFIRM_MESSAGE)) return;
 		try {
-			const result = await regenerateApiKey();
-			if (result?.api_key) setApiKey(result.api_key);
+			setRegenerating(true);
+			const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+			const randomBytes = new Uint32Array(32);
+			window.crypto.getRandomValues(randomBytes);
+			const generatedKey = Array.from(randomBytes, (value) => charset[value % charset.length]).join('');
+			setApiKey(generatedKey);
 		} catch (err) {
-			console.error('Failed to regenerate API key:', err);
-		}
-	};
-
-	const handleSaveOpenRouterSettings = async () => {
-		try {
-			if ((openRouterApiKey || '').trim() !== '') {
-				await saveOpenRouterApiKey(openRouterApiKey);
-				setOpenRouterApiKey('');
-			}
-			await saveOpenRouterDefaults(defaultTextModel, defaultImageModel);
-			refetch();
-		} catch (err) {
-			console.error('Failed to save OpenRouter settings:', err);
-			refetch();
-		}
-	};
-
-	const handleSaveWorkflowApiKey = async () => {
-		try {
-			await saveWorkflowApiKey(workflowApiKey);
-			refetch();
-		} catch (err) {
-			console.error('Failed to save workflow API key:', err);
-			refetch();
-		}
-	};
-
-	const handleToggleSendApiToWebhook = async (checked) => {
-		setSendApiToWebhook(checked);
-		try {
-			await saveSendApiToWebhook(checked);
-			refetch();
-		} catch (err) {
-			console.error('Failed to save Send to Webhook setting:', err);
-			setSendApiToWebhook(!checked);
-			refetch();
-		}
-	};
-
-	const handleSaveDevSettings = async () => {
-		try {
-			await saveDevSettings(enableTunnelUrl, tunnelUrl);
-			refetch();
-		} catch (err) {
-			console.error('Failed to save dev settings:', err);
-			refetch();
-		}
-	};
-
-	const openWritingPresetModal = (mode, writingPreset = null) => {
-		setWritingPresetModal({ open: true, mode, writingPreset });
-	};
-	const closeWritingPresetModal = () => {
-		setWritingPresetModal((prev) => ({ ...prev, open: false }));
-	};
-	const handleWritingPresetSaved = () => {
-		// Modal already called refreshBootstrap() before onSaved; use current bootstrap so list updates immediately
-		setWritingPresetsList(getBootstrapWritingPresets());
-	};
-
-	const handleConfirmDeleteWritingPreset = async () => {
-		if (!deleteWritingPreset?.id) return;
-		setDeleting(true);
-		try {
-			await writingPresets.delete(deleteWritingPreset.id);
-			await refreshBootstrap();
-			setWritingPresetsList(getBootstrapWritingPresets());
-			setDeleteWritingPreset(null);
-		} catch (err) {
-			console.error('Failed to delete writing preset:', err);
+			console.error('Failed to regenerate API key locally:', err);
 		} finally {
-			setDeleting(false);
+			setRegenerating(false);
 		}
 	};
+
+	const hasUnsavedApiKeyChange = (apiKey || '') !== (data?.api_key || '');
+
+	const hasUnsavedSendApiChange = sendApiToWebhook !== (data?.send_api_to_webhook !== false);
+	const hasUnsavedOpenRouterChanges =
+		(openRouterApiKey || '').trim() !== '' ||
+		(defaultTextModel || '') !== (data?.openrouter_default_text_model || '') ||
+		(defaultImageModel || '') !== (data?.openrouter_default_image_model || '');
+	const hasUnsavedDevChanges =
+		Boolean(data?.is_local) &&
+		(enableTunnelUrl !== Boolean(data?.enable_tunnel_url) ||
+			(tunnelUrl || '').trim() !== (data?.tunnel_url || '').trim());
+
+	const hasUnsavedN8nChanges =
+		(n8nBaseUrl || '').trim() !== (data?.n8n_base_url || '').trim() ||
+		(n8nWorkflowId || '').trim() !== (data?.n8n_workflow_id || '').trim() ||
+		(n8nApiKey || '').trim() !== '' ||
+		(rapidApiKey || '').trim() !== '' ||
+		(firecrawlKey || '').trim() !== '' ||
+		(openRouterConnKey || '').trim() !== '';
+
+	const hasUnsavedChanges =
+		hasUnsavedApiKeyChange ||
+		hasUnsavedSendApiChange ||
+		hasUnsavedOpenRouterChanges ||
+		hasUnsavedDevChanges ||
+		hasUnsavedN8nChanges;
+
+	const handleSaveSettings = async (e) => {
+		e?.preventDefault?.();
+
+		const base = (n8nBaseUrl || '').trim();
+		const key = (n8nApiKey || '').trim();
+		const hasStoredKey = Boolean(data?.n8n_api_key_set);
+		if (hasUnsavedN8nChanges && (base === '' || (key === '' && !hasStoredKey))) {
+			showToast('n8n Base URL and n8n API Key are required.', 'error');
+			return;
+		}
+
+		setSavingSettings(true);
+		try {
+			await saveSettings({
+				api_key: apiKey,
+				send_api_to_webhook: sendApiToWebhook ? '1' : '0',
+				default_text_model: defaultTextModel,
+				default_image_model: defaultImageModel,
+				openrouter_api_key: (openRouterApiKey || '').trim() !== '' ? openRouterApiKey : undefined,
+				enable_tunnel_url: enableTunnelUrl ? '1' : '0',
+				tunnel_url: tunnelUrl,
+				base_url: base,
+				workflow_id: n8nWorkflowId,
+				n8n_api_key: n8nApiKey,
+				rapidapi_key: rapidApiKey,
+				firecrawl_key: firecrawlKey,
+				openrouter_key: openRouterConnKey,
+			});
+
+			setOpenRouterApiKey('');
+			setN8nApiKey('');
+			setRapidApiKey('');
+			setFirecrawlKey('');
+			setOpenRouterConnKey('');
+			showToast('Settings saved.', 'success');
+			await refreshBootstrap();
+			await refetch({ background: true });
+		} catch (err) {
+			console.error('Failed to save settings:', err);
+			showToast(err?.message || 'Failed to save settings.', 'error');
+			await refreshBootstrap();
+			await refetch({ background: true });
+		} finally {
+			setSavingSettings(false);
+		}
+	};
+
+	const canDeployN8n =
+		!hasUnsavedN8nChanges &&
+		(data?.n8n_base_url || '').trim() !== '' &&
+		Boolean(data?.n8n_api_key_set) &&
+		!savingSettings &&
+		!deployingN8nBlueprint;
+
+	const handleDeployN8nBlueprint = async (options = {}) => {
+		if (!canDeployN8n) {
+			showToast('Save n8n settings first. Deploy is only available when there are no unsaved changes.', 'error');
+			return;
+		}
+
+		if (options?.create_or_update_credentials) {
+			const missing = [];
+			if (!data?.rapidapi_key_set) missing.push('RapidAPI Key');
+			if (!data?.firecrawl_key_set) missing.push('Firecrawl Key');
+			if (!data?.n8n_openrouter_key_set) missing.push('OpenRouter Key');
+			if (missing.length > 0) {
+				setDeployError(`Create/Update credentials is enabled, but required credentials are missing: ${missing.join(', ')}. Save these in n8n Connection credentials first.`);
+				return;
+			}
+		}
+
+		try {
+			setDeployError('');
+			await deployN8nBlueprint(options);
+			await refreshBootstrap();
+			await refetch();
+			setShowDeployConfirm(false);
+			showToast('n8n workflow deployed successfully.', 'success');
+		} catch (err) {
+			console.error('Failed to deploy n8n workflow:', err);
+			setDeployError(err?.message || 'Failed to deploy n8n workflow.');
+		}
+	};
+
+	const handleRequestDeployN8nBlueprint = () => {
+		if (!canDeployN8n) {
+			showToast('Save n8n settings first. Deploy is only available when there are no unsaved changes.', 'error');
+			return;
+		}
+		setDeployCreateOrUpdateWebhook(true);
+		setDeployCreateOrUpdateCredentials(true);
+		setDeployError('');
+		setShowDeployConfirm(true);
+	};
+
+	const savedWorkflowId = (data?.n8n_workflow_id || '').trim();
 
 	if (loading) return <PageLoader />;
 
 	return (
 		<div>
-			<PageHeader
-				title="Settings"
-				description={ `Manage your ${ pluginName } configuration` }
-			/>
+			<form onSubmit={handleSaveSettings}>
+				<div className="poststation-sticky-header sticky top-8  bg-gray-50">
+					<PageHeader
+						title="Settings"
+						description={ `Manage your ${ pluginName } configuration` }
+						actions={(
+							<Button
+								type="submit"
+								loading={savingSettings}
+								disabled={!hasUnsavedChanges || deployingN8nBlueprint}
+							>
+								Save Settings
+							</Button>
+						)}
+					/>
+				</div>
 
-			<div className="max-w-5xl grid grid-cols-2 gap-6">
+				<div className="max-w-5xl grid grid-cols-2 gap-6">
 				{/* API Key Card */}
 				<Card>
 					<CardHeader>
@@ -197,8 +253,8 @@ export default function SettingsPage() {
 												type="checkbox"
 												className="poststation-field-checkbox"
 												checked={sendApiToWebhook}
-												disabled={savingSendApiToWebhook}
-												onChange={(e) => handleToggleSendApiToWebhook(e.target.checked)}
+												disabled={savingSettings}
+												onChange={(e) => setSendApiToWebhook(e.target.checked)}
 											/>
 											<span className="poststation-switch-track" aria-hidden />
 											<span>Send to Webhook</span>
@@ -271,50 +327,73 @@ export default function SettingsPage() {
 									)}
 								</button>
 							</div>
-							<div className="pt-3 border-t border-gray-100">
-								<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
-									Workflow API Key
-								</label>
-								<p className="text-xs text-gray-500 mb-2">
-									This API key is used for the n8n Rankima workflow webhook authentication.
-								</p>
-								<div className="flex gap-2 items-end">
-									<div className="relative flex-1">
-										<input
-											className="poststation-field pr-10"
-											type={showWorkflowApiKey ? 'text' : 'password'}
-											value={workflowApiKey}
-											onChange={(e) => setWorkflowApiKey(e.target.value)}
-											placeholder="Enter workflow API key"
-										/>
-										<button
-											type="button"
-											className="absolute right-2 top-1/2 -translate-y-1/2 poststation-icon-btn"
-											onClick={() => setShowWorkflowApiKey((prev) => !prev)}
-											title={showWorkflowApiKey ? 'Hide key' : 'Show key'}
-											aria-label={showWorkflowApiKey ? 'Hide key' : 'Show key'}
-										>
-											{showWorkflowApiKey ? (
-												<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-													<path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M10.477 10.48a3 3 0 004.243 4.242M9.88 5.09A10.958 10.958 0 0112 4.909c5.523 0 10 4.477 10 10 0 1.232-.223 2.41-.632 3.498M6.228 6.228A9.965 9.965 0 002 14.91c0 .84.103 1.656.297 2.435" />
-												</svg>
-											) : (
-												<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-													<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-													<path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
-												</svg>
-											)}
-										</button>
-									</div>
-									<Button onClick={handleSaveWorkflowApiKey} loading={savingWorkflowApiKey}>
-										Save
-									</Button>
-								</div>
-							</div>
 						</div>
 					</CardBody>
 				</Card>
 
+				<Card>
+					<CardHeader>
+						<div className="flex items-center justify-between gap-3">
+							<div>
+								<h3 className="text-lg font-medium text-gray-900">n8n Connection</h3>
+								<p className="text-sm text-gray-500">Configure n8n connection and optional credential keys</p>
+							</div>
+							<Button
+								variant="secondary"
+								onClick={handleRequestDeployN8nBlueprint}
+								disabled={!canDeployN8n}
+								loading={deployingN8nBlueprint}
+								title={!canDeployN8n ? 'Save all n8n changes before deploying.' : 'Deploy workflow'}
+							>
+								Deploy
+							</Button>
+						</div>
+					</CardHeader>
+					<CardBody>
+						<div className="space-y-3">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+								<Input
+									label="n8n Base URL"
+									value={n8nBaseUrl}
+									onChange={(e) => setN8nBaseUrl(e.target.value)}
+									placeholder="https://your-n8n.example.com"
+									required
+								/>
+								<Input
+									label="n8n API Key"
+									type="password"
+									value={n8nApiKey}
+									onChange={(e) => setN8nApiKey(e.target.value)}
+									placeholder={data?.n8n_api_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter n8n API key'}
+									required={!data?.n8n_api_key_set}
+								/>
+								<Input
+									label="Workflow ID"
+									value={n8nWorkflowId}
+									onChange={(e) => setN8nWorkflowId(e.target.value)}
+									placeholder="Optional: existing workflow id"
+								/>
+							</div>
+							<label className="poststation-switch inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+								<input
+									type="checkbox"
+									className="poststation-field-checkbox"
+									checked={showN8nCredentials}
+									onChange={(e) => setShowN8nCredentials(e.target.checked)}
+								/>
+								<span className="poststation-switch-track" aria-hidden />
+								<span>Credentials?</span>
+							</label>
+							{showN8nCredentials && (
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+									<Input label="RapidAPI Key" type="password" value={rapidApiKey} onChange={(e) => setRapidApiKey(e.target.value)} placeholder={data?.rapidapi_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter RapidAPI key'} />
+									<Input label="Firecrawl Key" type="password" value={firecrawlKey} onChange={(e) => setFirecrawlKey(e.target.value)} placeholder={data?.firecrawl_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter Firecrawl key'} />
+									<Input label="OpenRouter Key" type="password" value={openRouterConnKey} onChange={(e) => setOpenRouterConnKey(e.target.value)} placeholder={data?.n8n_openrouter_key_set ? 'Saved (hidden). Enter to replace.' : 'Enter OpenRouter key'} />
+								</div>
+							)}
+						</div>
+					</CardBody>
+				</Card>
 				<Card>
 					<CardHeader>
 						<div>
@@ -330,7 +409,7 @@ export default function SettingsPage() {
 								type="password"
 								value={openRouterApiKey}
 								onChange={(e) => setOpenRouterApiKey(e.target.value)}
-								placeholder={data?.openrouter_api_key_set ? 'Saved (hidden). Enter new key to replace or leave empty to clear.' : 'Enter OpenRouter API key'}
+								placeholder={data?.openrouter_api_key_set ? 'Saved (hidden). Enter new key to replace.' : 'Enter OpenRouter API key'}
 							/>
 							<p className="text-xs text-gray-500">
 								{data?.openrouter_api_key_set
@@ -353,20 +432,11 @@ export default function SettingsPage() {
 									filter="image"
 								/>
 							</div>
-							<div className="flex justify-end gap-2">
-								<Button
-									onClick={handleSaveOpenRouterSettings}
-									loading={savingOpenRouter || savingOpenRouterDefaults}
-								>
-									Save OpenRouter Settings
-								</Button>
-							</div>
 						</div>
 					</CardBody>
 				</Card>
-
 				{Boolean(data?.is_local) && (
-					<Card className="col-span-2">
+					<Card>
 						<CardHeader>
 							<div>
 								<h3 className="text-lg font-medium text-gray-900">Dev</h3>
@@ -394,107 +464,13 @@ export default function SettingsPage() {
 									/>
 								)}
 
-								<div className="flex justify-end">
-									<Button onClick={handleSaveDevSettings} loading={savingDevSettings}>
-										Save Dev Settings
-									</Button>
-								</div>
 							</div>
 						</CardBody>
 					</Card>
 				)}
 
-				{/* Writing presets */}
-				<Card className="col-span-2">
-					<CardHeader>
-						<div className="flex items-center justify-between">
-							<div>
-								<h3 className="text-lg font-medium text-gray-900">Writing presets</h3>
-								<p className="text-sm text-gray-500">Manage writing presets used for title, body, and section generation</p>
-							</div>
-							<Button variant="primary" onClick={() => openWritingPresetModal('add')}>
-								Add new
-							</Button>
-						</div>
-					</CardHeader>
-					<CardBody>
-						<div className="space-y-4">
-						{writingPresetsList.length === 0 ? (
-							<div className="flex items-center justify-center py-10 px-6 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50">
-							<p className="text-sm text-gray-400">No writing presets. Add one to get started.</p>
-							</div>
-						) : (
-							<div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
-							{writingPresetsList.map((inst) => (
-								<div
-								key={inst.id}
-								className="group flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-all hover:border-gray-300 hover:bg-gray-50"
-								>
-								{/* Info */}
-								<div className="min-w-0 flex-1 flex flex-col gap-0.5">
-									<div className="flex items-center gap-2">
-										<span className="font-medium text-sm text-gray-900 truncate">
-										{inst.name}
-										</span>
-										{inst.key && (
-										<span className="shrink-0 inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-500">
-											{inst.key}
-										</span>
-										)}
-									</div>
-									{inst.description && (
-									<span className="text-xs text-gray-400 truncate">
-										{inst.description}
-									</span>
-									)}
-								</div>
-
-								{/* Actions */}
-								<div className="flex items-center gap-1 shrink-0">
-									<button
-										type="button"
-										className="poststation-icon-btn"
-										onClick={() => openWritingPresetModal('edit', inst)}
-										title="Edit"
-										aria-label="Edit"
-									>
-										<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-											<path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-										</svg>
-									</button>
-									<button
-										type="button"
-										className="poststation-icon-btn"
-										onClick={() => openWritingPresetModal('duplicate', inst)}
-										title="Duplicate"
-										aria-label="Duplicate"
-									>
-										<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-											<path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-										</svg>
-									</button>
-									{!isDefaultPreset(inst.key) && (
-										<button
-											type="button"
-											className="poststation-icon-btn-danger"
-											onClick={() => setDeleteWritingPreset(inst)}
-											title="Delete"
-											aria-label="Delete"
-										>
-											<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-												<path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-											</svg>
-										</button>
-									)}
-								</div>
-								</div>
-							))}
-							</div>
-						)}
-						</div>
-					</CardBody>
-				</Card>
-			</div>
+				</div>
+			</form>
 
 			{/* API Documentation Modal */}
 			<Modal
@@ -618,24 +594,84 @@ export default function SettingsPage() {
 				</div>
 			</Modal>
 
-			<WritingPresetModal
-				isOpen={writingPresetModal.open}
-				onClose={closeWritingPresetModal}
-				mode={writingPresetModal.mode}
-				writingPreset={writingPresetModal.writingPreset}
-				onSaved={handleWritingPresetSaved}
-			/>
+			<Modal
+				isOpen={showDeployConfirm}
+				onClose={() => {
+					if (deployingN8nBlueprint) return;
+					setShowDeployConfirm(false);
+					setDeployError('');
+				}}
+				title="Deploy n8n Workflow"
+				size="md"
+			>
+				<div className="space-y-4">
+					<div className="text-sm text-gray-600">
+						Deployment will push the latest RANKIMA workflow blueprint to your connected n8n instance and then attempt activation.
+					</div>
+					<div className="space-y-2">
+					<label className="poststation-switch inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700 mt-1">
+						<input
+							type="checkbox"
+							className="poststation-field-checkbox"
+							checked={deployCreateOrUpdateWebhook}
+							onChange={(e) => setDeployCreateOrUpdateWebhook(e.target.checked)}
+							disabled={deployingN8nBlueprint}
+						/>
+						<span className="poststation-switch-track" aria-hidden />
+						<span>Create/Update Webhook After Deployment</span>
+					</label>
+					<label className="poststation-switch inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+						<input
+							type="checkbox"
+							className="poststation-field-checkbox"
+							checked={deployCreateOrUpdateCredentials}
+							onChange={(e) => setDeployCreateOrUpdateCredentials(e.target.checked)}
+							disabled={deployingN8nBlueprint}
+						/>
+						<span className="poststation-switch-track" aria-hidden />
+						<span>Create/Update n8n workflow credentials</span>
+					</label>
+					</div>
 
-			<ConfirmModal
-				isOpen={Boolean(deleteWritingPreset)}
-				onClose={() => setDeleteWritingPreset(null)}
-				onConfirm={handleConfirmDeleteWritingPreset}
-				title="Delete writing preset"
-				message={deleteWritingPreset ? `Delete "${deleteWritingPreset.name}"? This cannot be undone.` : ''}
-				confirmText="Delete"
-				variant="danger"
-				loading={deleting}
-			/>
+					{savedWorkflowId !== '' ? (
+						<p className="text-sm text-gray-600 leading-6 pt-1">
+							Clicking <strong>Proceed to Deploy</strong> will attempt to update your n8n workflow with ID <code>{savedWorkflowId}</code> to the latest version.
+						</p>
+					) : (
+						<p className="text-sm text-gray-600 leading-6 pt-1">
+							This will create a new latest RANKIMA workflow in your n8n instance with webhook path <code>rankima</code>. Ensure no existing workflow is already using that webhook path, or the new workflow may not activate.
+						</p>
+					)}
+					{deployError && (
+						<div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 mt-1">
+							{deployError}
+						</div>
+					)}
+
+					<div className="flex justify-end gap-3 pt-3">
+						<Button
+							variant="secondary"
+							onClick={() => {
+								setShowDeployConfirm(false);
+								setDeployError('');
+							}}
+							disabled={deployingN8nBlueprint}
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => handleDeployN8nBlueprint({
+								create_or_update_webhook: deployCreateOrUpdateWebhook,
+								create_or_update_credentials: deployCreateOrUpdateCredentials,
+							})}
+							loading={deployingN8nBlueprint}
+						>
+							Proceed to Deploy
+						</Button>
+					</div>
+				</div>
+			</Modal>
+
 		</div>
 	);
 }

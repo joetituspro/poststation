@@ -48,9 +48,8 @@ class BlueprintUpdateService
 			return $empty;
 		}
 
-		$deployed = get_option(SupportService::N8N_LAST_DEPLOY_OPTION, []);
-		$current_version = is_array($deployed) ? (string) ($deployed['blueprint_version'] ?? '') : '';
-		$current_hash = is_array($deployed) ? (string) ($deployed['blueprint_hash'] ?? '') : '';
+		$current_version = '';
+		$current_hash = '';
 		$payload = [
 			'licenseKey' => $license_key,
 			'siteKey' => $site_key,

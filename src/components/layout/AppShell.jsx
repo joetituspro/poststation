@@ -5,6 +5,7 @@ import { getPluginAppId, getPluginName, getPluginVersion } from '../../api/clien
 
 const navItems = [
 	{ to: '/campaigns', label: 'Campaigns', icon: CampaignsIcon },
+	{ to: '/writing-presets', label: 'Writing Presets', icon: WritingPresetsIcon },
 	{ to: '/webhooks', label: 'Webhooks', icon: WebhooksIcon },
 	{ to: '/settings', label: 'Settings', icon: SettingsIcon },
 	{ to: '/support', label: 'Support', icon: SupportIcon },
@@ -22,6 +23,15 @@ function WebhooksIcon({ className }) {
 	return (
 		<svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
 			<path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+		</svg>
+	);
+}
+
+function WritingPresetsIcon({ className }) {
+	return (
+		<svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+			<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 7.5v9a2.25 2.25 0 0 1-2.25 2.25h-10.5A2.25 2.25 0 0 1 4.5 16.5v-9A2.25 2.25 0 0 1 6.75 5.25h10.5A2.25 2.25 0 0 1 19.5 7.5Z" />
+			<path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9.75h7.5M8.25 12h7.5M8.25 14.25h4.5" />
 		</svg>
 	);
 }

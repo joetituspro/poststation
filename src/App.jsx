@@ -5,6 +5,7 @@ import { UnsavedChangesProvider } from './context/UnsavedChangesContext';
 import SettingsPage from './pages/SettingsPage';
 import CampaignsPage from './pages/CampaignsPage';
 import CampaignEditPage from './pages/CampaignEditPage';
+import WritingPresetsPage from './pages/WritingPresetsPage';
 import WebhooksPage from './pages/WebhooksPage';
 import SupportPage from './pages/SupportPage';
 
@@ -17,6 +18,7 @@ export default function App() {
 					<Route path="/" element={<Navigate to="/campaigns" replace />} />
 					<Route path="/settings" element={<SettingsPage />} />
 					<Route path="/campaigns" element={<CampaignsPage />} />
+					<Route path="/writing-presets" element={<WritingPresetsPage />} />
 					<Route path="/campaigns/:id" element={<CampaignEditPage />} />
 					<Route path="/webhooks" element={<WebhooksPage />} />
 					<Route path="/support" element={<SupportPage />} />

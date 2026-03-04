@@ -9,10 +9,10 @@ use PostStation\Models\PostTask;
 use PostStation\Models\Campaign;
 use PostStation\Api\Create;
 use PostStation\Services\ImageOptimizer;
+use PostStation\Services\SettingsService;
 
 class ApiHandler
 {
-	private const OPTION_KEY = 'poststation_api_key';
 	private const REQUIRED_FIELDS = [];
 	private const ALLOWED_FIELDS = [
 		'execution_id',
@@ -213,7 +213,7 @@ class ApiHandler
 			throw new Exception('Missing API key', 401);
 		}
 
-		$valid_api_key = get_option(self::OPTION_KEY, '');
+		$valid_api_key = (new SettingsService())->get_api_key();
 
 		if (empty($valid_api_key) || !hash_equals($valid_api_key, $api_key)) {
 			throw new Exception('Invalid API key', 403);

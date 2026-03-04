@@ -3,7 +3,7 @@ import { Button, Input, ModelSelect, Textarea, Modal } from '../common';
 import { ai, getBootstrapSettings, writingPresets, refreshBootstrap } from '../../api/client';
 
 const DEFAULT_KEYS = ['listicle', 'news', 'guide', 'howto'];
-const DESCRIPTION_MAX_LENGTH = 80;
+const MAX_BODY_ELEMENTS = 10;
 const isDefaultPreset = (key) => key && DEFAULT_KEYS.includes(key);
 const KEY_FORMAT = /^[a-z0-9_-]+$/;
 
@@ -15,8 +15,71 @@ const normalizeKey = (value = '') =>
 		.replace(/-+/g, '-')
 		.replace(/_+/g, '_');
 
-const limitDescription = (value = '') =>
-	String(value ?? '').slice(0, DESCRIPTION_MAX_LENGTH);
+const createBodyElement = (name = '', content = '') => ({
+	id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+	name: String(name ?? ''),
+	content: String(content ?? ''),
+});
+
+const normalizeBodyElements = (elements) => {
+	if (!Array.isArray(elements)) return [];
+	const normalized = [];
+	for (const row of elements) {
+		const name = String(row?.name ?? '').trim();
+		const content = String(row?.content ?? '').trim();
+		if (!name && !content) continue;
+		normalized.push(createBodyElement(name, content));
+		if (normalized.length >= MAX_BODY_ELEMENTS) break;
+	}
+	return normalized;
+};
+
+const parseBodyInstruction = (value) => {
+	if (Array.isArray(value)) {
+		return normalizeBodyElements(value);
+	}
+
+	if (value && typeof value === 'object' && Array.isArray(value.elements)) {
+		return normalizeBodyElements(value.elements);
+	}
+
+	const text = String(value ?? '').trim();
+	if (!text) return [];
+
+	try {
+		const parsed = JSON.parse(text);
+		if (Array.isArray(parsed)) {
+			return normalizeBodyElements(parsed);
+		}
+		if (parsed && typeof parsed === 'object' && Array.isArray(parsed.elements)) {
+			return normalizeBodyElements(parsed.elements);
+		}
+	} catch (_err) {
+		// Legacy plain-text body instructions are converted into one row.
+	}
+
+	return [createBodyElement('Body instruction', text)];
+};
+
+const serializeBodyInstruction = (elements) => {
+	const payload = [];
+	const seen = new Set();
+
+	for (const row of elements || []) {
+		const name = String(row?.name ?? '').trim();
+		const content = String(row?.content ?? '').trim();
+		if (!name && !content) continue;
+
+		const signature = `${name.toLowerCase()}::${content.toLowerCase()}`;
+		if (seen.has(signature)) continue;
+		seen.add(signature);
+
+		payload.push({ name, content });
+		if (payload.length >= MAX_BODY_ELEMENTS) break;
+	}
+
+	return JSON.stringify(payload);
+};
 
 export default function WritingPresetModal({
 	isOpen,
@@ -31,9 +94,8 @@ export default function WritingPresetModal({
 	const defaultAiModel = bootstrapSettings?.openrouter_default_text_model || '';
 	const [key, setKey] = useState('');
 	const [name, setName] = useState('');
-	const [description, setDescription] = useState('');
 	const [titleInstruction, setTitleInstruction] = useState('');
-	const [bodyInstruction, setBodyInstruction] = useState('');
+	const [bodyElements, setBodyElements] = useState([]);
 	const [saving, setSaving] = useState(false);
 	const [resetting, setResetting] = useState(false);
 	const [aiOpen, setAiOpen] = useState(false);
@@ -44,6 +106,7 @@ export default function WritingPresetModal({
 
 	const lockKeyAndName = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
 	const showResetButton = mode === 'edit' && writingPreset && isDefaultPreset(writingPreset.key);
+	const bodyElementsLimitReached = bodyElements.length >= MAX_BODY_ELEMENTS;
 
 	useEffect(() => {
 		if (!isOpen) return;
@@ -51,9 +114,8 @@ export default function WritingPresetModal({
 		if (mode === 'add' && !writingPreset) {
 			setKey('');
 			setName('');
-			setDescription('');
 			setTitleInstruction('');
-			setBodyInstruction('');
+			setBodyElements([]);
 			setAiPrompt('');
 			setAiModel(defaultAiModel);
 			setAiOpen(false);
@@ -64,9 +126,8 @@ export default function WritingPresetModal({
 			const instr = inst.instructions || {};
 			setKey(mode === 'duplicate' ? '' : (inst.key ?? ''));
 			setName(mode === 'duplicate' ? '' : (inst.name ?? ''));
-			setDescription(limitDescription(inst.description ?? ''));
 			setTitleInstruction(instr.title ?? '');
-			setBodyInstruction(instr.body ?? '');
+			setBodyElements(parseBodyInstruction(instr.body));
 			setAiPrompt('');
 			setAiModel(defaultAiModel);
 			setAiOpen(false);
@@ -91,14 +152,30 @@ export default function WritingPresetModal({
 			const generatedInstructions = preset?.instructions || {};
 			setKey(normalizeKey(preset?.key ?? ''));
 			setName(preset?.name ?? '');
-			setDescription(limitDescription(preset?.description ?? ''));
 			setTitleInstruction(generatedInstructions?.title ?? '');
-			setBodyInstruction(generatedInstructions?.body ?? '');
+			setBodyElements(parseBodyInstruction(generatedInstructions?.body));
 		} catch (err) {
 			setError(err?.message || 'Failed to generate preset with AI.');
 		} finally {
 			setAiGenerating(false);
 		}
+	};
+
+	const addBodyElement = () => {
+		if (bodyElementsLimitReached) return;
+		setBodyElements((prev) => [...prev, createBodyElement()]);
+	};
+
+	const updateBodyElement = (id, field, value) => {
+		setBodyElements((prev) =>
+			prev.map((row) =>
+				row.id === id ? { ...row, [field]: value } : row
+			)
+		);
+	};
+
+	const removeBodyElement = (id) => {
+		setBodyElements((prev) => prev.filter((row) => row.id !== id));
 	};
 
 	const savePreset = async ({ applyAfterSave = false } = {}) => {
@@ -114,10 +191,9 @@ export default function WritingPresetModal({
 			return false;
 		}
 		const payload = {
-			description: limitDescription(String(description ?? '').trim()),
 			instructions: {
 				title: String(titleInstruction ?? '').trim(),
-				body: String(bodyInstruction ?? '').trim(),
+				body: serializeBodyInstruction(bodyElements),
 			},
 		};
 		setSaving(true);
@@ -138,7 +214,6 @@ export default function WritingPresetModal({
 				savedId = writingPreset?.id ?? result?.writing_preset?.id ?? null;
 				savedPreset = result?.writing_preset ?? {
 					...(writingPreset || {}),
-					description: payload.description,
 					instructions: payload.instructions,
 				};
 			}
@@ -183,9 +258,8 @@ export default function WritingPresetModal({
 			await refreshBootstrap();
 			const inst = result?.writing_preset;
 			if (inst) {
-				setDescription(inst.description ?? '');
 				setTitleInstruction(inst.instructions?.title ?? '');
-				setBodyInstruction(inst.instructions?.body ?? '');
+				setBodyElements(parseBodyInstruction(inst.instructions?.body));
 			}
 			onSaved?.();
 		} catch (err) {
@@ -292,25 +366,6 @@ export default function WritingPresetModal({
 								required
 							/>
 						</div>
-						<div>
-							<label className="flex items-center text-sm font-medium text-gray-700 mb-1">
-								<span>Description</span>
-							</label>
-							<div className="relative">
-								<textarea
-									value={description}
-									onChange={(e) => setDescription(limitDescription(e.target.value))}
-									placeholder="Short description for the preset"
-									rows={2}
-									maxLength={DESCRIPTION_MAX_LENGTH}
-									disabled={aiGenerating}
-									className="poststation-field pr-16 pb-6"
-								/>
-								<span className="pointer-events-none absolute bottom-2 right-3 text-xs text-gray-500">
-									{description.length}/{DESCRIPTION_MAX_LENGTH}
-								</span>
-							</div>
-						</div>
 						<div className="border-t border-gray-200 pt-4 space-y-4">
 							<Textarea
 								label="Title instruction"
@@ -320,14 +375,78 @@ export default function WritingPresetModal({
 								rows={2}
 								disabled={aiGenerating}
 							/>
-							<Textarea
-								label="Body instruction"
-								value={bodyInstruction}
-								onChange={(e) => setBodyInstruction(e.target.value)}
-								placeholder="How to write the body"
-								rows={3}
-								disabled={aiGenerating}
-							/>
+
+							<div>
+								<div className="flex items-center justify-between mb-2">
+									<label className="text-sm font-medium text-gray-700">
+										Writing Preset
+									</label>
+									<span className="text-xs text-gray-500">
+										{bodyElements.length}/{MAX_BODY_ELEMENTS}
+									</span>
+								</div>
+								<div className="rounded-lg border border-gray-200 overflow-hidden">
+									<div className="grid grid-cols-12 bg-gray-50 border-b border-gray-200">
+										<div className="col-span-4 px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wide">Name</div>
+										<div className="col-span-7 px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wide">Content</div>
+										<div className="col-span-1 px-3 py-2" />
+									</div>
+									{bodyElements.length === 0 ? (
+										<div className="px-3 py-4 text-sm text-gray-500 bg-white">No elements yet. Add one below.</div>
+									) : (
+										<div className="max-h-72 overflow-y-auto bg-white">
+											{bodyElements.map((row) => (
+												<div key={row.id} className="grid grid-cols-12 border-b border-gray-100 last:border-b-0">
+														<div className="col-span-3 px-2 py-2">
+															<textarea
+																value={row.name}
+																onChange={(e) => updateBodyElement(row.id, 'name', e.target.value)}
+															placeholder="e.g. Voice Tone"
+															rows={2}
+																className="poststation-inline-editor w-full min-h-[56px] resize-none! bg-transparent border-0 rounded-none px-2 py-2 text-sm font-bold! text-gray-900 placeholder:text-gray-400 outline-none shadow-none focus:outline-none focus:ring-0 focus:border-0"
+															disabled={aiGenerating}
+														/>
+														</div>
+													<div className="col-span-8 px-2 py-2">
+														<textarea
+															value={row.content}
+															onChange={(e) => updateBodyElement(row.id, 'content', e.target.value)}
+															placeholder="Describe this element"
+															rows={2}
+																className="poststation-inline-editor w-full min-h-[72px] resize-none bg-transparent border-0 rounded-none px-2 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none shadow-none focus:outline-none focus:ring-0 focus:border-0"
+															disabled={aiGenerating}
+														/>
+													</div>
+													<div className="col-span-1 px-2 py-2 flex items-center justify-center">
+														<button
+															type="button"
+															className="poststation-icon-btn-danger"
+															onClick={() => removeBodyElement(row.id)}
+															title="Remove element"
+															aria-label="Remove element"
+															disabled={aiGenerating}
+														>
+															<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+																<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+															</svg>
+														</button>
+													</div>
+												</div>
+											))}
+										</div>
+									)}
+								</div>
+								<div className="pt-3">
+									<Button
+										type="button"
+										variant="secondary"
+										onClick={addBodyElement}
+										disabled={aiGenerating || bodyElementsLimitReached}
+									>
+										Add an Element
+									</Button>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>

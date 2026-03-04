@@ -16,6 +16,7 @@ use PostStation\Services\BackgroundRunner;
 use PostStation\Services\AuthService;
 use PostStation\Services\GlobalUpdateService;
 use PostStation\Services\PluginUpdateService;
+use PostStation\Services\SettingsService;
 use PostStation\Services\SupportService;
 
 class Bootstrap
@@ -73,9 +74,9 @@ class Bootstrap
 	public function activate(): void
 	{
 		try {
-			// Generate API key if not exists
-			if (!get_option('poststation_api_key')) {
-				update_option('poststation_api_key', wp_generate_password(32, false));
+			$settings_service = new SettingsService();
+			if ($settings_service->get_api_key() === '') {
+				$settings_service->save_api_key(wp_generate_password(32, false));
 			}
 
 			$support_service = new SupportService();
@@ -148,6 +149,7 @@ class Bootstrap
 
 		// Remove options
 		delete_option('poststation_api_key');
+		delete_option(\PostStation\Services\SettingsService::OPTIONS_KEY);
 		delete_option('poststation_posttask_db_version');
 		delete_option(\PostStation\Services\AuthService::LICENSE_KEY_OPTION);
 		delete_option(\PostStation\Services\AuthService::SITE_KEY_OPTION);
@@ -156,12 +158,11 @@ class Bootstrap
 		delete_option(\PostStation\Services\SupportService::ONBOARDING_SEEN_AT_OPTION);
 		delete_option(\PostStation\Services\SupportService::ONBOARDING_REDIRECT_OPTION);
 		delete_option(\PostStation\Services\SupportService::N8N_BASE_URL_OPTION);
+		delete_option(\PostStation\Services\SupportService::N8N_WORKFLOW_ID_OPTION);
 		delete_option(\PostStation\Services\SupportService::N8N_API_KEY_OPTION_ENC);
 		delete_option(\PostStation\Services\SupportService::RAPIDAPI_KEY_OPTION_ENC);
 		delete_option(\PostStation\Services\SupportService::FIRECRAWL_KEY_OPTION_ENC);
 		delete_option(\PostStation\Services\SupportService::N8N_AUTODEPLOY_ENABLED_OPTION);
-		delete_option(\PostStation\Services\SupportService::N8N_LAST_DEPLOY_OPTION);
-		delete_option(\PostStation\Services\SupportService::N8N_LAST_ERROR_OPTION);
 		delete_option(\PostStation\Services\SupportService::BLUEPRINT_UPDATE_STATE_OPTION);
 		delete_option(\PostStation\Services\SupportService::PLUGIN_AUTO_UPDATE_ENABLED_OPTION);
 		delete_option(\PostStation\Services\SupportService::PLUGIN_UPDATE_LAST_CHECK_OPTION);
