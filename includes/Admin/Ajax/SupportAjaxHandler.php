@@ -3,11 +3,11 @@
 namespace PostStation\Admin\Ajax;
 
 use PostStation\Services\AuthService;
-use PostStation\Services\BlueprintUpdateService;
 use PostStation\Services\N8nDeploymentService;
 use PostStation\Services\PluginUpdateService;
 use PostStation\Services\RankimaClient;
 use PostStation\Services\SupportService;
+use PostStation\Services\UpdateService;
 
 class SupportAjaxHandler
 {
@@ -15,7 +15,7 @@ class SupportAjaxHandler
 	private AuthService $auth_service;
 	private RankimaClient $rankima_client;
 	private N8nDeploymentService $n8n_deployment_service;
-	private BlueprintUpdateService $blueprint_update_service;
+	private UpdateService $update_service;
 	private PluginUpdateService $plugin_update_service;
 
 	public function __construct(
@@ -23,14 +23,14 @@ class SupportAjaxHandler
 		?AuthService $auth_service = null,
 		?RankimaClient $rankima_client = null,
 		?N8nDeploymentService $n8n_deployment_service = null,
-		?BlueprintUpdateService $blueprint_update_service = null,
+		?UpdateService $update_service = null,
 		?PluginUpdateService $plugin_update_service = null
 	) {
 		$this->support_service = $support_service ?? new SupportService();
 		$this->auth_service = $auth_service ?? AuthService::instance();
 		$this->rankima_client = $rankima_client ?? new RankimaClient();
 		$this->n8n_deployment_service = $n8n_deployment_service ?? new N8nDeploymentService();
-		$this->blueprint_update_service = $blueprint_update_service ?? new BlueprintUpdateService();
+		$this->update_service = $update_service ?? new UpdateService();
 		$this->plugin_update_service = $plugin_update_service ?? new PluginUpdateService();
 	}
 
@@ -140,12 +140,14 @@ class SupportAjaxHandler
 	{
 		$this->require_manage_options();
 		$force = !empty($_POST['force']) && $_POST['force'] !== 'false';
-		$response = $this->blueprint_update_service->check_for_updates($force);
+		$response = $this->update_service->check_for_updates($force);
 		if (is_wp_error($response)) {
 			wp_send_json_error(['message' => $response->get_error_message()]);
 		}
+		$workflow = isset($response['workflow']) && is_array($response['workflow']) ? $response['workflow'] : [];
 		wp_send_json_success([
-			'blueprint_update' => $response,
+			'updates' => $response,
+			'blueprint_update' => $workflow,
 			'support' => $this->support_service->get_support_state(),
 		]);
 	}

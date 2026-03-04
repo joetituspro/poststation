@@ -4,21 +4,17 @@ namespace PostStation\Services;
 
 class PluginUpdateService
 {
-	private const UPDATE_CACHE_TRANSIENT = 'poststation_rankima_plugin_update_cache';
-	private const CHECK_INTERVAL = 6 * HOUR_IN_SECONDS;
+	private const UPDATE_CACHE_TRANSIENT = UpdateService::PLUGIN_UPDATE_CACHE_TRANSIENT;
 
-	private AuthService $auth_service;
-	private RankimaClient $rankima_client;
 	private SupportService $support_service;
+	private UpdateService $update_service;
 
 	public function __construct(
-		?AuthService $auth_service = null,
-		?RankimaClient $rankima_client = null,
-		?SupportService $support_service = null
+		?SupportService $support_service = null,
+		?UpdateService $update_service = null
 	) {
-		$this->auth_service = $auth_service ?? AuthService::instance();
-		$this->rankima_client = $rankima_client ?? new RankimaClient();
 		$this->support_service = $support_service ?? new SupportService();
+		$this->update_service = $update_service ?? new UpdateService();
 	}
 
 	public function init(): void
@@ -149,57 +145,6 @@ class PluginUpdateService
 	 */
 	public function get_update_info(bool $force = false)
 	{
-		$license_key = $this->auth_service->get_license_key();
-		$site_key = $this->auth_service->get_site_key();
-		$license_status = $this->auth_service->get_license_status();
-		if ($license_key === '' || empty($license_status['valid'])) {
-			return new \WP_Error('poststation_invalid_license', 'Valid license is required for plugin updates.');
-		}
-
-		if (!$force) {
-			$cached = get_transient(self::UPDATE_CACHE_TRANSIENT);
-			if (is_array($cached)) {
-				return $cached;
-			}
-		}
-
-		$payload = [
-			'licenseKey' => $license_key,
-			'siteKey' => $site_key,
-		];
-		$download_id = (string) apply_filters('poststation_rankima_plugin_download_id', '');
-		$download_slug = (string) apply_filters('poststation_rankima_plugin_download_slug', 'poststation');
-		if ($download_id !== '') {
-			$payload['downloadId'] = sanitize_text_field($download_id);
-		} else {
-			$payload['downloadSlug'] = sanitize_text_field($download_slug);
-		}
-
-		$response = $this->rankima_client->post('/api/downloads/latest', $payload);
-		if (is_wp_error($response)) {
-			return $response;
-		}
-
-		$data = isset($response['data']) && is_array($response['data']) ? $response['data'] : [];
-		$latest = isset($response['latest']) && is_array($response['latest']) ? $response['latest'] : [];
-		$normalized = [
-			'new_version' => sanitize_text_field((string) ($latest['version'] ?? '')),
-			'package' => esc_url_raw((string) ($data['url'] ?? '')),
-			'url' => (string) apply_filters('poststation_rankima_plugin_homepage', 'https://rankima.com/poststation'),
-			'tested' => sanitize_text_field((string) ($latest['tested'] ?? '')),
-			'requires_php' => sanitize_text_field((string) ($latest['requiresPhp'] ?? '7.4')),
-			'requires' => sanitize_text_field((string) ($latest['requiresWp'] ?? '5.8')),
-			'sections' => [
-				'description' => sanitize_text_field((string) ($latest['description'] ?? 'Post Station by Rankima')),
-				'changelog' => wp_kses_post((string) ($latest['changelog'] ?? '')),
-			],
-			'banners' => is_array($latest['banners'] ?? null) ? $latest['banners'] : [],
-			'release_date' => sanitize_text_field((string) ($latest['releaseDate'] ?? '')),
-			'file_name' => sanitize_text_field((string) ($latest['fileName'] ?? '')),
-		];
-
-		set_transient(self::UPDATE_CACHE_TRANSIENT, $normalized, self::CHECK_INTERVAL);
-		update_option(SupportService::PLUGIN_UPDATE_LAST_CHECK_OPTION, current_time('timestamp'));
-		return $normalized;
+		return $this->update_service->get_plugin_update_info($force);
 	}
 }

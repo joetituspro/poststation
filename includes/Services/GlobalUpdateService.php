@@ -80,7 +80,7 @@ class GlobalUpdateService
 
 	private function handle_blueprint_update_check(): void
 	{
-		$blueprint_update_service = new BlueprintUpdateService();
-		$blueprint_update_service->check_for_updates(false);
+		$update_service = new UpdateService();
+		$update_service->check_for_updates(false);
 	}
 }

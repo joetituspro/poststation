@@ -170,6 +170,42 @@ class N8nDeploymentService
 	}
 
 	/**
+	 * Return deployed workflow metadata needed for update comparison.
+	 *
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public function get_current_workflow_release()
+	{
+		$config = $this->support_service->get_n8n_config(true);
+		$base_url = rtrim((string) ($config['base_url'] ?? ''), '/');
+		$api_key = (string) ($config['n8n_api_key'] ?? '');
+		$workflow_id = trim((string) ($config['workflow_id'] ?? ''));
+
+		if ($base_url === '' || $api_key === '' || $workflow_id === '') {
+			return [
+				'configured' => false,
+				'workflow_id' => $workflow_id,
+				'name' => '',
+				'version' => '',
+			];
+		}
+
+		$workflow = $this->resolve_existing_workflow($base_url, $api_key, $workflow_id);
+		if (is_wp_error($workflow)) {
+			return $workflow;
+		}
+
+		$name = sanitize_text_field((string) ($workflow['name'] ?? ''));
+		$resolved_id = sanitize_text_field((string) ($workflow['id'] ?? $workflow_id));
+		return [
+			'configured' => true,
+			'workflow_id' => $resolved_id,
+			'name' => $name,
+			'version' => $this->extract_version_from_workflow_name($name),
+		];
+	}
+
+	/**
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	private function create_or_update_rankima_webhook(string $base_url)

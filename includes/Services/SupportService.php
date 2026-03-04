@@ -241,7 +241,7 @@ class SupportService
 	 */
 	private function get_plugin_update_snapshot(): array
 	{
-		$cached = get_transient('poststation_rankima_plugin_update_cache');
+		$cached = get_transient(UpdateService::PLUGIN_UPDATE_CACHE_TRANSIENT);
 		if (!is_array($cached)) {
 			return [];
 		}

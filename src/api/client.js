@@ -259,7 +259,7 @@ export const support = {
 	saveN8nConfig: (payload) => ajax('poststation_support_save_n8n_config', payload),
 	deployN8nBlueprint: () => ajax('poststation_support_deploy_n8n_blueprint'),
 	getManualBlueprint: () => ajax('poststation_support_get_manual_blueprint'),
-	checkBlueprintUpdate: ({ force = false } = {}) => ajax('poststation_support_check_blueprint_update', { force: force ? '1' : '0' }),
+	checkUpdate: ({ force = false } = {}) => ajax('poststation_support_check_blueprint_update', { force: force ? '1' : '0' }),
 	setAutoUpdatePlugin: (enabled) => ajax('poststation_support_set_auto_update_plugin', { enabled: enabled ? '1' : '0' }),
 	completeOnboarding: () => ajax('poststation_support_complete_onboarding'),
 };

@@ -137,9 +137,9 @@ export default function SupportPage() {
 		onSuccess: (result) => setManualBlueprint(result),
 	});
 
-	const { mutate: checkBlueprintUpdate, loading: checkingBlueprint } = useMutation(support.checkBlueprintUpdate, {
+	const { mutate: checkUpdate, loading: checkingUpdates } = useMutation(support.checkUpdate, {
 		onSuccess: async (result) => {
-			showToast('Blueprint update check completed.', 'success');
+			showToast('Update check completed.', 'success');
 			await refreshBootstrap();
 			setSupportState(getBootstrapSupport());
 		},
@@ -212,11 +212,11 @@ export default function SupportPage() {
 		}
 	};
 
-	const checkBlueprintUpdateFromPage = async () => {
+	const checkUpdateFromPage = async () => {
 		try {
-			await checkBlueprintUpdate({ force: true });
+			await checkUpdate({ force: true });
 		} catch (e) {
-			showToast(e.message || 'Blueprint update check failed.', 'error');
+			showToast(e.message || 'Update check failed.', 'error');
 		}
 	};
 
@@ -316,8 +316,8 @@ export default function SupportPage() {
 					</CardHeader>
 					<CardBody>
 						<div className="flex flex-wrap gap-2 items-center mb-3">
-							<Button variant="secondary" onClick={checkBlueprintUpdateFromPage} loading={checkingBlueprint}>
-								Check Blueprint Update
+							<Button variant="secondary" onClick={checkUpdateFromPage} loading={checkingUpdates}>
+								Check Updates
 							</Button>
 							<span className={`text-xs rounded px-2 py-1 ${blueprintUpdate?.update_available ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
 								{blueprintUpdate?.update_available ? 'Blueprint Update Available' : 'Blueprint Up to Date'}

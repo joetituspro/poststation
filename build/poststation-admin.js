@@ -5724,7 +5724,7 @@ var support = {
   getManualBlueprint: function getManualBlueprint() {
     return ajax('poststation_support_get_manual_blueprint');
   },
-  checkBlueprintUpdate: function checkBlueprintUpdate() {
+  checkUpdate: function checkUpdate() {
     var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
       _ref3$force = _ref3.force,
       force = _ref3$force === void 0 ? false : _ref3$force;
@@ -16526,13 +16526,13 @@ function SupportPage() {
     }),
     fetchManualBlueprint = _useMutation5.mutate,
     loadingManualBlueprint = _useMutation5.loading;
-  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.checkBlueprintUpdate, {
+  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.checkUpdate, {
       onSuccess: function () {
         var _onSuccess5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(result) {
           return _regeneratorRuntime().wrap(function _callee5$(_context5) {
             while (1) switch (_context5.prev = _context5.next) {
               case 0:
-                showToast('Blueprint update check completed.', 'success');
+                showToast('Update check completed.', 'success');
                 _context5.next = 3;
                 return (0,_api_client__WEBPACK_IMPORTED_MODULE_2__.refreshBootstrap)();
               case 3:
@@ -16549,8 +16549,8 @@ function SupportPage() {
         return onSuccess;
       }()
     }),
-    checkBlueprintUpdate = _useMutation6.mutate,
-    checkingBlueprint = _useMutation6.loading;
+    checkUpdate = _useMutation6.mutate,
+    checkingUpdates = _useMutation6.loading;
   var _useMutation7 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_3__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_2__.support.setAutoUpdatePlugin, {
       onSuccess: function () {
         var _onSuccess6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(result) {
@@ -16757,14 +16757,14 @@ function SupportPage() {
       return _ref7.apply(this, arguments);
     };
   }();
-  var checkBlueprintUpdateFromPage = /*#__PURE__*/function () {
+  var checkUpdateFromPage = /*#__PURE__*/function () {
     var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
       return _regeneratorRuntime().wrap(function _callee14$(_context14) {
         while (1) switch (_context14.prev = _context14.next) {
           case 0:
             _context14.prev = 0;
             _context14.next = 3;
-            return checkBlueprintUpdate({
+            return checkUpdate({
               force: true
             });
           case 3:
@@ -16773,14 +16773,14 @@ function SupportPage() {
           case 5:
             _context14.prev = 5;
             _context14.t0 = _context14["catch"](0);
-            showToast(_context14.t0.message || 'Blueprint update check failed.', 'error');
+            showToast(_context14.t0.message || 'Update check failed.', 'error');
           case 8:
           case "end":
             return _context14.stop();
         }
       }, _callee14, null, [[0, 5]]);
     }));
-    return function checkBlueprintUpdateFromPage() {
+    return function checkUpdateFromPage() {
       return _ref8.apply(this, arguments);
     };
   }();
@@ -16931,9 +16931,9 @@ function SupportPage() {
             className: "flex flex-wrap gap-2 items-center mb-3",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
               variant: "secondary",
-              onClick: checkBlueprintUpdateFromPage,
-              loading: checkingBlueprint,
-              children: "Check Blueprint Update"
+              onClick: checkUpdateFromPage,
+              loading: checkingUpdates,
+              children: "Check Updates"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "text-xs rounded px-2 py-1 ".concat(blueprintUpdate !== null && blueprintUpdate !== void 0 && blueprintUpdate.update_available ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'),
               children: blueprintUpdate !== null && blueprintUpdate !== void 0 && blueprintUpdate.update_available ? 'Blueprint Update Available' : 'Blueprint Up to Date'
