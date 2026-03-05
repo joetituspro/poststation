@@ -89,10 +89,11 @@ class ExtrasStep
 		$article = $markdown;
 		if ($key_takeaways_enabled && !empty($decoded['key_takeaways']) && is_array($decoded['key_takeaways'])) {
 			$takes = implode("\n", array_map(static fn($item) => '- ' . trim((string) $item), $decoded['key_takeaways']));
-			$article = "## Key Takeaways\n{$takes}\n\n" . $article;
+			$key_takeaways_block = "## Key Takeaways\n{$takes}";
+			$article = $this->insert_key_takeaways_block($article, $key_takeaways_block);
 		}
 		if ($conclusion_enabled && !empty($decoded['conclusion'])) {
-			$article .= "\n\n## Conclusion\n" . trim((string) $decoded['conclusion']);
+			$article .= "\n\n" . trim((string) $decoded['conclusion']);
 		}
 		if ($faq_enabled && !empty($decoded['faq']) && is_array($decoded['faq'])) {
 			$faq_lines = [];
@@ -127,5 +128,35 @@ class ExtrasStep
 
 		// Fallback for environments where Parsedown is not installed yet.
 		return wpautop(esc_html($markdown));
+	}
+
+	private function insert_key_takeaways_block(string $article, string $block): string
+	{
+		$article = str_replace("\r\n", "\n", $article);
+		$block = trim($block);
+		if ($block === '') {
+			return $article;
+		}
+
+		// Preferred placement: before the first H2/H3 heading.
+		if (preg_match('/^###?\s+/m', $article, $matches, PREG_OFFSET_CAPTURE) === 1) {
+			$pos = (int) ($matches[0][1] ?? 0);
+			$before = rtrim(substr($article, 0, $pos));
+			$after = ltrim(substr($article, $pos));
+			return $before . "\n\n" . $block . "\n\n" . $after;
+		}
+
+		// Fallback: after the second paragraph block when no H2/H3 exists.
+		$parts = preg_split('/\n\s*\n/', trim($article));
+		if (!is_array($parts) || empty($parts)) {
+			return $block . "\n\n" . trim($article);
+		}
+
+		if (count($parts) >= 2) {
+			array_splice($parts, 2, 0, [$block]);
+			return implode("\n\n", $parts);
+		}
+
+		return trim($article) . "\n\n" . $block;
 	}
 }
