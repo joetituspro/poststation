@@ -22,6 +22,7 @@ class LocalWorkflowRunner
 	private const MAX_ATTEMPTS = 3;
 	private const SOFT_BUDGET_SECONDS = 28;
 	private const STEP_TIMEOUT_SECONDS = 120;
+	private const TASK_LOCK_TTL_SECONDS = 180;
 	private const STEP_SEQUENCE = [
 		'init',
 		'researching',
@@ -149,9 +150,10 @@ class LocalWorkflowRunner
 		if ($execution_id === '') {
 			$execution_id = 'local-' . wp_generate_uuid4();
 		}
-		$this->progress_service->start_processing($task_id, $execution_id);
-
-		return $this->execute_from_state($task_id, $state, $spec);
+		return $this->execute_with_task_lock($task_id, function () use ($task_id, $execution_id, $state, $spec): array {
+			$this->progress_service->start_processing($task_id, $execution_id);
+			return $this->execute_from_state($task_id, $state, $spec);
+		});
 	}
 
 	/**
@@ -177,7 +179,9 @@ class LocalWorkflowRunner
 			return ['success' => false, 'message' => 'Execution is in failed state.'];
 		}
 
-		return $this->execute_from_state($task_id, $state, $spec);
+		return $this->execute_with_task_lock($task_id, function () use ($task_id, $state, $spec): array {
+			return $this->execute_from_state($task_id, $state, $spec);
+		});
 	}
 
 	public function cancel_task(int $task_id): void
@@ -328,18 +332,23 @@ class LocalWorkflowRunner
 				$completed = true;
 				return ['success' => true, 'message' => $e->getMessage()];
 			} catch (\Throwable $e) {
+				$error_message = $e->getMessage();
 				$this->log_step_run(
 					$task_id,
 					$current_step,
 					$step_start_ts,
 					microtime(true),
 					$step_input,
-					['error' => $e->getMessage()],
+					['error' => $error_message],
 					$current_step
 				);
-				$this->handle_step_failure($task_id, $current_step, $e->getMessage(), $spec);
+				if ($this->is_non_retryable_error($e)) {
+					$this->handle_non_retryable_step_failure($task_id, $current_step, $error_message);
+				} else {
+					$this->handle_step_failure($task_id, $current_step, $error_message, $spec);
+				}
 				$completed = true;
-				return ['success' => false, 'message' => $e->getMessage()];
+				return ['success' => false, 'message' => $error_message];
 			}
 		}
 
@@ -644,6 +653,19 @@ class LocalWorkflowRunner
 		]);
 	}
 
+	private function handle_non_retryable_step_failure(int $task_id, string $step, string $error): void
+	{
+		$message = sprintf('Step "%s" failed (non-retryable): %s', $step, $error);
+		$this->progress_service->mark_failed($task_id, $message);
+		TaskExecutionState::mark_terminal($task_id, 'failed', $message);
+	}
+
+	private function is_non_retryable_error(\Throwable $e): bool
+	{
+		$message = (string) $e->getMessage();
+		return OpenRouterClient::is_non_retryable_error_message($message);
+	}
+
 	/**
 	 * @param array<string,mixed> $spec
 	 */
@@ -942,6 +964,72 @@ class LocalWorkflowRunner
 			return round($seconds / 60, 3) . ' min';
 		}
 		return round($seconds / 3600, 3) . ' hr';
+	}
+
+	/**
+	 * @param callable():array<string,mixed> $callback
+	 * @return array<string,mixed>
+	 */
+	private function execute_with_task_lock(int $task_id, callable $callback): array
+	{
+		if (!$this->acquire_task_lock($task_id)) {
+			return ['success' => true, 'message' => 'Task is already running in another request.'];
+		}
+
+		$released = false;
+		register_shutdown_function(function () use ($task_id, &$released): void {
+			if ($released) {
+				return;
+			}
+			$this->release_task_lock($task_id);
+			$released = true;
+		});
+
+		try {
+			return $callback();
+		} finally {
+			if (!$released) {
+				$this->release_task_lock($task_id);
+				$released = true;
+			}
+		}
+	}
+
+	private function acquire_task_lock(int $task_id): bool
+	{
+		$key = $this->task_lock_option_name($task_id);
+		$expires_at = time() + self::TASK_LOCK_TTL_SECONDS;
+		$value = wp_json_encode(['expires_at' => $expires_at]) ?: (string) $expires_at;
+
+		if (add_option($key, $value, '', 'no')) {
+			return true;
+		}
+
+		$existing = (string) get_option($key, '');
+		$decoded = json_decode($existing, true);
+		$current_expires = 0;
+		if (is_array($decoded)) {
+			$current_expires = (int) ($decoded['expires_at'] ?? 0);
+		} elseif (is_numeric($existing)) {
+			$current_expires = (int) $existing;
+		}
+
+		if ($current_expires > time()) {
+			return false;
+		}
+
+		delete_option($key);
+		return add_option($key, $value, '', 'no');
+	}
+
+	private function release_task_lock(int $task_id): void
+	{
+		delete_option($this->task_lock_option_name($task_id));
+	}
+
+	private function task_lock_option_name(int $task_id): string
+	{
+		return 'poststation_local_task_lock_' . $task_id;
 	}
 
 	private function is_realtime_none(WorkflowContext $context): bool

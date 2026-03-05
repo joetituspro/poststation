@@ -37,12 +37,20 @@ class WritingStep
 			$internal_links = $this->normalize_payload_sitemap((array) ($payload['sitemap'] ?? []));
 		}
 
-		$system = $this->prompt_library->load('writer.system.txt');
 		$research_mode = strtolower(trim((string) ($payload['content_fields']['body']['research_mode'] ?? 'perplexity')));
-		$use_plan_prompt = $research_mode === 'none';
-		$user_template = $this->prompt_library->load($use_plan_prompt ? 'writer.user.plan.txt' : 'writer.user.research.txt');
+		$user_template = $this->prompt_library->load('writer.user.txt');
+		$flags = [
+			'realtime_none' => $research_mode === 'none',
+			'has_research' => trim($research_text) !== '',
+			'has_preliminary_plan' => !empty($preliminary_plan),
+		];
+		$system_template = $this->prompt_library->load('writer.system.txt');
+		$system = $this->prompt_library->render_with_context($system_template, [
+			'flags' => $flags,
+		]);
 		$prompt = $this->prompt_library->render_with_context($user_template, [
 			'payload' => $payload,
+			'flags' => $flags,
 			'analysis' => [
 				'structure_type' => (string) ($analysis['structure_type'] ?? ''),
 				'json' => wp_json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',

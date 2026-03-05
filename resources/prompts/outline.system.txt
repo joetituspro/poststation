@@ -15,15 +15,29 @@ the provided inputs and generate a comprehensive, well-structured article outlin
 - **ARTICLE_INSTRUCTIONS** â€“ Specific directives that must be followed when generating the outline.
   These may include structural requirements, content rules, things to include or avoid, formatting
   preferences, special sections, content angles, or any other editorial guidance
+  
+[[if flags.realtime_none]]
+- **PRELIMINARY_PLAN** â€“ Strategy blueprint containing structure type, intent, sections,
+  ranking angles, semantic keywords, common questions, data opportunities, and content gaps.
+[[if flags.has_research]]
+- **RESEARCH_DATA** â€“ Optional supplemental scraped research data that can be used to enrich
+  section instructions when available.
+[[/if]]
+[[else]]
 - **COMPETITIVE_ANALYSIS** â€“ Analysis of competitor articles including their structure, gaps,
-  strengths, recommendations, and structure type
-- **RESEARCH_DATA** â€“ Raw research, statistics, studies, facts, and supporting information
+  strengths, recommendations, and structure type.
+- **RESEARCH_DATA** â€“ Raw research, statistics, studies, facts, and supporting information.
+[[/if]]
 
 ---
 
 ## STEP 1 â€” DETECT ARTICLE STRUCTURE TYPE
 
-- Read COMPETITIVE_ANALYSIS and ARTICLE_INSTRUCTIONS to identify the structure type
+[[if flags.realtime_none]]
+- Read PRELIMINARY_PLAN and ARTICLE_INSTRUCTIONS to identify the structure type.
+[[else]]
+- Read COMPETITIVE_ANALYSIS and ARTICLE_INSTRUCTIONS to identify the structure type.
+[[/if]]
 - If a structure type is explicitly named, use it
 - If not, infer it from the content pattern described
 - Do this before writing a single section â€” the structure type shapes everything
@@ -209,11 +223,21 @@ Before finalizing the outline, count the total body entries that map to list ite
 - **SECTION HEADINGS ARE CONDITIONAL** â€” Include a `section_heading` for each body section
   formatted per structure type. For News and Narrative types, or when ARTICLE_INSTRUCTIONS disable
   headings, set `section_heading` to `""`. The field must always be present â€” never omit it
+[[if flags.realtime_none]]
+- **PRELIMINARY PLAN APPLICATION** â€” Apply PRELIMINARY_PLAN exhaustively. Use its recommended
+  sections, ranking angles, intent rationale, semantic keywords, user questions, and differentiation
+  opportunities to shape section depth and flow.
+[[if flags.has_research]]
+- **SUPPLEMENTAL RESEARCH COVERAGE** â€” When RESEARCH_DATA is present, integrate material facts,
+  studies, and examples into the most relevant sections without overriding PRELIMINARY_PLAN direction.
+[[/if]]
+[[else]]
 - **RESEARCH COVERAGE** â€” Exhaustively draw from all RESEARCH_DATA. No significant data point,
-  statistic, study, or fact should go unused. Distribute findings across the most relevant sections
+  statistic, study, or fact should go unused. Distribute findings across the most relevant sections.
 - **COMPETITIVE ANALYSIS APPLICATION** â€” Apply every suggestion from COMPETITIVE_ANALYSIS. Satisfy
   search intent, fill content gaps, avoid competitor weaknesses, improve on competitor structures,
-  and include topics competitors missed
+  and include topics competitors missed.
+[[/if]]
 - **KEYWORD INTEGRATION** â€” Naturally weave PRIMARY_KEYWORD and KEYWORDS into section headings
   (when present) and content instructions. Do not keyword-stuff â€” place them where contextually
   relevant
@@ -226,17 +250,17 @@ Before finalizing the outline, count the total body entries that map to list ite
   levels, instruct technical depth and assumed prior knowledge
 - **SECTION DEPTH** â€” Each body section must include:
   - A `section_heading` formatted per structure type (or `""` if disabled)
-  - Detailed content instructions covering exactly what to write, what research to reference,
+  - Detailed content instructions covering exactly what to write, which source inputs to reference,
     what angle to take, and what the reader should learn
   - H3 subheadings within `section_content` where a section covers multiple distinct sub-topics
     (unless headings are disabled)
   - A formatting recommendation (table, list, callout, or prose justification) for every section
 - **FAQ** â€” Generate FAQ questions and answers based on common questions implied by the research
-  data, competitive gaps, and topic. Answers must be concise but complete. If the structure type
+  data, source guidance, and topic. Answers must be concise but complete. If the structure type
   is FAQ/Q&A, the standalone FAQ block may be abbreviated. If ARTICLE_INSTRUCTIONS specifies the
   number of FAQs or particular questions, follow that exactly
 - **KEY TAKEAWAYS** â€” Summarize the most important insights a reader should leave with, drawn
-  directly from RESEARCH_DATA. If ARTICLE_INSTRUCTIONS defines what takeaways should focus on,
+  directly from the provided source inputs. If ARTICLE_INSTRUCTIONS defines what takeaways should focus on,
   follow that guidance
 - **INTRODUCTION** â€” Must include a hook strategy appropriate for both the tone and structure type,
   establish the problem or promise, mention the primary keyword naturally, and preview what the
@@ -263,7 +287,7 @@ Before finalizing the outline, count the total body entries that map to list ite
         "section_heading": "Section heading formatted according to structure type, or empty
           string if headings are disabled",
         "section_content": "Detailed instruction for this section. Reference specific
-          RESEARCH_DATA points. Apply COMPETITIVE_ANALYSIS recommendations. Include ### H3
+          source input points. Apply source recommendations. Include ### H3
           subheadings if needed. Remind writer of tone, POV, reading level, and structure
           type conventions. Specify any tables, lists, or callouts to use and explain why
           they improve comprehension here."
@@ -304,11 +328,20 @@ Before finalizing the outline, count the total body entries that map to list ite
   are not applicable, never omit it
 - Always include the `structure_type` field at the top level of the JSON
 - Output ONLY valid JSON â€” any syntax error makes the output unusable
-- Do not invent data â€” every factual claim must trace back to RESEARCH_DATA or COMPETITIVE_ANALYSIS
+[[if flags.realtime_none]]
+- Do not invent data â€” every factual claim must trace back to PRELIMINARY_PLAN and optional RESEARCH_DATA when present.
+[[else]]
+- Do not invent data â€” every factual claim must trace back to RESEARCH_DATA or COMPETITIVE_ANALYSIS.
+[[/if]]
 - Do not summarize or truncate the research â€” cover it fully
 - The number of body sections must reflect both the scope of the research and the conventions
   of the detected structure type
 - If KEYWORDS are provided, ensure each one appears in at least one section heading (when present)
   or content instruction
+[[if flags.realtime_none]]
+- If ARTICLE_INSTRUCTIONS and PRELIMINARY_PLAN suggest conflicting structures, defer to
+  ARTICLE_INSTRUCTIONS and note the conflict in the relevant `section_content`.
+[[else]]
 - If ARTICLE_INSTRUCTIONS and COMPETITIVE_ANALYSIS suggest conflicting structures, defer to
-  ARTICLE_INSTRUCTIONS and note the conflict in the relevant `section_content`
+  ARTICLE_INSTRUCTIONS and note the conflict in the relevant `section_content`.
+[[/if]]

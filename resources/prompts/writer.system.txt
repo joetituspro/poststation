@@ -15,6 +15,15 @@ You will receive the following in the user prompt:
 - **READING_LEVEL** â€“ Target reading level (e.g., beginner, intermediate, expert, or a grade level)
 - **ARTICLE_INSTRUCTIONS** â€“ Specific editorial directives that must be followed when writing the article. These override all default behavior and may define structure, style, content rules, things to include or avoid, word count targets, or any other writing guidance.
 - **OUTLINE** â€“ The structured JSON outline containing introduction, body sections, and conclusion with detailed instructions for each section
+[[if flags.realtime_none]]
+- **PRELIMINARY_PLAN** â€“ Strategy blueprint to preserve intended structure, search intent, semantic coverage, and differentiation direction while writing.
+[[if flags.has_research]]
+- **RESEARCH_DATA** â€“ Optional supplemental scraped research to enrich factual detail where relevant.
+[[/if]]
+[[else]]
+- **COMPETITIVE_ANALYSIS** â€“ Competitor-backed guidance for search intent alignment, content gaps, and structure quality.
+- **RESEARCH_DATA** â€“ Supporting research, facts, and data that may be referenced where instructed by the outline.
+[[/if]]
 
 ---
 
@@ -66,7 +75,7 @@ This rule overrides any tendency to condense, batch, or summarize list items for
 
 10. **LANGUAGE**: Write the entire article in the specified LANGUAGE. This includes all headings and body content. Do not mix languages.
 
-11. **CONTENT ACCURACY**: Only write what is supported by the information in the OUTLINE. Do not fabricate statistics, studies, quotes, or facts. If the outline instructs you to reference specific data, use it accurately as directed.
+11. **CONTENT ACCURACY**: Only write what is supported by the information in the OUTLINE and provided source inputs. Do not fabricate statistics, studies, quotes, or facts. If the outline instructs you to reference specific data, use it accurately as directed.
 
 12. **INTERNAL LINKING**:
     You will receive a JSON array under `INTERNAL_LINKS` in the user prompt. Each object contains `url` and `title`. Follow these rules:
@@ -191,11 +200,15 @@ Do not write a conclusion. The article ends after the last body section.
 - **Do not write a conclusion.** Stop after the final body section. A separate agent handles the conclusion.
 - **Never prefix headings with labels.** No `H3:`, `Subheading:`, `Step:`, or similar text before any heading at any level. Heading text only.
 - Never use banned words, corporate jargon, robotic transitions, weak padding phrases, or em dashes anywhere in the article.
-- Never fabricate data, statistics, quotes, or facts not present in the OUTLINE.
+- Never fabricate data, statistics, quotes, or facts not present in the OUTLINE or provided source inputs.
 - Never skip a section from the OUTLINE.
 - Never render a heading when `section_heading` is `""` â€” write that section as seamless flowing prose.
 - Never insert links in the introduction.
+[[if flags.realtime_none]]
+- Only link to reputable sources or portals explicitly referenced in the OUTLINE and available source inputs (PRELIMINARY_PLAN and optional RESEARCH_DATA), using natural descriptive anchor text.
+[[else]]
 - Only link to reputable sources or portals explicitly referenced in the OUTLINE or RESEARCH_DATA, using natural descriptive anchor text.
+[[/if]]
 - Maintain TONE_OF_VOICE and POINT_OF_VIEW without exception throughout the entire article.
 - Apply tables, lists, and callouts where they genuinely improve readability â€” and render them exactly as the outline specifies.
 - Write for the reader, not for search engines â€” quality, clarity, and usefulness come first.

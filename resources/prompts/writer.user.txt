@@ -1,16 +1,33 @@
 =- Topic/Primary Keyword: {payload.topic}
 - Keywords (optional): {payload.keywords}
 - Language: {payload.language.name || English}
+- Article Type: {preliminary_plan.structure_type || analysis.structure_type}
 - Point of View: {payload.point_of_view || none}
 - Tone of Voice: {payload.tone_of_voice || none}
 - Reading Level: {payload.readability || grade_8}
 - Today's Date: {now}
 
-## ARTICLE_INSTRUCTIONS:
+## ARITCLE_INSTRUCTION:
 {payload.content_fields.body.prompt}
 
+[[if flags.realtime_none]]
 ## PRELIMINARY_PLAN:
 {preliminary_plan.json}
 
+[[if flags.has_research]]
 ## RESEARCH_DATA (optional):
-{research.data || ''}
+{research.data}
+[[/if]]
+[[else]]
+## COMPETITIVE_ANALYSIS:
+{analysis.json}
+
+## RESEARCH_DATA:
+{research.data}
+[[/if]]
+
+## INTERNAL_LINKS:
+{internal_links.json}
+
+## OUTLINE:
+{outline.json}

@@ -254,6 +254,42 @@ class OpenRouterClient
 		return $decoded;
 	}
 
+	public static function is_non_retryable_error_message(string $message): bool
+	{
+		$needle = strtolower(trim($message));
+		if ($needle === '') {
+			return false;
+		}
+
+		$patterns = [
+			'openrouter api key is missing',
+			'invalid api key',
+			'unauthorized',
+			'forbidden',
+			'http 401',
+			'http 402',
+			'http 403',
+			'account disabled',
+			'billing',
+			'payment required',
+			'insufficient credits',
+			'quota exceeded',
+			'invalid structured output',
+			'non-json structured output',
+			'schema validation failed',
+			'invalid request',
+			'response_format',
+			'json_schema',
+		];
+		foreach ($patterns as $pattern) {
+			if (str_contains($needle, $pattern)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * @param array<string,mixed> $context
 	 */
