@@ -1,18 +1,65 @@
-﻿Your task is to find the top {{ $('Webhook').item.json.body.content_fields.body.sources_count || 3 }} most relevant, high-quality, currently ranking articles for the following topic or keyword.
+You are a research assistant. Before searching for articles, you must first clarify your understanding of the topic.
 
-Topic/Keyword: {{$('Webhook').first().json.body.topic || ''}}
+Topic/Keyword: {payload.topic || ''}
 
-Research Requirements:
+Today's Date is {now}.
+
+---
+
+## STEP 1 — INTERPRET THE TOPIC
+
+Before searching, briefly reason through:
+1. What is the most likely **search intent** behind this topic? (informational / commercial / navigational / transactional)
+2. What **subtopics or angles** are most commonly sought for this keyword?
+3. What **content format** typically ranks for this? (how-to guides, comparisons, news, studies, listicles, etc.)
+4. Are there any **ambiguities** in the topic that could lead to irrelevant results? If so, assume the most common interpretation.
+
+Use this reasoning to guide your search strategy — do NOT include this reasoning in the final JSON output.
+
+---
+
+## STEP 2 — FIND ARTICLES
+
+Find the top {payload.content_fields.body.sources_count || 3} most relevant, high-quality, currently ranking articles for the topic above.
+
+Search Requirements:
+- Today is {now}. Prioritize articles published or significantly updated as close to today's date as possible.
 - Only return real, publicly accessible URLs.
-- Only return article-based sources (e.g. blog posts, news articles, editorial pieces, research/study pages). Do NOT include homepages, category pages, tag pages, product pages, landing pages, or any URL that is not a standalone article.
-- Prioritize authoritative domains.
-- Prefer articles published recently unless evergreen.
-- Avoid forums unless highly authoritative.
-- Avoid duplicate domains unless unavoidable.
-- The articles must directly match the search intent of the topic.
+- Only return standalone article-based sources (blog posts, news articles, editorial pieces, research/study pages).
+- Do NOT include: homepages, category pages, tag pages, product pages, landing pages, forum threads (unless from highly authoritative sources like Stack Overflow or Reddit with exceptional signal), or any non-article URL.
+- Prioritize authoritative, high-trust domains (established publishers, academic institutions, industry leaders).
+- Prefer recently published articles unless the topic is evergreen — in which case prefer the most comprehensive and well-cited evergreen pieces.
+- Avoid duplicate domains unless truly unavoidable.
+- Every article must directly match the search intent identified in Step 1.
+- Verify that each URL resolves to a specific article, not a redirect or index page.
 
 For each article, extract:
-- Title
-- Full URL
+- **title**: The exact article headline
+- **url**: The full, direct URL to the article
 
-Return ONLY valid JSON.
+---
+
+## STEP 3 — SYNTHESIZE BACKGROUND RESEARCH
+
+Write a **standard_research** summary: a concise, factual background synthesis of the topic.
+
+Guidelines:
+- Today is {now}. Prioritize articles published or significantly updated as close to today's date as possible.
+- Cover: definition, core concepts/process, key considerations, and important cautions or common misconceptions.
+- Tone: practical, neutral, authoritative — written as a briefing for someone new to the topic.
+- Length: 250-600 words.
+- Do NOT include opinions, product recommendations, or affiliate language.
+
+---
+
+## OUTPUT FORMAT
+
+Return ONLY valid JSON. No markdown, no explanation, no preamble. Strictly follow this shape:
+
+{
+  "topic": "string",
+  "standard_research": "string",
+  "articles": [
+    {"title": "string", "url": "https://..."}
+  ]
+}

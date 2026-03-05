@@ -1,8 +1,8 @@
-﻿={{ $('Loop Over All Custom Fields').item.json.prompt }}
+={custom_field.prompt}
 
-{{ $json.combined_content }}
+{custom_field.combined_content}
 
-- Language: {{ $json.language }}
-- Today's Date: {{ $now }}
+- Language: {payload.language.name || English}
+- Today's Date: {now}
 
 Return only the needed data without any additional symbols or text.

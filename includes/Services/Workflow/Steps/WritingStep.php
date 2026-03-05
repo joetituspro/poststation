@@ -30,24 +30,30 @@ class WritingStep
 			return (string) ($item['full_article'] ?? '');
 		}, $research_items));
 
-		$sitemap = (array) ($payload['sitemap'] ?? []);
+		$internal_links_raw = $context->get('internal_links', null);
+		$internal_links = is_array($internal_links_raw) ? $internal_links_raw : [];
+		if (!is_array($internal_links_raw)) {
+			$internal_links = $this->normalize_payload_sitemap((array) ($payload['sitemap'] ?? []));
+		}
 
 		$system = $this->prompt_library->load('writer.system.txt');
 		$user_template = $this->prompt_library->load('writer.user.txt');
-		$prompt = $this->prompt_library->render($user_template, [
-			"{{ $('Normalize Prompts').item.json.topic }}" => (string) ($payload['topic'] ?? ''),
-			"{{ $('Normalize Prompts').item.json.keywords }}" => (string) ($payload['keywords'] ?? ''),
-			"{{ $('Webhook').item.json.body.language.name }}" => (string) ($payload['language']['name'] ?? 'English'),
-			"{{ $('Competitive Intelligence').item.json.output.structure_type }}" => (string) ($analysis['structure_type'] ?? ''),
-			"{{ $('Normalize Prompts').item.json.point_of_view }}" => (string) ($payload['point_of_view'] ?? 'none'),
-			"{{ $('Normalize Prompts').item.json.tone_of_voice }}" => (string) ($payload['tone_of_voice'] ?? 'none'),
-			"{{ $('Normalize Prompts').item.json.reading_level }}" => (string) ($payload['readability'] ?? 'grade_8'),
-			'{{ $now }}' => $this->prompt_library->now_string(),
-			"{{ $('Webhook').item.json.body.content_fields.body.prompt }}" => (string) ($payload['content_fields']['body']['prompt'] ?? ''),
-			"{{ JSON.stringify($('Competitive Intelligence').item.json.output, null, 2) }}" => wp_json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
-			'{{ JSON.stringify($json.output, null, 2) }}' => wp_json_encode($sitemap, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '[]',
-			"{{ JSON.stringify($('Single Outline Writer').item.json.output.outline, null, 2) }}" => wp_json_encode((array) ($outline['outline'] ?? $outline), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
-			"{{ $('Normalize Prompts').item.json.research }}" => $research_text,
+		$prompt = $this->prompt_library->render_with_context($user_template, [
+			'payload' => $payload,
+			'analysis' => [
+				'structure_type' => (string) ($analysis['structure_type'] ?? ''),
+				'json' => wp_json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
+			],
+			'internal_links' => [
+				'json' => wp_json_encode($internal_links, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '[]',
+			],
+			'outline' => [
+				'json' => wp_json_encode((array) ($outline['outline'] ?? $outline), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
+			],
+			'research' => [
+				'data' => $research_text,
+			],
+			'now' => $this->prompt_library->now_string(),
 		]);
 
 		$response = $this->openrouter->chat([
@@ -65,5 +71,31 @@ class WritingStep
 		}
 
 		$context->set('draft_markdown', $draft);
+	}
+
+	/**
+	 * @param array<int,mixed> $entries
+	 * @return array<int,array{title:string,url:string}>
+	 */
+	private function normalize_payload_sitemap(array $entries): array
+	{
+		$out = [];
+		foreach ($entries as $entry) {
+			if (!is_array($entry)) {
+				continue;
+			}
+			if (isset($entry['title']) || isset($entry['url'])) {
+				$title = trim((string) ($entry['title'] ?? ''));
+				$url = trim((string) ($entry['url'] ?? ''));
+			} else {
+				$title = trim((string) ($entry[0] ?? ''));
+				$url = trim((string) ($entry[1] ?? ''));
+			}
+			if ($title === '' || $url === '') {
+				continue;
+			}
+			$out[] = ['title' => $title, 'url' => $url];
+		}
+		return $out;
 	}
 }

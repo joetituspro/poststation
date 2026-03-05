@@ -12,8 +12,8 @@ use PostStation\Services\Workflow\WorkflowContext;
 
 class ResearchScrapeStep
 {
-	private const CLEANUP_PRIMARY_MODEL = 'google/gemini-3.1-flash-lite-preview';
-	private const CLEANUP_FALLBACK_MODEL = 'google/gemini-3.1-flash-lite-preview';
+	private const CLEANUP_PRIMARY_MODEL = 'openai/gpt-oss-120b:free';
+	private const CLEANUP_FALLBACK_MODEL = 'nvidia/nemotron-3-nano-30b-a3b:free';
 	private const CLEANUP_MAX_TRIES = 1;
 	private const CLEANUP_RETRY_WAIT_SECONDS = 0;
 	private const CLEANUP_TOTAL_TIME_BUDGET_SECONDS = 12;
@@ -183,9 +183,13 @@ class ResearchScrapeStep
 		$queue = (array) ($state['queue'] ?? []);
 		$is_completed = !empty($queue) && (int) ($state['current_index'] ?? 0) >= count($queue);
 		$state['completed'] = $is_completed;
+		if ($is_completed) {
+			$this->append_standard_research_to_items($context);
+		}
 		$this->persist_state_snapshot($context, $state, $task_id);
 
-		if ($is_completed && (int) ($state['success_count'] ?? 0) <= 0) {
+		$has_standard = trim((string) $context->get('research_standard', '')) !== '';
+		if ($is_completed && (int) ($state['success_count'] ?? 0) <= 0 && !$has_standard) {
 			$summary = $this->build_error_summary($state);
 			throw new \Exception('Scraping completed with no usable research content. ' . $summary);
 		}
@@ -387,9 +391,11 @@ class ResearchScrapeStep
 		}
 
 		$template = $this->prompt_library->load('research.cleanup.user.txt');
-		$prompt = $this->prompt_library->render($template, [
-			'{{ $json.title }}' => $title !== '' ? $title : 'Untitled Article',
-			'{{ $json.article }}' => $article,
+		$prompt = $this->prompt_library->render_with_context($template, [
+			'research' => [
+				'title' => $title !== '' ? $title : 'Untitled Article',
+				'article' => $article,
+			],
 		]);
 		if ($prompt === '') {
 			return ['content' => $article, 'reason' => '', 'message' => '', 'attempts' => 1];
@@ -526,6 +532,32 @@ class ResearchScrapeStep
 		TaskExecutionState::update_context_snapshot($task_id, $context->to_array());
 	}
 
+	private function append_standard_research_to_items(WorkflowContext $context): void
+	{
+		$standard = trim((string) $context->get('research_standard', ''));
+		if ($standard === '') {
+			return;
+		}
+
+		$items = (array) $context->get('research_items', []);
+		foreach ($items as $item) {
+			if (!is_array($item)) {
+				continue;
+			}
+			if ((string) ($item['source'] ?? '') === 'standard_research') {
+				return;
+			}
+		}
+
+		$items[] = [
+			'title' => 'Standard Research',
+			'url' => '',
+			'full_article' => $standard,
+			'source' => 'standard_research',
+		];
+		$context->set('research_items', $items);
+	}
+
 	private function build_error_summary(array $state): string
 	{
 		$errors = array_slice((array) ($state['errors'] ?? []), 0, 3);
@@ -571,9 +603,7 @@ class ResearchScrapeStep
 	 */
 	private function log(string $event, array $context = []): void
 	{
-		if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
-			return;
-		}
-		error_log('[PostStation][ResearchScrapeStep] ' . $event . ' ' . (wp_json_encode($context) ?: ''));
+		// Disabled by design: LocalWorkflowRunner emits one consolidated log per step run.
+		return;
 	}
 }

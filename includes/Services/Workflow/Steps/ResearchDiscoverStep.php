@@ -44,11 +44,11 @@ class ResearchDiscoverStep
 		$sources_count = max(1, (int) ($payload['content_fields']['body']['sources_count'] ?? 3));
 		$system = $this->prompt_library->load('research.system.txt');
 		$user_template = $this->prompt_library->load('research.user.txt');
-		$count_placeholder = '{{ $(\'Webhook\').item.json.body.content_fields.body.sources_count || 3 }}';
-		$topic_placeholder = '{{$(\'Webhook\').first().json.body.topic || \'\'}}';
-		$prompt = $this->prompt_library->render($user_template, [
-			$count_placeholder => (string) $sources_count,
-			$topic_placeholder => $topic,
+		$prompt = $this->prompt_library->render_with_context($user_template, [
+			'payload' => $payload,
+			'topic' => $topic,
+			'sources_count' => $sources_count,
+			'now' => $this->prompt_library->now_string(),
 		]);
 
 		$response = $this->openrouter->chat([
@@ -58,6 +58,7 @@ class ResearchDiscoverStep
 			'type' => 'object',
 			'properties' => [
 				'topic' => ['type' => 'string'],
+				'standard_research' => ['type' => 'string'],
 				'articles' => [
 					'type' => 'array',
 					'minItems' => $sources_count,
@@ -73,12 +74,14 @@ class ResearchDiscoverStep
 					],
 				],
 			],
-			'required' => ['topic', 'articles'],
+			'required' => ['topic', 'standard_research', 'articles'],
 			'additionalProperties' => true,
 		], 'json_schema');
 		if (is_wp_error($response)) {
 			throw new \Exception($response->get_error_message());
 		}
+
+		error_log('Response: ' . print_r($response, true));
 
 		$parsed = $this->openrouter->extract_json_content($response);
 		if (is_wp_error($parsed)) {
@@ -87,6 +90,7 @@ class ResearchDiscoverStep
 
 		$articles = is_array($parsed['articles'] ?? null) ? $parsed['articles'] : [];
 		$targets = $this->normalize_research_targets($articles);
+		$standard_research = trim((string) ($parsed['standard_research'] ?? ''));
 
 		if (empty($targets)) {
 			throw new \Exception('Research discovery returned no valid non-YouTube article URLs.');
@@ -98,6 +102,7 @@ class ResearchDiscoverStep
 		}
 		$context->set('research_items', []);
 		$context->remove('research_scrape_state');
+		$context->set('research_standard', $standard_research);
 		$context->set('research_targets', $targets);
 	}
 

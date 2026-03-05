@@ -259,15 +259,8 @@ class OpenRouterClient
 	 */
 	private function log(string $event, array $context = []): void
 	{
-		if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
-			return;
-		}
-
-		$line = '[PostStation][OpenRouterClient] ' . $event;
-		if (!empty($context)) {
-			$line .= ' ' . (wp_json_encode($context) ?: '');
-		}
-		error_log($line);
+		// Disabled by design: LocalWorkflowRunner emits one consolidated log per step run.
+		return;
 	}
 
 	private function strip_code_fences(string $content): string

@@ -1,11 +1,11 @@
-﻿=Choose {{ $json.term_count }} suiable {{ $json.plural_label }} for the article from the provided list of [{{ $json.plural_label }}]: 
-- Article body: {{ $json.article }}
-- Language: {{ $json.language }}
-- Number of {{ $json.plural_label }}: {{ $json.term_count }}
-- Available [{{ $json.plural_label }}]: {{ $json.available_terms }}
-- Today's Date: {{ $now }}
-- Additional instructions: {{ $json.prompt }}
+=Choose {taxonomy.term_count} suitable {taxonomy.plural_label} for the article from the provided list of [{taxonomy.plural_label}]:
+- Article body: {taxonomy.article}
+- Language: {taxonomy.language}
+- Number of {taxonomy.plural_label}: {taxonomy.term_count}
+- Available [{taxonomy.plural_label}]: {taxonomy.available_terms}
+- Today's Date: {now}
+- Additional instructions: {taxonomy.prompt}
 
-Your response should include {{ $json.term_count }} {{ $json.plural_label }}, separated by commas, without any accompanying text or symbols. Don't generate or makeup new {{ $json.plural_label }} Terms.
+Your response should include {taxonomy.term_count} {taxonomy.plural_label}, separated by commas, without any accompanying text or symbols. Do not generate or make up new {taxonomy.plural_label} terms.
 
-If you can't find empty suitable terms, return nothing.
+If you cannot find suitable terms, return nothing.

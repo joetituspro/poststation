@@ -29,11 +29,9 @@ class AnalysisStep
 			return (string) ($item['full_article'] ?? '');
 		}, $research_items));
 
-		$system = $this->prompt_library->render(
+		$system = $this->prompt_library->render_with_context(
 			$this->prompt_library->load('analysis.system.txt'),
-			[
-				'{{ $now }}' => $this->prompt_library->now_string(),
-			]
+			['now' => $this->prompt_library->now_string()]
 		);
 		// n8n analysis agent gets structured competitor data as its direct input payload.
 		$prompt = wp_json_encode([

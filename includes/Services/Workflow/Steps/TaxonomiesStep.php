@@ -61,14 +61,16 @@ class TaxonomiesStep
 				$template = $mode === 'auto_select'
 					? $this->prompt_library->load('tax_choose.user.txt')
 					: $this->prompt_library->load('tax_generate.user.txt');
-				$user_prompt = $this->prompt_library->render($template, [
-					'{{ $json.term_count }}' => (string) $term_count,
-					'{{ $json.plural_label }}' => $plural_label,
-					'{{ $json.article }}' => $article,
-					'{{ $json.language }}' => $language,
-					'{{ $json.available_terms }}' => $available_terms,
-					'{{ $json.prompt }}' => $prompt,
-					'{{ $now }}' => $this->prompt_library->now_string(),
+				$user_prompt = $this->prompt_library->render_with_context($template, [
+					'taxonomy' => [
+						'term_count' => $term_count,
+						'plural_label' => $plural_label,
+						'article' => $article,
+						'language' => $language,
+						'available_terms' => $available_terms,
+						'prompt' => $prompt,
+					],
+					'now' => $this->prompt_library->now_string(),
 				]);
 				$response = $this->openrouter->chat([
 					['role' => 'user', 'content' => $user_prompt],

@@ -59,11 +59,13 @@ class CustomFieldsStep
 
 			$model = (string) ($field['model_id'] ?? '');
 			$user_template = $this->prompt_library->load('custom_field.user.txt');
-			$user_prompt = $this->prompt_library->render($user_template, [
-				"{{ $('Loop Over All Custom Fields').item.json.prompt }}" => $prompt,
-				'{{ $json.combined_content }}' => trim($attached),
-				'{{ $json.language }}' => (string) (($payload['language']['name'] ?? 'English')),
-				'{{ $now }}' => $this->prompt_library->now_string(),
+			$user_prompt = $this->prompt_library->render_with_context($user_template, [
+				'custom_field' => [
+					'prompt' => $prompt,
+					'combined_content' => trim($attached),
+				],
+				'payload' => $payload,
+				'now' => $this->prompt_library->now_string(),
 			]);
 
 			$response = $this->openrouter->chat([

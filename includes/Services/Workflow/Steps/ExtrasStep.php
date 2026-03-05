@@ -30,16 +30,12 @@ class ExtrasStep
 
 		$system = $this->prompt_library->load('extras.system.txt');
 		$user_template = $this->prompt_library->load('extras.user.txt');
-		$prompt = $this->prompt_library->render($user_template, [
-			"{{ $('Normalize Prompts').item.json.topic }}" => (string) ($payload['topic'] ?? ''),
-			"{{ $('Webhook').item.json.body.language.name }}" => (string) ($payload['language']['name'] ?? 'English'),
-			"{{ $('Normalize Prompts').item.json.point_of_view }}" => (string) ($payload['point_of_view'] ?? 'none'),
-			"{{ $('Normalize Prompts').item.json.tone_of_voice }}" => (string) ($payload['tone_of_voice'] ?? 'none'),
-			"{{ $('Normalize Prompts').item.json.reading_level }}" => (string) ($payload['readability'] ?? 'grade_8'),
-			'{{ $now }}' => $this->prompt_library->now_string(),
-			"{{ $('Webhook').item.json.body.instruction_set.instructions.title }}" => (string) ($payload['instruction_set']['instructions']['title'] ?? ''),
-			"{{ $('Webhook').item.json.body.content_fields.slug.prompt }}" => (string) ($payload['content_fields']['slug']['prompt'] ?? ''),
-			'{{ $json.output }}' => $markdown,
+		$prompt = $this->prompt_library->render_with_context($user_template, [
+			'payload' => $payload,
+			'draft' => [
+				'markdown' => $markdown,
+			],
+			'now' => $this->prompt_library->now_string(),
 		]);
 
 		$response = $this->openrouter->chat([

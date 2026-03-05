@@ -48,12 +48,15 @@ class FeaturedImageStep
 
 		if (($state['stage'] ?? '') !== 'generate_image') {
 			$user_template = $this->prompt_library->load('featured_image.user.txt');
-			$user_prompt = $this->prompt_library->render($user_template, [
-				'{{ $json.title }}' => $title,
-				'{{ $json.keyword }}' => $topic,
-				'{{ $json.image_style }}' => (string) ($image_field['style'] ?? ''),
-				'{{ $json.aspect_ratio }}' => (string) ($image_field['aspect_ratio'] ?? ''),
-				"{{ $('Webhook').item.json.body.content_fields.image.prompt }}" => $image_prompt_instruction,
+			$user_prompt = $this->prompt_library->render_with_context($user_template, [
+				'payload' => $payload,
+				'image' => [
+					'title' => $title,
+					'keyword' => $topic,
+					'style' => (string) ($image_field['style'] ?? ''),
+					'aspect_ratio' => (string) ($image_field['aspect_ratio'] ?? ''),
+					'prompt_instruction' => $image_prompt_instruction,
+				],
 			]);
 
 			$prompt_builder = $this->openrouter->chat([

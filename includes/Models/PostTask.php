@@ -128,7 +128,7 @@ class PostTask
 
 	/**
 	 * Whether a task has the minimum required data for webhook dispatch.
-	 * Rewrite type needs research_url; other types need topic.
+	 * Rewrite type needs a valid research_url; other types need topic.
 	 *
 	 * @param array<string, mixed> $task
 	 */
@@ -136,7 +136,16 @@ class PostTask
 	{
 		$task_type = $task['campaign_type'] ?? 'default';
 		if ($task_type === 'rewrite_blog_post') {
-			return trim((string) ($task['research_url'] ?? '')) !== '';
+			$url = trim((string) ($task['research_url'] ?? ''));
+			if ($url === '') {
+				return false;
+			}
+
+			if (function_exists('wp_http_validate_url')) {
+				return (bool) wp_http_validate_url($url);
+			}
+
+			return (bool) filter_var($url, FILTER_VALIDATE_URL);
 		}
 		return trim((string) ($task['topic'] ?? '')) !== '';
 	}

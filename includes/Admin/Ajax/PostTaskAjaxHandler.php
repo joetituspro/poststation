@@ -69,8 +69,20 @@ class PostTaskAjaxHandler
 			$task_id = (int) ($task['id'] ?? 0);
 			$task_type = sanitize_text_field((string) ($task['campaign_type'] ?? 'default'));
 			if ($task_type === 'rewrite_blog_post') {
-				if ($this->is_blank($task['research_url'] ?? null)) {
+				$research_url = trim((string) ($task['research_url'] ?? ''));
+				if ($research_url === '') {
 					wp_send_json_error(['message' => sprintf('Task #%d: Research URL is required for rewrite type.', $task_id)]);
+				}
+
+				$is_valid = false;
+				if (function_exists('wp_http_validate_url')) {
+					$is_valid = (bool) wp_http_validate_url($research_url);
+				} else {
+					$is_valid = (bool) filter_var($research_url, FILTER_VALIDATE_URL);
+				}
+
+				if (!$is_valid) {
+					wp_send_json_error(['message' => sprintf('Task #%d: Research URL must be a valid URL.', $task_id)]);
 				}
 			} elseif ($this->is_blank($task['topic'] ?? null)) {
 				wp_send_json_error(['message' => sprintf('Task #%d: Topic is required.', $task_id)]);

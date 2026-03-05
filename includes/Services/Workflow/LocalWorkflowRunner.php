@@ -8,6 +8,7 @@ use PostStation\Services\Workflow\Steps\AnalysisStep;
 use PostStation\Services\Workflow\Steps\CustomFieldsStep;
 use PostStation\Services\Workflow\Steps\ExtrasStep;
 use PostStation\Services\Workflow\Steps\FeaturedImageStep;
+use PostStation\Services\Workflow\Steps\InternalLinksStep;
 use PostStation\Services\Workflow\Steps\OutlineStep;
 use PostStation\Services\Workflow\Steps\PublishStep;
 use PostStation\Services\Workflow\Steps\ResearchDiscoverStep;
@@ -21,6 +22,7 @@ class LocalWorkflowRunner
 	private const SOFT_BUDGET_SECONDS = 28;
 	private const STEP_TIMEOUT_SECONDS = 120;
 	private const STEP_SEQUENCE = [
+		'init',
 		'researching',
 		'scraping',
 		'analysis',
@@ -38,6 +40,7 @@ class LocalWorkflowRunner
 		'scraping',
 		'analysis',
 		'outline',
+		'internal_links',
 		'writing',
 		'extras',
 		'custom_fields',
@@ -51,6 +54,7 @@ class LocalWorkflowRunner
 	private ResearchScrapeStep $research_scrape_step;
 	private AnalysisStep $analysis_step;
 	private OutlineStep $outline_step;
+	private InternalLinksStep $internal_links_step;
 	private WritingStep $writing_step;
 	private ExtrasStep $extras_step;
 	private CustomFieldsStep $custom_fields_step;
@@ -65,6 +69,7 @@ class LocalWorkflowRunner
 		?ResearchScrapeStep $research_scrape_step = null,
 		?AnalysisStep $analysis_step = null,
 		?OutlineStep $outline_step = null,
+		?InternalLinksStep $internal_links_step = null,
 		?WritingStep $writing_step = null,
 		?ExtrasStep $extras_step = null,
 		?CustomFieldsStep $custom_fields_step = null,
@@ -78,6 +83,7 @@ class LocalWorkflowRunner
 		$this->research_scrape_step = $research_scrape_step ?? new ResearchScrapeStep();
 		$this->analysis_step = $analysis_step ?? new AnalysisStep();
 		$this->outline_step = $outline_step ?? new OutlineStep();
+		$this->internal_links_step = $internal_links_step ?? new InternalLinksStep();
 		$this->writing_step = $writing_step ?? new WritingStep();
 		$this->extras_step = $extras_step ?? new ExtrasStep();
 		$this->custom_fields_step = $custom_fields_step ?? new CustomFieldsStep();
@@ -105,10 +111,8 @@ class LocalWorkflowRunner
 	 */
 	public function start_or_resume(int $task_id, array $payload): array
 	{
-		$this->log('start_or_resume:begin', ['task_id' => $task_id]);
 		$task = PostTask::get_by_id($task_id);
 		if (!$task) {
-			$this->log('start_or_resume:missing_task', ['task_id' => $task_id]);
 			return ['success' => false, 'message' => 'Post task not found.'];
 		}
 
@@ -122,19 +126,15 @@ class LocalWorkflowRunner
 		$state = TaskExecutionState::get_by_task_id($task_id);
 		if (!$state) {
 			$state = $this->initialize_state($task, $payload, $fingerprint);
-			$this->log('start_or_resume:state_initialized', ['task_id' => $task_id]);
 		} elseif ((string) ($state['payload_fingerprint'] ?? '') !== $fingerprint) {
 			// Task inputs changed: reset and restart from step 1.
 			$state = $this->reset_state_with_payload($task, $payload, $fingerprint);
-			$this->log('start_or_resume:state_reset_payload_changed', ['task_id' => $task_id]);
 		} elseif (($state['status'] ?? '') === 'failed') {
 			TaskExecutionState::reset_for_retry($task_id);
 			$state = TaskExecutionState::get_by_task_id($task_id);
-			$this->log('start_or_resume:state_reset_manual_retry', ['task_id' => $task_id]);
 		}
 
 		if (!$state) {
-			$this->log('start_or_resume:state_init_failed', ['task_id' => $task_id]);
 			$this->progress_service->mark_failed($task_id, 'Unable to initialize local execution state.');
 			return ['success' => false, 'message' => 'Unable to initialize local execution state.'];
 		}
@@ -155,7 +155,6 @@ class LocalWorkflowRunner
 	 */
 	public function resume_from_state(int $task_id): array
 	{
-		$this->log('resume_from_state:begin', ['task_id' => $task_id]);
 		$spec = $this->spec_service->get_active_spec();
 		if (is_wp_error($spec)) {
 			$this->progress_service->mark_failed($task_id, $spec->get_error_message());
@@ -164,7 +163,6 @@ class LocalWorkflowRunner
 
 		$state = TaskExecutionState::get_by_task_id($task_id);
 		if (!$state) {
-			$this->log('resume_from_state:missing_state', ['task_id' => $task_id]);
 			return ['success' => false, 'message' => 'Execution state not found.'];
 		}
 
@@ -193,11 +191,6 @@ class LocalWorkflowRunner
 		$started_at = microtime(true);
 		$current_step = (string) ($state['next_step'] ?? self::STEP_SEQUENCE[0]);
 		$executed_ai_step = false;
-		$this->log('execute_from_state:enter', [
-			'task_id' => $task_id,
-			'current_step' => $current_step,
-			'attempt' => (int) ($state['attempt_count'] ?? 0),
-		]);
 		$completed = false;
 
 		register_shutdown_function(function () use ($task_id, &$completed, &$current_step): void {
@@ -221,19 +214,51 @@ class LocalWorkflowRunner
 		}
 
 		while ($current_step !== '') {
+			if ($this->should_skip_step($current_step, $context)) {
+				$step_start_ts = microtime(true);
+				$before_context = $context->to_array();
+				$step_input = $this->build_step_input($current_step, $before_context);
+				$this->apply_skip_side_effects($current_step, $context);
+				$next_step = $this->get_next_runnable_step($current_step, $context);
+				$this->log_step_run(
+					$task_id,
+					$current_step,
+					$step_start_ts,
+					microtime(true),
+					$step_input,
+					['skipped' => true, 'reason' => $this->skip_reason_for_step($current_step, $context)],
+					$next_step
+				);
+
+				if ($next_step === '') {
+					TaskExecutionState::mark_terminal($task_id, 'completed', null);
+					TaskExecutionState::delete_by_task_id($task_id);
+					$completed = true;
+					return ['success' => true, 'message' => 'Local workflow completed.'];
+				}
+
+				TaskExecutionState::mark_step_succeeded_and_advance(
+					$task_id,
+					$current_step,
+					$next_step,
+					$context->to_array()
+				);
+				$current_step = $next_step;
+				$state = TaskExecutionState::get_by_task_id($task_id) ?: $state;
+				continue;
+			}
+
 			if ($executed_ai_step) {
-				$this->log('execute_from_state:ai_boundary_pause', ['task_id' => $task_id, 'next_step' => $current_step]);
 				return ['success' => true, 'message' => 'Paused after AI step; awaiting next tick.'];
 			}
 
 			if ((microtime(true) - $started_at) >= self::SOFT_BUDGET_SECONDS) {
 				$this->set_progress_for_step($task_id, $spec, $current_step, 0, self::MAX_ATTEMPTS, true);
-				$this->log('execute_from_state:soft_budget_pause', ['task_id' => $task_id, 'step' => $current_step]);
 				return ['success' => true, 'message' => 'Paused at soft time budget boundary.'];
 			}
 
 			if ($this->is_step_timed_out($state)) {
-				$this->log('execute_from_state:step_timeout', ['task_id' => $task_id, 'step' => $current_step]);
+				$this->log_step_run($task_id, $current_step, microtime(true), microtime(true), [], ['error' => 'step_timeout'], $current_step);
 				$this->handle_step_failure(
 					$task_id,
 					$current_step,
@@ -245,24 +270,20 @@ class LocalWorkflowRunner
 			}
 
 			TaskExecutionState::mark_step_started($task_id, $current_step);
-			$this->log('step_started', ['task_id' => $task_id, 'step' => $current_step]);
 			$state = TaskExecutionState::get_by_task_id($task_id) ?: $state;
+			$step_start_ts = microtime(true);
+			$before_context = $context->to_array();
+			$step_input = $this->build_step_input($current_step, $before_context);
 			try {
 				$this->set_progress_for_step($task_id, $spec, $current_step, 0, self::MAX_ATTEMPTS, false, $context);
-				$before_context = $context->to_array();
 				$this->execute_step($current_step, $context, $spec);
-				$this->log('step_response', [
-					'task_id' => $task_id,
-					'step' => $current_step,
-					'response' => $this->build_step_response($current_step, $context, $before_context),
-				]);
-				$next_step = $this->get_next_step($current_step);
-				$this->log('step_succeeded', ['task_id' => $task_id, 'step' => $current_step, 'next_step' => $next_step]);
+				$step_response = $this->build_step_response($current_step, $context, $before_context);
+				$next_step = $this->get_next_runnable_step($current_step, $context);
+				$this->log_step_run($task_id, $current_step, $step_start_ts, microtime(true), $step_input, $step_response, $next_step);
 
 				if ($next_step === '') {
 					TaskExecutionState::mark_terminal($task_id, 'completed', null);
 					TaskExecutionState::delete_by_task_id($task_id);
-					$this->log('workflow_completed', ['task_id' => $task_id]);
 					$completed = true;
 					return ['success' => true, 'message' => 'Local workflow completed.'];
 				}
@@ -280,10 +301,6 @@ class LocalWorkflowRunner
 				$current_step = $next_step;
 				$state = TaskExecutionState::get_by_task_id($task_id) ?: $state;
 				if ($current_step !== '' && $this->is_ai_step($current_step)) {
-					$this->log('execute_from_state:pre_ai_boundary_pause', [
-						'task_id' => $task_id,
-						'next_step' => $current_step,
-					]);
 					return ['success' => true, 'message' => 'Paused before AI step; awaiting next tick.'];
 				}
 			} catch (StepDeferredException $e) {
@@ -293,15 +310,27 @@ class LocalWorkflowRunner
 					'error_message' => null,
 					'run_started_at' => current_time('mysql'),
 				]);
-				$this->log('step_deferred', [
-					'task_id' => $task_id,
-					'step' => $current_step,
-					'message' => $e->getMessage(),
-				]);
+				$this->log_step_run(
+					$task_id,
+					$current_step,
+					$step_start_ts,
+					microtime(true),
+					$step_input,
+					['deferred' => $e->getMessage()],
+					$current_step
+				);
 				$completed = true;
 				return ['success' => true, 'message' => $e->getMessage()];
 			} catch (\Throwable $e) {
-				$this->log('step_exception', ['task_id' => $task_id, 'step' => $current_step, 'error' => $e->getMessage()]);
+				$this->log_step_run(
+					$task_id,
+					$current_step,
+					$step_start_ts,
+					microtime(true),
+					$step_input,
+					['error' => $e->getMessage()],
+					$current_step
+				);
 				$this->handle_step_failure($task_id, $current_step, $e->getMessage(), $spec);
 				$completed = true;
 				return ['success' => false, 'message' => $e->getMessage()];
@@ -394,12 +423,137 @@ class LocalWorkflowRunner
 		return in_array($step, self::AI_STEPS, true);
 	}
 
+	private function get_next_runnable_step(string $step, WorkflowContext $context): string
+	{
+		$next = $this->get_next_step($step);
+		while ($next !== '' && $this->should_skip_step($next, $context)) {
+			$next = $this->get_next_step($next);
+		}
+		return $next;
+	}
+
+	private function should_skip_step(string $step, WorkflowContext $context): bool
+	{
+		$payload = (array) $context->get('payload', []);
+		switch ($step) {
+			case 'internal_links':
+				$mode = strtolower(trim((string) ($payload['content_fields']['body']['internal_links_mode'] ?? 'all_post_types')));
+				if ($mode === 'any_post_type') {
+					$mode = 'all_post_types';
+				}
+				$count = max(0, (int) ($payload['content_fields']['body']['internal_links_count'] ?? 4));
+				$sitemap = (array) ($payload['sitemap'] ?? []);
+				return $mode === 'none' || $count <= 0 || empty($sitemap);
+			case 'custom_fields':
+				$fields = (array) ($payload['content_fields']['custom_fields'] ?? []);
+				return $this->count_enabled_custom_fields($fields) === 0;
+			case 'taxonomies':
+				$taxonomies = (array) ($payload['content_fields']['taxonomies'] ?? []);
+				return $this->count_enabled_taxonomies($taxonomies) === 0;
+			case 'featured_image':
+				$manual_featured_image_id = (int) ($payload['feature_image_id'] ?? 0);
+				if ($manual_featured_image_id > 0) {
+					return false;
+				}
+				$image = (array) ($payload['content_fields']['image'] ?? []);
+				$enabled = !empty($image['enabled']);
+				$mode = (string) ($image['mode'] ?? 'generate');
+				return !($enabled && $mode === 'generate');
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * @param array<int,mixed> $fields
+	 */
+	private function count_enabled_custom_fields(array $fields): int
+	{
+		$count = 0;
+		foreach ($fields as $field) {
+			if (!is_array($field)) {
+				continue;
+			}
+			if (array_key_exists('enabled', $field) && empty($field['enabled'])) {
+				continue;
+			}
+			$meta_key = trim((string) ($field['meta_key'] ?? ''));
+			$prompt = trim((string) ($field['prompt'] ?? ''));
+			if ($meta_key === '' || $prompt === '') {
+				continue;
+			}
+			$count++;
+		}
+		return $count;
+	}
+
+	/**
+	 * @param array<int,mixed> $taxonomies
+	 */
+	private function count_enabled_taxonomies(array $taxonomies): int
+	{
+		$count = 0;
+		foreach ($taxonomies as $tax) {
+			if (!is_array($tax)) {
+				continue;
+			}
+			if (array_key_exists('enabled', $tax) && empty($tax['enabled'])) {
+				continue;
+			}
+			$taxonomy = sanitize_key((string) ($tax['taxonomy'] ?? ''));
+			if ($taxonomy === '') {
+				continue;
+			}
+			$count++;
+		}
+		return $count;
+	}
+
+	private function skip_reason_for_step(string $step, WorkflowContext $context): string
+	{
+		$payload = (array) $context->get('payload', []);
+		switch ($step) {
+			case 'internal_links':
+				$mode = strtolower(trim((string) ($payload['content_fields']['body']['internal_links_mode'] ?? 'all_post_types')));
+				if ($mode === 'none') {
+					return 'Internal links mode is disabled (none).';
+				}
+				if ((int) ($payload['content_fields']['body']['internal_links_count'] ?? 4) <= 0) {
+					return 'Internal links count is zero.';
+				}
+				return 'No sitemap entries available for internal links.';
+			case 'custom_fields':
+				$fields = (array) ($payload['content_fields']['custom_fields'] ?? []);
+				return $this->count_enabled_custom_fields($fields) === 0
+					? 'No enabled custom fields in payload.'
+					: 'Custom fields step skipped.';
+			case 'taxonomies':
+				$taxonomies = (array) ($payload['content_fields']['taxonomies'] ?? []);
+				return $this->count_enabled_taxonomies($taxonomies) === 0
+					? 'No enabled taxonomies in payload.'
+					: 'Taxonomies step skipped.';
+			case 'featured_image':
+				return 'Featured image generation disabled and no manual feature_image_id provided.';
+			default:
+				return 'Step skipped.';
+		}
+	}
+
+	private function apply_skip_side_effects(string $step, WorkflowContext $context): void
+	{
+		if ($step === 'internal_links') {
+			$context->set('internal_links', []);
+		}
+	}
+
 	/**
 	 * @param array<string,mixed> $spec
 	 */
 	private function execute_step(string $step, WorkflowContext $context, array $spec): void
 	{
 		switch ($step) {
+			case 'init':
+				return;
 			case 'researching':
 				$this->research_discover_step->run($context, $spec);
 				return;
@@ -413,7 +567,7 @@ class LocalWorkflowRunner
 				$this->outline_step->run($context, $spec);
 				return;
 			case 'internal_links':
-				// Internal links are currently prepared in payload building before local steps.
+				$this->internal_links_step->run($context, $spec);
 				return;
 			case 'writing':
 				$this->writing_step->run($context, $spec);
@@ -450,18 +604,10 @@ class LocalWorkflowRunner
 		$attempt = (int) ($updated['attempt_count'] ?? 1);
 		$max = (int) ($updated['max_attempts'] ?? self::MAX_ATTEMPTS);
 		$message = sprintf('Step "%s" attempt %d/%d failed: %s', $step, $attempt, $max, $error);
-		$this->log('step_failed', [
-			'task_id' => $task_id,
-			'step' => $step,
-			'attempt' => $attempt,
-			'max_attempts' => $max,
-			'error' => $error,
-		]);
 
 		if ($attempt >= $max) {
 			$this->progress_service->mark_failed($task_id, $message);
 			TaskExecutionState::mark_terminal($task_id, 'failed', $message);
-			$this->log('workflow_failed_terminal', ['task_id' => $task_id, 'step' => $step, 'message' => $message]);
 			return;
 		}
 
@@ -486,7 +632,13 @@ class LocalWorkflowRunner
 		?WorkflowContext $context = null
 	): void {
 		$labels = (array) ($spec['progress_labels'] ?? []);
-		$key = $step === 'finalizing_publish' ? 'finalizing' : $step;
+		if ($step === 'finalizing_publish') {
+			$key = 'finalizing';
+		} elseif ($step === 'init') {
+			$key = 'starting';
+		} else {
+			$key = $step;
+		}
 		$base = (string) ($labels[$key] ?? ucfirst(str_replace('_', ' ', $key)));
 		if ($step === 'scraping' && strpos($base, '%s') !== false) {
 			$domain = 'source';
@@ -547,6 +699,8 @@ class LocalWorkflowRunner
 		}
 
 		switch ($step) {
+			case 'init':
+				return $this->trim_for_log(['status' => 'starting']);
 			case 'researching':
 				return $this->trim_for_log([
 					'research_targets' => (array) ($current['research_targets'] ?? []),
@@ -617,18 +771,141 @@ class LocalWorkflowRunner
 	}
 
 	/**
-	 * @param array<string,mixed> $context
+	 * @param array<string,mixed> $input
+	 * @param array<string,mixed>|string|int|null $response
 	 */
-	private function log(string $event, array $context = []): void
+	private function log_step_run(
+		int $task_id,
+		string $step,
+		float $start_ts,
+		float $end_ts,
+		array $input,
+		$response,
+		string $next_step
+	): void
 	{
 		if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
 			return;
 		}
 
-		$line = '[PostStation][LocalWorkflowRunner] ' . $event;
-		if (!empty($context)) {
-			$line .= ' ' . (wp_json_encode($context) ?: '');
+		$payload = [
+			'task_id' => $task_id,
+			'step' => $step,
+			'start_time' => $this->format_ts($start_ts),
+			'end_time' => $this->format_ts($end_ts),
+			'execution_time' => $this->format_duration(max(0, $end_ts - $start_ts)),
+			'input' => $this->trim_for_log($input),
+			'response' => $this->trim_for_log($response),
+			'next_step' => $next_step,
+		];
+		error_log('[PostStation][StepRun] ' . (wp_json_encode($payload) ?: '{}'));
+	}
+
+	/**
+	 * @param array<string,mixed> $context
+	 * @return array<string,mixed>
+	 */
+	private function build_step_input(string $step, array $context): array
+	{
+		switch ($step) {
+			case 'init':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'research_url' => (string) (($context['payload']['research_url'] ?? '')),
+				]);
+			case 'researching':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'research_url' => (string) (($context['payload']['research_url'] ?? '')),
+					'sources_count' => (int) (($context['payload']['content_fields']['body']['sources_count'] ?? 3)),
+				]);
+			case 'scraping':
+				return $this->trim_for_log([
+					'research_targets' => (array) ($context['research_targets'] ?? []),
+					'research_scrape_state' => (array) ($context['research_scrape_state'] ?? []),
+				]);
+			case 'analysis':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'research_items' => (array) ($context['research_items'] ?? []),
+				]);
+			case 'outline':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'keywords' => (string) (($context['payload']['keywords'] ?? '')),
+					'analysis' => (array) ($context['analysis'] ?? []),
+					'research_items' => (array) ($context['research_items'] ?? []),
+				]);
+			case 'internal_links':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'internal_links_count' => (int) (($context['payload']['content_fields']['body']['internal_links_count'] ?? 4)),
+					'outline' => (array) ($context['outline'] ?? []),
+					'sitemap' => (array) (($context['payload']['sitemap'] ?? [])),
+				]);
+			case 'writing':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'outline' => (array) ($context['outline'] ?? []),
+					'analysis' => (array) ($context['analysis'] ?? []),
+					'research_items' => (array) ($context['research_items'] ?? []),
+					'sitemap' => (array) (($context['payload']['sitemap'] ?? [])),
+				]);
+			case 'extras':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'draft_markdown' => (string) ($context['draft_markdown'] ?? ''),
+					'title_override' => (string) (($context['payload']['title_override'] ?? '')),
+					'slug_override' => (string) (($context['payload']['slug_override'] ?? '')),
+				]);
+			case 'custom_fields':
+				return $this->trim_for_log([
+					'custom_fields_config' => (array) (($context['payload']['content_fields']['custom_fields'] ?? [])),
+					'post_content_html' => (string) ($context['post_content_html'] ?? ''),
+					'custom_fields_state' => (array) ($context['custom_fields_state'] ?? []),
+				]);
+			case 'featured_image':
+				return $this->trim_for_log([
+					'feature_image_id' => (int) (($context['payload']['feature_image_id'] ?? 0)),
+					'image_config' => (array) (($context['payload']['content_fields']['image'] ?? [])),
+					'post_title' => (string) ($context['post_title'] ?? ''),
+					'featured_image_state' => (array) ($context['featured_image_state'] ?? []),
+				]);
+			case 'taxonomies':
+				return $this->trim_for_log([
+					'taxonomies_config' => (array) (($context['payload']['content_fields']['taxonomies'] ?? [])),
+					'post_content_html' => (string) ($context['post_content_html'] ?? ''),
+					'taxonomies_state' => (array) ($context['taxonomies_state'] ?? []),
+				]);
+			case 'finalizing_publish':
+				return $this->trim_for_log([
+					'post_title' => (string) ($context['post_title'] ?? ''),
+					'post_slug' => (string) ($context['post_slug'] ?? ''),
+					'post_content_html' => (string) ($context['post_content_html'] ?? ''),
+					'featured_image_id' => (int) ($context['featured_image_id'] ?? 0),
+					'taxonomies' => (array) ($context['taxonomies'] ?? []),
+					'custom_fields' => (array) ($context['custom_fields'] ?? []),
+				]);
+			default:
+				return $this->trim_for_log([]);
 		}
-		error_log($line);
+	}
+
+	private function format_ts(float $ts): string
+	{
+		$seconds = (int) floor($ts);
+		$millis = (int) round(($ts - $seconds) * 1000);
+		return wp_date('Y-m-d H:i:s', $seconds) . sprintf('.%03d', $millis) . ' ' . wp_timezone_string();
+	}
+
+	private function format_duration(float $seconds): string
+	{
+		if ($seconds < 60) {
+			return round($seconds, 3) . ' sec';
+		}
+		if ($seconds < 3600) {
+			return round($seconds / 60, 3) . ' min';
+		}
+		return round($seconds / 3600, 3) . ' hr';
 	}
 }

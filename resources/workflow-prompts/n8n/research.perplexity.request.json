@@ -1,4 +1,4 @@
-﻿{
+{
   "model": "perplexity/sonar-pro",
   "messages": [
     {
@@ -7,7 +7,7 @@
     },
     {
       "role": "user",
-      "content": "Your task is to find the top {{ $('Webhook').item.json.body.content_fields.body.sources_count || 3 }} most relevant, high-quality, currently ranking articles for the following topic or keyword.\n\nTopic/Keyword: {{$('Webhook').first().json.body.topic || ''}}\n\nResearch Requirements:\n- Only return real, publicly accessible URLs.\n- Only return article-based sources (e.g. blog posts, news articles, editorial pieces, research/study pages). Do NOT include homepages, category pages, tag pages, product pages, landing pages, or any URL that is not a standalone article.\n- Prioritize authoritative domains.\n- Prefer articles published recently unless evergreen.\n- Avoid forums unless highly authoritative.\n- Avoid duplicate domains unless unavoidable.\n- The articles must directly match the search intent of the topic.\n\nFor each article, extract:\n- Title\n- Full URL\n\nReturn ONLY valid JSON."
+      "content": "Your task is to find the top {payload.content_fields.body.sources_count || 3} most relevant, high-quality, currently ranking articles for the following topic or keyword.\n\nTopic/Keyword: {payload.topic || ''}\n\nResearch Requirements:\n- Only return real, publicly accessible URLs.\n- Only return article-based sources (e.g. blog posts, news articles, editorial pieces, research/study pages). Do NOT include homepages, category pages, tag pages, product pages, landing pages, or any URL that is not a standalone article.\n- Prioritize authoritative domains.\n- Prefer articles published recently unless evergreen.\n- Avoid forums unless highly authoritative.\n- Avoid duplicate domains unless unavoidable.\n- The articles must directly match the search intent of the topic.\n\nFor each article, extract:\n- Title\n- Full URL\n\nReturn ONLY valid JSON."
     }
   ],
   "response_format": {
@@ -17,10 +17,11 @@
         "type": "object",
         "properties": {
           "topic": { "type": "string" },
+          "standard_research": { "type": "string" },
           "articles": {
             "type": "array",
-            "minItems": {{ $('Webhook').item.json.body.content_fields.body.sources_count }},
-            "maxItems": {{ $('Webhook').item.json.body.content_fields.body.sources_count }},
+            "minItems": {payload.content_fields.body.sources_count || 3},
+            "maxItems": {payload.content_fields.body.sources_count || 3},
             "items": {
               "type": "object",
               "properties": {
@@ -36,6 +37,7 @@
         },
         "required": [
           "topic",
+          "standard_research",
           "articles"
         ]
       }

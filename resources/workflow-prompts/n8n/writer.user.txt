@@ -1,23 +1,23 @@
-﻿=- Topic/Primary Keyword: {{ $('Normalize Prompts').item.json.topic }}
-- Keywords (optional): {{ $('Normalize Prompts').item.json.keywords }}
-- Language: {{ $('Webhook').item.json.body.language.name }}
-- Article Type: {{ $('Competitive Intelligence').item.json.output.structure_type }}
-- Point of View: {{ $('Normalize Prompts').item.json.point_of_view }}
-- Tone of Voice: {{ $('Normalize Prompts').item.json.tone_of_voice }}
-- Reading Level: {{ $('Normalize Prompts').item.json.reading_level }}
-- Today's Date: {{ $now }}
+=- Topic/Primary Keyword: {payload.topic}
+- Keywords (optional): {payload.keywords}
+- Language: {payload.language.name || English}
+- Article Type: {analysis.structure_type}
+- Point of View: {payload.point_of_view || none}
+- Tone of Voice: {payload.tone_of_voice || none}
+- Reading Level: {payload.readability || grade_8}
+- Today's Date: {now}
 
 ## ARITCLE_INSTRUCTION:
-{{ $('Webhook').item.json.body.content_fields.body.prompt }}
+{payload.content_fields.body.prompt}
 
 ## COMPETITIVE_ANALYSIS:
-{{ JSON.stringify($('Competitive Intelligence').item.json.output, null, 2) }}
+{analysis.json}
 
-## INTERNAL_LINKS: 
-{{ JSON.stringify($json.output, null, 2) }}
+## INTERNAL_LINKS:
+{internal_links.json}
 
 ## OUTLINE:
-{{ JSON.stringify($('Single Outline Writer').item.json.output.outline, null, 2) }}
+{outline.json}
 
 ## RESEARCH_DATA:
-{{ $('Normalize Prompts').item.json.research }}
+{research.data}

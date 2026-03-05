@@ -1,8 +1,8 @@
-﻿=Generate article's {{ $json.plural_label }} based on the provided content: 
-- Article body: {{ $json.article }}
-- Language: {{ $json.language }}
-- Number of {{ $json.plural_label }}: {{ $json.term_count }}
-- Today's Date: {{ $now }}
-- Additional instructions: {{ $json.prompt }}
+=Generate article's {taxonomy.plural_label} based on the provided content:
+- Article body: {taxonomy.article}
+- Language: {taxonomy.language}
+- Number of {taxonomy.plural_label}: {taxonomy.term_count}
+- Today's Date: {now}
+- Additional instructions: {taxonomy.prompt}
 
-Your response should include {{ $json.term_count }} {{ $json.plural_label }}, separated by commas, without any accompanying text or symbols.
+Your response should include {taxonomy.term_count} {taxonomy.plural_label}, separated by commas, without any accompanying text or symbols.

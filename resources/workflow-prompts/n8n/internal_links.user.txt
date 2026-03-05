@@ -1,0 +1,4 @@
+=- **Topic**: {topic}
+- **Outline**: {outline.json}
+- **Number of URLs to return**: {internal_links.count}
+- **Sitemap**: {internal_links.sitemap_json}

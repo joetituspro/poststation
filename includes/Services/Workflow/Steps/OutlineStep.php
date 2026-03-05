@@ -31,17 +31,15 @@ class OutlineStep
 		));
 		$system = $this->prompt_library->load('outline.system.txt');
 		$user_template = $this->prompt_library->load('outline.user.txt');
-		$prompt = $this->prompt_library->render($user_template, [
-			"{{ $('Normalize Prompts').item.json.topic }}" => (string) ($payload['topic'] ?? ''),
-			"{{ $('Normalize Prompts').item.json.keywords }}" => (string) ($payload['keywords'] ?? ''),
-			"{{ $('Webhook').item.json.body.language.name }}" => (string) ($payload['language']['name'] ?? 'English'),
-			"{{ $('Normalize Prompts').item.json.point_of_view }}" => (string) ($payload['point_of_view'] ?? 'none'),
-			"{{ $('Normalize Prompts').item.json.tone_of_voice }}" => (string) ($payload['tone_of_voice'] ?? 'none'),
-			"{{ $('Normalize Prompts').item.json.reading_level }}" => (string) ($payload['readability'] ?? 'grade_8'),
-			'{{ $now }}' => $this->prompt_library->now_string(),
-			"{{ $('Webhook').item.json.body.content_fields.body.prompt }}" => (string) ($payload['content_fields']['body']['prompt'] ?? ''),
-			"{{ JSON.stringify($('Competitive Intelligence').item.json.output, null, 2) }}" => wp_json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
-			"{{ $('Normalize Prompts').item.json.research }}" => $research_text,
+		$prompt = $this->prompt_library->render_with_context($user_template, [
+			'payload' => $payload,
+			'analysis' => [
+				'json' => wp_json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
+			],
+			'research' => [
+				'data' => $research_text,
+			],
+			'now' => $this->prompt_library->now_string(),
 		]);
 
 		$response = $this->openrouter->chat([
