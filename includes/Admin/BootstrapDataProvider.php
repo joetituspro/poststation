@@ -6,7 +6,6 @@ use PostStation\Models\Campaign;
 use PostStation\Models\CampaignRss;
 use PostStation\Models\WritingPreset;
 use PostStation\Models\PostTask;
-use PostStation\Models\Webhook;
 use PostStation\Services\SettingsService;
 use PostStation\Services\SupportService;
 use PostStation\Utils\Countries;
@@ -118,9 +117,6 @@ class BootstrapDataProvider
 
 		foreach ($campaigns as &$campaign) {
 			$cid = (int) $campaign['id'];
-			if (empty($campaign['execution_mode'])) {
-				$campaign['execution_mode'] = !empty((int) ($campaign['webhook_id'] ?? 0)) ? 'webhook' : 'local';
-			}
 			$counts = $counts_by_campaign[$cid] ?? [
 				'pending' => 0,
 				'processing' => 0,
@@ -161,7 +157,6 @@ class BootstrapDataProvider
 		return [
 			'settings' => $this->settings_service->get_settings_data(),
 			'is_local_installation' => $this->is_local_installation(),
-			'webhooks' => ['webhooks' => Webhook::get_all()],
 			'campaigns' => ['campaigns' => $this->get_campaigns_with_counts()],
 			'writing_presets' => WritingPreset::get_all(),
 			'post_types' => $post_type_options,

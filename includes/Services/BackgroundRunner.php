@@ -9,36 +9,23 @@ use PostStation\Services\Workflow\LocalWorkflowRunner;
 
 class BackgroundRunner
 {
-	private const TIMEOUT_SECONDS = 30 * 5; // 5 minutes
+	private const TIMEOUT_SECONDS = 30 * 5;
 	private const MAX_DISPATCH_ATTEMPTS = 50;
 
 	public function init(): void
 	{
 	}
 
-	/**
-	 * Dispatch one task. Used by manual Run and by start_run_if_pending.
-	 */
-	public function start_run_for_task(int $campaign_id, int $task_id, int $webhook_id): bool
+	public function start_run_for_task(int $campaign_id, int $task_id): bool
 	{
-		$result = TaskRunner::dispatch_task($campaign_id, $task_id, $webhook_id);
-		if (empty($result['success'])) {
-			return false;
-		}
-		return true;
+		$result = TaskRunner::dispatch_task($campaign_id, $task_id);
+		return !empty($result['success']);
 	}
 
-	/**
-	 * If campaign is active and has pending tasks with no run in progress, start the first pending task.
-	 */
 	public function start_run_if_pending(int $campaign_id): bool
 	{
 		$campaign = Campaign::get_by_id($campaign_id);
 		if (!$campaign || ($campaign['status'] ?? '') !== 'active') {
-			return false;
-		}
-		$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
-		if ($execution_mode === 'webhook' && empty($campaign['webhook_id'])) {
 			return false;
 		}
 		if ($this->has_processing_task_only($campaign_id)) {
@@ -48,7 +35,8 @@ class BackgroundRunner
 		if (!$task) {
 			return false;
 		}
-		return $this->start_run_for_task($campaign_id, (int) $task['id'], (int) ($campaign['webhook_id'] ?? 0));
+
+		return $this->start_run_for_task($campaign_id, (int) $task['id']);
 	}
 
 	public function cancel_run(int $campaign_id): bool
@@ -62,7 +50,6 @@ class BackgroundRunner
 		}
 		TaskExecutionState::delete_by_campaign_id($campaign_id);
 
-		// Update any processing tasks to pending
 		global $wpdb;
 		$table_name = $wpdb->prefix . PostTask::get_table_name();
 		$wpdb->update(
@@ -83,11 +70,7 @@ class BackgroundRunner
 	public function cancel_task_run(int $task_id): bool
 	{
 		$task = PostTask::get_by_id($task_id);
-		if (!$task) {
-			return false;
-		}
-
-		if (($task['status'] ?? '') !== 'processing') {
+		if (!$task || ($task['status'] ?? '') !== 'processing') {
 			return false;
 		}
 
@@ -103,23 +86,13 @@ class BackgroundRunner
 			'error_message' => null,
 		]);
 
-		if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-			error_log('[PostStation][TaskStop] ' . (wp_json_encode([
-				'task_id' => $task_id,
-				'previous_status' => 'processing',
-				'new_status' => 'cancelled',
-				'execution_state_deleted' => $state ? true : false,
-			]) ?: '{}'));
-		}
-
 		return true;
 	}
 
 	/**
-	 * Global live update handler, called from GlobalUpdateService on each poststation_update tick.
-	 * For each active campaign with a webhook:
-	 * - If there is a processing task, check for timeout and, if timed out, mark failed and dispatch next.
-	 * - If there is no processing task but there is a pending task, dispatch one pending task.
+	 * Local-only update loop.
+	 * - Always resumes local processing tasks (active or paused campaigns).
+	 * - Auto-starts pending tasks only for active campaigns.
 	 */
 	public function handle_live_update(): void
 	{
@@ -128,72 +101,44 @@ class BackgroundRunner
 
 		$campaign_table = $wpdb->prefix . Campaign::get_table_name();
 		$campaigns = $wpdb->get_results(
-			"SELECT id, webhook_id, execution_mode FROM {$campaign_table} WHERE status = 'active'",
+			"SELECT id, status FROM {$campaign_table}",
 			ARRAY_A
 		);
-
 		if (empty($campaigns)) {
 			return;
 		}
 
 		foreach ($campaigns as $campaign) {
-			$campaign_id = (int) $campaign['id'];
-			$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
-			$webhook_id = (int) ($campaign['webhook_id'] ?? 0);
+			$campaign_id = (int) ($campaign['id'] ?? 0);
 			if ($campaign_id <= 0) {
 				continue;
 			}
-			if ($execution_mode === 'webhook' && $webhook_id <= 0) {
+
+			$tasks = PostTask::get_by_campaign($campaign_id);
+			if (empty($tasks)) {
 				continue;
 			}
 
-			$this->handle_live_update_for_campaign($campaign_id, $webhook_id, $execution_mode);
+			$processing_task = null;
+			foreach ($tasks as $task) {
+				if (($task['status'] ?? '') === 'processing') {
+					$processing_task = $task;
+					break;
+				}
+			}
+
+			if ($processing_task) {
+				$this->handle_local_processing_task($processing_task, $campaign_id, $tasks);
+				continue;
+			}
+
+			if (($campaign['status'] ?? '') === 'active') {
+				$this->start_next_task($campaign_id, $tasks);
+			}
 		}
 	}
 
-	private function handle_live_update_for_campaign(int $campaign_id, int $webhook_id, string $execution_mode): void
-	{
-		$tasks = PostTask::get_by_campaign($campaign_id);
-		if (empty($tasks)) {
-			return;
-		}
-
-		$processing_task = null;
-		foreach ($tasks as $task) {
-			if (($task['status'] ?? '') === 'processing') {
-				$processing_task = $task;
-				break;
-			}
-		}
-
-		if ($processing_task) {
-			if ($execution_mode === 'local') {
-				$this->handle_local_processing_task($processing_task, $campaign_id, $webhook_id, $tasks);
-				return;
-			}
-
-			// If processing task has an explicit error or is timed out, mark failed and move on to next.
-			if (!empty($processing_task['error_message']) || $this->is_timed_out($processing_task)) {
-				PostTask::update((int) $processing_task['id'], [
-					'status' => 'failed',
-					'error_message' => !empty($processing_task['error_message'])
-						? $processing_task['error_message']
-						: __('Status check timed out.', 'poststation'),
-					'progress' => null,
-				]);
-
-				$this->start_next_task($campaign_id, $webhook_id, $tasks);
-			}
-
-			// If still processing and not timed out, do nothing for this campaign this tick.
-			return;
-		}
-
-		// No processing task; try to start the next pending one.
-		$this->start_next_task($campaign_id, $webhook_id, $tasks);
-	}
-
-	private function handle_local_processing_task(array $processing_task, int $campaign_id, int $webhook_id, array $tasks): void
+	private function handle_local_processing_task(array $processing_task, int $campaign_id, array $tasks): void
 	{
 		$task_id = (int) ($processing_task['id'] ?? 0);
 		if ($task_id <= 0) {
@@ -216,12 +161,14 @@ class BackgroundRunner
 
 			$latest = PostTask::get_by_id($task_id);
 			if (($latest['status'] ?? '') !== 'processing') {
-				$this->start_next_task($campaign_id, $webhook_id);
+				$campaign = Campaign::get_by_id($campaign_id);
+				if (($campaign['status'] ?? '') === 'active') {
+					$this->start_next_task($campaign_id, $tasks);
+				}
 			}
 			return;
 		}
 
-		// Local task with no state falls back to generic timeout protection.
 		if (!empty($processing_task['error_message']) || $this->is_timed_out($processing_task)) {
 			PostTask::update($task_id, [
 				'status' => 'failed',
@@ -230,11 +177,10 @@ class BackgroundRunner
 					: __('Status check timed out.', 'poststation'),
 				'progress' => null,
 			]);
-			$this->start_next_task($campaign_id, $webhook_id, $tasks);
 		}
 	}
 
-	private function start_next_task(int $campaign_id, int $webhook_id, ?array $preloaded_tasks = null): void
+	private function start_next_task(int $campaign_id, ?array $preloaded_tasks = null): void
 	{
 		$tasks = $preloaded_tasks ?? PostTask::get_by_campaign($campaign_id);
 		$attempts = 0;
@@ -249,7 +195,7 @@ class BackgroundRunner
 				continue;
 			}
 			$attempts++;
-			$result = TaskRunner::dispatch_task($campaign_id, (int) $task['id'], $webhook_id);
+			$result = TaskRunner::dispatch_task($campaign_id, (int) $task['id']);
 			if (!empty($result['success'])) {
 				return;
 			}
@@ -268,17 +214,6 @@ class BackgroundRunner
 			}
 		}
 		return null;
-	}
-
-	private function has_processing_task(int $campaign_id): bool
-	{
-		$tasks = PostTask::get_by_campaign($campaign_id);
-		foreach ($tasks as $task) {
-			if (($task['status'] ?? '') === 'processing') {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private function has_processing_task_only(int $campaign_id): bool

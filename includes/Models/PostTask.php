@@ -127,7 +127,7 @@ class PostTask
 	}
 
 	/**
-	 * Whether a task has the minimum required data for webhook dispatch.
+	 * Whether a task has the minimum required data for local dispatch.
 	 * Rewrite type needs a valid research_url; other types need topic.
 	 *
 	 * @param array<string, mixed> $task

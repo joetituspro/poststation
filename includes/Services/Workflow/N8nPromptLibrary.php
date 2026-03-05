@@ -5,7 +5,7 @@ namespace PostStation\Services\Workflow;
 class N8nPromptLibrary
 {
 	/**
-	 * Load prompt template from bundled n8n-derived prompt files.
+	 * Load prompt template from bundled prompt files.
 	 */
 	public function load(string $name): string
 	{
@@ -18,7 +18,7 @@ class N8nPromptLibrary
 			return '';
 		}
 
-		// n8n expression bodies often begin with "=". Keep source exact but remove the prefix for LLM input.
+		// Legacy templates may begin with "=". Keep source exact but remove the prefix for LLM input.
 		return $this->normalize_template($raw);
 	}
 

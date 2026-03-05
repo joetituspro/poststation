@@ -15,11 +15,14 @@ const STATUS_FILTERS = [
 export default function PostTaskList( {
 	tasks,
 	campaign,
+	isLive = false,
+	hasProcessingTask = false,
 	onAddTask,
 	onUpdateTask,
 	onDeleteTask,
 	onDuplicateTask,
 	onRunTask,
+	onRetryTask,
 	onStopTask,
 	retryingTaskId,
 	onRetryFailedTasks,
@@ -29,6 +32,7 @@ export default function PostTaskList( {
 	loading = false,
 	importLoading = false,
 	clearCompletedLoading = false,
+	runningTaskIds = [],
 	deletingTaskIds = [],
 	stoppingTaskIds = [],
 } ) {
@@ -180,6 +184,7 @@ export default function PostTaskList( {
 							key={ task.id }
 							task={ task }
 							campaign={ campaign }
+							isLive={ isLive }
 							retryingTaskId={ retryingTaskId }
 							isExpanded={ expandedId === task.id }
 							onToggle={ () =>
@@ -193,6 +198,7 @@ export default function PostTaskList( {
 							onDelete={ () => onDeleteTask( task.id ) }
 							onDuplicate={ () => onDuplicateTask( task.id ) }
 							onRun={ () => onRunTask( task.id ) }
+							onRetry={ () => onRetryTask( task.id ) }
 							onStop={ () => onStopTask( task.id ) }
 							isDeleting={ deletingTaskIds.some(
 								( id ) => String( id ) === String( task.id )
@@ -200,6 +206,10 @@ export default function PostTaskList( {
 							isStopping={ stoppingTaskIds.some(
 								( id ) => String( id ) === String( task.id )
 							) }
+							isRunning={ runningTaskIds.some(
+								( id ) => String( id ) === String( task.id )
+							) }
+							hasProcessingTask={ hasProcessingTask }
 						/>
 					) ) }
 				</div>
@@ -211,6 +221,7 @@ export default function PostTaskList( {
 function TaskItem( {
 	task,
 	campaign,
+	isLive = false,
 	retryingTaskId,
 	isExpanded,
 	onToggle,
@@ -218,9 +229,12 @@ function TaskItem( {
 	onDelete,
 	onDuplicate,
 	onRun,
+	onRetry,
 	onStop,
 	isDeleting = false,
 	isStopping = false,
+	isRunning = false,
+	hasProcessingTask = false,
 } ) {
 	const formatDateTime = ( value ) => {
 		if ( ! value ) return '';
@@ -445,7 +459,7 @@ function TaskItem( {
 							<Button
 								variant="secondary"
 								size="sm"
-								onClick={ onRun }
+								onClick={ onRetry }
 								className="h-7 text-[11px] px-2"
 								loading={
 									String( retryingTaskId ) ===
@@ -457,6 +471,27 @@ function TaskItem( {
 								}
 							>
 								Retry
+							</Button>
+						) }
+						{ ! isLive && !hasProcessingTask && task.status === 'pending' && (
+							<Button
+								variant="success"
+								size="sm"
+								onClick={ onRun }
+								className="h-7 w-7 p-0 inline-flex items-center justify-center"
+								loading={ isRunning }
+								disabled={ isRunning }
+								title="Run this Task"
+								aria-label="Run this Task"
+							>
+								<svg
+									className="w-3.5 h-3.5"
+									fill="currentColor"
+									viewBox="0 0 20 20"
+									aria-hidden="true"
+								>
+									<path d="M6.5 4.5a1 1 0 011.53-.848l7 4.5a1 1 0 010 1.696l-7 4.5A1 1 0 016.5 13.5v-9z" />
+								</svg>
 							</Button>
 						) }
 						{ task.status === 'processing' && (

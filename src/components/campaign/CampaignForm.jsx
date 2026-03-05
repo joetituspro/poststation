@@ -3,7 +3,6 @@ import {
 	getPostTypes,
 	getLanguages,
 	getCountries,
-	isLocalInstallation,
 } from '../../api/client';
 import { PUBLICATION_MODE_OPTIONS } from '../../utils/publication';
 
@@ -11,11 +10,6 @@ const CAMPAIGN_TYPE_OPTIONS = [
 	{ value: 'default', label: 'Default' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
 ];
-const EXECUTION_MODE_OPTIONS = [
-	{ value: 'webhook', label: 'Webhook' },
-	{ value: 'local', label: 'Local Workflow' },
-];
-
 const TONE_OPTIONS = [
 	{ value: 'none', label: 'None' },
 	{ value: 'friendly', label: 'Friendly' },
@@ -66,14 +60,9 @@ const ROLLING_SCHEDULE_DAY_OPTIONS = [
 export default function CampaignForm( {
 	campaign,
 	onChange,
-	webhooks = [],
 	users = [],
 } ) {
 	const postTypes = getPostTypes();
-	const localInstall = isLocalInstallation();
-	const effectiveExecutionMode = localInstall
-		? campaign.execution_mode || 'webhook'
-		: 'webhook';
 	const languages = getLanguages();
 	const countries = getCountries();
 	const postTypeOptions = Object.entries( postTypes ).map(
@@ -85,10 +74,6 @@ export default function CampaignForm( {
 	const countryOptions = Object.entries( countries ).map(
 		( [ value, label ] ) => ( { value, label } )
 	);
-	const webhookOptions = webhooks.map( ( w ) => ( {
-		value: w.id.toString(),
-		label: w.name,
-	} ) );
 	const userOptions = users.map( ( u ) => ( {
 		value: u.id.toString(),
 		label: u.display_name,
@@ -290,30 +275,6 @@ export default function CampaignForm( {
 					}
 				/>
 
-				{ localInstall && (
-					<Select
-						label="Execution Mode"
-						tooltip="Choose whether tasks are processed by webhook or by the built-in local workflow engine."
-						options={ EXECUTION_MODE_OPTIONS }
-						value={ effectiveExecutionMode }
-						onChange={ ( e ) =>
-							handleChange( 'execution_mode', e.target.value )
-						}
-						required
-					/>
-				) }
-
-				<Select
-					label="Webhook"
-					tooltip="Webhook endpoint that receives the generation payload for this campaign."
-					options={ webhookOptions }
-					value={ campaign.webhook_id?.toString() || '' }
-					onChange={ ( e ) =>
-						handleChange( 'webhook_id', e.target.value )
-					}
-					placeholder="Select webhook..."
-					required={ effectiveExecutionMode === 'webhook' }
-				/>
 			</div>
 		</div>
 	);

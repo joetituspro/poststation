@@ -343,7 +343,7 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 					<Input
 						label="Title Override (Optional)"
-						tooltip="If set, campaign title generation is disabled for this task and this value is sent to the webhook."
+						tooltip="If set, campaign title generation is disabled for this task and this value is used directly."
 						value={ task.title_override ?? '' }
 						onChange={ ( e ) =>
 							handleChange( 'title_override', e.target.value )
@@ -353,7 +353,7 @@ export default function PostTaskForm( { task, campaign, onChange } ) {
 					/>
 					<Input
 						label="Slug Override (Optional)"
-						tooltip="If set, campaign slug generation is disabled for this task and this value is sent to the webhook."
+						tooltip="If set, campaign slug generation is disabled for this task and this value is used directly."
 						value={ task.slug_override ?? '' }
 						onChange={ ( e ) =>
 							handleChange( 'slug_override', e.target.value )

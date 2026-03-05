@@ -6,6 +6,7 @@ use PostStation\Models\Campaign;
 use PostStation\Models\PostTask;
 use PostStation\Models\TaskExecutionState;
 use PostStation\Services\BackgroundRunner;
+use PostStation\Services\TaskRunner;
 
 class PostTaskAjaxHandler
 {
@@ -41,8 +42,7 @@ class PostTaskAjaxHandler
 			wp_send_json_error(['message' => 'Failed to create task']);
 		}
 
-		$mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
-		if ($campaign && ($campaign['status'] ?? '') === 'active' && ($mode === 'local' || !empty($campaign['webhook_id']))) {
+		if ($campaign && ($campaign['status'] ?? '') === 'active') {
 			$runner = new BackgroundRunner();
 			$runner->start_run_if_pending($campaign_id);
 		}
@@ -114,8 +114,7 @@ class PostTaskAjaxHandler
 		$campaign_id = (int) ($_POST['campaign_id'] ?? 0);
 		if ($campaign_id > 0) {
 			$campaign = Campaign::get_by_id($campaign_id);
-			$mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
-			if ($campaign && ($campaign['status'] ?? '') === 'active' && ($mode === 'local' || !empty($campaign['webhook_id']))) {
+			if ($campaign && ($campaign['status'] ?? '') === 'active') {
 				$runner = new BackgroundRunner();
 				$runner->start_run_if_pending($campaign_id);
 			}
@@ -168,6 +167,62 @@ class PostTaskAjaxHandler
 
 		wp_send_json_success([
 			'message' => 'Task stopped.',
+			'task' => PostTask::get_by_id($task_id),
+		]);
+	}
+
+	public function run_posttask(): void
+	{
+		if (!NonceVerifier::verify()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$task_id = (int) ($_POST['id'] ?? 0);
+		if ($task_id <= 0) {
+			wp_send_json_error(['message' => 'Invalid task id']);
+		}
+
+		$task = PostTask::get_by_id($task_id);
+		if (!$task) {
+			wp_send_json_error(['message' => 'Task not found']);
+		}
+
+		if (($task['status'] ?? '') !== 'pending') {
+			wp_send_json_error(['message' => 'Only pending tasks can be run']);
+		}
+
+		$campaign_id = (int) ($task['campaign_id'] ?? 0);
+		$campaign = Campaign::get_by_id($campaign_id);
+		if (!$campaign) {
+			wp_send_json_error(['message' => 'Campaign not found']);
+		}
+
+		$campaign_tasks = PostTask::get_by_campaign($campaign_id);
+		foreach ($campaign_tasks as $campaign_task) {
+			if (($campaign_task['status'] ?? '') === 'processing') {
+				wp_send_json_error(['message' => 'Another task is already processing for this campaign.']);
+			}
+		}
+
+		$is_live = ($campaign['status'] ?? '') === 'active';
+		if ($is_live) {
+			$runner = new BackgroundRunner();
+			if (!$runner->start_run_for_task($campaign_id, $task_id)) {
+				wp_send_json_error(['message' => 'Failed to run task']);
+			}
+		} else {
+			$result = TaskRunner::dispatch_task($campaign_id, $task_id);
+			if (empty($result['success'])) {
+				wp_send_json_error(['message' => $result['message'] ?? 'Failed to run task']);
+			}
+		}
+
+		wp_send_json_success([
+			'message' => 'Task processed locally',
+			'task_id' => $task_id,
 			'task' => PostTask::get_by_id($task_id),
 		]);
 	}

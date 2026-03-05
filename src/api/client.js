@@ -23,7 +23,6 @@ export const setBootstrap = (bootstrap = {}) => {
 		'users',
 		'current_user_id',
 		'settings',
-		'webhooks',
 		'campaigns',
 		'writing_presets',
 		'openrouter_models',
@@ -140,8 +139,6 @@ export const campaigns = {
 	update: (id, data) => ajax('poststation_update_campaign', { id, ...data }),
 	updateStatus: (id, status) => ajax('poststation_update_campaign_status', { id, status }),
 	delete: (id) => ajax('poststation_delete_campaign', { id }),
-	run: (id, taskId, webhookId) => ajax('poststation_run_campaign', { id, task_id: taskId, webhook_id: webhookId }),
-	stopRun: (id) => ajax('poststation_stop_campaign_run', { id }),
 	runRssNow: (id) => ajax('poststation_run_rss_now', { id }),
 	rssAddToTasks: (id, items) => ajax('poststation_rss_add_to_tasks', { id, items }),
 	export: (id) => ajax('poststation_export_campaign', { id }),
@@ -174,6 +171,7 @@ export const postTasks = {
 	create: (campaignId, options = {}) =>
 		ajax('poststation_create_posttask', { campaign_id: campaignId, ...options }),
 	update: (campaignId, tasksData) => ajax('poststation_update_posttasks', { campaign_id: campaignId, tasks: tasksData }),
+	run: (id) => ajax('poststation_run_posttask', { id }),
 	stopRun: (id) => ajax('poststation_stop_posttask_run', { id }),
 	delete: (id) => ajax('poststation_delete_posttask', { id }),
 	clearCompleted: (campaignId) => ajax('poststation_clear_completed_posttasks', { campaign_id: campaignId }),
@@ -192,14 +190,6 @@ export const postTasks = {
 			return r.data;
 		});
 	},
-};
-
-// Webhook API
-export const webhooks = {
-	getAll: () => ajax('poststation_get_webhooks'),
-	getById: (id) => ajax('poststation_get_webhook', { id }),
-	save: (data) => ajax('poststation_save_webhook', data),
-	delete: (id) => ajax('poststation_delete_webhook', { id }),
 };
 
 // Writing presets API
@@ -225,7 +215,6 @@ export const writingPresets = {
 export const settings = {
 	get: () => ajax('poststation_get_settings'),
 	save: (payload) => ajax('poststation_save_settings', payload),
-	deployN8nBlueprint: (payload = {}) => ajax('poststation_support_deploy_n8n_blueprint', payload),
 };
 
 export const getPendingProcessingPostTasks = (campaignId, lastTaskCount = null) => {
@@ -250,7 +239,6 @@ export const getPluginVersion = () => getConfig().plugin_version || '';
 export const getPluginAppId = () => getConfig().plugin_app_id || `${getPluginSlug()}-app`;
 
 export const getBootstrapSettings = () => getBootstrap().settings || null;
-export const getBootstrapWebhooks = () => getBootstrap().webhooks || null;
 export const getBootstrapCampaigns = () => getBootstrap().campaigns || null;
 export const getBootstrapWritingPresets = () => getBootstrap().writing_presets || [];
 export const getBootstrapOpenRouterModels = () => getBootstrap().openrouter_models || [];
@@ -275,12 +263,8 @@ export const support = {
 		ajax('poststation_support_license', {
 			action_type: 'refresh',
 		}),
-	saveN8nConfig: (payload) => ajax('poststation_support_save_n8n_config', payload),
-	deployN8nBlueprint: () => ajax('poststation_support_deploy_n8n_blueprint'),
-	getManualBlueprint: () => ajax('poststation_support_get_manual_blueprint'),
-	checkUpdate: ({ force = false } = {}) => ajax('poststation_support_check_blueprint_update', { force: force ? '1' : '0' }),
+	checkPluginUpdate: () => ajax('poststation_support_check_plugin_update'),
 	setAutoUpdatePlugin: (enabled) => ajax('poststation_support_set_auto_update_plugin', { enabled: enabled ? '1' : '0' }),
-	completeOnboarding: () => ajax('poststation_support_complete_onboarding'),
 };
 
 export const ai = {

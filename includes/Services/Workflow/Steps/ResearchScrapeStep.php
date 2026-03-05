@@ -3,7 +3,7 @@
 namespace PostStation\Services\Workflow\Steps;
 
 use PostStation\Models\TaskExecutionState;
-use PostStation\Services\SupportService;
+use PostStation\Services\SettingsService;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\StepDeferredException;
@@ -13,26 +13,26 @@ use PostStation\Services\Workflow\WorkflowContext;
 class ResearchScrapeStep
 {
 	private const CLEANUP_PRIMARY_MODEL = 'google/gemini-2.5-flash-lite';
-	private const CLEANUP_FALLBACK_MODEL = 'openai/gpt-oss-120b:free';
 	private const CLEANUP_MAX_TRIES = 1;
 	private const CLEANUP_RETRY_WAIT_SECONDS = 0;
 	private const CLEANUP_TOTAL_TIME_BUDGET_SECONDS = 12;
 
 	private const STEP_TIME_BUDGET_SECONDS = 18;
 	private const PER_URL_TIME_BUDGET_SECONDS = 14;
+	private const RANKIMA_EXTRACTOR_ENDPOINT = 'https://extractor.rankima.com/v1/extract';
 
-	private SupportService $support_service;
+	private SettingsService $settings_service;
 	private OpenRouterClient $openrouter;
 	private N8nPromptLibrary $prompt_library;
 	private WorkflowProgressService $progress_service;
 
 	public function __construct(
-		?SupportService $support_service = null,
+		?SettingsService $settings_service = null,
 		?OpenRouterClient $openrouter = null,
 		?N8nPromptLibrary $prompt_library = null,
 		?WorkflowProgressService $progress_service = null
 	) {
-		$this->support_service = $support_service ?? new SupportService();
+		$this->settings_service = $settings_service ?? new SettingsService();
 		$this->openrouter = $openrouter ?? new OpenRouterClient();
 		$this->prompt_library = $prompt_library ?? new N8nPromptLibrary();
 		$this->progress_service = $progress_service ?? new WorkflowProgressService();
@@ -279,66 +279,129 @@ class ResearchScrapeStep
 	 */
 	private function scrape_article(string $url): array
 	{
-		$rapid = $this->scrape_via_rapidapi($url);
-		if ($rapid !== '') {
-			return ['content' => $rapid, 'reason' => '', 'message' => '', 'attempts' => 1];
+		$provider = $this->settings_service->get_article_scraper_provider();
+		$content = '';
+		$message = '';
+
+		if ($provider === 'rankima') {
+			$content = $this->scrape_via_rankima($url, $message);
+		} elseif ($provider === 'firecrawl') {
+			$content = $this->scrape_via_firecrawl($url, $message);
+		} elseif ($provider === 'rapidapi') {
+			$content = $this->scrape_via_rapidapi($url, $message);
 		}
 
-		$firecrawl = $this->scrape_via_firecrawl($url);
-		if ($firecrawl !== '') {
-			return ['content' => $firecrawl, 'reason' => '', 'message' => '', 'attempts' => 1];
-		}
-
-		$wp = $this->scrape_via_wordpress($url);
-		if ($wp !== '') {
-			return ['content' => $wp, 'reason' => '', 'message' => '', 'attempts' => 1];
+		if ($content !== '') {
+			return ['content' => $content, 'reason' => '', 'message' => '', 'attempts' => 1];
 		}
 
 		return [
 			'content' => '',
-			'reason' => 'empty_content',
-			'message' => 'No content returned by available scraping providers.',
+			'reason' => 'provider_error',
+			'message' => $message !== '' ? $message : sprintf('Scraper provider "%s" returned no content.', $provider),
 			'attempts' => 1,
 		];
 	}
 
-	private function scrape_via_rapidapi(string $url): string
+	private function scrape_via_rankima(string $url, string &$error = ''): string
 	{
-		$config = $this->support_service->get_n8n_config(true);
-		$key = trim((string) ($config['rapidapi_key'] ?? ''));
+		$key = trim($this->settings_service->get_rankima_extractor_api_key());
 		if ($key === '') {
+			$error = 'Rankima Article Extractor API key is required.';
 			return '';
 		}
 
-		$endpoint = 'https://article-extractor2.p.rapidapi.com/article/parse?url=' . rawurlencode($url) . '&word_per_minute=300&desc_truncate_len=210&desc_len_min=180&content_len_min=200';
-		$response = wp_remote_get($endpoint, [
+		$response = wp_remote_post(self::RANKIMA_EXTRACTOR_ENDPOINT, [
 			'timeout' => 20,
 			'headers' => [
-				'x-rapidapi-key' => $key,
-				'x-rapidapi-host' => 'article-extractor2.p.rapidapi.com',
+				'Authorization' => 'Bearer ' . $key,
+				'Content-Type' => 'application/json',
 			],
+			'body' => wp_json_encode([
+				'url' => $url,
+			]),
 		]);
 		if (is_wp_error($response)) {
+			$error = $response->get_error_message();
 			return '';
 		}
 		$status = (int) wp_remote_retrieve_response_code($response);
 		$decoded = json_decode((string) wp_remote_retrieve_body($response), true);
 		if ($status < 200 || $status >= 300 || !is_array($decoded)) {
+			$error = sprintf('Rankima extractor request failed with HTTP %d.', $status);
 			return '';
 		}
 
-		return trim((string) ($decoded['data']['content'] ?? ''));
+		$content = trim((string) ($decoded['data']['content'] ?? $decoded['content'] ?? $decoded['data']['markdown'] ?? ''));
+		if ($content === '') {
+			$error = 'Rankima extractor returned empty content.';
+		}
+		return $content;
 	}
 
-	private function scrape_via_firecrawl(string $url): string
+	private function scrape_via_rapidapi(string $url, string &$error = ''): string
 	{
-		$config = $this->support_service->get_n8n_config(true);
-		$key = trim((string) ($config['firecrawl_key'] ?? ''));
+		$key = trim($this->settings_service->get_rapidapi_api_key());
+		$base_url = trim($this->settings_service->get_rapidapi_api_url());
 		if ($key === '') {
+			$error = 'RapidAPI key is required.';
+			return '';
+		}
+		if ($base_url === '') {
+			$error = 'RapidAPI URL is required.';
 			return '';
 		}
 
-		$response = wp_remote_post('https://firecrawl.digitenet.com/v2/scrape', [
+		$query_url = $base_url;
+		$glue = str_contains($query_url, '?') ? '&' : '?';
+		$query_url .= $glue . http_build_query([
+			'url' => $url,
+			'word_per_minute' => 300,
+			'desc_truncate_len' => 210,
+			'desc_len_min' => 180,
+			'content_len_min' => 200,
+		]);
+
+		$host = (string) parse_url($base_url, PHP_URL_HOST);
+		$response = wp_remote_get($query_url, [
+			'timeout' => 20,
+			'headers' => [
+				'x-rapidapi-key' => $key,
+				'x-rapidapi-host' => $host !== '' ? $host : 'article-extractor2.p.rapidapi.com',
+			]
+		]);
+		if (is_wp_error($response)) {
+			$error = $response->get_error_message();
+			return '';
+		}
+		$status = (int) wp_remote_retrieve_response_code($response);
+		$decoded = json_decode((string) wp_remote_retrieve_body($response), true);
+		if ($status < 200 || $status >= 300 || !is_array($decoded)) {
+			$error = sprintf('RapidAPI request failed with HTTP %d.', $status);
+			return '';
+		}
+
+		$content = trim((string) ($decoded['data']['content'] ?? $decoded['content'] ?? ''));
+		if ($content === '') {
+			$error = 'RapidAPI returned empty content.';
+		}
+		return $content;
+	}
+
+	private function scrape_via_firecrawl(string $url, string &$error = ''): string
+	{
+		$key = trim($this->settings_service->get_firecrawl_api_key());
+		$base_url = trim($this->settings_service->get_firecrawl_api_url());
+		if ($key === '') {
+			$error = 'Firecrawl API key is required.';
+			return '';
+		}
+		if ($base_url === '') {
+			$error = 'Firecrawl API URL is required.';
+			return '';
+		}
+
+		$response = wp_remote_post($base_url, [
 			'timeout' => 20,
 			'headers' => [
 				'Authorization' => 'Bearer ' . $key,
@@ -351,32 +414,21 @@ class ResearchScrapeStep
 			]),
 		]);
 		if (is_wp_error($response)) {
+			$error = $response->get_error_message();
 			return '';
 		}
 		$status = (int) wp_remote_retrieve_response_code($response);
 		$decoded = json_decode((string) wp_remote_retrieve_body($response), true);
 		if ($status < 200 || $status >= 300 || !is_array($decoded)) {
+			$error = sprintf('Firecrawl request failed with HTTP %d.', $status);
 			return '';
 		}
 
-		return trim((string) ($decoded['data']['markdown'] ?? ''));
-	}
-
-	private function scrape_via_wordpress(string $url): string
-	{
-		$response = wp_remote_get($url, ['timeout' => 15]);
-		if (is_wp_error($response)) {
-			return '';
+		$content = trim((string) ($decoded['data']['markdown'] ?? $decoded['data']['content'] ?? $decoded['content'] ?? ''));
+		if ($content === '') {
+			$error = 'Firecrawl returned empty content.';
 		}
-		$status = (int) wp_remote_retrieve_response_code($response);
-		if ($status < 200 || $status >= 300) {
-			return '';
-		}
-		$html = (string) wp_remote_retrieve_body($response);
-		if ($html === '') {
-			return '';
-		}
-		return trim((string) preg_replace('/\s+/', ' ', wp_strip_all_tags($html)));
+		return $content;
 	}
 
 	/**
@@ -401,21 +453,28 @@ class ResearchScrapeStep
 			return ['content' => $article, 'reason' => '', 'message' => '', 'attempts' => 1];
 		}
 
-		$cleaned = $this->run_cleanup_model_with_retries($prompt, self::CLEANUP_PRIMARY_MODEL);
+		$provider = $this->settings_service->get_article_scraper_provider();
+		if ($provider === 'rankima') {
+			return ['content' => $article, 'reason' => '', 'message' => '', 'attempts' => 1];
+		}
+
+		if (!$this->settings_service->is_clean_data_with_ai_enabled()) {
+			return ['content' => $article, 'reason' => '', 'message' => '', 'attempts' => 1];
+		}
+
+		$model = trim($this->settings_service->get_clean_data_model_id());
+		if ($model === '') {
+			$model = self::CLEANUP_PRIMARY_MODEL;
+		}
+		$cleaned = $this->run_cleanup_model_with_retries($prompt, $model);
 		if ($cleaned['content'] !== '') {
 			return $cleaned;
 		}
-
-		$fallback = $this->run_cleanup_model_with_retries($prompt, self::CLEANUP_FALLBACK_MODEL);
-		if ($fallback['content'] !== '') {
-			return $fallback;
-		}
-
 		return [
 			'content' => '',
-			'reason' => $fallback['reason'] !== '' ? $fallback['reason'] : 'model_empty',
-			'message' => $fallback['message'] !== '' ? $fallback['message'] : 'Cleanup model returned empty output.',
-			'attempts' => (int) ($cleaned['attempts'] ?? 0) + (int) ($fallback['attempts'] ?? 0),
+			'reason' => $cleaned['reason'] !== '' ? $cleaned['reason'] : 'model_empty',
+			'message' => $cleaned['message'] !== '' ? $cleaned['message'] : 'Cleanup model returned empty output.',
+			'attempts' => (int) ($cleaned['attempts'] ?? 0),
 		];
 	}
 

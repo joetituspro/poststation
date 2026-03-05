@@ -2,341 +2,72 @@
 
 namespace PostStation\Api;
 
-use WP_Error;
 use Exception;
-use PostStation\Models\Webhook;
 use PostStation\Models\PostTask;
-use PostStation\Models\Campaign;
-use PostStation\Api\Create;
-use PostStation\Services\ImageOptimizer;
-use PostStation\Services\SettingsService;
 
 class ApiHandler
 {
-	private const REQUIRED_FIELDS = [];
-	private const ALLOWED_FIELDS = [
-		'execution_id',
-		'task_id',
-		'title',
-		'content',
-		'slug',
-		'thumbnail_url',
-		'thumbnail_id',
-		'taxonomies',
-		'custom_fields',
-		'status',
-		'progress',
-		'error_message'
-	];
-
-	/**
-	 * Handle incoming API requests
-	 *
-	 * @return void
-	 */
 	public function init(): void
 	{
 		add_action('init', [$this, 'register_endpoints']);
 	}
 
-	/**
-	 * Register custom endpoints
-	 *
-	 * @return void
-	 */
 	public function register_endpoints(): void
 	{
-		// Add rewrite rules for our endpoints
-		add_rewrite_rule(
-			'ps-api/create/?$',
-			'index.php?pagename=ps-api/create',
-			'top'
-		);
-
-		add_rewrite_rule(
-			'ps-api/progress/?$',
-			'index.php?pagename=ps-api/progress',
-			'top'
-		);
-
 		add_rewrite_rule(
 			'ps-api/posttasks/?$',
 			'index.php?pagename=ps-api/posttasks',
 			'top'
 		);
 
-		add_rewrite_rule(
-			'ps-api/upload/?$',
-			'index.php?pagename=ps-api/upload',
-			'top'
-		);
-
 		add_action('parse_request', [$this, 'handle_api_request']);
 	}
 
-	/**
-	 * Handle API requests
-	 *
-	 * @param \WP $wp WordPress request object
-	 * @return void
-	 */
 	public function handle_api_request(\WP $wp): void
 	{
-		// Check if this is our API request
-		if (!isset($wp->query_vars['pagename']) || !str_starts_with($wp->query_vars['pagename'], 'ps-api')) {
+		if (!isset($wp->query_vars['pagename']) || $wp->query_vars['pagename'] !== 'ps-api/posttasks') {
 			return;
 		}
 
-		// Set JSON response headers
 		header('Content-Type: application/json');
-
-		// Handle CORS
 		$this->handle_cors();
 
-		// Handle preflight requests
-		if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
 			status_header(200);
 			exit();
 		}
 
-		// Get the endpoint from the URL
-		$endpoint = str_replace('ps-api/', '', $wp->query_vars['pagename']);
-
 		try {
-			switch ($endpoint) {
-				case 'create':
-					// Only allow POST method for create endpoint
-					if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-						$this->send_error('Method not allowed', 405);
-					}
-
-					// Validate API key
-					$this->validate_api_key();
-
-					// Parse JSON body
-					$body = $this->get_request_body();
-
-					// Process the create request
-					$response = $this->process_create_request($body);
-
-					// Send success response
-					$this->send_response($response);
-					break;
-
-				case 'progress':
-					// Only allow POST method for progress endpoint
-					if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-						$this->send_error('Method not allowed', 405);
-					}
-
-					// Validate API key
-					$this->validate_api_key();
-
-					// Parse JSON body
-					$body = $this->get_request_body();
-
-					// Process the progress update
-					$response = $this->update_task_progress($body);
-
-					// Send success response
-					$this->send_response($response);
-					break;
-
-				case 'posttasks':
-					// Only allow GET method for posttasks endpoint
-					if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-						$this->send_error('Method not allowed', 405);
-					}
-
-					$campaign_id = (int) ($_GET['campaign_id'] ?? 0);
-					if (!$campaign_id) {
-						$this->send_error('Missing campaign_id parameter', 400);
-					}
-
-					$status_filter = trim((string)($_GET['status'] ?? ''));
-					$last_task_count = (int) ($_GET['last_task_count'] ?? -1);
-					$response = $this->get_tasks_by_status($campaign_id, $status_filter, $last_task_count);
-					$this->send_response($response);
-					break;
-
-				case 'upload':
-					// Only allow POST method for upload endpoint
-					if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-						$this->send_error('Method not allowed', 405);
-					}
-
-					// Validate API key
-					$this->validate_api_key();
-
-					$body = $this->get_upload_body();
-					$response = $this->handle_image_upload($body);
-					$this->send_response($response);
-					break;
-
-				default:
-					$this->send_error('Endpoint not found', 404);
+			if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+				$this->send_error('Method not allowed', 405);
 			}
+
+			$campaign_id = (int) ($_GET['campaign_id'] ?? 0);
+			if ($campaign_id <= 0) {
+				$this->send_error('Missing campaign_id parameter', 400);
+			}
+
+			$status_filter = trim((string) ($_GET['status'] ?? ''));
+			$last_task_count = (int) ($_GET['last_task_count'] ?? -1);
+			$this->send_response($this->get_tasks_by_status($campaign_id, $status_filter, $last_task_count));
 		} catch (Exception $e) {
 			$this->send_error($e->getMessage(), $e->getCode() ?: 400);
 		}
 	}
 
-	/**
-	 * Handle CORS headers
-	 *
-	 * @return void
-	 */
 	private function handle_cors(): void
 	{
 		$allowed_origins = apply_filters('poststation_allowed_origins', ['*']);
 		$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
 
-		if (in_array('*', $allowed_origins) || in_array($origin, $allowed_origins)) {
+		if (in_array('*', $allowed_origins, true) || in_array($origin, $allowed_origins, true)) {
 			header('Access-Control-Allow-Origin: ' . $origin);
-			header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-			header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
-			header('Access-Control-Max-Age: 86400'); // 24 hours cache
+			header('Access-Control-Allow-Methods: GET, OPTIONS');
+			header('Access-Control-Allow-Headers: Content-Type');
+			header('Access-Control-Max-Age: 86400');
 		}
 	}
 
-	/**
-	 * Validate API key from headers
-	 *
-	 * @throws Exception If API key is invalid or missing
-	 * @return void
-	 */
-	private function validate_api_key(): void
-	{
-		$api_key = $_SERVER['HTTP_X_API_KEY'] ?? null;
-
-		if (!$api_key) {
-			throw new Exception('Missing API key', 401);
-		}
-
-		$valid_api_key = (new SettingsService())->get_api_key();
-
-		if (empty($valid_api_key) || !hash_equals($valid_api_key, $api_key)) {
-			throw new Exception('Invalid API key', 403);
-		}
-	}
-
-	/**
-	 * Get and validate request body
-	 *
-	 * @throws Exception If request body is invalid
-	 * @return array
-	 */
-	private function get_request_body(): array
-	{
-		$body = file_get_contents('php://input');
-		$data = json_decode($body, true);
-
-		if (json_last_error() !== JSON_ERROR_NONE) {
-			throw new Exception('Invalid JSON payload', 400);
-		}
-
-		// Validate required fields
-		foreach (self::REQUIRED_FIELDS as $field) {
-			if (!isset($data[$field])) {
-				throw new Exception("Missing required field: {$field}", 400);
-			}
-		}
-
-		// Remove any disallowed fields
-		return array_intersect_key($data, array_flip(self::ALLOWED_FIELDS));
-	}
-
-	private function get_upload_body(): array
-	{
-		$body = file_get_contents('php://input');
-		$data = json_decode($body, true);
-
-		if (json_last_error() !== JSON_ERROR_NONE) {
-			throw new Exception('Invalid JSON payload', 400);
-		}
-
-		$required = ['task_id', 'image_base64'];
-		foreach ($required as $field) {
-			if (!isset($data[$field]) || $data[$field] === '') {
-				throw new Exception("Missing required field: {$field}", 400);
-			}
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Process create request
-	 *
-	 * @param array $data Request data
-	 * @throws Exception If processing fails
-	 * @return array
-	 */
-	private function process_create_request(array $data): array
-	{
-		$create = new Create();
-		return $create->process_request($data);
-	}
-
-	private function handle_image_upload(array $data): array
-	{
-		$task_id = (int) $data['task_id'];
-		$task = $task_id ? PostTask::get_by_id($task_id) : null;
-		if (!$task) {
-			throw new Exception('Post task not found', 404);
-		}
-
-		$optimizer = new ImageOptimizer();
-		$image_identifier = $this->generate_image_identifier();
-		$result = $optimizer->upload_base64_image([
-			'task_id' => $task_id,
-			'image_base64' => (string) $data['image_base64'],
-			'index' => $data['index'] ?? null,
-			'filename' => $data['filename'] ?? '',
-			'alt_text' => $data['alt_text'] ?? '',
-			'format' => $data['format'] ?? 'webp',
-			'image_identifier' => $image_identifier,
-		]);
-
-		$attachment_id = $result['attachment_id'];
-
-		update_post_meta($attachment_id, 'poststation_posttask_id', $task_id);
-		if (isset($data['index'])) {
-			update_post_meta($attachment_id, 'poststation_posttask_index', $data['index']);
-		}
-		if (!empty($data['filename'])) {
-			update_post_meta($attachment_id, 'poststation_original_filename', (string) $data['filename']);
-		}
-		if (!empty($data['alt_text'])) {
-			update_post_meta($attachment_id, 'poststation_alt_text', (string) $data['alt_text']);
-			update_post_meta($attachment_id, '_wp_attachment_image_alt', (string) $data['alt_text']);
-		}
-		update_post_meta($attachment_id, 'poststation_image_identifier', $image_identifier);
-
-		return [
-			'success' => true,
-			'attachment_id' => $attachment_id,
-			'url' => $result['url'],
-			'format' => $result['format'],
-			'image_identifier' => $image_identifier,
-		];
-	}
-
-	private function generate_image_identifier(): string
-	{
-		$timestamp = dechex((int) floor(microtime(true) * 1000));
-		$random = wp_generate_password(8, false, false);
-
-		return strtolower($timestamp . $random);
-	}
-
-	/**
-	 * Send JSON response
-	 *
-	 * @param mixed $data Response data
-	 * @param int $status HTTP status code
-	 * @return void
-	 */
 	private function send_response($data, int $status = 200): void
 	{
 		status_header($status);
@@ -344,28 +75,15 @@ class ApiHandler
 		exit;
 	}
 
-	/**
-	 * Send error response
-	 *
-	 * @param string $message Error message
-	 * @param int $status HTTP status code
-	 * @return void
-	 */
 	private function send_error(string $message, int $status = 400): void
 	{
 		$this->send_response([
 			'success' => false,
-			'error' => $message
+			'error' => $message,
 		], $status);
 	}
 
 	/**
-	 * Get tasks by status for a campaign. Returns status payload and, when client sends last_task_count,
-	 * a flag and full task list if new tasks were added (e.g. by background RSS).
-	 *
-	 * @param int $campaign_id
-	 * @param string $status_filter
-	 * @param int $last_task_count Client's last known task count; -1 to omit new_tasks_available logic.
 	 * @return array{tasks: array, new_tasks_available: bool, full_tasks?: array}
 	 */
 	private function get_tasks_by_status(int $campaign_id, string $status_filter, int $last_task_count = -1): array
@@ -373,7 +91,7 @@ class ApiHandler
 		$allowed_statuses = ['pending', 'processing', 'completed', 'failed', 'cancelled'];
 		if ($status_filter === 'all' || $status_filter === '') {
 			$statuses = $allowed_statuses;
-		} elseif ($status_filter !== '') {
+		} else {
 			$statuses = array_values(array_intersect(
 				$allowed_statuses,
 				array_map('trim', explode(',', $status_filter))
@@ -381,8 +99,6 @@ class ApiHandler
 			if (empty($statuses)) {
 				$statuses = ['pending', 'processing'];
 			}
-		} else {
-			$statuses = ['pending', 'processing'];
 		}
 
 		$tasks = PostTask::get_by_campaign($campaign_id);
@@ -415,83 +131,7 @@ class ApiHandler
 		if ($new_tasks_available && !empty($tasks)) {
 			$result['full_tasks'] = $tasks;
 		}
+
 		return $result;
-	}
-
-	/**
-	 * Update progress of a post task
-	 *
-	 * @param array $data Request data
-	 * @throws Exception If update fails
-	 * @return array
-	 */
-	private function update_task_progress(array $data): array
-	{
-
-		$task_id = isset($data['task_id']) ? (int) $data['task_id'] : null;
-		$execution_id = isset($data['execution_id']) ? trim((string) $data['execution_id']) : null;
-		$status = $data['status'] ?? null;
-		$progress = $data['progress'] ?? null;
-		$error_message = isset($data['error_message']) ? (string) $data['error_message'] : null;
-
-		if (!$task_id && ($execution_id === null || $execution_id === '')) {
-			throw new Exception('Missing task_id or execution_id', 400);
-		}
-
-		if ($task_id) {
-			$task = PostTask::get_by_id($task_id);
-		} else {
-			$task = PostTask::get_latest_by_execution_id($execution_id);
-			if ($task) {
-				$task_id = (int) $task['id'];
-			}
-		}
-
-		if (!$task) {
-			throw new Exception('Post task not found', 404);
-		}
-
-		if ($status === 'failed') {
-			if ($error_message === '' || $error_message === null) {
-				throw new Exception('error_message is required when status is failed', 400);
-			}
-		}
-
-		$update_data = [];
-		if ($execution_id !== null && $execution_id !== '') {
-			$update_data['execution_id'] = $execution_id;
-		}
-		if ($progress !== null) {
-			$update_data['progress'] = $progress;
-		}
-		if ($status !== null) {
-			$allowed_statuses = ['pending', 'processing', 'completed', 'failed', 'cancelled'];
-			if (in_array($status, $allowed_statuses, true)) {
-				$update_data['status'] = $status;
-				if ($status === 'completed') {
-					$update_data['error_message'] = null;
-					$update_data['progress'] = null;
-				}
-				if ($status === 'failed' && $error_message !== null && $error_message !== '') {
-					$update_data['error_message'] = $error_message;
-					$update_data['progress'] = null;
-				}
-			}
-		}
-
-		if (!empty($update_data)) {
-			// Intentionally permissive: stopped/cancelled tasks may still receive late webhook/local
-			// completion updates, and those updates are allowed to transition status.
-			$current_status = $update_data['status'] ?? $task['status'];
-			if ($current_status === 'processing') {
-				$update_data['run_started_at'] = current_time('mysql');
-			}
-			PostTask::update($task_id, $update_data);
-		}
-
-		return [
-			'success' => true,
-			'message' => 'Progress updated successfully',
-		];
 	}
 }

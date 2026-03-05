@@ -30,7 +30,6 @@ function buildCampaignPayload( campaign, frequency_interval, validSources ) {
 		publication_interval_unit: campaign.publication_interval_unit ?? 'hour',
 		rolling_schedule_days: campaign.rolling_schedule_days ?? 30,
 		default_author_id: campaign.default_author_id,
-		webhook_id: campaign.webhook_id ?? null,
 		campaign_type: campaign.campaign_type ?? 'default',
 		tone_of_voice: campaign.tone_of_voice ?? 'none',
 		point_of_view: campaign.point_of_view ?? 'none',

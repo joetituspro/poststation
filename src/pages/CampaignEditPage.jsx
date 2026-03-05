@@ -18,13 +18,10 @@ import RssResultsModal from '../components/campaign/RssResultsModal';
 import {
 	campaigns,
 	postTasks,
-	webhooks,
 	generateTaskId,
 	getTaxonomies,
 	getPendingProcessingPostTasks,
-	getBootstrapWebhooks,
 	getBootstrapWritingPresets,
-	isLocalInstallation,
 } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useUnsavedChanges } from '../context/UnsavedChangesContext';
@@ -260,9 +257,9 @@ export default function CampaignEditPage() {
 	const [ campaign, setCampaign ] = useState( null );
 	const [ taskItems, setTaskItems ] = useState( [] );
 	const [ showSettings, setShowSettings ] = useState( false );
-	const [ isRunning, setIsRunning ] = useState( false );
 	const [ isDirty, setIsDirty ] = useState( false );
 	const [ retryingTaskId, setRetryingTaskId ] = useState( null );
+	const [ runningTaskIds, setRunningTaskIds ] = useState( [] );
 	const [ retryFailedLoading, setRetryFailedLoading ] = useState( false );
 	const [ writingPresetModal, setWritingPresetModal ] = useState( {
 		open: false,
@@ -273,51 +270,19 @@ export default function CampaignEditPage() {
 	const [ rssResultsModalOpen, setRssResultsModalOpen ] = useState( false );
 	const [ rssResultsData, setRssResultsData ] = useState( null );
 	const [ savingAll, setSavingAll ] = useState( false );
-	const [ runLoading, setRunLoading ] = useState( false );
-	const [ stopLoading, setStopLoading ] = useState( false );
 	const [ clearCompletedLoading, setClearCompletedLoading ] =
 		useState( false );
 	const [ importLoading, setImportLoading ] = useState( false );
 	const [ deletingTaskIds, setDeletingTaskIds ] = useState( [] );
 	const [ stoppingTaskIds, setStoppingTaskIds ] = useState( [] );
-	const localInstall = isLocalInstallation();
-	const stopRunRef = useRef( false );
-	const manualRunRef = useRef( false );
-	const currentManualTaskIdRef = useRef( null );
 	const taskCountRef = useRef( 0 );
 	const campaignRef = useRef( null );
-	const effectiveExecutionMode = localInstall
-		? campaign?.execution_mode || 'webhook'
-		: 'webhook';
-
-	const hasRequiredData = useCallback( ( task ) => {
-		const taskType = task?.campaign_type ?? 'default';
-		if ( taskType === 'rewrite_blog_post' ) {
-			return String( task?.research_url ?? '' ).trim() !== '';
-		}
-		return String( task?.topic ?? '' ).trim() !== '';
-	}, [] );
-
-	const getNextPendingTask = useCallback( () => {
-		return (
-			taskItems.find(
-				( t ) => t.status === 'pending' && hasRequiredData( t )
-			) ?? null
-		);
-	}, [ taskItems, hasRequiredData ] );
 	const { showToast } = useToast();
 	const { setIsDirty: setGlobalDirty } = useUnsavedChanges();
 
 	const getTaskIdKey = useCallback( ( value ) => String( value ?? '' ), [] );
 	const fetchCampaign = useCallback( () => campaigns.getById( id ), [ id ] );
 	const { data, loading, error, refetch } = useQuery( fetchCampaign, [ id ] );
-
-	// Fetch webhooks for dropdown
-	const bootstrapWebhooks = getBootstrapWebhooks();
-	const fetchWebhooks = useCallback( () => webhooks.getAll(), [] );
-	const { data: webhooksData } = useQuery( fetchWebhooks, [], {
-		initialData: bootstrapWebhooks,
-	} );
 
 	// Mutations
 	const { mutate: updateCampaign, loading: saving } = useMutation( ( data ) =>
@@ -338,12 +303,7 @@ export default function CampaignEditPage() {
 	const { mutate: importTasks } = useMutation( ( file ) =>
 		postTasks.import( id, file )
 	);
-	const { mutate: runCampaign } = useMutation( ( taskId, webhookId ) =>
-		campaigns.run( id, taskId, webhookId )
-	);
-	const { mutate: stopCampaignRun } = useMutation( () =>
-		campaigns.stopRun( id )
-	);
+	const { mutate: runPostTask } = useMutation( postTasks.run );
 	const { mutate: exportCampaign } = useMutation( () =>
 		campaigns.export( id )
 	);
@@ -360,11 +320,6 @@ export default function CampaignEditPage() {
 			const readability = data.campaign?.readability || 'grade_8';
 			const normalizedCampaign = normalizeCampaignPublication( {
 				...data.campaign,
-				execution_mode:
-					localInstall
-						? data.campaign?.execution_mode ||
-						  ( data.campaign?.webhook_id ? 'webhook' : 'local' )
-						: 'webhook',
 				campaign_type: campaignType,
 				language,
 				target_country: targetCountry,
@@ -384,16 +339,7 @@ export default function CampaignEditPage() {
 				} ) )
 			);
 		}
-	}, [ data, localInstall ] );
-
-	useEffect( () => {
-		const hasProcessing = taskItems.some(
-			( task ) => task.status === 'processing'
-		);
-		if ( hasProcessing !== isRunning ) {
-			setIsRunning( hasProcessing );
-		}
-	}, [ taskItems, isRunning ] );
+	}, [ data ] );
 
 	useEffect( () => {
 		setGlobalDirty( isDirty );
@@ -501,64 +447,6 @@ export default function CampaignEditPage() {
 	useEffect( () => {
 		campaignRef.current = campaign;
 	}, [ campaign ] );
-
-	// In active (manual) mode, when current task completes/fails, start next pending or end run
-	useEffect( () => {
-		if (
-			! manualRunRef.current ||
-			! currentManualTaskIdRef.current ||
-			campaign?.status === 'active'
-		)
-			return;
-		if ( stopRunRef.current ) {
-			manualRunRef.current = false;
-			currentManualTaskIdRef.current = null;
-			return;
-		}
-		const currentId = currentManualTaskIdRef.current;
-		const currentTask = taskItems.find(
-			( t ) => getTaskIdKey( t.id ) === currentId
-		);
-		if (
-			! currentTask ||
-			( currentTask.status !== 'completed' &&
-				currentTask.status !== 'failed' )
-		)
-			return;
-
-		const nextTask = taskItems.find(
-			( t ) => t.status === 'pending' && hasRequiredData( t )
-		);
-		if ( ! nextTask ) {
-			manualRunRef.current = false;
-			currentManualTaskIdRef.current = null;
-			setIsRunning( false );
-			return;
-		}
-
-		currentManualTaskIdRef.current = getTaskIdKey( nextTask.id );
-		setTaskItems( ( prev ) =>
-			prev.map( ( task ) =>
-				getTaskIdKey( task.id ) === getTaskIdKey( nextTask.id )
-					? {
-							...task,
-							status: 'processing',
-							error_message: null,
-							progress: null,
-					  }
-					: task
-			)
-		);
-		runCampaign( nextTask.id, campaign?.webhook_id ?? 0 );
-	}, [
-		taskItems,
-		campaign?.status,
-		campaign?.execution_mode,
-		campaign?.webhook_id,
-		runCampaign,
-		getTaskIdKey,
-		hasRequiredData,
-	] );
 
 	useEffect( () => {
 		let cancelled = false;
@@ -924,14 +812,6 @@ export default function CampaignEditPage() {
 	};
 
 	const handleRetryTask = async ( taskId ) => {
-		if ( effectiveExecutionMode === 'webhook' && ! campaign?.webhook_id ) {
-			showToast(
-				'Select a webhook before retrying in webhook mode.',
-				'error'
-			);
-			return;
-		}
-
 		if ( retryingTaskId ) return;
 		setRetryingTaskId( getTaskIdKey( taskId ) );
 
@@ -1005,14 +885,6 @@ export default function CampaignEditPage() {
 	};
 
 	const handleRetryFailedTasks = async () => {
-		if ( effectiveExecutionMode === 'webhook' && ! campaign?.webhook_id ) {
-			showToast(
-				'Select a webhook before retrying in webhook mode.',
-				'error'
-			);
-			return;
-		}
-
 		const hasFailed = taskItems.some(
 			( task ) => task.status === 'failed'
 		);
@@ -1153,12 +1025,6 @@ export default function CampaignEditPage() {
 		if ( isBlank( campaign?.default_author_id ) ) {
 			validationErrors.push( 'Campaign Default Author is required.' );
 		}
-		if ( effectiveExecutionMode === 'webhook' && isBlank( campaign?.webhook_id ) ) {
-			validationErrors.push(
-				'Campaign Webhook is required for webhook mode.'
-			);
-		}
-
 		let contentFields = {};
 		try {
 			contentFields = campaign?.content_fields
@@ -1315,8 +1181,6 @@ export default function CampaignEditPage() {
 			publication_interval_unit: campaign.publication_interval_unit,
 			rolling_schedule_days: campaign.rolling_schedule_days,
 			default_author_id: campaign.default_author_id,
-			webhook_id: campaign.webhook_id,
-			execution_mode: effectiveExecutionMode,
 			campaign_type: campaign.campaign_type,
 			tone_of_voice: campaign.tone_of_voice,
 			point_of_view: campaign.point_of_view,
@@ -1360,7 +1224,16 @@ export default function CampaignEditPage() {
 		}
 	};
 
-	const handleRun = async () => {
+	const handleRunTask = async ( taskId ) => {
+		const taskIdKey = getTaskIdKey( taskId );
+		if ( runningTaskIds.some( ( id ) => getTaskIdKey( id ) === taskIdKey ) ) {
+			return;
+		}
+		if ( taskItems.some( ( item ) => item.status === 'processing' ) ) {
+			showToast( 'Another task is already processing for this campaign.', 'error' );
+			return;
+		}
+
 		if ( isDirty ) {
 			const saved = await handleSave();
 			if ( ! saved ) {
@@ -1368,41 +1241,27 @@ export default function CampaignEditPage() {
 			}
 		}
 
-		if ( effectiveExecutionMode === 'webhook' && ! campaign?.webhook_id ) {
-			showToast( 'Select a webhook before running in webhook mode.', 'error' );
+		const task = taskItems.find(
+			( item ) => getTaskIdKey( item.id ) === taskIdKey
+		);
+		if ( ! task || task.status !== 'pending' ) {
+			showToast( 'Only pending tasks can be run.', 'error' );
 			return;
 		}
 
-		const nextTask = getNextPendingTask();
-		if ( ! nextTask ) {
-			showToast( 'No pending post tasks to run.', 'info' );
-			return;
-		}
-
-		if ( runLoading ) return;
-		setRunLoading( true );
-		setIsRunning( true );
-		stopRunRef.current = false;
-
-		const isLive = campaign?.status === 'active';
-		if ( ! isLive ) {
-			manualRunRef.current = true;
-			currentManualTaskIdRef.current = getTaskIdKey( nextTask.id );
-		}
-
+		setRunningTaskIds( ( prev ) => [ ...prev, taskId ] );
 		try {
-			showToast( 'Run starting...', 'info' );
-			await runCampaign( nextTask.id, campaign.webhook_id ?? 0 );
+			await runPostTask( taskId );
 			setTaskItems( ( prev ) =>
-				prev.map( ( task ) =>
-					getTaskIdKey( task.id ) === getTaskIdKey( nextTask.id )
+				prev.map( ( item ) =>
+					getTaskIdKey( item.id ) === taskIdKey
 						? {
-								...task,
+								...item,
 								status: 'processing',
 								error_message: null,
 								progress: null,
 						  }
-						: task
+						: item
 				)
 			);
 
@@ -1413,41 +1272,14 @@ export default function CampaignEditPage() {
 					: pollData?.tasks ?? [];
 				applyPendingProcessingUpdates( pendingProcessing );
 			} catch ( pollError ) {
-				// Do not fail run-start if first poll call fails; global polling loop will retry.
 				console.error( 'Initial task poll failed:', pollError );
 			}
 		} catch ( err ) {
-			setIsRunning( false );
-			if ( ! isLive ) {
-				manualRunRef.current = false;
-				currentManualTaskIdRef.current = null;
-			}
-			showToast( err?.message || 'Failed to start run.', 'error' );
+			showToast( err?.message || 'Failed to start task.', 'error' );
 		} finally {
-			setRunLoading( false );
-		}
-	};
-
-	const handleStop = async () => {
-		stopRunRef.current = true;
-		manualRunRef.current = false;
-		currentManualTaskIdRef.current = null;
-		if ( stopLoading ) return;
-		setStopLoading( true );
-		try {
-			await stopCampaignRun();
-			setTaskItems( ( prev ) =>
-				prev.map( ( task ) =>
-					task.status === 'processing'
-						? { ...task, status: 'cancelled' }
-						: task
-				)
+			setRunningTaskIds( ( prev ) =>
+				prev.filter( ( item ) => getTaskIdKey( item ) !== taskIdKey )
 			);
-			showToast( 'Run stopped.', 'info' );
-		} catch ( err ) {
-			showToast( err?.message || 'Failed to stop run.', 'error' );
-		} finally {
-			setStopLoading( false );
 		}
 	};
 
@@ -1472,7 +1304,7 @@ export default function CampaignEditPage() {
 
 	if ( loading || ! campaign ) return <PageLoader />;
 
-	const webhooksList = webhooksData?.webhooks || [];
+	const hasProcessingTask = taskItems.some( ( task ) => task.status === 'processing' );
 	const writingPresets = getBootstrapWritingPresets() || [];
 	const users = data?.users || [];
 	const hasTaxonomies =
@@ -1545,7 +1377,7 @@ export default function CampaignEditPage() {
 						>
 							{ isDirty ? 'Save Changes' : 'Saved' }
 						</Button>
-						{ campaign?.status === 'active' ? (
+						{ campaign?.status === 'active' && (
 							<span
 								className={ `text-sm font-medium ${
 									! isDirty
@@ -1560,28 +1392,6 @@ export default function CampaignEditPage() {
 							>
 								Running
 							</span>
-						) : isRunning ? (
-							<Button
-								variant="danger"
-								onClick={ handleStop }
-								loading={ stopLoading }
-							>
-								Stop
-							</Button>
-						) : (
-							<Button
-								variant="success"
-								onClick={ handleRun }
-								loading={ runLoading }
-								disabled={
-									runLoading ||
-									taskItems.filter(
-										( task ) => task.status === 'pending'
-									).length === 0
-								}
-							>
-								Run
-							</Button>
 						) }
 					</div>
 				</div>
@@ -1619,7 +1429,6 @@ export default function CampaignEditPage() {
 							<CampaignForm
 								campaign={ campaign }
 								onChange={ handleCampaignChange }
-								webhooks={ webhooksList }
 								users={ users }
 							/>
 							{ /* RSS Feeds section - above Writing preset */ }
@@ -1811,13 +1620,17 @@ export default function CampaignEditPage() {
 						<PostTaskList
 							tasks={ taskItems }
 							campaign={ campaign }
+							isLive={ campaign?.status === 'active' }
+							hasProcessingTask={ hasProcessingTask }
 							onAddTask={ handleAddTask }
 							onUpdateTask={ handleTaskUpdate }
 							onDeleteTask={ handleDeleteTask }
 							onDuplicateTask={ handleDuplicateTask }
-							onRunTask={ handleRetryTask }
+							onRunTask={ handleRunTask }
+							onRetryTask={ handleRetryTask }
 							onStopTask={ handleStopTask }
 							retryingTaskId={ retryingTaskId }
+							runningTaskIds={ runningTaskIds }
 							onRetryFailedTasks={ handleRetryFailedTasks }
 							retryFailedLoading={ retryFailedLoading }
 							onImportTasks={ handleImportTasks }

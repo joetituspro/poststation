@@ -16,7 +16,7 @@ class WorkflowSpecImporter
 	}
 
 	/**
-	 * Lightweight normalized workflow spec seeded from the n8n blueprint logic.
+	 * Lightweight normalized workflow spec seeded from the local workflow defaults.
 	 *
 	 * @return array<string,mixed>
 	 */

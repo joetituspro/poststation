@@ -33,7 +33,7 @@ class AnalysisStep
 			$this->prompt_library->load('analysis.system.txt'),
 			['now' => $this->prompt_library->now_string()]
 		);
-		// n8n analysis agent gets structured competitor data as its direct input payload.
+		// The analysis model gets structured competitor data as its direct input payload.
 		$prompt = wp_json_encode([
 			'topic' => $topic,
 			'articles' => $research_items,

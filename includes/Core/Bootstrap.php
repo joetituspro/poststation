@@ -4,7 +4,6 @@ namespace PostStation\Core;
 
 use Exception;
 
-use PostStation\Models\Webhook;
 use PostStation\Models\Campaign;
 use PostStation\Models\CampaignRss;
 use PostStation\Models\PostTask;
@@ -107,14 +106,10 @@ class Bootstrap
 				$support_service->mark_onboarding_required();
 			}
 
-			// Create or upgrade tables with error checking
-			if (!Webhook::create_table()) {
-				// throw new Exception('Failed to create Webhook table');
-			}
-
 			if (!Campaign::update_tables()) {
 				// throw new Exception('Failed to create/update Campaign tables');
 			}
+			$this->cleanup_legacy_storage();
 
 			if (!PostTask::update_tables()) {
 				// throw new Exception('Failed to create/update PostTask tables');
@@ -175,7 +170,6 @@ class Bootstrap
 	public function uninstall(): void
 	{
 		// Drop tables
-		Webhook::drop_table();
 		Campaign::drop_table();
 		CampaignRss::drop_table();
 		RssHistory::drop_table();
@@ -192,19 +186,32 @@ class Bootstrap
 		delete_option(\PostStation\Services\SupportService::ONBOARDING_REQUIRED_OPTION);
 		delete_option(\PostStation\Services\SupportService::ONBOARDING_SEEN_AT_OPTION);
 		delete_option(\PostStation\Services\SupportService::ONBOARDING_REDIRECT_OPTION);
-		delete_option(\PostStation\Services\SupportService::N8N_BASE_URL_OPTION);
-		delete_option(\PostStation\Services\SupportService::N8N_WORKFLOW_ID_OPTION);
-		delete_option(\PostStation\Services\SupportService::N8N_API_KEY_OPTION_ENC);
-		delete_option(\PostStation\Services\SupportService::RAPIDAPI_KEY_OPTION_ENC);
-		delete_option(\PostStation\Services\SupportService::FIRECRAWL_KEY_OPTION_ENC);
-		delete_option(\PostStation\Services\SupportService::N8N_AUTODEPLOY_ENABLED_OPTION);
-		delete_option(\PostStation\Services\SupportService::BLUEPRINT_UPDATE_STATE_OPTION);
 		delete_option(\PostStation\Services\SupportService::PLUGIN_AUTO_UPDATE_ENABLED_OPTION);
 		delete_option(\PostStation\Services\SupportService::PLUGIN_UPDATE_LAST_CHECK_OPTION);
-		delete_option(\PostStation\Services\SupportService::BLUEPRINT_LAST_CHECK_OPTION);
+		$this->delete_legacy_options();
 		delete_transient(\PostStation\Services\AuthService::TRANSIENT_AUTH_CHECK);
 		delete_transient(\PostStation\Services\AuthService::TRANSIENT_LAST_LICENSE_KEY);
 		delete_transient(\PostStation\Services\AuthService::TRANSIENT_UPGRADE_CACHE);
+	}
+
+	private function cleanup_legacy_storage(): void
+	{
+		global $wpdb;
+		$webhook_table = $wpdb->prefix . 'poststation_webhooks';
+		$wpdb->query("DROP TABLE IF EXISTS {$webhook_table}");
+		$this->delete_legacy_options();
+	}
+
+	private function delete_legacy_options(): void
+	{
+		delete_option('poststation_n8n_base_url');
+		delete_option('poststation_n8n_workflow_id');
+		delete_option('poststation_n8n_api_key_enc');
+		delete_option('poststation_rapidapi_key_enc');
+		delete_option('poststation_firecrawl_key_enc');
+		delete_option('poststation_n8n_autodeploy_enabled');
+		delete_option('poststation_n8n_blueprint_update_state');
+		delete_option('poststation_rankima_last_blueprint_check');
 	}
 
 	public function register_assets(): void

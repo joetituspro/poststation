@@ -99,9 +99,7 @@ class RssTaskProcessor
 			RssHistory::prune_keep_last_runs($campaign_id, 3);
 		}
 
-		$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
-		$can_start = ($campaign['status'] ?? '') === 'active'
-			&& ($execution_mode === 'local' || !empty($campaign['webhook_id']));
+		$can_start = ($campaign['status'] ?? '') === 'active';
 		if ($can_start) {
 			$runner = new BackgroundRunner();
 			$runner->start_run_if_pending($campaign_id);
@@ -111,9 +109,9 @@ class RssTaskProcessor
 	}
 
 	/**
-	 * Flatten webhook response (sources with items) to a flat items list for process_items_into_tasks.
+	 * Flatten RSS response (sources with items) to a flat items list for process_items_into_tasks.
 	 *
-	 * @param array $response Decoded webhook response with 'sources' key (or top-level array of sources).
+	 * @param array $response Decoded RSS response with 'sources' key (or top-level array of sources).
 	 * @return array<int, array{source_id: mixed, title: string, url: string, date: string}>
 	 */
 	public static function flatten_response_to_items(array $response): array

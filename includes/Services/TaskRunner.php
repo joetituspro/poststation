@@ -4,7 +4,6 @@ namespace PostStation\Services;
 
 use PostStation\Models\PostTask;
 use PostStation\Models\Campaign;
-use PostStation\Models\Webhook;
 use PostStation\Utils\Languages;
 use PostStation\Utils\Countries;
 use PostStation\Services\Workflow\LocalWorkflowRunner;
@@ -12,7 +11,7 @@ use Exception;
 
 class TaskRunner
 {
-	public static function dispatch_task(int $campaign_id, int $task_id, int $webhook_id): array
+	public static function dispatch_task(int $campaign_id, int $task_id): array
 	{
 		$campaign = Campaign::get_by_id($campaign_id);
 		if (!$campaign) {
@@ -29,15 +28,6 @@ class TaskRunner
 			$required = $task_type === 'rewrite_blog_post' ? __('research URL', 'poststation') : __('topic', 'poststation');
 			return ['success' => false, 'message' => sprintf(__('Task cannot be sent: %s is required.', 'poststation'), $required)];
 		}
-		$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
-		$webhook = null;
-		if ($execution_mode === 'webhook') {
-			$webhook = Webhook::get_by_id($webhook_id);
-			if (!$webhook) {
-				return ['success' => false, 'message' => __('Webhook not found.', 'poststation')];
-			}
-		}
-
 		try {
 			$content_fields = !empty($campaign['content_fields']) ? json_decode($campaign['content_fields'], true) : [];
 			$default_content_fields = Campaign::get_default_content_fields();
@@ -157,7 +147,7 @@ class TaskRunner
 				}
 				*/
 
-				$content_fields = self::sanitize_content_fields_for_webhook($content_fields);
+				$content_fields = self::sanitize_content_fields_for_local($content_fields);
 
 				$unified_taxonomies = [];
 				if (isset($content_fields['categories']) && self::is_field_enabled($content_fields['categories'])) {
@@ -188,7 +178,7 @@ class TaskRunner
 
 				$content_fields['taxonomies'] = $unified_taxonomies;
 
-				// Send only unified taxonomies to webhook payload.
+				// Keep only unified taxonomies in workflow payload.
 				unset(
 					$content_fields['categories'],
 					$content_fields['tags'],
@@ -209,21 +199,6 @@ class TaskRunner
 			$keywords = array_slice($keywords, 0, 5);
 			$language_key = $campaign['language'] ?? 'en';
 			$country_key = $campaign['target_country'] ?? 'international';
-
-			$callback_base = get_site_url();
-			$host = (string) parse_url($callback_base, PHP_URL_HOST);
-			$is_local_host = in_array($host, ['localhost', '127.0.0.1'], true) || preg_match('/\.local$/i', $host);
-			$tunnel_url = SettingsService::get_tunnel_url();
-			if ($is_local_host && $tunnel_url !== '') {
-				$callback_base = $tunnel_url;
-			}
-			$callback_url = rtrim($callback_base, '/') . '/ps-api';
-			$webhook_auth_key = AuthService::instance()->get_license_key();
-			if ($webhook_auth_key === '') {
-				$webhook_auth_key = (new SettingsService())->get_api_key();
-			}
-			$poststation_api_key = (new SettingsService())->get_api_key();
-			$send_api_to_webhook = SettingsService::should_send_api_to_webhook();
 
 			$body = [
 				'task_id' => $task['id'],
@@ -247,11 +222,7 @@ class TaskRunner
 				'readability' => (string) ($campaign['readability'] ?? 'grade_8'),
 				'content_fields' => $content_fields,
 				'sitemap' => $sitemap_payload,
-				'callback_url' => $callback_url,
 			];
-			if ($send_api_to_webhook) {
-				$body['api_key'] = $poststation_api_key;
-			}
 
 			PostTask::update($task_id, [
 				'status' => 'processing',
@@ -260,45 +231,12 @@ class TaskRunner
 				'progress' => null,
 			]);
 
-			if ($execution_mode === 'local') {
-				$local_runner = new LocalWorkflowRunner();
-				$local_result = $local_runner->start_or_resume($task_id, $body);
-				if (empty($local_result['success'])) {
-					$latest_task = PostTask::get_by_id($task_id);
-					if (($latest_task['status'] ?? '') === 'failed') {
-						throw new Exception((string) ($latest_task['error_message'] ?? $local_result['message'] ?? __('Local workflow failed.', 'poststation')));
-					}
-				}
-			} else {
-				$response = wp_remote_post($webhook['url'], [
-					'headers' => [
-						'Content-Type' => 'application/json',
-						'X-API-Key' => $webhook_auth_key,
-					],
-					'body' => wp_json_encode($body),
-					'timeout' => 60,
-					'sslverify' => false,
-				]);
-
-
-				if (is_wp_error($response)) {
-					throw new Exception($response->get_error_message());
-				}
-
-				$response_code = wp_remote_retrieve_response_code($response);
-				if ($response_code !== 200) {
-					throw new Exception(sprintf(
-						__('Webhook returned error code: %d', 'poststation'),
-						$response_code
-					));
-				}
-
-				$response_body = wp_remote_retrieve_body($response);
-				if (is_string($response_body)) {
-					$execution_id = trim($response_body);
-					if ($execution_id !== '') {
-						PostTask::update($task_id, ['execution_id' => $execution_id]);
-					}
+			$local_runner = new LocalWorkflowRunner();
+			$local_result = $local_runner->start_or_resume($task_id, $body);
+			if (empty($local_result['success'])) {
+				$latest_task = PostTask::get_by_id($task_id);
+				if (($latest_task['status'] ?? '') === 'failed') {
+					throw new Exception((string) ($latest_task['error_message'] ?? $local_result['message'] ?? __('Local workflow failed.', 'poststation')));
 				}
 			}
 
@@ -420,7 +358,7 @@ class TaskRunner
 		))));
 	}
 
-	private static function sanitize_content_fields_for_webhook(array $content_fields): array
+	private static function sanitize_content_fields_for_local(array $content_fields): array
 	{
 		$toggle_fields = ['title', 'slug', 'body', 'categories', 'tags', 'image'];
 		foreach ($toggle_fields as $field_name) {

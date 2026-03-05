@@ -9,21 +9,23 @@ class SettingsService
 	public const OPTIONS_KEY = 'poststation_options';
 	public const ENABLE_TUNNEL_URL_OPTION = 'poststation_enable_tunnel_url';
 	public const TUNNEL_URL_OPTION = 'poststation_tunnel_url';
-	public const SEND_API_TO_WEBHOOK_OPTION = 'poststation_send_api_to_webhook';
 	public const API_KEY_OPTION = 'poststation_api_key';
-	public const N8N_BASE_URL_OPTION = 'poststation_n8n_base_url';
-	public const N8N_WORKFLOW_ID_OPTION = 'poststation_n8n_workflow_id';
-	public const N8N_API_KEY_OPTION_ENC = 'poststation_n8n_api_key_enc';
-	public const RAPIDAPI_KEY_OPTION_ENC = 'poststation_rapidapi_key_enc';
-	public const FIRECRAWL_KEY_OPTION_ENC = 'poststation_firecrawl_key_enc';
+	public const ARTICLE_SCRAPER_PROVIDER_OPTION = 'poststation_article_scraper_provider';
+	public const RANKIMA_EXTRACTOR_KEY_OPTION_ENC = 'poststation_rankima_extractor_api_key_enc';
+	public const FIRECRAWL_API_URL_OPTION = 'poststation_firecrawl_api_url';
+	public const FIRECRAWL_API_KEY_OPTION_ENC = 'poststation_firecrawl_api_key_enc';
+	public const RAPIDAPI_API_URL_OPTION = 'poststation_rapidapi_api_url';
+	public const RAPIDAPI_API_KEY_OPTION_ENC = 'poststation_rapidapi_api_key_enc';
+	public const CLEAN_DATA_WITH_AI_OPTION = 'poststation_clean_data_with_ai';
+	public const CLEAN_DATA_MODEL_ID_OPTION = 'poststation_clean_data_model_id';
 
 	private OpenRouterService $openrouter_service;
-	private SupportService $support_service;
+	private CryptoService $crypto_service;
 
-	public function __construct(?OpenRouterService $openrouter_service = null, ?SupportService $support_service = null)
+	public function __construct(?OpenRouterService $openrouter_service = null, ?CryptoService $crypto_service = null)
 	{
 		$this->openrouter_service = $openrouter_service ?? new OpenRouterService();
-		$this->support_service = $support_service ?? new SupportService();
+		$this->crypto_service = $crypto_service ?? new CryptoService();
 	}
 
 	public function get_settings_data(): ?array
@@ -31,17 +33,16 @@ class SettingsService
 		if (!current_user_can('manage_options')) {
 			return null;
 		}
-		$n8n = $this->support_service->get_n8n_config(true);
-
 		return [
 			'api_key' => $this->get_api_key(),
-			'send_api_to_webhook' => self::should_send_api_to_webhook(),
-			'n8n_base_url' => (string) ($n8n['base_url'] ?? ''),
-			'n8n_workflow_id' => (string) ($n8n['workflow_id'] ?? ''),
-			'n8n_api_key_set' => ((string) ($n8n['n8n_api_key'] ?? '')) !== '',
-			'rapidapi_key_set' => ((string) ($n8n['rapidapi_key'] ?? '')) !== '',
-			'firecrawl_key_set' => ((string) ($n8n['firecrawl_key'] ?? '')) !== '',
-			'n8n_openrouter_key_set' => ((string) ($n8n['openrouter_key'] ?? '')) !== '',
+			'article_scraper_provider' => $this->get_article_scraper_provider(),
+			'rankima_extractor_api_key_set' => $this->get_rankima_extractor_api_key() !== '',
+			'firecrawl_api_url' => $this->get_firecrawl_api_url(),
+			'firecrawl_api_key_set' => $this->get_firecrawl_api_key() !== '',
+			'rapidapi_api_url' => $this->get_rapidapi_api_url(),
+			'rapidapi_api_key_set' => $this->get_rapidapi_api_key() !== '',
+			'clean_data_with_ai' => $this->is_clean_data_with_ai_enabled(),
+			'clean_data_model_id' => $this->get_clean_data_model_id(),
 			'openrouter_api_key_set' => $this->openrouter_service->resolve_api_key() !== '',
 			'openrouter_default_text_model' => $this->get_openrouter_default_text_model(),
 			'openrouter_default_image_model' => $this->get_openrouter_default_image_model(),
@@ -72,11 +73,6 @@ class SettingsService
 		return '';
 	}
 
-	public function save_send_api_to_webhook(bool $send_api_to_webhook): void
-	{
-		$this->set_option_value(self::SEND_API_TO_WEBHOOK_OPTION, $send_api_to_webhook ? '1' : '0');
-	}
-
 	public function save_openrouter_api_key(string $api_key): bool
 	{
 		return $this->openrouter_service->save_api_key(sanitize_text_field($api_key));
@@ -103,14 +99,6 @@ class SettingsService
 	/**
 	 * @param array<string,mixed> $data
 	 */
-	public function save_n8n_connection(array $data): void
-	{
-		$this->support_service->save_n8n_config($data);
-	}
-
-	/**
-	 * @param array<string,mixed> $data
-	 */
 	public function save_all_settings(array $data): void
 	{
 		$api_key = trim((string) ($data['api_key'] ?? ''));
@@ -118,11 +106,11 @@ class SettingsService
 			$this->save_api_key($api_key);
 		}
 
-		$this->save_send_api_to_webhook(!empty($data['send_api_to_webhook']) && $data['send_api_to_webhook'] !== 'false');
 		$this->save_openrouter_defaults(
 			(string) ($data['default_text_model'] ?? ''),
 			(string) ($data['default_image_model'] ?? '')
 		);
+		$this->save_article_scraper_settings($data);
 
 		if (array_key_exists('openrouter_api_key', $data)) {
 			$openrouter_api_key = trim((string) $data['openrouter_api_key']);
@@ -138,14 +126,6 @@ class SettingsService
 			);
 		}
 
-		$this->save_n8n_connection([
-			'base_url' => (string) ($data['base_url'] ?? ''),
-			'workflow_id' => (string) ($data['workflow_id'] ?? ''),
-			'n8n_api_key' => (string) ($data['n8n_api_key'] ?? ''),
-			'rapidapi_key' => (string) ($data['rapidapi_key'] ?? ''),
-			'firecrawl_key' => (string) ($data['firecrawl_key'] ?? ''),
-			'openrouter_key' => (string) ($data['openrouter_key'] ?? ''),
-		]);
 	}
 
 	public static function is_tunnel_enabled(): bool
@@ -175,19 +155,97 @@ class SettingsService
 		return rtrim((string) esc_url_raw($tunnel_url), '/');
 	}
 
-	public static function should_send_api_to_webhook(): bool
-	{
-		$current = (string) self::get_option_value_static(self::SEND_API_TO_WEBHOOK_OPTION, '');
-		if ($current !== '') {
-			return $current !== '0';
-		}
-
-		return get_option(self::SEND_API_TO_WEBHOOK_OPTION, '1') !== '0';
-	}
-
 	public function get_openrouter_service(): OpenRouterService
 	{
 		return $this->openrouter_service;
+	}
+
+	public function get_article_scraper_provider(): string
+	{
+		$value = strtolower(trim((string) $this->get_option_value(self::ARTICLE_SCRAPER_PROVIDER_OPTION, 'rankima')));
+		return in_array($value, ['rankima', 'firecrawl', 'rapidapi'], true) ? $value : 'rankima';
+	}
+
+	public function get_rankima_extractor_api_key(): string
+	{
+		return $this->decrypt_key((string) $this->get_option_value(self::RANKIMA_EXTRACTOR_KEY_OPTION_ENC, ''), 'rankima_extractor');
+	}
+
+	public function get_firecrawl_api_url(): string
+	{
+		$value = trim((string) $this->get_option_value(self::FIRECRAWL_API_URL_OPTION, 'https://api.firecrawl.dev/v2/scrape'));
+		return $value !== '' ? esc_url_raw($value) : 'https://api.firecrawl.dev/v2/scrape';
+	}
+
+	public function get_firecrawl_api_key(): string
+	{
+		return $this->decrypt_key((string) $this->get_option_value(self::FIRECRAWL_API_KEY_OPTION_ENC, ''), 'firecrawl_api');
+	}
+
+	public function get_rapidapi_api_url(): string
+	{
+		$value = trim((string) $this->get_option_value(self::RAPIDAPI_API_URL_OPTION, 'https://article-extractor2.p.rapidapi.com/article/parse'));
+		return $value !== '' ? esc_url_raw($value) : 'https://article-extractor2.p.rapidapi.com/article/parse';
+	}
+
+	public function get_rapidapi_api_key(): string
+	{
+		return $this->decrypt_key((string) $this->get_option_value(self::RAPIDAPI_API_KEY_OPTION_ENC, ''), 'rapidapi_api');
+	}
+
+	public function is_clean_data_with_ai_enabled(): bool
+	{
+		return (string) $this->get_option_value(self::CLEAN_DATA_WITH_AI_OPTION, '1') !== '0';
+	}
+
+	public function get_clean_data_model_id(): string
+	{
+		$value = trim((string) $this->get_option_value(self::CLEAN_DATA_MODEL_ID_OPTION, 'google/gemini-2.5-flash-lite'));
+		return $value !== '' ? $value : 'google/gemini-2.5-flash-lite';
+	}
+
+	/**
+	 * @param array<string,mixed> $data
+	 */
+	private function save_article_scraper_settings(array $data): void
+	{
+		$provider = strtolower(trim((string) ($data['article_scraper_provider'] ?? 'rankima')));
+		if (!in_array($provider, ['rankima', 'firecrawl', 'rapidapi'], true)) {
+			$provider = 'rankima';
+		}
+		$this->set_option_value(self::ARTICLE_SCRAPER_PROVIDER_OPTION, $provider);
+
+		$this->set_option_value(self::FIRECRAWL_API_URL_OPTION, esc_url_raw((string) ($data['firecrawl_api_url'] ?? 'https://api.firecrawl.dev/v2/scrape')));
+		$this->set_option_value(self::RAPIDAPI_API_URL_OPTION, esc_url_raw((string) ($data['rapidapi_api_url'] ?? 'https://article-extractor2.p.rapidapi.com/article/parse')));
+		$this->set_option_value(
+			self::CLEAN_DATA_WITH_AI_OPTION,
+			(!empty($data['clean_data_with_ai']) && (string) $data['clean_data_with_ai'] !== '0' && (string) $data['clean_data_with_ai'] !== 'false') ? '1' : '0'
+		);
+		$this->set_option_value(self::CLEAN_DATA_MODEL_ID_OPTION, sanitize_text_field((string) ($data['clean_data_model_id'] ?? 'google/gemini-2.5-flash-lite')));
+
+		$this->encrypt_and_store_key(self::RANKIMA_EXTRACTOR_KEY_OPTION_ENC, (string) ($data['rankima_extractor_api_key'] ?? ''), 'rankima_extractor');
+		$this->encrypt_and_store_key(self::FIRECRAWL_API_KEY_OPTION_ENC, (string) ($data['firecrawl_api_key'] ?? ''), 'firecrawl_api');
+		$this->encrypt_and_store_key(self::RAPIDAPI_API_KEY_OPTION_ENC, (string) ($data['rapidapi_api_key'] ?? ''), 'rapidapi_api');
+	}
+
+	private function encrypt_and_store_key(string $option, string $plain, string $context): void
+	{
+		$plain = trim($plain);
+		if ($plain === '') {
+			return;
+		}
+		$encrypted = $this->crypto_service->encrypt($plain, $context);
+		if ($encrypted !== '') {
+			$this->set_option_value($option, $encrypted);
+		}
+	}
+
+	private function decrypt_key(string $encrypted, string $context): string
+	{
+		if ($encrypted === '') {
+			return '';
+		}
+		return $this->crypto_service->decrypt($encrypted, $context);
 	}
 
 	public function get_openrouter_default_text_model(): string

@@ -4,7 +4,6 @@ namespace PostStation\Api;
 
 use WP_Error;
 use Exception;
-use PostStation\Models\Webhook;
 use PostStation\Models\PostTask;
 use PostStation\Models\Campaign;
 use PostStation\Services\SettingsService;

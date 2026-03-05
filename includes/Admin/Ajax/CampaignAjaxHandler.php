@@ -9,7 +9,6 @@ use PostStation\Models\PostTask;
 use PostStation\Models\TaskExecutionState;
 use PostStation\Services\BackgroundRunner;
 use PostStation\Services\RssService;
-use PostStation\Services\TaskRunner;
 
 class CampaignAjaxHandler
 {
@@ -52,9 +51,6 @@ class CampaignAjaxHandler
 		}
 		if (!isset($campaign['publication_mode']) || $campaign['publication_mode'] === '') {
 			$campaign['publication_mode'] = $this->sanitize_publication_mode($campaign['post_status'] ?? 'pending');
-		}
-		if (!isset($campaign['execution_mode']) || $campaign['execution_mode'] === '') {
-			$campaign['execution_mode'] = !empty((int) ($campaign['webhook_id'] ?? 0)) ? 'webhook' : 'local';
 		}
 		$campaign['publication_interval_value'] = $this->sanitize_publication_interval_value($campaign['publication_interval_value'] ?? 1);
 		$campaign['publication_interval_unit'] = $this->sanitize_publication_interval_unit($campaign['publication_interval_unit'] ?? 'hour');
@@ -124,8 +120,6 @@ class CampaignAjaxHandler
 
 		$campaign_payload = [
 			'title' => $title,
-			'webhook_id' => (int) ($_POST['webhook_id'] ?? 0) ?: null,
-			'execution_mode' => Campaign::sanitize_execution_mode((string) ($_POST['execution_mode'] ?? ($existing_campaign['execution_mode'] ?? 'webhook'))),
 			'campaign_type' => sanitize_text_field($_POST['campaign_type'] ?? 'default'),
 			'tone_of_voice' => sanitize_text_field($_POST['tone_of_voice'] ?? 'none'),
 			'point_of_view' => sanitize_text_field($_POST['point_of_view'] ?? 'none'),
@@ -180,9 +174,7 @@ class CampaignAjaxHandler
 		}
 
 		$new_status = $this->sanitize_campaign_status($_POST['status'] ?? $current_status);
-		$run_mode = Campaign::sanitize_execution_mode((string) ($campaign_payload['execution_mode'] ?? 'webhook'));
-		$can_start = $new_status === 'active' && ($run_mode === 'local' || !empty((int) ($_POST['webhook_id'] ?? 0)));
-		if ($can_start) {
+		if ($new_status === 'active') {
 			$runner = new BackgroundRunner();
 			$runner->start_run_if_pending($campaign_id);
 		}
@@ -215,8 +207,7 @@ class CampaignAjaxHandler
 			wp_send_json_error(['message' => 'Failed to update status']);
 		}
 
-		$mode = Campaign::sanitize_execution_mode((string) ($existing['execution_mode'] ?? 'webhook'));
-		if ($status === 'active' && ($mode === 'local' || !empty((int) ($existing['webhook_id'] ?? 0)))) {
+		if ($status === 'active') {
 			$runner = new BackgroundRunner();
 			$runner->start_run_if_pending($campaign_id);
 		}
@@ -248,10 +239,6 @@ class CampaignAjaxHandler
 			if ($this->is_blank($payload[$field] ?? null)) {
 				return $message;
 			}
-		}
-		$execution_mode = Campaign::sanitize_execution_mode((string) ($payload['execution_mode'] ?? 'webhook'));
-		if ($execution_mode === 'webhook' && $this->is_blank($payload['webhook_id'] ?? null)) {
-			return 'Campaign Webhook is required when execution mode is Webhook.';
 		}
 		$mode = (string) ($payload['publication_mode'] ?? 'pending_review');
 		if ($mode === 'publish_intervals') {
@@ -381,65 +368,6 @@ class CampaignAjaxHandler
 		if (!Campaign::delete($campaign_id)) {
 			wp_send_json_error(['message' => 'Failed to delete campaign']);
 		}
-		wp_send_json_success();
-	}
-
-	public function run_campaign(): void
-	{
-		if (!NonceVerifier::verify()) {
-			wp_send_json_error(['message' => 'Invalid nonce']);
-		}
-		if (!current_user_can('edit_posts')) {
-			wp_send_json_error(['message' => 'Permission denied']);
-		}
-
-		$campaign_id = (int) ($_POST['id'] ?? 0);
-		$task_id = (int) ($_POST['task_id'] ?? 0);
-		$webhook_id = (int) ($_POST['webhook_id'] ?? 0);
-
-		$campaign = Campaign::get_by_id($campaign_id);
-		if (!$campaign) {
-			wp_send_json_error(['message' => 'Campaign not found']);
-		}
-		$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
-		if ($execution_mode === 'webhook' && empty($campaign['webhook_id'])) {
-			wp_send_json_error(['message' => 'Campaign webhook is required for webhook mode']);
-		}
-		$resolved_webhook_id = $webhook_id > 0 ? $webhook_id : (int) ($campaign['webhook_id'] ?? 0);
-
-		$is_live = ($campaign['status'] ?? '') === 'active';
-		if ($is_live) {
-			$runner = new BackgroundRunner();
-			if (!$runner->start_run_for_task($campaign_id, $task_id, $resolved_webhook_id)) {
-				wp_send_json_error(['message' => 'Failed to run task']);
-			}
-		} else {
-			$result = TaskRunner::dispatch_task($campaign_id, $task_id, $resolved_webhook_id);
-			if (empty($result['success'])) {
-				wp_send_json_error(['message' => $result['message'] ?? 'Failed to run task']);
-			}
-		}
-
-		wp_send_json_success([
-			'message' => $execution_mode === 'local'
-				? 'Task processed locally'
-				: 'Task sent to webhook for processing',
-			'task_id' => $task_id,
-		]);
-	}
-
-	public function stop_campaign_run(): void
-	{
-		if (!NonceVerifier::verify()) {
-			wp_send_json_error(['message' => 'Invalid nonce']);
-		}
-		if (!current_user_can('edit_posts')) {
-			wp_send_json_error(['message' => 'Permission denied']);
-		}
-
-		$campaign_id = (int) ($_POST['id'] ?? 0);
-		$runner = new BackgroundRunner();
-		$runner->cancel_run($campaign_id);
 		wp_send_json_success();
 	}
 

@@ -9,14 +9,12 @@ use PostStation\Admin\Ajax\PostTaskAjaxHandler;
 use PostStation\Admin\Ajax\RssAjaxHandler;
 use PostStation\Admin\Ajax\SettingsAjaxHandler;
 use PostStation\Admin\Ajax\SupportAjaxHandler;
-use PostStation\Admin\Ajax\WebhookAjaxHandler;
 
 class App
 {
 	private BootstrapDataProvider $bootstrap_provider;
 	private CampaignAjaxHandler $campaign_handler;
 	private PostTaskAjaxHandler $posttask_handler;
-	private WebhookAjaxHandler $webhook_handler;
 	private SettingsAjaxHandler $settings_handler;
 	private WritingPresetAjaxHandler $writing_preset_handler;
 	private RssAjaxHandler $rss_handler;
@@ -28,7 +26,6 @@ class App
 		$this->bootstrap_provider = new BootstrapDataProvider();
 		$this->campaign_handler = new CampaignAjaxHandler($this->bootstrap_provider);
 		$this->posttask_handler = new PostTaskAjaxHandler();
-		$this->webhook_handler = new WebhookAjaxHandler();
 		$this->settings_handler = new SettingsAjaxHandler();
 		$this->writing_preset_handler = new WritingPresetAjaxHandler();
 		$this->rss_handler = new RssAjaxHandler();
@@ -45,8 +42,6 @@ class App
 		add_action('wp_ajax_poststation_update_campaign', [$this->campaign_handler, 'update_campaign']);
 		add_action('wp_ajax_poststation_update_campaign_status', [$this->campaign_handler, 'update_campaign_status']);
 		add_action('wp_ajax_poststation_delete_campaign', [$this->campaign_handler, 'delete_campaign']);
-		add_action('wp_ajax_poststation_run_campaign', [$this->campaign_handler, 'run_campaign']);
-		add_action('wp_ajax_poststation_stop_campaign_run', [$this->campaign_handler, 'stop_campaign_run']);
 		add_action('wp_ajax_poststation_export_campaign', [$this->campaign_handler, 'export_campaign']);
 		add_action('wp_ajax_poststation_import_campaign', [$this->campaign_handler, 'import_campaign']);
 		add_action('wp_ajax_poststation_run_rss_now', [$this->rss_handler, 'run_rss_now']);
@@ -54,15 +49,11 @@ class App
 
 		add_action('wp_ajax_poststation_create_posttask', [$this->posttask_handler, 'create_posttask']);
 		add_action('wp_ajax_poststation_update_posttasks', [$this->posttask_handler, 'update_posttasks']);
+		add_action('wp_ajax_poststation_run_posttask', [$this->posttask_handler, 'run_posttask']);
 		add_action('wp_ajax_poststation_stop_posttask_run', [$this->posttask_handler, 'stop_posttask_run']);
 		add_action('wp_ajax_poststation_delete_posttask', [$this->posttask_handler, 'delete_posttask']);
 		add_action('wp_ajax_poststation_clear_completed_posttasks', [$this->posttask_handler, 'clear_completed_posttasks']);
 		add_action('wp_ajax_poststation_import_posttasks', [$this->posttask_handler, 'import_posttasks']);
-
-		add_action('wp_ajax_poststation_get_webhooks', [$this->webhook_handler, 'get_webhooks']);
-		add_action('wp_ajax_poststation_get_webhook', [$this->webhook_handler, 'get_webhook']);
-		add_action('wp_ajax_poststation_save_webhook', [$this->webhook_handler, 'save_webhook']);
-		add_action('wp_ajax_poststation_delete_webhook', [$this->webhook_handler, 'delete_webhook']);
 
 		add_action('wp_ajax_poststation_get_settings', [$this->settings_handler, 'get_settings']);
 		add_action('wp_ajax_poststation_save_settings', [$this->settings_handler, 'save_settings']);
@@ -71,12 +62,8 @@ class App
 		add_action('wp_ajax_poststation_get_bootstrap', [$this, 'ajax_get_bootstrap']);
 		add_action('wp_ajax_poststation_support_get_state', [$this->support_handler, 'get_state']);
 		add_action('wp_ajax_poststation_support_license', [$this->support_handler, 'handle_license']);
-		add_action('wp_ajax_poststation_support_save_n8n_config', [$this->support_handler, 'save_n8n_config']);
-		add_action('wp_ajax_poststation_support_deploy_n8n_blueprint', [$this->support_handler, 'deploy_n8n_blueprint']);
-		add_action('wp_ajax_poststation_support_get_manual_blueprint', [$this->support_handler, 'get_manual_blueprint']);
-		add_action('wp_ajax_poststation_support_check_blueprint_update', [$this->support_handler, 'check_blueprint_update']);
+		add_action('wp_ajax_poststation_support_check_plugin_update', [$this->support_handler, 'check_plugin_update']);
 		add_action('wp_ajax_poststation_support_set_auto_update_plugin', [$this->support_handler, 'set_auto_update_plugin']);
-		add_action('wp_ajax_poststation_support_complete_onboarding', [$this->support_handler, 'complete_onboarding']);
 
 		add_action('wp_ajax_poststation_create_writing_preset', [$this->writing_preset_handler, 'create_writing_preset']);
 		add_action('wp_ajax_poststation_update_writing_preset', [$this->writing_preset_handler, 'update_writing_preset']);

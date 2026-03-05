@@ -60,7 +60,7 @@ class RssHistory
 	}
 
 	/**
-	 * Record that an RSS run occurred for the campaign (e.g. webhook returned 200 but no items).
+	 * Record that an RSS run occurred for the campaign (e.g. provider returned 200 but no items).
 	 * Ensures get_last_run_time_for_campaign() advances so the next run respects the interval.
 	 */
 	public static function record_run(int $campaign_id): void

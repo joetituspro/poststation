@@ -13,10 +13,9 @@ export default function InfoSidebar() {
 				</div>
 				<div className="px-4 py-3">
 					<p className="text-sm text-gray-600">
-						{pluginName} connects your WordPress site to the Rankima n8n
-						workflow, giving you full control over AI content generation,
-						scheduling, and publishing - all from a simple dashboard
-						interface.
+						{pluginName} runs a fully local workflow inside your WordPress
+						site for AI content generation, scheduling, and publishing from
+						one dashboard.
 					</p>
 				</div>
 			</div>

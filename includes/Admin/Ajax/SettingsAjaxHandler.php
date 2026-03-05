@@ -38,35 +38,22 @@ class SettingsAjaxHandler
 
 		$this->settings_service->save_all_settings([
 			'api_key' => (string) ($_POST['api_key'] ?? ''),
-			'send_api_to_webhook' => $_POST['send_api_to_webhook'] ?? '1',
 			'default_text_model' => (string) ($_POST['default_text_model'] ?? ''),
 			'default_image_model' => (string) ($_POST['default_image_model'] ?? ''),
 			'openrouter_api_key' => (string) ($_POST['openrouter_api_key'] ?? ''),
 			'enable_tunnel_url' => $_POST['enable_tunnel_url'] ?? '0',
 			'tunnel_url' => (string) ($_POST['tunnel_url'] ?? ''),
-			'base_url' => (string) ($_POST['base_url'] ?? ''),
-			'workflow_id' => (string) ($_POST['workflow_id'] ?? ''),
-			'n8n_api_key' => (string) ($_POST['n8n_api_key'] ?? ''),
-			'rapidapi_key' => (string) ($_POST['rapidapi_key'] ?? ''),
-			'firecrawl_key' => (string) ($_POST['firecrawl_key'] ?? ''),
-			'openrouter_key' => (string) ($_POST['openrouter_key'] ?? ''),
+			'article_scraper_provider' => (string) ($_POST['article_scraper_provider'] ?? 'rankima'),
+			'rankima_extractor_api_key' => (string) ($_POST['rankima_extractor_api_key'] ?? ''),
+			'firecrawl_api_url' => (string) ($_POST['firecrawl_api_url'] ?? ''),
+			'firecrawl_api_key' => (string) ($_POST['firecrawl_api_key'] ?? ''),
+			'rapidapi_api_url' => (string) ($_POST['rapidapi_api_url'] ?? ''),
+			'rapidapi_api_key' => (string) ($_POST['rapidapi_api_key'] ?? ''),
+			'clean_data_with_ai' => $_POST['clean_data_with_ai'] ?? '1',
+			'clean_data_model_id' => (string) ($_POST['clean_data_model_id'] ?? 'google/gemini-2.5-flash-lite'),
 		]);
 
 		wp_send_json_success(['message' => 'Settings saved']);
-	}
-
-	public function save_send_api_to_webhook(): void
-	{
-		if (!NonceVerifier::verify()) {
-			wp_send_json_error(['message' => 'Invalid nonce']);
-		}
-		if (!current_user_can('manage_options')) {
-			wp_send_json_error(['message' => 'Permission denied']);
-		}
-
-		$send_api_to_webhook = !empty($_POST['send_api_to_webhook']) && $_POST['send_api_to_webhook'] !== 'false';
-		$this->settings_service->save_send_api_to_webhook($send_api_to_webhook);
-		wp_send_json_success(['message' => 'Webhook payload setting saved']);
 	}
 
 	public function save_openrouter_api_key(): void
@@ -148,24 +135,4 @@ class SettingsAjaxHandler
 		wp_send_json_success(['message' => 'Dev settings saved']);
 	}
 
-	public function save_n8n_connection(): void
-	{
-		if (!NonceVerifier::verify()) {
-			wp_send_json_error(['message' => 'Invalid nonce']);
-		}
-		if (!current_user_can('manage_options')) {
-			wp_send_json_error(['message' => 'Permission denied']);
-		}
-
-		$this->settings_service->save_n8n_connection([
-			'base_url' => (string) ($_POST['base_url'] ?? ''),
-			'workflow_id' => (string) ($_POST['workflow_id'] ?? ''),
-			'n8n_api_key' => (string) ($_POST['n8n_api_key'] ?? ''),
-			'rapidapi_key' => (string) ($_POST['rapidapi_key'] ?? ''),
-			'firecrawl_key' => (string) ($_POST['firecrawl_key'] ?? ''),
-			'openrouter_key' => (string) ($_POST['openrouter_key'] ?? ''),
-		]);
-
-		wp_send_json_success(['message' => 'n8n connection saved']);
-	}
 }

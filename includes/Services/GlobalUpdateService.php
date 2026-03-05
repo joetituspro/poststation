@@ -57,12 +57,6 @@ class GlobalUpdateService
 			} catch (\Throwable $e) {
 				error_log('PostStation GlobalUpdateService RSS update error: ' . $e->getMessage());
 			}
-
-			try {
-				$this->handle_blueprint_update_check();
-			} catch (\Throwable $e) {
-				error_log('PostStation GlobalUpdateService blueprint update error: ' . $e->getMessage());
-			}
 		} finally {
 			$this->release_lock();
 		}
@@ -124,9 +118,4 @@ class GlobalUpdateService
 		RssService::handle_rss_update();
 	}
 
-	private function handle_blueprint_update_check(): void
-	{
-		$update_service = new UpdateService();
-		$update_service->check_for_updates(false);
-	}
 }
