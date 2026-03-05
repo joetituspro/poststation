@@ -75,6 +75,7 @@ class Create
 				PostTask::update($task_id, [
 					'status' => 'failed',
 					'error_message' => $e->getMessage(),
+					'progress' => null,
 				]);
 			}
 			throw $e;

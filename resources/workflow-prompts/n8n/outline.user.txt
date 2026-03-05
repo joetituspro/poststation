@@ -1,0 +1,16 @@
+﻿=- Topic/Primary Keyword: {{ $('Normalize Prompts').item.json.topic }}
+- Keywords (optional): {{ $('Normalize Prompts').item.json.keywords }}
+- Language: {{ $('Webhook').item.json.body.language.name }}
+- Point of View: {{ $('Normalize Prompts').item.json.point_of_view }}
+- Tone of Voice: {{ $('Normalize Prompts').item.json.tone_of_voice }}
+- Reading Level: {{ $('Normalize Prompts').item.json.reading_level }}
+- Today's Date: {{ $now }}
+
+## ARTICLE_INSTRUCTIONS:
+{{ $('Webhook').item.json.body.content_fields.body.prompt }}
+
+## COMPETITIVE_ANALYSIS:
+{{ JSON.stringify($('Competitive Intelligence').item.json.output, null, 2) }}
+
+## RESEARCH_DATA:
+{{ $('Normalize Prompts').item.json.research }}

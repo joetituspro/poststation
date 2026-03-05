@@ -24,6 +24,7 @@ import {
 	getPendingProcessingPostTasks,
 	getBootstrapWebhooks,
 	getBootstrapWritingPresets,
+	isLocalInstallation,
 } from '../api/client';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useUnsavedChanges } from '../context/UnsavedChangesContext';
@@ -278,11 +279,15 @@ export default function CampaignEditPage() {
 		useState( false );
 	const [ importLoading, setImportLoading ] = useState( false );
 	const [ deletingTaskIds, setDeletingTaskIds ] = useState( [] );
+	const localInstall = isLocalInstallation();
 	const stopRunRef = useRef( false );
 	const manualRunRef = useRef( false );
 	const currentManualTaskIdRef = useRef( null );
 	const taskCountRef = useRef( 0 );
 	const campaignRef = useRef( null );
+	const effectiveExecutionMode = localInstall
+		? campaign?.execution_mode || 'webhook'
+		: 'webhook';
 
 	const hasRequiredData = useCallback( ( task ) => {
 		const taskType = task?.campaign_type ?? 'default';
@@ -353,6 +358,11 @@ export default function CampaignEditPage() {
 			const readability = data.campaign?.readability || 'grade_8';
 			const normalizedCampaign = normalizeCampaignPublication( {
 				...data.campaign,
+				execution_mode:
+					localInstall
+						? data.campaign?.execution_mode ||
+						  ( data.campaign?.webhook_id ? 'webhook' : 'local' )
+						: 'webhook',
 				campaign_type: campaignType,
 				language,
 				target_country: targetCountry,
@@ -372,7 +382,7 @@ export default function CampaignEditPage() {
 				} ) )
 			);
 		}
-	}, [ data ] );
+	}, [ data, localInstall ] );
 
 	useEffect( () => {
 		const hasProcessing = taskItems.some(
@@ -541,6 +551,7 @@ export default function CampaignEditPage() {
 	}, [
 		taskItems,
 		campaign?.status,
+		campaign?.execution_mode,
 		campaign?.webhook_id,
 		runCampaign,
 		getTaskIdKey,
@@ -911,8 +922,11 @@ export default function CampaignEditPage() {
 	};
 
 	const handleRetryTask = async ( taskId ) => {
-		if ( ! campaign?.webhook_id ) {
-			showToast( 'Select a webhook before retrying.', 'error' );
+		if ( effectiveExecutionMode === 'webhook' && ! campaign?.webhook_id ) {
+			showToast(
+				'Select a webhook before retrying in webhook mode.',
+				'error'
+			);
 			return;
 		}
 
@@ -942,8 +956,11 @@ export default function CampaignEditPage() {
 	};
 
 	const handleRetryFailedTasks = async () => {
-		if ( ! campaign?.webhook_id ) {
-			showToast( 'Select a webhook before retrying.', 'error' );
+		if ( effectiveExecutionMode === 'webhook' && ! campaign?.webhook_id ) {
+			showToast(
+				'Select a webhook before retrying in webhook mode.',
+				'error'
+			);
 			return;
 		}
 
@@ -1087,8 +1104,10 @@ export default function CampaignEditPage() {
 		if ( isBlank( campaign?.default_author_id ) ) {
 			validationErrors.push( 'Campaign Default Author is required.' );
 		}
-		if ( isBlank( campaign?.webhook_id ) ) {
-			validationErrors.push( 'Campaign Webhook is required.' );
+		if ( effectiveExecutionMode === 'webhook' && isBlank( campaign?.webhook_id ) ) {
+			validationErrors.push(
+				'Campaign Webhook is required for webhook mode.'
+			);
 		}
 
 		let contentFields = {};
@@ -1248,6 +1267,7 @@ export default function CampaignEditPage() {
 			rolling_schedule_days: campaign.rolling_schedule_days,
 			default_author_id: campaign.default_author_id,
 			webhook_id: campaign.webhook_id,
+			execution_mode: effectiveExecutionMode,
 			campaign_type: campaign.campaign_type,
 			tone_of_voice: campaign.tone_of_voice,
 			point_of_view: campaign.point_of_view,
@@ -1299,8 +1319,8 @@ export default function CampaignEditPage() {
 			}
 		}
 
-		if ( ! campaign?.webhook_id ) {
-			showToast( 'Select a webhook before running.', 'error' );
+		if ( effectiveExecutionMode === 'webhook' && ! campaign?.webhook_id ) {
+			showToast( 'Select a webhook before running in webhook mode.', 'error' );
 			return;
 		}
 
@@ -1337,11 +1357,16 @@ export default function CampaignEditPage() {
 				)
 			);
 
-			const pollData = await getPendingProcessingPostTasks( id );
-			const pendingProcessing = Array.isArray( pollData )
-				? pollData
-				: pollData?.tasks ?? [];
-			applyPendingProcessingUpdates( pendingProcessing );
+			try {
+				const pollData = await getPendingProcessingPostTasks( id );
+				const pendingProcessing = Array.isArray( pollData )
+					? pollData
+					: pollData?.tasks ?? [];
+				applyPendingProcessingUpdates( pendingProcessing );
+			} catch ( pollError ) {
+				// Do not fail run-start if first poll call fails; global polling loop will retry.
+				console.error( 'Initial task poll failed:', pollError );
+			}
 		} catch ( err ) {
 			setIsRunning( false );
 			if ( ! isLive ) {

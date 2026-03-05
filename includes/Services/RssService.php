@@ -32,17 +32,9 @@ class RssService
 		if (!$campaign) {
 			return null;
 		}
-		$webhook_id = isset($campaign['webhook_id']) ? (int) $campaign['webhook_id'] : 0;
-		if ($webhook_id <= 0) {
-			return null;
-		}
+		$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
 		$rss_enabled = isset($campaign['rss_enabled']) ? strtolower(trim((string) $campaign['rss_enabled'])) : 'no';
 		if ($rss_enabled !== 'yes') {
-			return null;
-		}
-
-		$webhook = Webhook::get_by_id($webhook_id);
-		if (!$webhook || empty($webhook['url'])) {
 			return null;
 		}
 
@@ -67,6 +59,19 @@ class RssService
 			];
 		}
 		if (empty($sources_payload)) {
+			return null;
+		}
+
+		if ($execution_mode === 'local') {
+			return self::fetch_items_locally($sources_payload);
+		}
+
+		$webhook_id = isset($campaign['webhook_id']) ? (int) $campaign['webhook_id'] : 0;
+		if ($webhook_id <= 0) {
+			return null;
+		}
+		$webhook = Webhook::get_by_id($webhook_id);
+		if (!$webhook || empty($webhook['url'])) {
 			return null;
 		}
 
@@ -110,6 +115,56 @@ class RssService
 	}
 
 	/**
+	 * @param array<int,array{source_id:mixed,feed_url:string}> $sources_payload
+	 * @return array<string,mixed>|null
+	 */
+	private static function fetch_items_locally(array $sources_payload): ?array
+	{
+		if (!function_exists('fetch_feed')) {
+			require_once ABSPATH . WPINC . '/feed.php';
+		}
+
+		$sources = [];
+		foreach ($sources_payload as $source) {
+			$feed_url = trim((string) ($source['feed_url'] ?? ''));
+			if ($feed_url === '') {
+				continue;
+			}
+			$feed = fetch_feed($feed_url);
+			if (is_wp_error($feed)) {
+				continue;
+			}
+
+			$items = [];
+			$max = $feed->get_item_quantity(20);
+			$feed_items = $feed->get_items(0, $max);
+			foreach ((array) $feed_items as $item) {
+				$link = trim((string) $item->get_link());
+				if ($link === '') {
+					continue;
+				}
+				$items[] = [
+					'title' => (string) $item->get_title(),
+					'url' => $link,
+					'date' => (string) $item->get_date('c'),
+				];
+			}
+
+			$sources[] = [
+				'source_id' => $source['source_id'],
+				'feed_url' => $feed_url,
+				'items' => $items,
+			];
+		}
+
+		if (empty($sources)) {
+			return null;
+		}
+
+		return ['sources' => $sources];
+	}
+
+	/**
 	 * Run RSS update for all eligible campaigns on the global poststation_update tick.
 	 * For each rss-enabled campaign with webhook + sources, respect frequency_interval and process items into tasks.
 	 */
@@ -125,8 +180,7 @@ class RssService
 			FROM {$campaign_table} c
 			INNER JOIN {$rss_table} r ON r.campaign_id = c.id
 			WHERE LOWER(TRIM(IFNULL(c.rss_enabled, 'no'))) = 'yes'
-			AND c.webhook_id IS NOT NULL
-			AND c.webhook_id > 0",
+			AND (LOWER(TRIM(IFNULL(c.execution_mode, 'webhook'))) = 'local' OR (c.webhook_id IS NOT NULL AND c.webhook_id > 0))",
 			ARRAY_A
 		);
 

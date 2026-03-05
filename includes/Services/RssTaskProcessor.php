@@ -99,7 +99,10 @@ class RssTaskProcessor
 			RssHistory::prune_keep_last_runs($campaign_id, 3);
 		}
 
-		if (($campaign['status'] ?? '') === 'active' && !empty($campaign['webhook_id'])) {
+		$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
+		$can_start = ($campaign['status'] ?? '') === 'active'
+			&& ($execution_mode === 'local' || !empty($campaign['webhook_id']));
+		if ($can_start) {
 			$runner = new BackgroundRunner();
 			$runner->start_run_if_pending($campaign_id);
 		}

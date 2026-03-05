@@ -4,6 +4,7 @@ namespace PostStation\Admin\Ajax;
 
 use PostStation\Models\Campaign;
 use PostStation\Models\PostTask;
+use PostStation\Models\TaskExecutionState;
 use PostStation\Services\BackgroundRunner;
 
 class PostTaskAjaxHandler
@@ -40,7 +41,8 @@ class PostTaskAjaxHandler
 			wp_send_json_error(['message' => 'Failed to create task']);
 		}
 
-		if ($campaign && ($campaign['status'] ?? '') === 'active' && !empty($campaign['webhook_id'])) {
+		$mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
+		if ($campaign && ($campaign['status'] ?? '') === 'active' && ($mode === 'local' || !empty($campaign['webhook_id']))) {
 			$runner = new BackgroundRunner();
 			$runner->start_run_if_pending($campaign_id);
 		}
@@ -100,7 +102,8 @@ class PostTaskAjaxHandler
 		$campaign_id = (int) ($_POST['campaign_id'] ?? 0);
 		if ($campaign_id > 0) {
 			$campaign = Campaign::get_by_id($campaign_id);
-			if ($campaign && ($campaign['status'] ?? '') === 'active' && !empty($campaign['webhook_id'])) {
+			$mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
+			if ($campaign && ($campaign['status'] ?? '') === 'active' && ($mode === 'local' || !empty($campaign['webhook_id']))) {
 				$runner = new BackgroundRunner();
 				$runner->start_run_if_pending($campaign_id);
 			}
@@ -120,6 +123,7 @@ class PostTaskAjaxHandler
 
 		$id = (int) ($_POST['id'] ?? 0);
 		if (PostTask::delete($id)) {
+			TaskExecutionState::delete_by_task_id($id);
 			wp_send_json_success();
 		}
 		wp_send_json_error(['message' => 'Failed to delete task']);

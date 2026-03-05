@@ -118,6 +118,9 @@ class BootstrapDataProvider
 
 		foreach ($campaigns as &$campaign) {
 			$cid = (int) $campaign['id'];
+			if (empty($campaign['execution_mode'])) {
+				$campaign['execution_mode'] = !empty((int) ($campaign['webhook_id'] ?? 0)) ? 'webhook' : 'local';
+			}
 			$counts = $counts_by_campaign[$cid] ?? [
 				'pending' => 0,
 				'processing' => 0,
@@ -157,6 +160,7 @@ class BootstrapDataProvider
 
 		return [
 			'settings' => $this->settings_service->get_settings_data(),
+			'is_local_installation' => $this->is_local_installation(),
 			'webhooks' => ['webhooks' => Webhook::get_all()],
 			'campaigns' => ['campaigns' => $this->get_campaigns_with_counts()],
 			'writing_presets' => WritingPreset::get_all(),
@@ -169,5 +173,55 @@ class BootstrapDataProvider
 			'openrouter_models' => $static['openrouter_models'],
 			'support' => $this->support_service->get_support_state(),
 		];
+	}
+
+	private function is_local_installation(): bool
+	{
+		if (function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local') {
+			return true;
+		}
+
+		$host = (string) parse_url(home_url(), PHP_URL_HOST);
+		$host = strtolower(trim($host));
+		if ($host === '') {
+			return false;
+		}
+
+		if (in_array($host, ['localhost', '127.0.0.1', '::1'], true)) {
+			return true;
+		}
+
+		if (preg_match('/\.(local|test|invalid)$/i', $host)) {
+			return true;
+		}
+
+		if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+			return $this->is_private_ipv4($host);
+		}
+
+		return false;
+	}
+
+	private function is_private_ipv4(string $ip): bool
+	{
+		$parts = array_map('intval', explode('.', $ip));
+		if (count($parts) !== 4) {
+			return false;
+		}
+
+		if ($parts[0] === 10) {
+			return true;
+		}
+		if ($parts[0] === 127) {
+			return true;
+		}
+		if ($parts[0] === 192 && $parts[1] === 168) {
+			return true;
+		}
+		if ($parts[0] === 172 && $parts[1] >= 16 && $parts[1] <= 31) {
+			return true;
+		}
+
+		return false;
 	}
 }

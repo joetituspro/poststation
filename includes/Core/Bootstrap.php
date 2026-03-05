@@ -10,6 +10,8 @@ use PostStation\Models\CampaignRss;
 use PostStation\Models\PostTask;
 use PostStation\Models\WritingPreset;
 use PostStation\Models\RssHistory;
+use PostStation\Models\WorkflowSpec;
+use PostStation\Models\TaskExecutionState;
 use PostStation\Admin\App;
 use PostStation\Services\Sitemap;
 use PostStation\Services\BackgroundRunner;
@@ -18,6 +20,7 @@ use PostStation\Services\GlobalUpdateService;
 use PostStation\Services\PluginUpdateService;
 use PostStation\Services\SettingsService;
 use PostStation\Services\SupportService;
+use PostStation\Services\Workflow\WorkflowSpecImporter;
 
 class Bootstrap
 {
@@ -48,6 +51,24 @@ class Bootstrap
 
 		$plugin_update_service = new PluginUpdateService();
 		$plugin_update_service->init();
+
+		// Dev utility hook for reseeding default local workflow specification.
+		add_action('poststation_reseed_local_workflow_spec', function () {
+			$importer = new WorkflowSpecImporter();
+			$importer->ensure_default_spec_seeded();
+		});
+
+		if (defined('WP_CLI') && WP_CLI) {
+			\WP_CLI::add_command('poststation workflow reseed', function () {
+				$importer = new WorkflowSpecImporter();
+				$ok = $importer->ensure_default_spec_seeded();
+				if ($ok) {
+					\WP_CLI::success('Local workflow specification reseeded.');
+					return;
+				}
+				\WP_CLI::error('Failed to reseed local workflow specification.');
+			});
+		}
 
 		// Initialize Admin
 		if (is_admin()) {
@@ -110,6 +131,14 @@ class Bootstrap
 			if (!RssHistory::update_tables()) {
 				// continue
 			}
+			if (!WorkflowSpec::update_tables()) {
+				// continue
+			}
+			if (!TaskExecutionState::update_tables()) {
+				// continue
+			}
+			$workflow_importer = new WorkflowSpecImporter();
+			$workflow_importer->ensure_default_spec_seeded();
 
 			// Ensure global update schedule exists and clean up legacy schedules.
 			if (class_exists(GlobalUpdateService::class)) {
@@ -134,6 +163,12 @@ class Bootstrap
 
 	public function deactivate(): void
 	{
+		// Clear internal global update cron hooks on deactivation.
+		wp_clear_scheduled_hook(\PostStation\Services\GlobalUpdateService::ACTION_INTERNAL_TICK);
+		wp_clear_scheduled_hook(\PostStation\Services\GlobalUpdateService::ACTION_GLOBAL_UPDATE);
+		if (function_exists('as_unschedule_all_actions')) {
+			as_unschedule_all_actions(\PostStation\Services\GlobalUpdateService::ACTION_GLOBAL_UPDATE, [], 'poststation');
+		}
 		flush_rewrite_rules();
 	}
 

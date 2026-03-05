@@ -23,6 +23,7 @@ class Campaign
             title varchar(255) NOT NULL,
             author_id bigint(20) unsigned NOT NULL,
             webhook_id bigint(20) unsigned DEFAULT NULL,
+            execution_mode varchar(20) NOT NULL DEFAULT 'webhook',
             campaign_type varchar(50) NOT NULL DEFAULT 'default',
 			tone_of_voice varchar(50) NOT NULL DEFAULT 'none',
 			point_of_view varchar(50) NOT NULL DEFAULT 'none',
@@ -53,7 +54,26 @@ class Campaign
 		self::migrate_add_status($table_name);
 		self::migrate_add_publication_fields($table_name);
 		self::migrate_legacy_writing_preset_column($table_name);
+		self::migrate_add_execution_mode($table_name);
 		return (bool) $tables_created_or_updated;
+	}
+
+	private static function migrate_add_execution_mode(string $table_name): void
+	{
+		global $wpdb;
+		$col = $wpdb->get_results("SHOW COLUMNS FROM `{$table_name}` LIKE 'execution_mode'", ARRAY_A);
+		if (empty($col)) {
+			$wpdb->query("ALTER TABLE `{$table_name}` ADD COLUMN execution_mode varchar(20) NOT NULL DEFAULT 'webhook' AFTER webhook_id");
+		}
+
+		$wpdb->query(
+			"UPDATE `{$table_name}`
+			SET execution_mode = CASE
+				WHEN (webhook_id IS NOT NULL AND webhook_id > 0) THEN 'webhook'
+				ELSE 'local'
+			END
+			WHERE execution_mode IS NULL OR execution_mode = ''"
+		);
 	}
 
 	private static function migrate_legacy_writing_preset_column(string $table_name): void
@@ -157,14 +177,36 @@ class Campaign
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		return $wpdb->get_results("SELECT * FROM {$table_name} ORDER BY created_at DESC", ARRAY_A);
+		$rows = $wpdb->get_results("SELECT * FROM {$table_name} ORDER BY created_at DESC", ARRAY_A);
+
+		if (!is_array($rows)) {
+			return [];
+		}
+
+		foreach ($rows as &$row) {
+			if (array_key_exists('writing_preset_id', $row) && (int) $row['writing_preset_id'] === 0) {
+				$row['writing_preset_id'] = null;
+			}
+		}
+		unset($row);
+
+		return $rows;
 	}
 
 	public static function get_by_id(int $id): ?array
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_NAME;
-		return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $id), ARRAY_A);
+		$row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $id), ARRAY_A);
+		if (!is_array($row)) {
+			return null;
+		}
+
+		if (array_key_exists('writing_preset_id', $row) && (int) $row['writing_preset_id'] === 0) {
+			$row['writing_preset_id'] = null;
+		}
+
+		return $row;
 	}
 
 	public static function create(array $data): int|false
@@ -176,6 +218,7 @@ class Campaign
 			'title' => '',
 			'author_id' => get_current_user_id(),
 			'webhook_id' => null,
+			'execution_mode' => 'webhook',
 			'campaign_type' => 'default',
 			'tone_of_voice' => 'none',
 			'point_of_view' => 'none',
@@ -194,7 +237,14 @@ class Campaign
 			'rss_enabled' => 'no',
 			'status' => 'paused',
 		]);
+		$data['execution_mode'] = self::sanitize_execution_mode((string) ($data['execution_mode'] ?? 'webhook'));
 		return $wpdb->insert($table_name, $data) ? $wpdb->insert_id : false;
+	}
+
+	public static function sanitize_execution_mode(string $mode): string
+	{
+		$mode = strtolower(trim($mode));
+		return in_array($mode, ['webhook', 'local'], true) ? $mode : 'webhook';
 	}
 
 	public static function get_default_content_fields(): array
@@ -279,6 +329,7 @@ class Campaign
 		foreach ([
 			'title' => '%s',
 			'webhook_id' => '%d',
+			'execution_mode' => '%s',
 			'campaign_type' => '%s',
 			'tone_of_voice' => '%s',
 			'point_of_view' => '%s',
@@ -298,6 +349,9 @@ class Campaign
 			'status' => '%s',
 		] as $key => $type) {
 			if (isset($data[$key])) {
+				if ($key === 'execution_mode') {
+					$data[$key] = self::sanitize_execution_mode((string) $data[$key]);
+				}
 				$update_data[$key] = $data[$key];
 				$format[] = $type;
 			}

@@ -474,6 +474,7 @@ class ApiHandler
 				}
 				if ($status === 'failed' && $error_message !== null && $error_message !== '') {
 					$update_data['error_message'] = $error_message;
+					$update_data['progress'] = null;
 				}
 			}
 		}

@@ -1,10 +1,19 @@
 import { Input, Select, Tooltip } from '../common';
-import { getPostTypes, getLanguages, getCountries } from '../../api/client';
+import {
+	getPostTypes,
+	getLanguages,
+	getCountries,
+	isLocalInstallation,
+} from '../../api/client';
 import { PUBLICATION_MODE_OPTIONS } from '../../utils/publication';
 
 const CAMPAIGN_TYPE_OPTIONS = [
 	{ value: 'default', label: 'Default' },
 	{ value: 'rewrite_blog_post', label: 'Rewrite Blog Post' },
+];
+const EXECUTION_MODE_OPTIONS = [
+	{ value: 'webhook', label: 'Webhook' },
+	{ value: 'local', label: 'Local Workflow' },
 ];
 
 const TONE_OPTIONS = [
@@ -61,6 +70,10 @@ export default function CampaignForm( {
 	users = [],
 } ) {
 	const postTypes = getPostTypes();
+	const localInstall = isLocalInstallation();
+	const effectiveExecutionMode = localInstall
+		? campaign.execution_mode || 'webhook'
+		: 'webhook';
 	const languages = getLanguages();
 	const countries = getCountries();
 	const postTypeOptions = Object.entries( postTypes ).map(
@@ -277,6 +290,19 @@ export default function CampaignForm( {
 					}
 				/>
 
+				{ localInstall && (
+					<Select
+						label="Execution Mode"
+						tooltip="Choose whether tasks are processed by webhook or by the built-in local workflow engine."
+						options={ EXECUTION_MODE_OPTIONS }
+						value={ effectiveExecutionMode }
+						onChange={ ( e ) =>
+							handleChange( 'execution_mode', e.target.value )
+						}
+						required
+					/>
+				) }
+
 				<Select
 					label="Webhook"
 					tooltip="Webhook endpoint that receives the generation payload for this campaign."
@@ -286,7 +312,7 @@ export default function CampaignForm( {
 						handleChange( 'webhook_id', e.target.value )
 					}
 					placeholder="Select webhook..."
-					required
+					required={ effectiveExecutionMode === 'webhook' }
 				/>
 			</div>
 		</div>

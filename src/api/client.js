@@ -15,6 +15,7 @@ export const setBootstrap = (bootstrap = {}) => {
 	window.poststation.bootstrap = bootstrap;
 
 	const mirrorKeys = [
+		'is_local_installation',
 		'post_types',
 		'taxonomies',
 		'languages',
@@ -65,7 +66,16 @@ export async function ajax(action, data = {}) {
 		credentials: 'same-origin',
 	});
 	
-	const result = await response.json();
+	const responseText = await response.text();
+	let result = null;
+	try {
+		result = JSON.parse(responseText);
+	} catch (err) {
+		const preview = responseText.slice(0, 180).replace(/\s+/g, ' ').trim();
+		throw new Error(
+			`Server returned non-JSON response for "${action}". ${preview}`
+		);
+	}
 	
 	if (!result.success) {
 		let message = 'Request failed';
@@ -104,7 +114,15 @@ export async function psApi(endpoint, options = {}) {
 		throw new Error(`HTTP ${response.status}`);
 	}
 
-	return response.json();
+	const text = await response.text();
+	try {
+		return JSON.parse(text);
+	} catch (err) {
+		const preview = text.slice(0, 180).replace(/\s+/g, ' ').trim();
+		throw new Error(
+			`Server returned non-JSON response for /ps-api/${endpoint}. ${preview}`
+		);
+	}
 }
 
 export async function refreshBootstrap() {
@@ -270,3 +288,4 @@ export const ai = {
 };
 
 export const getBootstrapSupport = () => getBootstrap().support || null;
+export const isLocalInstallation = () => !!getBootstrap().is_local_installation;

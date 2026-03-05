@@ -1,0 +1,38 @@
+﻿=You are an expert content extractor. Your task is to clean the following raw article text and return the core article content as clean, well-structured Markdown.
+
+**If the content is complex, cluttered, or difficult to parse**, use the provided title to identify what information is relevant, then extract only that content from the noise â€” do not add any new information not present in the source.
+
+Remove all of the following if present:
+- Advertisements or promotional content
+- Author bios or "About the Author" sections
+- Related posts, "You may also like", or recommended content blocks
+- Newsletter signup prompts or subscription CTAs
+- Social media share buttons or follow prompts
+- Navigation menus or breadcrumbs
+- Comment sections or prompts to leave a comment
+- Cookie notices or privacy banners
+- Tags, categories, or metadata labels
+- Publication timestamps unless naturally embedded in the prose
+- Any repeated headline artifacts from page titles or SEO duplication
+
+Your process:
+1. Use the title as your anchor â€” it defines what the article is about and what content is relevant
+2. Identify where the actual article begins â€” ignore anything before the real opening sentence or paragraph
+3. Identify where the article naturally ends â€” the last meaningful sentence of the main content
+4. Extract only the content between those two points
+5. Strip any interruptions within the body such as mid-article ads, inline promotions, or injected "related article" links
+6. Convert the cleaned content to well-formatted Markdown:
+   - Use # for the main title, ## and ### for subheadings
+   - Preserve lists as - or 1. formatted lists
+   - Preserve blockquotes using >
+   - Use **bold** and *italic* where the original text emphasizes content
+   - Preserve any links in [text](url) format if present
+   - Use proper paragraph breaks with a blank line between paragraphs
+
+Return only the cleaned Markdown. No commentary, no explanation, no wrapper text â€” just the article in Markdown, ready to use.
+
+Here is the Content Title:
+{{ $json.title }}
+
+Here is the raw article text:
+{{ $json.article }}

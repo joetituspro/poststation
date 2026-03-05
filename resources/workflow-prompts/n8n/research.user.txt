@@ -1,0 +1,18 @@
+﻿Your task is to find the top {{ $('Webhook').item.json.body.content_fields.body.sources_count || 3 }} most relevant, high-quality, currently ranking articles for the following topic or keyword.
+
+Topic/Keyword: {{$('Webhook').first().json.body.topic || ''}}
+
+Research Requirements:
+- Only return real, publicly accessible URLs.
+- Only return article-based sources (e.g. blog posts, news articles, editorial pieces, research/study pages). Do NOT include homepages, category pages, tag pages, product pages, landing pages, or any URL that is not a standalone article.
+- Prioritize authoritative domains.
+- Prefer articles published recently unless evergreen.
+- Avoid forums unless highly authoritative.
+- Avoid duplicate domains unless unavoidable.
+- The articles must directly match the search intent of the topic.
+
+For each article, extract:
+- Title
+- Full URL
+
+Return ONLY valid JSON.

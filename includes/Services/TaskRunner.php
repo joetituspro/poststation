@@ -7,6 +7,7 @@ use PostStation\Models\Campaign;
 use PostStation\Models\Webhook;
 use PostStation\Utils\Languages;
 use PostStation\Utils\Countries;
+use PostStation\Services\Workflow\LocalWorkflowRunner;
 use Exception;
 
 class TaskRunner
@@ -28,10 +29,13 @@ class TaskRunner
 			$required = $task_type === 'rewrite_blog_post' ? __('research URL', 'poststation') : __('topic', 'poststation');
 			return ['success' => false, 'message' => sprintf(__('Task cannot be sent: %s is required.', 'poststation'), $required)];
 		}
-
-		$webhook = Webhook::get_by_id($webhook_id);
-		if (!$webhook) {
-			return ['success' => false, 'message' => __('Webhook not found.', 'poststation')];
+		$execution_mode = Campaign::sanitize_execution_mode((string) ($campaign['execution_mode'] ?? 'webhook'));
+		$webhook = null;
+		if ($execution_mode === 'webhook') {
+			$webhook = Webhook::get_by_id($webhook_id);
+			if (!$webhook) {
+				return ['success' => false, 'message' => __('Webhook not found.', 'poststation')];
+			}
 		}
 
 		try {
@@ -256,42 +260,54 @@ class TaskRunner
 				'progress' => null,
 			]);
 
-			$response = wp_remote_post($webhook['url'], [
-				'headers' => [
-					'Content-Type' => 'application/json',
-					'X-API-Key' => $webhook_auth_key,
-				],
-				'body' => wp_json_encode($body),
-				'timeout' => 60,
-				'sslverify' => false,
-			]);
+			if ($execution_mode === 'local') {
+				$local_runner = new LocalWorkflowRunner();
+				$local_result = $local_runner->start_or_resume($task_id, $body);
+				if (empty($local_result['success'])) {
+					$latest_task = PostTask::get_by_id($task_id);
+					if (($latest_task['status'] ?? '') === 'failed') {
+						throw new Exception((string) ($latest_task['error_message'] ?? $local_result['message'] ?? __('Local workflow failed.', 'poststation')));
+					}
+				}
+			} else {
+				$response = wp_remote_post($webhook['url'], [
+					'headers' => [
+						'Content-Type' => 'application/json',
+						'X-API-Key' => $webhook_auth_key,
+					],
+					'body' => wp_json_encode($body),
+					'timeout' => 60,
+					'sslverify' => false,
+				]);
 
 
-			if (is_wp_error($response)) {
-				throw new Exception($response->get_error_message());
-			}
+				if (is_wp_error($response)) {
+					throw new Exception($response->get_error_message());
+				}
 
-			$response_code = wp_remote_retrieve_response_code($response);
-			if ($response_code !== 200) {
-				throw new Exception(sprintf(
-					__('Webhook returned error code: %d', 'poststation'),
-					$response_code
-				));
-			}
+				$response_code = wp_remote_retrieve_response_code($response);
+				if ($response_code !== 200) {
+					throw new Exception(sprintf(
+						__('Webhook returned error code: %d', 'poststation'),
+						$response_code
+					));
+				}
 
-			$response_body = wp_remote_retrieve_body($response);
-			if (is_string($response_body)) {
-				$execution_id = trim($response_body);
-				if ($execution_id !== '') {
-					PostTask::update($task_id, ['execution_id' => $execution_id]);
+				$response_body = wp_remote_retrieve_body($response);
+				if (is_string($response_body)) {
+					$execution_id = trim($response_body);
+					if ($execution_id !== '') {
+						PostTask::update($task_id, ['execution_id' => $execution_id]);
+					}
 				}
 			}
 
 			return ['success' => true, 'task' => $task];
-		} catch (Exception $e) {
+		} catch (\Throwable $e) {
 			PostTask::update($task_id, [
 				'status' => 'failed',
 				'error_message' => $e->getMessage(),
+				'progress' => null,
 			]);
 
 			return ['success' => false, 'message' => $e->getMessage()];
