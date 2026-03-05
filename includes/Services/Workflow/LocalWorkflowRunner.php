@@ -10,6 +10,7 @@ use PostStation\Services\Workflow\Steps\ExtrasStep;
 use PostStation\Services\Workflow\Steps\FeaturedImageStep;
 use PostStation\Services\Workflow\Steps\InternalLinksStep;
 use PostStation\Services\Workflow\Steps\OutlineStep;
+use PostStation\Services\Workflow\Steps\PreliminaryPlanStep;
 use PostStation\Services\Workflow\Steps\PublishStep;
 use PostStation\Services\Workflow\Steps\ResearchDiscoverStep;
 use PostStation\Services\Workflow\Steps\ResearchScrapeStep;
@@ -26,6 +27,7 @@ class LocalWorkflowRunner
 		'researching',
 		'scraping',
 		'analysis',
+		'preliminary_plan',
 		'outline',
 		'internal_links',
 		'writing',
@@ -39,6 +41,7 @@ class LocalWorkflowRunner
 		'researching',
 		'scraping',
 		'analysis',
+		'preliminary_plan',
 		'outline',
 		'internal_links',
 		'writing',
@@ -53,6 +56,7 @@ class LocalWorkflowRunner
 	private ResearchDiscoverStep $research_discover_step;
 	private ResearchScrapeStep $research_scrape_step;
 	private AnalysisStep $analysis_step;
+	private PreliminaryPlanStep $preliminary_plan_step;
 	private OutlineStep $outline_step;
 	private InternalLinksStep $internal_links_step;
 	private WritingStep $writing_step;
@@ -68,6 +72,7 @@ class LocalWorkflowRunner
 		?ResearchDiscoverStep $research_discover_step = null,
 		?ResearchScrapeStep $research_scrape_step = null,
 		?AnalysisStep $analysis_step = null,
+		?PreliminaryPlanStep $preliminary_plan_step = null,
 		?OutlineStep $outline_step = null,
 		?InternalLinksStep $internal_links_step = null,
 		?WritingStep $writing_step = null,
@@ -82,6 +87,7 @@ class LocalWorkflowRunner
 		$this->research_discover_step = $research_discover_step ?? new ResearchDiscoverStep();
 		$this->research_scrape_step = $research_scrape_step ?? new ResearchScrapeStep();
 		$this->analysis_step = $analysis_step ?? new AnalysisStep();
+		$this->preliminary_plan_step = $preliminary_plan_step ?? new PreliminaryPlanStep();
 		$this->outline_step = $outline_step ?? new OutlineStep();
 		$this->internal_links_step = $internal_links_step ?? new InternalLinksStep();
 		$this->writing_step = $writing_step ?? new WritingStep();
@@ -436,6 +442,14 @@ class LocalWorkflowRunner
 	{
 		$payload = (array) $context->get('payload', []);
 		switch ($step) {
+			case 'researching':
+				return $this->is_realtime_none($context) && trim((string) ($payload['research_url'] ?? '')) === '';
+			case 'scraping':
+				return empty((array) $context->get('research_targets', []));
+			case 'analysis':
+				return $this->is_realtime_none($context);
+			case 'preliminary_plan':
+				return !$this->is_realtime_none($context);
 			case 'internal_links':
 				$mode = strtolower(trim((string) ($payload['content_fields']['body']['internal_links_mode'] ?? 'all_post_types')));
 				if ($mode === 'any_post_type') {
@@ -513,6 +527,14 @@ class LocalWorkflowRunner
 	{
 		$payload = (array) $context->get('payload', []);
 		switch ($step) {
+			case 'researching':
+				return 'Real-time data mode is none and no research URL was provided.';
+			case 'scraping':
+				return 'No research targets available for scraping.';
+			case 'analysis':
+				return 'Real-time data mode is none; analysis step is disabled.';
+			case 'preliminary_plan':
+				return 'Preliminary plan only runs when real-time data mode is none.';
 			case 'internal_links':
 				$mode = strtolower(trim((string) ($payload['content_fields']['body']['internal_links_mode'] ?? 'all_post_types')));
 				if ($mode === 'none') {
@@ -562,6 +584,9 @@ class LocalWorkflowRunner
 				return;
 			case 'analysis':
 				$this->analysis_step->run($context, $spec);
+				return;
+			case 'preliminary_plan':
+				$this->preliminary_plan_step->run($context, $spec);
 				return;
 			case 'outline':
 				$this->outline_step->run($context, $spec);
@@ -707,6 +732,8 @@ class LocalWorkflowRunner
 				]);
 			case 'analysis':
 				return $this->trim_for_log((array) ($current['analysis'] ?? []));
+			case 'preliminary_plan':
+				return $this->trim_for_log((array) ($current['preliminary_plan'] ?? []));
 			case 'scraping':
 				$scrape_state = (array) ($current['research_scrape_state'] ?? []);
 				return $this->trim_for_log([
@@ -829,11 +856,18 @@ class LocalWorkflowRunner
 					'topic' => (string) (($context['payload']['topic'] ?? '')),
 					'research_items' => (array) ($context['research_items'] ?? []),
 				]);
+			case 'preliminary_plan':
+				return $this->trim_for_log([
+					'topic' => (string) (($context['payload']['topic'] ?? '')),
+					'keywords' => (string) (($context['payload']['keywords'] ?? '')),
+					'research_items' => (array) ($context['research_items'] ?? []),
+				]);
 			case 'outline':
 				return $this->trim_for_log([
 					'topic' => (string) (($context['payload']['topic'] ?? '')),
 					'keywords' => (string) (($context['payload']['keywords'] ?? '')),
 					'analysis' => (array) ($context['analysis'] ?? []),
+					'preliminary_plan' => (array) ($context['preliminary_plan'] ?? []),
 					'research_items' => (array) ($context['research_items'] ?? []),
 				]);
 			case 'internal_links':
@@ -848,6 +882,7 @@ class LocalWorkflowRunner
 					'topic' => (string) (($context['payload']['topic'] ?? '')),
 					'outline' => (array) ($context['outline'] ?? []),
 					'analysis' => (array) ($context['analysis'] ?? []),
+					'preliminary_plan' => (array) ($context['preliminary_plan'] ?? []),
 					'research_items' => (array) ($context['research_items'] ?? []),
 					'sitemap' => (array) (($context['payload']['sitemap'] ?? [])),
 				]);
@@ -907,5 +942,12 @@ class LocalWorkflowRunner
 			return round($seconds / 60, 3) . ' min';
 		}
 		return round($seconds / 3600, 3) . ' hr';
+	}
+
+	private function is_realtime_none(WorkflowContext $context): bool
+	{
+		$payload = (array) $context->get('payload', []);
+		$mode = strtolower(trim((string) ($payload['content_fields']['body']['research_mode'] ?? 'perplexity')));
+		return $mode === 'none';
 	}
 }

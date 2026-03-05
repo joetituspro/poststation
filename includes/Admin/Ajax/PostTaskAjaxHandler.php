@@ -141,6 +141,37 @@ class PostTaskAjaxHandler
 		wp_send_json_error(['message' => 'Failed to delete task']);
 	}
 
+	public function stop_posttask_run(): void
+	{
+		if (!NonceVerifier::verify()) {
+			wp_send_json_error(['message' => 'Invalid nonce']);
+		}
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error(['message' => 'Permission denied']);
+		}
+
+		$task_id = (int) ($_POST['id'] ?? 0);
+		if ($task_id <= 0) {
+			wp_send_json_error(['message' => 'Invalid task id']);
+		}
+
+		$task = PostTask::get_by_id($task_id);
+		if (!$task) {
+			wp_send_json_error(['message' => 'Task not found']);
+		}
+
+		$runner = new BackgroundRunner();
+		$ok = $runner->cancel_task_run($task_id);
+		if (!$ok) {
+			wp_send_json_error(['message' => 'Task is not processing']);
+		}
+
+		wp_send_json_success([
+			'message' => 'Task stopped.',
+			'task' => PostTask::get_by_id($task_id),
+		]);
+	}
+
 	public function clear_completed_posttasks(): void
 	{
 		if (!NonceVerifier::verify()) {

@@ -20,6 +20,7 @@ export default function PostTaskList( {
 	onDeleteTask,
 	onDuplicateTask,
 	onRunTask,
+	onStopTask,
 	retryingTaskId,
 	onRetryFailedTasks,
 	retryFailedLoading,
@@ -29,6 +30,7 @@ export default function PostTaskList( {
 	importLoading = false,
 	clearCompletedLoading = false,
 	deletingTaskIds = [],
+	stoppingTaskIds = [],
 } ) {
 	const [ filter, setFilter ] = useState( '' );
 	const [ expandedId, setExpandedId ] = useState( null );
@@ -191,7 +193,11 @@ export default function PostTaskList( {
 							onDelete={ () => onDeleteTask( task.id ) }
 							onDuplicate={ () => onDuplicateTask( task.id ) }
 							onRun={ () => onRunTask( task.id ) }
+							onStop={ () => onStopTask( task.id ) }
 							isDeleting={ deletingTaskIds.some(
+								( id ) => String( id ) === String( task.id )
+							) }
+							isStopping={ stoppingTaskIds.some(
 								( id ) => String( id ) === String( task.id )
 							) }
 						/>
@@ -212,7 +218,9 @@ function TaskItem( {
 	onDelete,
 	onDuplicate,
 	onRun,
+	onStop,
 	isDeleting = false,
+	isStopping = false,
 } ) {
 	const formatDateTime = ( value ) => {
 		if ( ! value ) return '';
@@ -432,7 +440,8 @@ function TaskItem( {
 								</a>
 							</>
 						) }
-						{ task.status === 'failed' && (
+						{ ( task.status === 'failed' ||
+							task.status === 'cancelled' ) && (
 							<Button
 								variant="secondary"
 								size="sm"
@@ -448,6 +457,18 @@ function TaskItem( {
 								}
 							>
 								Retry
+							</Button>
+						) }
+						{ task.status === 'processing' && (
+							<Button
+								variant="danger"
+								size="sm"
+								onClick={ onStop }
+								className="h-7 text-[11px] px-2"
+								loading={ isStopping }
+								disabled={ isStopping }
+							>
+								Stop
 							</Button>
 						) }
 						<button

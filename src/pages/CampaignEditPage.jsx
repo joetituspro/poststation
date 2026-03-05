@@ -279,6 +279,7 @@ export default function CampaignEditPage() {
 		useState( false );
 	const [ importLoading, setImportLoading ] = useState( false );
 	const [ deletingTaskIds, setDeletingTaskIds ] = useState( [] );
+	const [ stoppingTaskIds, setStoppingTaskIds ] = useState( [] );
 	const localInstall = isLocalInstallation();
 	const stopRunRef = useRef( false );
 	const manualRunRef = useRef( false );
@@ -333,6 +334,7 @@ export default function CampaignEditPage() {
 	const { mutate: clearCompletedTasks } = useMutation( () =>
 		postTasks.clearCompleted( id )
 	);
+	const { mutate: stopTaskRun } = useMutation( postTasks.stopRun );
 	const { mutate: importTasks } = useMutation( ( file ) =>
 		postTasks.import( id, file )
 	);
@@ -952,6 +954,53 @@ export default function CampaignEditPage() {
 			showToast( err?.message || 'Failed to reset post task.', 'error' );
 		} finally {
 			setRetryingTaskId( null );
+		}
+	};
+
+	const handleStopTask = async ( taskId ) => {
+		const taskIdKey = getTaskIdKey( taskId );
+		if ( stoppingTaskIds.some( ( id ) => getTaskIdKey( id ) === taskIdKey ) ) {
+			return;
+		}
+
+		setStoppingTaskIds( ( prev ) => [ ...prev, taskId ] );
+		const previousTaskItems = taskItems;
+		setTaskItems( ( prev ) =>
+			prev.map( ( task ) =>
+				getTaskIdKey( task.id ) === taskIdKey
+					? {
+							...task,
+							status: 'cancelled',
+							progress: null,
+							error_message: null,
+					  }
+					: task
+			)
+		);
+
+		try {
+			const result = await stopTaskRun( taskId );
+			const updatedTask = result?.task || null;
+			if ( updatedTask ) {
+				setTaskItems( ( prev ) =>
+					prev.map( ( task ) =>
+						getTaskIdKey( task.id ) === taskIdKey
+							? {
+									...task,
+									...updatedTask,
+							  }
+							: task
+					)
+				);
+			}
+			showToast( 'Task stopped.', 'info' );
+		} catch ( err ) {
+			setTaskItems( previousTaskItems );
+			showToast( err?.message || 'Failed to stop task.', 'error' );
+		} finally {
+			setStoppingTaskIds( ( prev ) =>
+				prev.filter( ( id ) => getTaskIdKey( id ) !== taskIdKey )
+			);
 		}
 	};
 
@@ -1767,6 +1816,7 @@ export default function CampaignEditPage() {
 							onDeleteTask={ handleDeleteTask }
 							onDuplicateTask={ handleDuplicateTask }
 							onRunTask={ handleRetryTask }
+							onStopTask={ handleStopTask }
 							retryingTaskId={ retryingTaskId }
 							onRetryFailedTasks={ handleRetryFailedTasks }
 							retryFailedLoading={ retryFailedLoading }
@@ -1776,6 +1826,7 @@ export default function CampaignEditPage() {
 							importLoading={ importLoading }
 							clearCompletedLoading={ clearCompletedLoading }
 							deletingTaskIds={ deletingTaskIds }
+							stoppingTaskIds={ stoppingTaskIds }
 						/>
 					</CardBody>
 				</Card>

@@ -25,6 +25,7 @@ class WritingStep
 		$payload = (array) $context->get('payload', []);
 		$outline = (array) $context->get('outline', []);
 		$analysis = (array) $context->get('analysis', []);
+		$preliminary_plan = (array) $context->get('preliminary_plan', []);
 		$research_items = (array) $context->get('research_items', []);
 		$research_text = implode("\n\n", array_map(static function ($item): string {
 			return (string) ($item['full_article'] ?? '');
@@ -37,12 +38,18 @@ class WritingStep
 		}
 
 		$system = $this->prompt_library->load('writer.system.txt');
-		$user_template = $this->prompt_library->load('writer.user.txt');
+		$research_mode = strtolower(trim((string) ($payload['content_fields']['body']['research_mode'] ?? 'perplexity')));
+		$use_plan_prompt = $research_mode === 'none';
+		$user_template = $this->prompt_library->load($use_plan_prompt ? 'writer.user.plan.txt' : 'writer.user.research.txt');
 		$prompt = $this->prompt_library->render_with_context($user_template, [
 			'payload' => $payload,
 			'analysis' => [
 				'structure_type' => (string) ($analysis['structure_type'] ?? ''),
 				'json' => wp_json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
+			],
+			'preliminary_plan' => [
+				'json' => wp_json_encode($preliminary_plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
+				'structure_type' => (string) ($preliminary_plan['structure_type'] ?? ''),
 			],
 			'internal_links' => [
 				'json' => wp_json_encode($internal_links, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '[]',

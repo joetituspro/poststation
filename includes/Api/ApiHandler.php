@@ -480,6 +480,8 @@ class ApiHandler
 		}
 
 		if (!empty($update_data)) {
+			// Intentionally permissive: stopped/cancelled tasks may still receive late webhook/local
+			// completion updates, and those updates are allowed to transition status.
 			$current_status = $update_data['status'] ?? $task['status'];
 			if ($current_status === 'processing') {
 				$update_data['run_started_at'] = current_time('mysql');

@@ -81,8 +81,6 @@ class ResearchDiscoverStep
 			throw new \Exception($response->get_error_message());
 		}
 
-		error_log('Response: ' . print_r($response, true));
-
 		$parsed = $this->openrouter->extract_json_content($response);
 		if (is_wp_error($parsed)) {
 			throw new \Exception($parsed->get_error_message());

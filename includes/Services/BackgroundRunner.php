@@ -80,6 +80,41 @@ class BackgroundRunner
 		return true;
 	}
 
+	public function cancel_task_run(int $task_id): bool
+	{
+		$task = PostTask::get_by_id($task_id);
+		if (!$task) {
+			return false;
+		}
+
+		if (($task['status'] ?? '') !== 'processing') {
+			return false;
+		}
+
+		$state = TaskExecutionState::get_by_task_id($task_id);
+		if ($state) {
+			TaskExecutionState::mark_terminal($task_id, 'cancelled', 'Cancelled by user.');
+		}
+		TaskExecutionState::delete_by_task_id($task_id);
+
+		PostTask::update($task_id, [
+			'status' => 'cancelled',
+			'progress' => null,
+			'error_message' => null,
+		]);
+
+		if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+			error_log('[PostStation][TaskStop] ' . (wp_json_encode([
+				'task_id' => $task_id,
+				'previous_status' => 'processing',
+				'new_status' => 'cancelled',
+				'execution_state_deleted' => $state ? true : false,
+			]) ?: '{}'));
+		}
+
+		return true;
+	}
+
 	/**
 	 * Global live update handler, called from GlobalUpdateService on each poststation_update tick.
 	 * For each active campaign with a webhook:

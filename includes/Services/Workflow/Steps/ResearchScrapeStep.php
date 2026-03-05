@@ -12,8 +12,8 @@ use PostStation\Services\Workflow\WorkflowContext;
 
 class ResearchScrapeStep
 {
-	private const CLEANUP_PRIMARY_MODEL = 'openai/gpt-oss-120b:free';
-	private const CLEANUP_FALLBACK_MODEL = 'nvidia/nemotron-3-nano-30b-a3b:free';
+	private const CLEANUP_PRIMARY_MODEL = 'google/gemini-2.5-flash-lite';
+	private const CLEANUP_FALLBACK_MODEL = 'openai/gpt-oss-120b:free';
 	private const CLEANUP_MAX_TRIES = 1;
 	private const CLEANUP_RETRY_WAIT_SECONDS = 0;
 	private const CLEANUP_TOTAL_TIME_BUDGET_SECONDS = 12;

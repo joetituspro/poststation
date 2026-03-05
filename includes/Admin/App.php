@@ -54,6 +54,7 @@ class App
 
 		add_action('wp_ajax_poststation_create_posttask', [$this->posttask_handler, 'create_posttask']);
 		add_action('wp_ajax_poststation_update_posttasks', [$this->posttask_handler, 'update_posttasks']);
+		add_action('wp_ajax_poststation_stop_posttask_run', [$this->posttask_handler, 'stop_posttask_run']);
 		add_action('wp_ajax_poststation_delete_posttask', [$this->posttask_handler, 'delete_posttask']);
 		add_action('wp_ajax_poststation_clear_completed_posttasks', [$this->posttask_handler, 'clear_completed_posttasks']);
 		add_action('wp_ajax_poststation_import_posttasks', [$this->posttask_handler, 'import_posttasks']);

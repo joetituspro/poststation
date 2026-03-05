@@ -9,7 +9,7 @@ class N8nPromptLibrary
 	 */
 	public function load(string $name): string
 	{
-		$path = trailingslashit(POSTSTATION_PATH) . 'resources/workflow-prompts/n8n/' . $name;
+		$path = trailingslashit(POSTSTATION_PATH) . 'resources/prompts/' . $name;
 		if (!is_readable($path)) {
 			return '';
 		}

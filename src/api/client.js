@@ -174,6 +174,7 @@ export const postTasks = {
 	create: (campaignId, options = {}) =>
 		ajax('poststation_create_posttask', { campaign_id: campaignId, ...options }),
 	update: (campaignId, tasksData) => ajax('poststation_update_posttasks', { campaign_id: campaignId, tasks: tasksData }),
+	stopRun: (id) => ajax('poststation_stop_posttask_run', { id }),
 	delete: (id) => ajax('poststation_delete_posttask', { id }),
 	clearCompleted: (campaignId) => ajax('poststation_clear_completed_posttasks', { campaign_id: campaignId }),
 	import: (campaignId, file) => {

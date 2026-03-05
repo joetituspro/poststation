@@ -18,7 +18,20 @@ Use this reasoning to guide your search strategy — do NOT include this reasoni
 
 ---
 
-## STEP 2 — FIND ARTICLES
+## STEP 2 — SYNTHESIZE BACKGROUND RESEARCH
+
+Write a **standard_research** summary: a concise, factual background synthesis of the topic.
+
+Guidelines:
+- Answer the topic directly and clearly.
+- Cover: definition, core concepts/process, key considerations, and important cautions or common misconceptions.
+- Tone: practical, neutral, authoritative — written as a briefing for someone new to the topic.
+- Length: 250-600 words.
+- Do NOT include opinions, product recommendations, or affiliate language.
+
+---
+
+## STEP 3 — FIND ARTICLES
 
 Find the top {payload.content_fields.body.sources_count || 3} most relevant, high-quality, currently ranking articles for the topic above.
 
@@ -36,19 +49,6 @@ Search Requirements:
 For each article, extract:
 - **title**: The exact article headline
 - **url**: The full, direct URL to the article
-
----
-
-## STEP 3 — SYNTHESIZE BACKGROUND RESEARCH
-
-Write a **standard_research** summary: a concise, factual background synthesis of the topic.
-
-Guidelines:
-- Today is {now}. Prioritize articles published or significantly updated as close to today's date as possible.
-- Cover: definition, core concepts/process, key considerations, and important cautions or common misconceptions.
-- Tone: practical, neutral, authoritative — written as a briefing for someone new to the topic.
-- Length: 250-600 words.
-- Do NOT include opinions, product recommendations, or affiliate language.
 
 ---
 

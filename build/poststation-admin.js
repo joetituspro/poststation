@@ -5548,6 +5548,11 @@ var postTasks = {
       tasks: tasksData
     });
   },
+  stopRun: function stopRun(id) {
+    return ajax('poststation_stop_posttask_run', {
+      id: id
+    });
+  },
   "delete": function _delete(id) {
     return ajax('poststation_delete_posttask', {
       id: id
@@ -7285,6 +7290,7 @@ function PostTaskList(_ref) {
     onDeleteTask = _ref.onDeleteTask,
     onDuplicateTask = _ref.onDuplicateTask,
     onRunTask = _ref.onRunTask,
+    onStopTask = _ref.onStopTask,
     retryingTaskId = _ref.retryingTaskId,
     onRetryFailedTasks = _ref.onRetryFailedTasks,
     retryFailedLoading = _ref.retryFailedLoading,
@@ -7297,7 +7303,9 @@ function PostTaskList(_ref) {
     _ref$clearCompletedLo = _ref.clearCompletedLoading,
     clearCompletedLoading = _ref$clearCompletedLo === void 0 ? false : _ref$clearCompletedLo,
     _ref$deletingTaskIds = _ref.deletingTaskIds,
-    deletingTaskIds = _ref$deletingTaskIds === void 0 ? [] : _ref$deletingTaskIds;
+    deletingTaskIds = _ref$deletingTaskIds === void 0 ? [] : _ref$deletingTaskIds,
+    _ref$stoppingTaskIds = _ref.stoppingTaskIds,
+    stoppingTaskIds = _ref$stoppingTaskIds === void 0 ? [] : _ref$stoppingTaskIds;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState2 = _slicedToArray(_useState, 2),
     filter = _useState2[0],
@@ -7458,7 +7466,13 @@ function PostTaskList(_ref) {
           onRun: function onRun() {
             return onRunTask(task.id);
           },
+          onStop: function onStop() {
+            return onStopTask(task.id);
+          },
           isDeleting: deletingTaskIds.some(function (id) {
+            return String(id) === String(task.id);
+          }),
+          isStopping: stoppingTaskIds.some(function (id) {
             return String(id) === String(task.id);
           })
         }, task.id);
@@ -7477,8 +7491,11 @@ function TaskItem(_ref2) {
     onDelete = _ref2.onDelete,
     onDuplicate = _ref2.onDuplicate,
     onRun = _ref2.onRun,
+    onStop = _ref2.onStop,
     _ref2$isDeleting = _ref2.isDeleting,
-    isDeleting = _ref2$isDeleting === void 0 ? false : _ref2$isDeleting;
+    isDeleting = _ref2$isDeleting === void 0 ? false : _ref2$isDeleting,
+    _ref2$isStopping = _ref2.isStopping,
+    isStopping = _ref2$isStopping === void 0 ? false : _ref2$isStopping;
   var formatDateTime = function formatDateTime(value) {
     if (!value) return '';
     var date = new Date(String(value).replace(' ', 'T'));
@@ -7646,7 +7663,7 @@ function TaskItem(_ref2) {
               className: "inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors",
               children: "View"
             })]
-          }), task.status === 'failed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          }), (task.status === 'failed' || task.status === 'cancelled') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
             variant: "secondary",
             size: "sm",
             onClick: onRun,
@@ -7654,6 +7671,14 @@ function TaskItem(_ref2) {
             loading: String(retryingTaskId) === String(task.id),
             disabled: String(retryingTaskId) === String(task.id),
             children: "Retry"
+          }), task.status === 'processing' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_common__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            variant: "danger",
+            size: "sm",
+            onClick: onStop,
+            className: "h-7 text-[11px] px-2",
+            loading: isStopping,
+            disabled: isStopping,
+            children: "Stop"
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
             onClick: onDuplicate,
             className: "p-1.5 text-gray-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors",
@@ -13224,6 +13249,10 @@ function CampaignEditPage() {
     _useState38 = _slicedToArray(_useState37, 2),
     deletingTaskIds = _useState38[0],
     setDeletingTaskIds = _useState38[1];
+  var _useState39 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState40 = _slicedToArray(_useState39, 2),
+    stoppingTaskIds = _useState40[0],
+    setStoppingTaskIds = _useState40[1];
   var localInstall = (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.isLocalInstallation)();
   var stopRunRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
   var manualRunRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
@@ -13295,22 +13324,24 @@ function CampaignEditPage() {
       return _api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks.clearCompleted(id);
     }),
     clearCompletedTasks = _useMutation5.mutate;
-  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (file) {
+  var _useMutation6 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(_api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks.stopRun),
+    stopTaskRun = _useMutation6.mutate;
+  var _useMutation7 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (file) {
       return _api_client__WEBPACK_IMPORTED_MODULE_9__.postTasks["import"](id, file);
     }),
-    importTasks = _useMutation6.mutate;
-  var _useMutation7 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (taskId, webhookId) {
+    importTasks = _useMutation7.mutate;
+  var _useMutation8 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function (taskId, webhookId) {
       return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns.run(id, taskId, webhookId);
     }),
-    runCampaign = _useMutation7.mutate;
-  var _useMutation8 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function () {
+    runCampaign = _useMutation8.mutate;
+  var _useMutation9 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function () {
       return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns.stopRun(id);
     }),
-    stopCampaignRun = _useMutation8.mutate;
-  var _useMutation9 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function () {
+    stopCampaignRun = _useMutation9.mutate;
+  var _useMutation10 = (0,_hooks_useApi__WEBPACK_IMPORTED_MODULE_10__.useMutation)(function () {
       return _api_client__WEBPACK_IMPORTED_MODULE_9__.campaigns["export"](id);
     }),
-    exportCampaign = _useMutation9.mutate;
+    exportCampaign = _useMutation10.mutate;
 
   // Initialize state from fetched data
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -13856,34 +13887,101 @@ function CampaignEditPage() {
       return _ref5.apply(this, arguments);
     };
   }();
-  var handleRetryFailedTasks = /*#__PURE__*/function () {
-    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
-      var hasFailed, nextTasks;
+  var handleStopTask = /*#__PURE__*/function () {
+    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(taskId) {
+      var taskIdKey, previousTaskItems, result, updatedTask;
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) switch (_context4.prev = _context4.next) {
           case 0:
-            if (!(effectiveExecutionMode === 'webhook' && !(campaign !== null && campaign !== void 0 && campaign.webhook_id))) {
+            taskIdKey = getTaskIdKey(taskId);
+            if (!stoppingTaskIds.some(function (id) {
+              return getTaskIdKey(id) === taskIdKey;
+            })) {
               _context4.next = 3;
               break;
             }
-            showToast('Select a webhook before retrying in webhook mode.', 'error');
             return _context4.abrupt("return");
+          case 3:
+            setStoppingTaskIds(function (prev) {
+              return [].concat(_toConsumableArray(prev), [taskId]);
+            });
+            previousTaskItems = taskItems;
+            setTaskItems(function (prev) {
+              return prev.map(function (task) {
+                return getTaskIdKey(task.id) === taskIdKey ? _objectSpread(_objectSpread({}, task), {}, {
+                  status: 'cancelled',
+                  progress: null,
+                  error_message: null
+                }) : task;
+              });
+            });
+            _context4.prev = 6;
+            _context4.next = 9;
+            return stopTaskRun(taskId);
+          case 9:
+            result = _context4.sent;
+            updatedTask = (result === null || result === void 0 ? void 0 : result.task) || null;
+            if (updatedTask) {
+              setTaskItems(function (prev) {
+                return prev.map(function (task) {
+                  return getTaskIdKey(task.id) === taskIdKey ? _objectSpread(_objectSpread({}, task), updatedTask) : task;
+                });
+              });
+            }
+            showToast('Task stopped.', 'info');
+            _context4.next = 19;
+            break;
+          case 15:
+            _context4.prev = 15;
+            _context4.t0 = _context4["catch"](6);
+            setTaskItems(previousTaskItems);
+            showToast((_context4.t0 === null || _context4.t0 === void 0 ? void 0 : _context4.t0.message) || 'Failed to stop task.', 'error');
+          case 19:
+            _context4.prev = 19;
+            setStoppingTaskIds(function (prev) {
+              return prev.filter(function (id) {
+                return getTaskIdKey(id) !== taskIdKey;
+              });
+            });
+            return _context4.finish(19);
+          case 22:
+          case "end":
+            return _context4.stop();
+        }
+      }, _callee4, null, [[6, 15, 19, 22]]);
+    }));
+    return function handleStopTask(_x3) {
+      return _ref6.apply(this, arguments);
+    };
+  }();
+  var handleRetryFailedTasks = /*#__PURE__*/function () {
+    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
+      var hasFailed, nextTasks;
+      return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+        while (1) switch (_context5.prev = _context5.next) {
+          case 0:
+            if (!(effectiveExecutionMode === 'webhook' && !(campaign !== null && campaign !== void 0 && campaign.webhook_id))) {
+              _context5.next = 3;
+              break;
+            }
+            showToast('Select a webhook before retrying in webhook mode.', 'error');
+            return _context5.abrupt("return");
           case 3:
             hasFailed = taskItems.some(function (task) {
               return task.status === 'failed';
             });
             if (hasFailed) {
-              _context4.next = 7;
+              _context5.next = 7;
               break;
             }
             showToast('No failed post tasks to retry.', 'info');
-            return _context4.abrupt("return");
+            return _context5.abrupt("return");
           case 7:
             if (!retryFailedLoading) {
-              _context4.next = 9;
+              _context5.next = 9;
               break;
             }
-            return _context4.abrupt("return");
+            return _context5.abrupt("return");
           case 9:
             setRetryFailedLoading(true);
             nextTasks = taskItems.map(function (task) {
@@ -13893,87 +13991,87 @@ function CampaignEditPage() {
                 progress: null
               }) : task;
             });
-            _context4.prev = 11;
-            _context4.next = 14;
+            _context5.prev = 11;
+            _context5.next = 14;
             return updateTasks(nextTasks);
           case 14:
             setTaskItems(nextTasks);
             showToast('Failed post tasks set to pending.', 'info');
-            _context4.next = 21;
+            _context5.next = 21;
             break;
           case 18:
-            _context4.prev = 18;
-            _context4.t0 = _context4["catch"](11);
-            showToast((_context4.t0 === null || _context4.t0 === void 0 ? void 0 : _context4.t0.message) || 'Failed to reset post tasks.', 'error');
+            _context5.prev = 18;
+            _context5.t0 = _context5["catch"](11);
+            showToast((_context5.t0 === null || _context5.t0 === void 0 ? void 0 : _context5.t0.message) || 'Failed to reset post tasks.', 'error');
           case 21:
-            _context4.prev = 21;
+            _context5.prev = 21;
             setRetryFailedLoading(false);
-            return _context4.finish(21);
+            return _context5.finish(21);
           case 24:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee4, null, [[11, 18, 21, 24]]);
-    }));
-    return function handleRetryFailedTasks() {
-      return _ref6.apply(this, arguments);
-    };
-  }();
-  var handleImportTasks = /*#__PURE__*/function () {
-    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(file) {
-      return _regeneratorRuntime().wrap(function _callee5$(_context5) {
-        while (1) switch (_context5.prev = _context5.next) {
-          case 0:
-            if (!importLoading) {
-              _context5.next = 2;
-              break;
-            }
-            return _context5.abrupt("return");
-          case 2:
-            setImportLoading(true);
-            _context5.prev = 3;
-            _context5.next = 6;
-            return importTasks(file);
-          case 6:
-            refetch();
-            showToast('Post tasks imported.', 'success');
-            _context5.next = 14;
-            break;
-          case 10:
-            _context5.prev = 10;
-            _context5.t0 = _context5["catch"](3);
-            console.error('Failed to import post tasks:', _context5.t0);
-            showToast((_context5.t0 === null || _context5.t0 === void 0 ? void 0 : _context5.t0.message) || 'Failed to import post tasks.', 'error');
-          case 14:
-            _context5.prev = 14;
-            setImportLoading(false);
-            return _context5.finish(14);
-          case 17:
           case "end":
             return _context5.stop();
         }
-      }, _callee5, null, [[3, 10, 14, 17]]);
+      }, _callee5, null, [[11, 18, 21, 24]]);
     }));
-    return function handleImportTasks(_x3) {
+    return function handleRetryFailedTasks() {
       return _ref7.apply(this, arguments);
     };
   }();
-
-  // Clear completed post tasks
-  var handleClearCompleted = /*#__PURE__*/function () {
-    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
+  var handleImportTasks = /*#__PURE__*/function () {
+    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(file) {
       return _regeneratorRuntime().wrap(function _callee6$(_context6) {
         while (1) switch (_context6.prev = _context6.next) {
           case 0:
-            if (!clearCompletedLoading) {
+            if (!importLoading) {
               _context6.next = 2;
               break;
             }
             return _context6.abrupt("return");
           case 2:
-            setClearCompletedLoading(true);
+            setImportLoading(true);
             _context6.prev = 3;
             _context6.next = 6;
+            return importTasks(file);
+          case 6:
+            refetch();
+            showToast('Post tasks imported.', 'success');
+            _context6.next = 14;
+            break;
+          case 10:
+            _context6.prev = 10;
+            _context6.t0 = _context6["catch"](3);
+            console.error('Failed to import post tasks:', _context6.t0);
+            showToast((_context6.t0 === null || _context6.t0 === void 0 ? void 0 : _context6.t0.message) || 'Failed to import post tasks.', 'error');
+          case 14:
+            _context6.prev = 14;
+            setImportLoading(false);
+            return _context6.finish(14);
+          case 17:
+          case "end":
+            return _context6.stop();
+        }
+      }, _callee6, null, [[3, 10, 14, 17]]);
+    }));
+    return function handleImportTasks(_x4) {
+      return _ref8.apply(this, arguments);
+    };
+  }();
+
+  // Clear completed post tasks
+  var handleClearCompleted = /*#__PURE__*/function () {
+    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
+      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+        while (1) switch (_context7.prev = _context7.next) {
+          case 0:
+            if (!clearCompletedLoading) {
+              _context7.next = 2;
+              break;
+            }
+            return _context7.abrupt("return");
+          case 2:
+            setClearCompletedLoading(true);
+            _context7.prev = 3;
+            _context7.next = 6;
             return clearCompletedTasks();
           case 6:
             setTaskItems(function (prev) {
@@ -13982,32 +14080,32 @@ function CampaignEditPage() {
               });
             });
             showToast('Completed post tasks cleared.', 'success');
-            _context6.next = 14;
+            _context7.next = 14;
             break;
           case 10:
-            _context6.prev = 10;
-            _context6.t0 = _context6["catch"](3);
-            console.error('Failed to clear completed:', _context6.t0);
-            showToast((_context6.t0 === null || _context6.t0 === void 0 ? void 0 : _context6.t0.message) || 'Failed to clear completed post tasks.', 'error');
+            _context7.prev = 10;
+            _context7.t0 = _context7["catch"](3);
+            console.error('Failed to clear completed:', _context7.t0);
+            showToast((_context7.t0 === null || _context7.t0 === void 0 ? void 0 : _context7.t0.message) || 'Failed to clear completed post tasks.', 'error');
           case 14:
-            _context6.prev = 14;
+            _context7.prev = 14;
             setClearCompletedLoading(false);
-            return _context6.finish(14);
+            return _context7.finish(14);
           case 17:
           case "end":
-            return _context6.stop();
+            return _context7.stop();
         }
-      }, _callee6, null, [[3, 10, 14, 17]]);
+      }, _callee7, null, [[3, 10, 14, 17]]);
     }));
     return function handleClearCompleted() {
-      return _ref8.apply(this, arguments);
+      return _ref9.apply(this, arguments);
     };
   }();
 
   // Save everything
   var handleSave = /*#__PURE__*/function () {
-    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
-      var _contentFields, _ref10, _overrides$status, _campaign$writing_pre2, _campaign$rss_enabled, _ref11, _overrides$rss_config;
+    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+      var _contentFields, _ref11, _overrides$status, _campaign$writing_pre2, _campaign$rss_enabled, _ref12, _overrides$rss_config;
       var overrides,
         validationErrors,
         _campaign$publication,
@@ -14036,11 +14134,11 @@ function CampaignEditPage() {
         bodyPrompt,
         changed,
         payload,
-        _args7 = arguments;
-      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
-        while (1) switch (_context7.prev = _context7.next) {
+        _args8 = arguments;
+      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+        while (1) switch (_context8.prev = _context8.next) {
           case 0:
-            overrides = _args7.length > 0 && _args7[0] !== undefined ? _args7[0] : {};
+            overrides = _args8.length > 0 && _args8[0] !== undefined ? _args8[0] : {};
             validationErrors = [];
             if (isBlank(campaign === null || campaign === void 0 ? void 0 : campaign.title)) {
               validationErrors.push('Campaign title is required.');
@@ -14132,21 +14230,21 @@ function CampaignEditPage() {
               }
             });
             if (!(validationErrors.length > 0)) {
-              _context7.next = 23;
+              _context8.next = 23;
               break;
             }
             showToast(validationErrors[0], 'error');
-            return _context7.abrupt("return", false);
+            return _context8.abrupt("return", false);
           case 23:
             if (!savingAll) {
-              _context7.next = 25;
+              _context8.next = 25;
               break;
             }
-            return _context7.abrupt("return");
+            return _context8.abrupt("return");
           case 25:
             setSavingAll(true);
             rssOverride = (overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) != null;
-            statusValue = (_ref10 = (_overrides$status = overrides === null || overrides === void 0 ? void 0 : overrides.status) !== null && _overrides$status !== void 0 ? _overrides$status : campaign.status) !== null && _ref10 !== void 0 ? _ref10 : 'paused'; // Ensure title/body prompts are filled from preset when selected but empty
+            statusValue = (_ref11 = (_overrides$status = overrides === null || overrides === void 0 ? void 0 : overrides.status) !== null && _overrides$status !== void 0 ? _overrides$status : campaign.status) !== null && _ref11 !== void 0 ? _ref11 : 'paused'; // Ensure title/body prompts are filled from preset when selected but empty
             contentFieldsForSave = campaign.content_fields;
             try {
               presetId = (_campaign$writing_pre = campaign.writing_preset_id) !== null && _campaign$writing_pre !== void 0 ? _campaign$writing_pre : null;
@@ -14206,11 +14304,11 @@ function CampaignEditPage() {
               writing_preset_id: (_campaign$writing_pre2 = campaign.writing_preset_id) !== null && _campaign$writing_pre2 !== void 0 ? _campaign$writing_pre2 : null,
               content_fields: contentFieldsForSave,
               rss_enabled: rssOverride ? 'yes' : (_campaign$rss_enabled = campaign.rss_enabled) !== null && _campaign$rss_enabled !== void 0 ? _campaign$rss_enabled : 'no',
-              rss_config: (_ref11 = (_overrides$rss_config = overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) !== null && _overrides$rss_config !== void 0 ? _overrides$rss_config : campaign.rss_config) !== null && _ref11 !== void 0 ? _ref11 : null,
+              rss_config: (_ref12 = (_overrides$rss_config = overrides === null || overrides === void 0 ? void 0 : overrides.rss_config) !== null && _overrides$rss_config !== void 0 ? _overrides$rss_config : campaign.rss_config) !== null && _ref12 !== void 0 ? _ref12 : null,
               status: statusValue
             };
-            _context7.prev = 31;
-            _context7.next = 34;
+            _context8.prev = 31;
+            _context8.next = 34;
             return Promise.all([updateCampaign(payload), updateTasks(taskItems)]);
           case 34:
             if (rssOverride) {
@@ -14230,67 +14328,67 @@ function CampaignEditPage() {
             }
             setIsDirty(false);
             showToast('Changes saved.', 'success');
-            return _context7.abrupt("return", true);
+            return _context8.abrupt("return", true);
           case 41:
-            _context7.prev = 41;
-            _context7.t0 = _context7["catch"](31);
-            console.error('Failed to save:', _context7.t0);
-            showToast((_context7.t0 === null || _context7.t0 === void 0 ? void 0 : _context7.t0.message) || 'Failed to save.', 'error');
-            return _context7.abrupt("return", false);
+            _context8.prev = 41;
+            _context8.t0 = _context8["catch"](31);
+            console.error('Failed to save:', _context8.t0);
+            showToast((_context8.t0 === null || _context8.t0 === void 0 ? void 0 : _context8.t0.message) || 'Failed to save.', 'error');
+            return _context8.abrupt("return", false);
           case 46:
-            _context7.prev = 46;
+            _context8.prev = 46;
             setSavingAll(false);
-            return _context7.finish(46);
+            return _context8.finish(46);
           case 49:
           case "end":
-            return _context7.stop();
+            return _context8.stop();
         }
-      }, _callee7, null, [[31, 41, 46, 49]]);
+      }, _callee8, null, [[31, 41, 46, 49]]);
     }));
     return function handleSave() {
-      return _ref9.apply(this, arguments);
+      return _ref10.apply(this, arguments);
     };
   }();
   var handleRun = /*#__PURE__*/function () {
-    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+    var _ref13 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
       var saved, nextTask, isLive, _campaign$webhook_id2, _pollData$tasks, pollData, pendingProcessing;
-      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
-        while (1) switch (_context8.prev = _context8.next) {
+      return _regeneratorRuntime().wrap(function _callee9$(_context9) {
+        while (1) switch (_context9.prev = _context9.next) {
           case 0:
             if (!isDirty) {
-              _context8.next = 6;
+              _context9.next = 6;
               break;
             }
-            _context8.next = 3;
+            _context9.next = 3;
             return handleSave();
           case 3:
-            saved = _context8.sent;
+            saved = _context9.sent;
             if (saved) {
-              _context8.next = 6;
+              _context9.next = 6;
               break;
             }
-            return _context8.abrupt("return");
+            return _context9.abrupt("return");
           case 6:
             if (!(effectiveExecutionMode === 'webhook' && !(campaign !== null && campaign !== void 0 && campaign.webhook_id))) {
-              _context8.next = 9;
+              _context9.next = 9;
               break;
             }
             showToast('Select a webhook before running in webhook mode.', 'error');
-            return _context8.abrupt("return");
+            return _context9.abrupt("return");
           case 9:
             nextTask = getNextPendingTask();
             if (nextTask) {
-              _context8.next = 13;
+              _context9.next = 13;
               break;
             }
             showToast('No pending post tasks to run.', 'info');
-            return _context8.abrupt("return");
+            return _context9.abrupt("return");
           case 13:
             if (!runLoading) {
-              _context8.next = 15;
+              _context9.next = 15;
               break;
             }
-            return _context8.abrupt("return");
+            return _context9.abrupt("return");
           case 15:
             setRunLoading(true);
             setIsRunning(true);
@@ -14300,9 +14398,9 @@ function CampaignEditPage() {
               manualRunRef.current = true;
               currentManualTaskIdRef.current = getTaskIdKey(nextTask.id);
             }
-            _context8.prev = 20;
+            _context9.prev = 20;
             showToast('Run starting...', 'info');
-            _context8.next = 24;
+            _context9.next = 24;
             return runCampaign(nextTask.id, (_campaign$webhook_id2 = campaign.webhook_id) !== null && _campaign$webhook_id2 !== void 0 ? _campaign$webhook_id2 : 0);
           case 24:
             setTaskItems(function (prev) {
@@ -14314,63 +14412,63 @@ function CampaignEditPage() {
                 }) : task;
               });
             });
-            _context8.prev = 25;
-            _context8.next = 28;
+            _context9.prev = 25;
+            _context9.next = 28;
             return (0,_api_client__WEBPACK_IMPORTED_MODULE_9__.getPendingProcessingPostTasks)(id);
           case 28:
-            pollData = _context8.sent;
+            pollData = _context9.sent;
             pendingProcessing = Array.isArray(pollData) ? pollData : (_pollData$tasks = pollData === null || pollData === void 0 ? void 0 : pollData.tasks) !== null && _pollData$tasks !== void 0 ? _pollData$tasks : [];
             applyPendingProcessingUpdates(pendingProcessing);
-            _context8.next = 36;
+            _context9.next = 36;
             break;
           case 33:
-            _context8.prev = 33;
-            _context8.t0 = _context8["catch"](25);
+            _context9.prev = 33;
+            _context9.t0 = _context9["catch"](25);
             // Do not fail run-start if first poll call fails; global polling loop will retry.
-            console.error('Initial task poll failed:', _context8.t0);
+            console.error('Initial task poll failed:', _context9.t0);
           case 36:
-            _context8.next = 43;
+            _context9.next = 43;
             break;
           case 38:
-            _context8.prev = 38;
-            _context8.t1 = _context8["catch"](20);
+            _context9.prev = 38;
+            _context9.t1 = _context9["catch"](20);
             setIsRunning(false);
             if (!isLive) {
               manualRunRef.current = false;
               currentManualTaskIdRef.current = null;
             }
-            showToast((_context8.t1 === null || _context8.t1 === void 0 ? void 0 : _context8.t1.message) || 'Failed to start run.', 'error');
+            showToast((_context9.t1 === null || _context9.t1 === void 0 ? void 0 : _context9.t1.message) || 'Failed to start run.', 'error');
           case 43:
-            _context8.prev = 43;
+            _context9.prev = 43;
             setRunLoading(false);
-            return _context8.finish(43);
+            return _context9.finish(43);
           case 46:
           case "end":
-            return _context8.stop();
+            return _context9.stop();
         }
-      }, _callee8, null, [[20, 38, 43, 46], [25, 33]]);
+      }, _callee9, null, [[20, 38, 43, 46], [25, 33]]);
     }));
     return function handleRun() {
-      return _ref12.apply(this, arguments);
+      return _ref13.apply(this, arguments);
     };
   }();
   var handleStop = /*#__PURE__*/function () {
-    var _ref13 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
-      return _regeneratorRuntime().wrap(function _callee9$(_context9) {
-        while (1) switch (_context9.prev = _context9.next) {
+    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
+      return _regeneratorRuntime().wrap(function _callee10$(_context10) {
+        while (1) switch (_context10.prev = _context10.next) {
           case 0:
             stopRunRef.current = true;
             manualRunRef.current = false;
             currentManualTaskIdRef.current = null;
             if (!stopLoading) {
-              _context9.next = 5;
+              _context10.next = 5;
               break;
             }
-            return _context9.abrupt("return");
+            return _context10.abrupt("return");
           case 5:
             setStopLoading(true);
-            _context9.prev = 6;
-            _context9.next = 9;
+            _context10.prev = 6;
+            _context10.next = 9;
             return stopCampaignRun();
           case 9:
             setTaskItems(function (prev) {
@@ -14381,37 +14479,37 @@ function CampaignEditPage() {
               });
             });
             showToast('Run stopped.', 'info');
-            _context9.next = 16;
+            _context10.next = 16;
             break;
           case 13:
-            _context9.prev = 13;
-            _context9.t0 = _context9["catch"](6);
-            showToast((_context9.t0 === null || _context9.t0 === void 0 ? void 0 : _context9.t0.message) || 'Failed to stop run.', 'error');
+            _context10.prev = 13;
+            _context10.t0 = _context10["catch"](6);
+            showToast((_context10.t0 === null || _context10.t0 === void 0 ? void 0 : _context10.t0.message) || 'Failed to stop run.', 'error');
           case 16:
-            _context9.prev = 16;
+            _context10.prev = 16;
             setStopLoading(false);
-            return _context9.finish(16);
+            return _context10.finish(16);
           case 19:
           case "end":
-            return _context9.stop();
+            return _context10.stop();
         }
-      }, _callee9, null, [[6, 13, 16, 19]]);
+      }, _callee10, null, [[6, 13, 16, 19]]);
     }));
     return function handleStop() {
-      return _ref13.apply(this, arguments);
+      return _ref14.apply(this, arguments);
     };
   }();
   var handleExport = /*#__PURE__*/function () {
-    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
+    var _ref15 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
       var result, blob, url, a;
-      return _regeneratorRuntime().wrap(function _callee10$(_context10) {
-        while (1) switch (_context10.prev = _context10.next) {
+      return _regeneratorRuntime().wrap(function _callee11$(_context11) {
+        while (1) switch (_context11.prev = _context11.next) {
           case 0:
-            _context10.prev = 0;
-            _context10.next = 3;
+            _context11.prev = 0;
+            _context11.next = 3;
             return exportCampaign();
           case 3:
-            result = _context10.sent;
+            result = _context11.sent;
             blob = new Blob([JSON.stringify(result.data, null, 2)], {
               type: 'application/json'
             });
@@ -14422,21 +14520,21 @@ function CampaignEditPage() {
             a.click();
             URL.revokeObjectURL(url);
             showToast('Export downloaded.', 'success');
-            _context10.next = 18;
+            _context11.next = 18;
             break;
           case 14:
-            _context10.prev = 14;
-            _context10.t0 = _context10["catch"](0);
-            console.error('Failed to export:', _context10.t0);
-            showToast((_context10.t0 === null || _context10.t0 === void 0 ? void 0 : _context10.t0.message) || 'Failed to export.', 'error');
+            _context11.prev = 14;
+            _context11.t0 = _context11["catch"](0);
+            console.error('Failed to export:', _context11.t0);
+            showToast((_context11.t0 === null || _context11.t0 === void 0 ? void 0 : _context11.t0.message) || 'Failed to export.', 'error');
           case 18:
           case "end":
-            return _context10.stop();
+            return _context11.stop();
         }
-      }, _callee10, null, [[0, 14]]);
+      }, _callee11, null, [[0, 14]]);
     }));
     return function handleExport() {
-      return _ref14.apply(this, arguments);
+      return _ref15.apply(this, arguments);
     };
   }();
   if (loading || !campaign) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_common__WEBPACK_IMPORTED_MODULE_1__.PageLoader, {});
@@ -14465,11 +14563,11 @@ function CampaignEditPage() {
               checked: (campaign === null || campaign === void 0 ? void 0 : campaign.status) === 'active',
               disabled: savingAll,
               onChange: (/*#__PURE__*/function () {
-                var _ref15 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11(e) {
+                var _ref16 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee12(e) {
                   var _campaign$status;
                   var newStatus, previousStatus, saved;
-                  return _regeneratorRuntime().wrap(function _callee11$(_context11) {
-                    while (1) switch (_context11.prev = _context11.next) {
+                  return _regeneratorRuntime().wrap(function _callee12$(_context12) {
+                    while (1) switch (_context12.prev = _context12.next) {
                       case 0:
                         newStatus = e.target.checked ? 'active' : 'paused';
                         previousStatus = (_campaign$status = campaign === null || campaign === void 0 ? void 0 : campaign.status) !== null && _campaign$status !== void 0 ? _campaign$status : 'paused';
@@ -14478,12 +14576,12 @@ function CampaignEditPage() {
                             status: newStatus
                           }) : prev;
                         });
-                        _context11.next = 5;
+                        _context12.next = 5;
                         return handleSave({
                           status: newStatus
                         });
                       case 5:
-                        saved = _context11.sent;
+                        saved = _context12.sent;
                         if (!saved) {
                           setCampaign(function (prev) {
                             return prev ? _objectSpread(_objectSpread({}, prev), {}, {
@@ -14493,12 +14591,12 @@ function CampaignEditPage() {
                         }
                       case 7:
                       case "end":
-                        return _context11.stop();
+                        return _context12.stop();
                     }
-                  }, _callee11);
+                  }, _callee12);
                 }));
-                return function (_x4) {
-                  return _ref15.apply(this, arguments);
+                return function (_x5) {
+                  return _ref16.apply(this, arguments);
                 };
               }())
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("span", {
@@ -14716,6 +14814,7 @@ function CampaignEditPage() {
             onDeleteTask: handleDeleteTask,
             onDuplicateTask: handleDuplicateTask,
             onRunTask: handleRetryTask,
+            onStopTask: handleStopTask,
             retryingTaskId: retryingTaskId,
             onRetryFailedTasks: handleRetryFailedTasks,
             retryFailedLoading: retryFailedLoading,
@@ -14724,7 +14823,8 @@ function CampaignEditPage() {
             loading: creatingTask,
             importLoading: importLoading,
             clearCompletedLoading: clearCompletedLoading,
-            deletingTaskIds: deletingTaskIds
+            deletingTaskIds: deletingTaskIds,
+            stoppingTaskIds: stoppingTaskIds
           })
         })
       })]

@@ -29,6 +29,7 @@ class WorkflowSpecImporter
 				'researching' => 'Researching',
 				'scraping' => 'Scraping %s',
 				'analysis' => 'Performing Analysis',
+				'preliminary_plan' => 'Building Preliminary Plan',
 				'outline' => 'Crafting Article Outline',
 				'internal_links' => 'Sorting Internal Links',
 				'writing' => 'Writing Article Draft',

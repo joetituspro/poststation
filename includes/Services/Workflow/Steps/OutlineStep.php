@@ -24,17 +24,23 @@ class OutlineStep
 	{
 		$payload = (array) $context->get('payload', []);
 		$analysis = (array) $context->get('analysis', []);
+		$preliminary_plan = (array) $context->get('preliminary_plan', []);
 		$research_items = (array) $context->get('research_items', []);
 		$research_text = implode("\n\n", array_map(
 			static fn($item) => (string) ($item['full_article'] ?? ''),
 			$research_items
 		));
 		$system = $this->prompt_library->load('outline.system.txt');
-		$user_template = $this->prompt_library->load('outline.user.txt');
+		$research_mode = strtolower(trim((string) ($payload['content_fields']['body']['research_mode'] ?? 'perplexity')));
+		$use_plan_prompt = $research_mode === 'none';
+		$user_template = $this->prompt_library->load($use_plan_prompt ? 'outline.user.plan.txt' : 'outline.user.research.txt');
 		$prompt = $this->prompt_library->render_with_context($user_template, [
 			'payload' => $payload,
 			'analysis' => [
 				'json' => wp_json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
+			],
+			'preliminary_plan' => [
+				'json' => wp_json_encode($preliminary_plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}',
 			],
 			'research' => [
 				'data' => $research_text,
