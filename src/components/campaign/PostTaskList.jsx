@@ -236,6 +236,22 @@ function TaskItem( {
 	isRunning = false,
 	hasProcessingTask = false,
 } ) {
+	const formatNumber = ( value ) => {
+		if ( value === null || value === undefined || value === '' ) return null;
+		const num = Number( value );
+		if ( Number.isNaN( num ) ) return null;
+		if ( num <= 0 ) return null;
+		return num.toLocaleString();
+	};
+
+	const formatCost = ( value ) => {
+		if ( value === null || value === undefined || value === '' ) return null;
+		const num = Number( value );
+		if ( Number.isNaN( num ) ) return null;
+		if ( num <= 0 ) return null;
+		return `$${ num.toFixed( 6 ) }`;
+	};
+
 	const formatDateTime = ( value ) => {
 		if ( ! value ) return '';
 		const date = new Date( String( value ).replace( ' ', 'T' ) );
@@ -285,6 +301,20 @@ function TaskItem( {
 		task.scheduled_publication_date || task.post_date || '';
 	const progressText = String( task.progress ?? '' );
 	const progressTypingWidth = `${ Math.max( 1, progressText.length ) }ch`;
+	const aiTotalTokens = formatNumber( task.ai_total_tokens );
+	const aiTotalCost = formatCost( task.ai_total_cost_usd );
+	const aiCostUnknown =
+		String( task.ai_cost_unknown ?? '0' ) === '1' ||
+		task.ai_cost_unknown === true;
+	const aiCallCountRaw = Number( task.ai_call_count );
+	const aiCallCount = Number.isNaN( aiCallCountRaw ) ? null : aiCallCountRaw;
+	const aiTokensEstimated =
+		String( task.ai_tokens_estimated ?? '0' ) === '1' ||
+		task.ai_tokens_estimated === true;
+	const aiHasUsage =
+		!! aiTotalTokens ||
+		!! aiTotalCost ||
+		( aiCallCount !== null && aiCallCount > 0 );
 
 	return (
 		<div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -312,7 +342,7 @@ function TaskItem( {
 					</button>
 
 					<div className="flex flex-col min-w-0 flex-1 space-y-0.5">
-						<div className="text-[10px] font-medium text-gray-400 shrink-0">
+						<div className="flex items-center text-[10px] font-medium text-gray-400 shrink-0">
 							#{ task.id }
 							<span className="mx-2 text-gray-600 font-medium">
 								·
@@ -345,7 +375,7 @@ function TaskItem( {
 										>
 											{ isScheduledPost && (
 												<svg
-													className="w-3 h-2 leading-none m-0 p-0 shrink-0"
+													className="w-3 h-3 leading-none m-0 p-0 shrink-0"
 													fill="none"
 													viewBox="0 0 24 24"
 													stroke="currentColor"
@@ -361,7 +391,7 @@ function TaskItem( {
 											) }
 											{ ! isScheduledPost && (
 												<svg
-													className="w-3 h-2 leading-none m-0 p-0 shrink-0 text-green-600"
+													className="w-3 h-3 leading-none m-0 p-0 shrink-0 text-green-600"
 													fill="none"
 													viewBox="0 0 24 24"
 													stroke="currentColor"
@@ -478,19 +508,19 @@ function TaskItem( {
 								variant="success"
 								size="sm"
 								onClick={ onRun }
-								className="h-7 w-7 p-0 inline-flex items-center justify-center"
+								className="p-1"
 								loading={ isRunning }
 								disabled={ isRunning }
 								title="Run this Task"
 								aria-label="Run this Task"
 							>
 								<svg
-									className="w-3.5 h-3.5"
+									className="w-4 h-4"
 									fill="currentColor"
-									viewBox="0 0 20 20"
+									viewBox="0 0 24 24"
 									aria-hidden="true"
 								>
-									<path d="M6.5 4.5a1 1 0 011.53-.848l7 4.5a1 1 0 010 1.696l-7 4.5A1 1 0 016.5 13.5v-9z" />
+									<path d="M8 5v14l11-7L8 5z" />
 								</svg>
 							</Button>
 						) }
@@ -499,11 +529,20 @@ function TaskItem( {
 								variant="danger"
 								size="sm"
 								onClick={ onStop }
-								className="h-7 text-[11px] px-2"
+								className="p-1"
 								loading={ isStopping }
 								disabled={ isStopping }
+								title="Stop"
+								aria-label="Stop"
 							>
-								Stop
+								<svg
+									className="w-4 h-4"
+									fill="currentColor"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+								>
+									<path d="M6 6h12v12H6z" />
+								</svg>
 							</Button>
 						) }
 						<button
@@ -595,12 +634,12 @@ function TaskItem( {
 									Publication:
 								</span>{ ' ' }
 								{ publicationModeLabel }
-							</p>
+								{ ' ' }
 							{ completedDateTimeValue && (
-								<p className="inline-flex items-center gap-1">
+								<span className="inline-flex items-center gap-1">
 									{ isScheduledPost ? (
 										<svg
-											className="w-3.5 h-3.5 text-amber-700"
+											className="w-3.5 h-3.5 text-amber-700 hidden"
 											fill="none"
 											viewBox="0 0 24 24"
 											stroke="currentColor"
@@ -615,7 +654,7 @@ function TaskItem( {
 										</svg>
 									) : (
 										<svg
-											className="w-3.5 h-3.5 text-green-600"
+											className="w-3.5 h-3.5 text-green-600 hidden"
 											fill="none"
 											viewBox="0 0 24 24"
 											stroke="currentColor"
@@ -629,14 +668,16 @@ function TaskItem( {
 											/>
 										</svg>
 									) }
-									<span>
+									<span>  { ' - ' }
 										{ completedDateTimeLabel }:{ ' ' }
 										{ formatDateTime(
 											completedDateTimeValue
 										) }
 									</span>
-								</p>
+								</span>
 							) }
+								</p>
+							
 							{ isRewrite ? (
 								<p>
 									<span className="font-medium text-gray-600">
@@ -691,6 +732,28 @@ function TaskItem( {
 										{ task.feature_image_title }
 									</p>
 								) }
+							{ aiHasUsage && (
+								<p>
+									<span className="font-medium text-gray-600">
+										AI Usage:
+									</span>{ ' ' }
+									<span className="text-gray-800">
+										Tokens { aiTotalTokens || 'n/a' }
+										{ ' · ' }
+										Cost{ ' ' }
+										{ aiTotalCost ||
+											( aiCostUnknown
+												? 'unknown'
+												: 'n/a' ) }
+										{ aiCallCount
+											? ` · Calls ${ aiCallCount }`
+											: '' }
+										{ aiTokensEstimated
+											? ' · Estimated tokens used'
+											: '' }
+									</span>
+								</p>
+							) }
 						</div>
 					) : (
 						<PostTaskForm

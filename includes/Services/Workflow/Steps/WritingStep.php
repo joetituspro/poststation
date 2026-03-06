@@ -2,6 +2,7 @@
 
 namespace PostStation\Services\Workflow\Steps;
 
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\WorkflowContext;
@@ -75,6 +76,7 @@ class WritingStep
 			['role' => 'system', 'content' => $system],
 			['role' => 'user', 'content' => $prompt],
 		], (string) ($payload['content_fields']['body']['model_id'] ?? ''));
+		AiUsageAggregator::append($context, 'writing', $this->openrouter->get_last_usage_metrics());
 
 		if (is_wp_error($response)) {
 			throw new \Exception($response->get_error_message());

@@ -2,6 +2,7 @@
 
 namespace PostStation\Services\Workflow\Steps;
 
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\StepDeferredException;
@@ -75,6 +76,7 @@ class TaxonomiesStep
 				$response = $this->openrouter->chat([
 					['role' => 'user', 'content' => $user_prompt],
 				], $model);
+				AiUsageAggregator::append($context, 'taxonomies', $this->openrouter->get_last_usage_metrics());
 				if (!is_wp_error($response)) {
 					$text = trim((string) ($response['choices'][0]['message']['content'] ?? ''));
 					if ($text !== '') {

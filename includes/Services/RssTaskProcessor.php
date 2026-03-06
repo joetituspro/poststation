@@ -38,6 +38,9 @@ class RssTaskProcessor
 		$to_insert = [];
 		$created_ids = [];
 		$max_attempts = 20;
+		$publication_mode = self::sanitize_campaign_publication_mode(
+			$campaign['publication_mode'] ?? ($campaign['post_status'] ?? 'pending')
+		);
 
 		foreach ($items as $item) {
 			if (!is_array($item)) {
@@ -66,6 +69,8 @@ class RssTaskProcessor
 					'campaign_id' => $campaign_id,
 					'research_url' => $url,
 					'campaign_type' => 'rewrite_blog_post',
+					'publication_override' => 0,
+					'publication_mode' => $publication_mode,
 					'status' => 'pending',
 				]);
 				if ($task_id) {
@@ -77,6 +82,8 @@ class RssTaskProcessor
 					'campaign_id' => $campaign_id,
 					'research_url' => $url,
 					'campaign_type' => 'rewrite_blog_post',
+					'publication_override' => 0,
+					'publication_mode' => $publication_mode,
 					'status' => 'pending',
 				]);
 			}
@@ -106,6 +113,26 @@ class RssTaskProcessor
 		}
 
 		return ['count' => count($created_ids), 'task_ids' => $created_ids];
+	}
+
+	private static function sanitize_campaign_publication_mode($mode): string
+	{
+		$mode = sanitize_key((string) $mode);
+		$allowed = ['pending_review', 'publish_instantly', 'set_date', 'rolling_schedule'];
+		if (in_array($mode, $allowed, true)) {
+			return $mode;
+		}
+
+		if ($mode === 'publish') {
+			return 'publish_instantly';
+		}
+		if ($mode === 'future') {
+			return 'set_date';
+		}
+		if ($mode === 'schedule_date' || $mode === 'publish_randomly') {
+			return 'rolling_schedule';
+		}
+		return 'pending_review';
 	}
 
 	/**

@@ -2,6 +2,7 @@
 
 namespace PostStation\Services\Workflow\Steps;
 
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\WorkflowContext;
@@ -62,6 +63,7 @@ class InternalLinksStep
 				'additionalProperties' => true,
 			],
 		], 'json_schema');
+		AiUsageAggregator::append($context, 'internal_links', $this->openrouter->get_last_usage_metrics());
 
 		$selected = [];
 		if (!is_wp_error($response)) {
@@ -234,4 +236,3 @@ class InternalLinksStep
 		return $host . $path;
 	}
 }
-

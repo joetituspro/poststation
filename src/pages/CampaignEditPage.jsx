@@ -417,6 +417,12 @@ export default function CampaignEditPage() {
 						task.progress === match.progress &&
 						task.post_id === match.post_id &&
 						task.error_message === match.error_message &&
+						task.ai_total_tokens === match.ai_total_tokens &&
+						task.ai_total_cost_usd === match.ai_total_cost_usd &&
+						task.ai_call_count === match.ai_call_count &&
+						task.ai_cost_unknown === match.ai_cost_unknown &&
+						task.ai_tokens_estimated ===
+							match.ai_tokens_estimated &&
 						task.scheduled_publication_date ===
 							match.scheduled_publication_date &&
 						task.post_date === match.post_date &&
@@ -430,6 +436,11 @@ export default function CampaignEditPage() {
 						progress: match.progress,
 						post_id: match.post_id,
 						error_message: match.error_message,
+						ai_total_tokens: match.ai_total_tokens,
+						ai_total_cost_usd: match.ai_total_cost_usd,
+						ai_call_count: match.ai_call_count,
+						ai_cost_unknown: match.ai_cost_unknown,
+						ai_tokens_estimated: match.ai_tokens_estimated,
 						scheduled_publication_date:
 							match.scheduled_publication_date,
 						post_date: match.post_date,

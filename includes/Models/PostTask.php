@@ -4,7 +4,7 @@ namespace PostStation\Models;
 
 class PostTask
 {
-	public const DB_VERSION = '4.8';
+	public const DB_VERSION = '4.9';
 	protected const TABLE_NAME = 'poststation_posttasks';
 
 	public static function get_table_name(): string
@@ -43,6 +43,11 @@ class PostTask
 			post_id bigint(20) unsigned DEFAULT NULL,
 			error_message text DEFAULT NULL,
 			execution_id varchar(255) DEFAULT NULL,
+			ai_total_tokens bigint(20) unsigned DEFAULT NULL,
+			ai_total_cost_usd decimal(16,8) DEFAULT NULL,
+			ai_call_count int(11) unsigned DEFAULT NULL,
+			ai_cost_unknown tinyint(1) NOT NULL DEFAULT 0,
+			ai_tokens_estimated tinyint(1) NOT NULL DEFAULT 0,
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
@@ -307,6 +312,7 @@ class PostTask
 			'publication_mode', 'publication_date', 'publication_random_from', 'publication_random_to', 'scheduled_publication_date',
 			'feature_image_id', 'feature_image_title',
 			'run_started_at', 'status', 'progress', 'post_id', 'error_message', 'execution_id',
+			'ai_total_tokens', 'ai_total_cost_usd', 'ai_call_count', 'ai_cost_unknown', 'ai_tokens_estimated',
 			'created_at', 'updated_at',
 		];
 	}

@@ -237,10 +237,12 @@ class LocalWorkflowRunner
 					microtime(true),
 					$step_input,
 					['skipped' => true, 'reason' => $this->skip_reason_for_step($current_step, $context)],
-					$next_step
+					$next_step,
+					$context
 				);
 
 				if ($next_step === '') {
+					$this->persist_ai_totals_to_task($task_id, $context);
 					TaskExecutionState::mark_terminal($task_id, 'completed', null);
 					TaskExecutionState::delete_by_task_id($task_id);
 					$completed = true;
@@ -268,7 +270,7 @@ class LocalWorkflowRunner
 			}
 
 			if ($this->is_step_timed_out($state)) {
-				$this->log_step_run($task_id, $current_step, microtime(true), microtime(true), [], ['error' => 'step_timeout'], $current_step);
+				$this->log_step_run($task_id, $current_step, microtime(true), microtime(true), [], ['error' => 'step_timeout'], $current_step, $context);
 				$this->handle_step_failure(
 					$task_id,
 					$current_step,
@@ -289,9 +291,10 @@ class LocalWorkflowRunner
 				$this->execute_step($current_step, $context, $spec);
 				$step_response = $this->build_step_response($current_step, $context, $before_context);
 				$next_step = $this->get_next_runnable_step($current_step, $context);
-				$this->log_step_run($task_id, $current_step, $step_start_ts, microtime(true), $step_input, $step_response, $next_step);
+				$this->log_step_run($task_id, $current_step, $step_start_ts, microtime(true), $step_input, $step_response, $next_step, $context);
 
 				if ($next_step === '') {
+					$this->persist_ai_totals_to_task($task_id, $context);
 					TaskExecutionState::mark_terminal($task_id, 'completed', null);
 					TaskExecutionState::delete_by_task_id($task_id);
 					$completed = true;
@@ -327,7 +330,8 @@ class LocalWorkflowRunner
 					microtime(true),
 					$step_input,
 					['deferred' => $e->getMessage()],
-					$current_step
+					$current_step,
+					$context
 				);
 				$completed = true;
 				return ['success' => true, 'message' => $e->getMessage()];
@@ -340,7 +344,8 @@ class LocalWorkflowRunner
 					microtime(true),
 					$step_input,
 					['error' => $error_message],
-					$current_step
+					$current_step,
+					$context
 				);
 				if ($this->is_non_retryable_error($e)) {
 					$this->handle_non_retryable_step_failure($task_id, $current_step, $error_message);
@@ -830,7 +835,8 @@ class LocalWorkflowRunner
 		float $end_ts,
 		array $input,
 		$response,
-		string $next_step
+		string $next_step,
+		?WorkflowContext $context = null
 	): void
 	{
 		if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
@@ -847,7 +853,62 @@ class LocalWorkflowRunner
 			'response' => $this->trim_for_log($response),
 			'next_step' => $next_step,
 		];
+		if ($context !== null && $this->is_ai_step($step)) {
+			$step_usage = AiUsageAggregator::summarize_step($context, $step);
+			$cumulative_usage = AiUsageAggregator::summarize_totals($context);
+			$payload['ai_usage'] = [
+				'step' => [
+					'prompt_tokens' => $step_usage['prompt_tokens'] ?? null,
+					'completion_tokens' => $step_usage['completion_tokens'] ?? null,
+					'total_tokens' => $step_usage['total_tokens'] ?? null,
+					'cost_usd' => $step_usage['cost_usd'] ?? null,
+					'call_count' => (int) ($step_usage['call_count'] ?? 0),
+				],
+				'cumulative' => [
+					'prompt_tokens' => $cumulative_usage['prompt_tokens'] ?? null,
+					'completion_tokens' => $cumulative_usage['completion_tokens'] ?? null,
+					'total_tokens' => $cumulative_usage['total_tokens'] ?? null,
+					'cost_usd' => $cumulative_usage['cost_usd'] ?? null,
+					'call_count' => (int) ($cumulative_usage['call_count'] ?? 0),
+				],
+				'meta' => [
+					'tokens_estimated' => !empty($step_usage['tokens_estimated']),
+					'cost_unknown' => !empty($step_usage['cost_unknown']),
+				],
+			];
+		}
 		error_log('[PostStation][StepRun] ' . (wp_json_encode($payload) ?: '{}'));
+	}
+
+	private function persist_ai_totals_to_task(int $task_id, WorkflowContext $context): void
+	{
+		$totals = AiUsageAggregator::summarize_totals($context);
+		$raw_call_count = isset($totals['call_count']) && is_numeric($totals['call_count'])
+			? (int) $totals['call_count']
+			: 0;
+		$has_calls = $raw_call_count > 0;
+		$token_total = isset($totals['total_tokens']) && is_numeric($totals['total_tokens'])
+			? (int) $totals['total_tokens']
+			: null;
+		if ($token_total !== null && $token_total <= 0) {
+			$token_total = null;
+		}
+		$cost_total = isset($totals['cost_usd']) && is_numeric($totals['cost_usd'])
+			? (float) $totals['cost_usd']
+			: null;
+		if ($cost_total !== null && $cost_total <= 0) {
+			$cost_total = null;
+		}
+		$call_count = isset($totals['call_count']) && is_numeric($totals['call_count'])
+			? (int) $totals['call_count']
+			: 0;
+		PostTask::update($task_id, [
+			'ai_total_tokens' => $token_total,
+			'ai_total_cost_usd' => $cost_total,
+			'ai_call_count' => $call_count > 0 ? $call_count : null,
+			'ai_cost_unknown' => ($has_calls && !empty($totals['cost_unknown'])) ? 1 : 0,
+			'ai_tokens_estimated' => ($has_calls && !empty($totals['tokens_estimated'])) ? 1 : 0,
+		]);
 	}
 
 	/**

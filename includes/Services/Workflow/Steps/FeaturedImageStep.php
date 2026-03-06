@@ -3,6 +3,7 @@
 namespace PostStation\Services\Workflow\Steps;
 
 use PostStation\Services\ImageOptimizer;
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\StepDeferredException;
@@ -70,6 +71,7 @@ class FeaturedImageStep
 				'required' => ['prompt'],
 				'additionalProperties' => true,
 			]);
+			AiUsageAggregator::append($context, 'featured_image', $this->openrouter->get_last_usage_metrics());
 			if (is_wp_error($prompt_builder)) {
 				return;
 			}
@@ -100,6 +102,7 @@ class FeaturedImageStep
 		}
 
 		$image_response = $this->openrouter->generate_image($prompt, (string) ($image_field['model_id'] ?? ''));
+		AiUsageAggregator::append($context, 'featured_image', $this->openrouter->get_last_usage_metrics());
 		if (is_wp_error($image_response)) {
 			return;
 		}

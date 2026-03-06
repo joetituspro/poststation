@@ -141,7 +141,7 @@ export default function SettingsPage() {
 						<CardHeader>
 							<div>
 								<h3 className="text-lg font-medium text-gray-900">Article Scraper</h3>
-								<p className="text-sm text-gray-500">Choose one provider (no fallback chain).</p>
+								<p className="text-sm text-gray-500">Choose provider and enter API keys.</p>
 							</div>
 						</CardHeader>
 						<CardBody>
@@ -188,7 +188,7 @@ export default function SettingsPage() {
 								)}
 
 								{articleScraperProvider === 'rankima' ? (
-									<p className="text-sm text-indigo-700 bg-indigo-50 border border-indigo-100 rounded p-2">
+									<p className="text-sm text-gray-500">
 										Rankima extractor already returns cleaned data. AI cleanup is skipped.
 									</p>
 								) : (

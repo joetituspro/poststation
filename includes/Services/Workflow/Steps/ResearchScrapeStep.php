@@ -4,6 +4,7 @@ namespace PostStation\Services\Workflow\Steps;
 
 use PostStation\Models\TaskExecutionState;
 use PostStation\Services\SettingsService;
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\StepDeferredException;
@@ -124,7 +125,7 @@ class ResearchScrapeStep
 
 			$state['inflight'] = ['url' => $url, 'stage' => 'cleanup'];
 			$this->update_progress($task_id, "Cleaning {$domain} ({$display_index}/{$total})");
-			$cleanup = $this->cleanup_research_content($title, (string) ($scrape['content'] ?? ''));
+			$cleanup = $this->cleanup_research_content($context, $title, (string) ($scrape['content'] ?? ''));
 			$cleanup_calls++;
 			$cleaned = (string) ($cleanup['content'] ?? '');
 
@@ -434,7 +435,7 @@ class ResearchScrapeStep
 	/**
 	 * @return array{content:string,reason:string,message:string,attempts:int}
 	 */
-	private function cleanup_research_content(string $title, string $article): array
+	private function cleanup_research_content(WorkflowContext $context, string $title, string $article): array
 	{
 		$title = trim($title);
 		$article = trim($article);
@@ -466,7 +467,7 @@ class ResearchScrapeStep
 		if ($model === '') {
 			$model = self::CLEANUP_PRIMARY_MODEL;
 		}
-		$cleaned = $this->run_cleanup_model_with_retries($prompt, $model);
+		$cleaned = $this->run_cleanup_model_with_retries($context, $prompt, $model);
 		if ($cleaned['content'] !== '') {
 			return $cleaned;
 		}
@@ -481,7 +482,7 @@ class ResearchScrapeStep
 	/**
 	 * @return array{content:string,reason:string,message:string,attempts:int}
 	 */
-	private function run_cleanup_model_with_retries(string $prompt, string $model): array
+	private function run_cleanup_model_with_retries(WorkflowContext $context, string $prompt, string $model): array
 	{
 		$last_error = '';
 		$started = microtime(true);
@@ -497,6 +498,7 @@ class ResearchScrapeStep
 			$response = $this->openrouter->chat([
 				['role' => 'user', 'content' => $prompt],
 			], $model, false);
+			AiUsageAggregator::append($context, 'scraping', $this->openrouter->get_last_usage_metrics());
 
 			if (!is_wp_error($response)) {
 				$text = trim($this->extract_cleanup_text($response));

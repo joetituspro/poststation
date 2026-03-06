@@ -29,7 +29,6 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 
 	const numImagesOptions = [
 		{ value: 'random', label: 'Random Number' },
-		{ value: 'according_to_sections', label: 'According to Sections' },
 		{ value: 'custom', label: 'Custom Number' },
 	];
 
@@ -311,7 +310,7 @@ export default function BodyFieldConfig({ config, onChange, campaignType, taxono
 										label="Number of Images"
 										tooltip="How many images to include in the body."
 										options={numImagesOptions}
-										value={config.number_of_images || 'random'}
+										value={config.number_of_images === 'according_to_sections' ? 'random' : (config.number_of_images || 'random')}
 										onChange={(e) => handleChange('number_of_images', e.target.value)}
 									/>
 

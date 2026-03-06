@@ -2,6 +2,7 @@
 
 namespace PostStation\Services\Workflow\Steps;
 
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\WorkflowContext;
@@ -67,6 +68,7 @@ class ExtrasStep
 			'required' => ['title', 'slug', 'conclusion', 'key_takeaways', 'faq'],
 			'additionalProperties' => true,
 		]);
+		AiUsageAggregator::append($context, 'extras', $this->openrouter->get_last_usage_metrics());
 
 		if (is_wp_error($response)) {
 			throw new \Exception($response->get_error_message());

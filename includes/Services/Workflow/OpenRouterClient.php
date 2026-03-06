@@ -9,6 +9,8 @@ class OpenRouterClient
 {
 	private OpenRouterService $openrouter_service;
 	private SettingsService $settings_service;
+	/** @var array<string,mixed> */
+	private array $last_usage_metrics = [];
 
 	public function __construct(?OpenRouterService $openrouter_service = null, ?SettingsService $settings_service = null)
 	{
@@ -28,9 +30,11 @@ class OpenRouterClient
 		string $json_mode = 'json_schema'
 	)
 	{
+		$this->set_last_usage_metrics($this->blank_usage_metrics('chat', (string) $model));
 		$api_key = $this->openrouter_service->resolve_api_key();
 		if ($api_key === '') {
 			$this->log('chat:missing_api_key');
+			$this->set_last_usage_metrics($this->blank_usage_metrics('chat', (string) $model));
 			return new \WP_Error('poststation_missing_openrouter_key', 'OpenRouter API key is missing for local workflow mode.');
 		}
 
@@ -82,6 +86,7 @@ class OpenRouterClient
 
 		if (is_wp_error($response)) {
 			$this->log('chat:wp_error', ['error' => $response->get_error_message()]);
+			$this->set_last_usage_metrics($this->blank_usage_metrics('chat', $model));
 			return $response;
 		}
 		$status = (int) wp_remote_retrieve_response_code($response);
@@ -115,9 +120,11 @@ class OpenRouterClient
 		if ($status < 200 || $status >= 300 || !is_array($decoded)) {
 			$preview = trim(preg_replace('/\s+/', ' ', substr($raw_body, 0, 200)) ?: '');
 			$this->log('chat:http_or_decode_error', ['status' => $status, 'body_preview' => $preview]);
+			$this->set_last_usage_metrics($this->blank_usage_metrics('chat', $model));
 			return new \WP_Error('poststation_openrouter_failed', 'OpenRouter request failed. HTTP ' . $status . '. ' . $preview);
 		}
 		$this->log('chat:ok', ['status' => $status, 'model' => $model]);
+		$this->set_last_usage_metrics($this->build_usage_metrics_for_chat($decoded, $messages, $model));
 
 		$decoded['resolved_model'] = $model;
 		return $decoded;
@@ -206,9 +213,11 @@ class OpenRouterClient
 	 */
 	public function generate_image(string $prompt, ?string $model = null)
 	{
+		$this->set_last_usage_metrics($this->blank_usage_metrics('image', (string) $model));
 		$api_key = $this->openrouter_service->resolve_api_key();
 		if ($api_key === '') {
 			$this->log('image:missing_api_key');
+			$this->set_last_usage_metrics($this->blank_usage_metrics('image', (string) $model));
 			return new \WP_Error('poststation_missing_openrouter_key', 'OpenRouter API key is missing for image generation.');
 		}
 
@@ -238,6 +247,7 @@ class OpenRouterClient
 
 		if (is_wp_error($response)) {
 			$this->log('image:wp_error', ['error' => $response->get_error_message()]);
+			$this->set_last_usage_metrics($this->blank_usage_metrics('image', $model));
 			return $response;
 		}
 		$status = (int) wp_remote_retrieve_response_code($response);
@@ -246,12 +256,22 @@ class OpenRouterClient
 		if ($status < 200 || $status >= 300 || !is_array($decoded)) {
 			$preview = trim(preg_replace('/\s+/', ' ', substr($raw_body, 0, 200)) ?: '');
 			$this->log('image:http_or_decode_error', ['status' => $status, 'body_preview' => $preview]);
+			$this->set_last_usage_metrics($this->blank_usage_metrics('image', $model));
 			return new \WP_Error('poststation_openrouter_image_failed', 'OpenRouter image generation failed. HTTP ' . $status . '. ' . $preview);
 		}
 		$this->log('image:ok', ['status' => $status, 'model' => $model]);
+		$this->set_last_usage_metrics($this->build_usage_metrics_for_image($decoded, $prompt, $model));
 
 		$decoded['resolved_model'] = $model;
 		return $decoded;
+	}
+
+	/**
+	 * @return array<string,mixed>
+	 */
+	public function get_last_usage_metrics(): array
+	{
+		return $this->last_usage_metrics;
 	}
 
 	public static function is_non_retryable_error_message(string $message): bool
@@ -297,6 +317,192 @@ class OpenRouterClient
 	{
 		// Disabled by design: LocalWorkflowRunner emits one consolidated log per step run.
 		return;
+	}
+
+	/**
+	 * @param array<string,mixed> $decoded
+	 * @param array<int,array<string,string>> $messages
+	 * @return array<string,mixed>
+	 */
+	private function build_usage_metrics_for_chat(array $decoded, array $messages, string $model): array
+	{
+		$usage = $this->extract_usage_payload($decoded);
+		$prompt_tokens = $this->pick_int($usage, ['prompt_tokens', 'input_tokens']);
+		$completion_tokens = $this->pick_int($usage, ['completion_tokens', 'output_tokens']);
+		$total_tokens = $this->pick_int($usage, ['total_tokens']);
+		$cost_usd = $this->pick_float($usage, ['cost', 'total_cost', 'cost_usd']);
+		$tokens_estimated = false;
+
+		if ($prompt_tokens === null) {
+			$prompt_text = '';
+			foreach ($messages as $msg) {
+				$prompt_text .= (string) ($msg['role'] ?? '') . ': ' . (string) ($msg['content'] ?? '') . "\n";
+			}
+			$prompt_tokens = $this->estimate_tokens($prompt_text);
+			$tokens_estimated = true;
+		}
+
+		if ($completion_tokens === null) {
+			$completion_tokens = $this->estimate_tokens($this->extract_text_content($decoded));
+			$tokens_estimated = true;
+		}
+
+		if ($total_tokens === null) {
+			$total_tokens = (int) $prompt_tokens + (int) $completion_tokens;
+			$tokens_estimated = true;
+		}
+
+		return [
+			'provider' => 'openrouter',
+			'type' => 'chat',
+			'model' => $model,
+			'prompt_tokens' => $prompt_tokens,
+			'completion_tokens' => $completion_tokens,
+			'total_tokens' => $total_tokens,
+			'cost_usd' => $cost_usd,
+			'tokens_estimated' => $tokens_estimated,
+			'cost_estimated' => false,
+			'raw_usage_present' => !empty($usage),
+		];
+	}
+
+	/**
+	 * @param array<string,mixed> $decoded
+	 * @return array<string,mixed>
+	 */
+	private function build_usage_metrics_for_image(array $decoded, string $prompt, string $model): array
+	{
+		$usage = $this->extract_usage_payload($decoded);
+		$prompt_tokens = $this->pick_int($usage, ['prompt_tokens', 'input_tokens']);
+		$completion_tokens = $this->pick_int($usage, ['completion_tokens', 'output_tokens']);
+		$total_tokens = $this->pick_int($usage, ['total_tokens']);
+		$cost_usd = $this->pick_float($usage, ['cost', 'total_cost', 'cost_usd']);
+		$tokens_estimated = false;
+
+		if ($prompt_tokens === null) {
+			$prompt_tokens = $this->estimate_tokens($prompt);
+			$tokens_estimated = true;
+		}
+		if ($completion_tokens === null && $total_tokens === null) {
+			$completion_tokens = 0;
+			$tokens_estimated = true;
+		}
+		if ($total_tokens === null) {
+			$total_tokens = (int) $prompt_tokens + (int) ($completion_tokens ?? 0);
+			$tokens_estimated = true;
+		}
+
+		return [
+			'provider' => 'openrouter',
+			'type' => 'image',
+			'model' => $model,
+			'prompt_tokens' => $prompt_tokens,
+			'completion_tokens' => $completion_tokens,
+			'total_tokens' => $total_tokens,
+			'cost_usd' => $cost_usd,
+			'tokens_estimated' => $tokens_estimated,
+			'cost_estimated' => false,
+			'raw_usage_present' => !empty($usage),
+		];
+	}
+
+	/**
+	 * @param array<string,mixed> $usage
+	 * @param array<int,string> $keys
+	 */
+	private function pick_int(array $usage, array $keys): ?int
+	{
+		foreach ($keys as $key) {
+			if (!array_key_exists($key, $usage)) {
+				continue;
+			}
+			if (is_numeric($usage[$key])) {
+				return (int) $usage[$key];
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param array<string,mixed> $usage
+	 * @param array<int,string> $keys
+	 */
+	private function pick_float(array $usage, array $keys): ?float
+	{
+		foreach ($keys as $key) {
+			if (!array_key_exists($key, $usage)) {
+				continue;
+			}
+			if (is_numeric($usage[$key])) {
+				return (float) $usage[$key];
+			}
+		}
+		return null;
+	}
+
+	private function estimate_tokens(string $text): int
+	{
+		$text = trim($text);
+		if ($text === '') {
+			return 0;
+		}
+		$len = function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
+		return (int) max(1, ceil($len / 4));
+	}
+
+	/**
+	 * @param array<string,mixed> $decoded
+	 * @return array<string,mixed>
+	 */
+	private function extract_usage_payload(array $decoded): array
+	{
+		$candidates = [];
+		if (isset($decoded['usage']) && is_array($decoded['usage'])) {
+			$candidates[] = (array) $decoded['usage'];
+		}
+		if (isset($decoded['choices'][0]['usage']) && is_array($decoded['choices'][0]['usage'])) {
+			$candidates[] = (array) $decoded['choices'][0]['usage'];
+		}
+		if (isset($decoded['data']['usage']) && is_array($decoded['data']['usage'])) {
+			$candidates[] = (array) $decoded['data']['usage'];
+		}
+		if (isset($decoded['meta']['usage']) && is_array($decoded['meta']['usage'])) {
+			$candidates[] = (array) $decoded['meta']['usage'];
+		}
+
+		foreach ($candidates as $candidate) {
+			if (!empty($candidate)) {
+				return $candidate;
+			}
+		}
+		return [];
+	}
+
+	/**
+	 * @return array<string,mixed>
+	 */
+	private function blank_usage_metrics(string $type, string $model): array
+	{
+		return [
+			'provider' => 'openrouter',
+			'type' => $type,
+			'model' => $model,
+			'prompt_tokens' => null,
+			'completion_tokens' => null,
+			'total_tokens' => null,
+			'cost_usd' => null,
+			'tokens_estimated' => false,
+			'cost_estimated' => false,
+			'raw_usage_present' => false,
+		];
+	}
+
+	/**
+	 * @param array<string,mixed> $metrics
+	 */
+	private function set_last_usage_metrics(array $metrics): void
+	{
+		$this->last_usage_metrics = $metrics;
 	}
 
 	private function strip_code_fences(string $content): string

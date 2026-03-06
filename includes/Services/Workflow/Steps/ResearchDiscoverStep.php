@@ -2,6 +2,7 @@
 
 namespace PostStation\Services\Workflow\Steps;
 
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\WorkflowContext;
@@ -77,6 +78,7 @@ class ResearchDiscoverStep
 			'required' => ['topic', 'standard_research', 'articles'],
 			'additionalProperties' => true,
 		], 'json_schema');
+		AiUsageAggregator::append($context, 'researching', $this->openrouter->get_last_usage_metrics());
 		if (is_wp_error($response)) {
 			throw new \Exception($response->get_error_message());
 		}

@@ -2,6 +2,7 @@
 
 namespace PostStation\Services\Workflow\Steps;
 
+use PostStation\Services\Workflow\AiUsageAggregator;
 use PostStation\Services\Workflow\OpenRouterClient;
 use PostStation\Services\Workflow\N8nPromptLibrary;
 use PostStation\Services\Workflow\WorkflowContext;
@@ -56,9 +57,6 @@ class OutlineStep
 			'now' => $this->prompt_library->now_string(),
 		]);
 
-		error_log('Outline prompt: ' . $prompt);
-		error_log('Outline system: ' . $system);
-
 		$response = $this->openrouter->chat([
 			['role' => 'system', 'content' => $system],
 			['role' => 'user', 'content' => $prompt],
@@ -106,6 +104,7 @@ class OutlineStep
 			'required' => ['outline', 'key_takeaways', 'faq'],
 			'additionalProperties' => true,
 		]);
+		AiUsageAggregator::append($context, 'outline', $this->openrouter->get_last_usage_metrics());
 
 		if (is_wp_error($response)) {
 			throw new \Exception($response->get_error_message());

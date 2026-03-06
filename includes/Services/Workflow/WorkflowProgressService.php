@@ -14,6 +14,11 @@ class WorkflowProgressService
 			'run_started_at' => current_time('mysql'),
 			'error_message' => null,
 			'progress' => null,
+			'ai_total_tokens' => null,
+			'ai_total_cost_usd' => null,
+			'ai_call_count' => null,
+			'ai_cost_unknown' => 0,
+			'ai_tokens_estimated' => 0,
 		]);
 	}
 
@@ -34,4 +39,3 @@ class WorkflowProgressService
 		]);
 	}
 }
-
